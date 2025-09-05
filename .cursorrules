@@ -1,0 +1,46 @@
+# MealPlanner Development Rules
+
+## NPM Command Safety
+- ALWAYS use timeout with npm commands to prevent blocking operations
+- Default timeout: 30 seconds for most npm commands
+- Extended timeout: 60 seconds for npm install/update operations
+- Use format: `timeout 30s npm test` or `timeout 60s npm install`
+- If timeout occurs, investigate the issue and use alternative approaches
+
+## Testing Workflow
+- Run tests with timeout: `timeout 30s npm test`
+- For E2E tests, use: `timeout 60s npm run test:e2e`
+- If tests hang, kill processes and investigate root cause
+- Always commit passing tests before moving to next milestone
+
+## Development Milestones
+- Each roadmap milestone MUST include:
+  1. Implementation of feature
+  2. Comprehensive behavior tests
+  3. All tests passing (timeout 30s npm test)
+  4. Version update (node update-version.cjs)
+  5. Commit and push to remote
+  6. Verification on live site
+
+## Cache Management
+- Use cache-busting version system for all assets
+- Update versions after each milestone
+- Test both local and remote deployment consistency
+
+## PWA Best Practices
+- Maintain static site compatibility
+- Ensure offline functionality
+- Test installation and service worker behavior
+- Secure credential storage for OAuth tokens
+
+## Error Handling
+- Graceful degradation for missing features
+- Comprehensive error logging
+- User-friendly error messages
+- Fallback mechanisms for API failures
+
+## Code Quality
+- Use semantic search for exploration
+- Parallel tool calls for efficiency
+- Comprehensive unit and integration tests
+- Mock external dependencies appropriately

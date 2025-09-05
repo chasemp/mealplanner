@@ -2,12 +2,13 @@
 class MealPlannerApp {
     constructor() {
         this.currentTab = 'recipes';
-        this.version = '2025.09.05.0943';
+        this.version = '2025.09.05.0955';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
         this.groceryListManager = null;
         this.googleCalendarIntegration = null;
+        this.mealRotationEngine = null;
         this.currentViews = {
             breakfast: 'itinerary',
             lunch: 'itinerary', 
@@ -34,6 +35,7 @@ class MealPlannerApp {
             this.initializeRecipeManager();
             this.initializeGroceryListManager();
             this.initializeGoogleCalendar();
+            this.initializeMealRotationEngine();
             this.initializeItineraryViews();
             this.generateCalendarDays();
             
@@ -195,6 +197,24 @@ class MealPlannerApp {
         } else {
             console.error('❌ Google Calendar Integration not found');
         }
+    }
+
+    initializeMealRotationEngine() {
+        console.log('🧠 Initializing Meal Rotation Engine...');
+        
+        this.mealRotationEngine = new MealRotationEngine();
+        
+        // Initialize with current recipes and user preferences
+        const recipes = this.getMockRecipes(); // This will be replaced with actual database call
+        const userPreferences = JSON.parse(localStorage.getItem('mealPreferences') || '{}');
+        const pantryItems = this.getMockPantryItems(); // This will be replaced with actual database call
+        
+        this.mealRotationEngine.initialize(recipes, userPreferences, pantryItems);
+        
+        // Make globally available for testing
+        window.mealRotationEngine = this.mealRotationEngine;
+        
+        console.log('✅ Meal Rotation Engine initialized');
     }
 
     initializeItineraryViews() {
@@ -801,6 +821,81 @@ class MealPlannerApp {
                 darkIcon.classList.remove('hidden');
             }
         }
+    }
+
+    // Mock data methods for meal rotation engine
+    getMockRecipes() {
+        return [
+            {
+                id: 'recipe-1',
+                name: 'Spaghetti Carbonara',
+                ingredients: [
+                    { ingredientId: 'ing-1', name: 'Spaghetti', quantity: 1 },
+                    { ingredientId: 'ing-2', name: 'Eggs', quantity: 3 },
+                    { ingredientId: 'ing-3', name: 'Parmesan Cheese', quantity: 1 },
+                    { ingredientId: 'ing-4', name: 'Bacon', quantity: 200 }
+                ],
+                prepTime: 30,
+                instructions: 'Cook pasta, mix with eggs and cheese, add bacon'
+            },
+            {
+                id: 'recipe-2',
+                name: 'Chicken Stir Fry',
+                ingredients: [
+                    { ingredientId: 'ing-5', name: 'Chicken Breast', quantity: 500 },
+                    { ingredientId: 'ing-6', name: 'Mixed Vegetables', quantity: 300 },
+                    { ingredientId: 'ing-7', name: 'Soy Sauce', quantity: 2 },
+                    { ingredientId: 'ing-8', name: 'Rice', quantity: 200 }
+                ],
+                prepTime: 25,
+                instructions: 'Stir fry chicken and vegetables, serve with rice'
+            },
+            {
+                id: 'recipe-3',
+                name: 'Vegetarian Curry',
+                ingredients: [
+                    { ingredientId: 'ing-9', name: 'Mixed Vegetables', quantity: 400 },
+                    { ingredientId: 'ing-10', name: 'Coconut Milk', quantity: 1 },
+                    { ingredientId: 'ing-11', name: 'Curry Powder', quantity: 2 },
+                    { ingredientId: 'ing-8', name: 'Rice', quantity: 200 }
+                ],
+                prepTime: 35,
+                instructions: 'Simmer vegetables in coconut milk with curry spices'
+            },
+            {
+                id: 'recipe-4',
+                name: 'Grilled Salmon',
+                ingredients: [
+                    { ingredientId: 'ing-12', name: 'Salmon Fillet', quantity: 600 },
+                    { ingredientId: 'ing-13', name: 'Asparagus', quantity: 300 },
+                    { ingredientId: 'ing-14', name: 'Lemon', quantity: 1 },
+                    { ingredientId: 'ing-15', name: 'Olive Oil', quantity: 2 }
+                ],
+                prepTime: 20,
+                instructions: 'Grill salmon and asparagus, finish with lemon'
+            },
+            {
+                id: 'recipe-5',
+                name: 'Beef Tacos',
+                ingredients: [
+                    { ingredientId: 'ing-16', name: 'Ground Beef', quantity: 500 },
+                    { ingredientId: 'ing-17', name: 'Taco Shells', quantity: 8 },
+                    { ingredientId: 'ing-18', name: 'Lettuce', quantity: 1 },
+                    { ingredientId: 'ing-19', name: 'Tomatoes', quantity: 2 }
+                ],
+                prepTime: 15,
+                instructions: 'Cook beef, assemble tacos with fresh toppings'
+            }
+        ];
+    }
+
+    getMockPantryItems() {
+        return [
+            { ingredientId: 'ing-8', quantity: 5 }, // Rice
+            { ingredientId: 'ing-15', quantity: 1 }, // Olive Oil
+            { ingredientId: 'ing-7', quantity: 1 }, // Soy Sauce
+            { ingredientId: 'ing-11', quantity: 1 } // Curry Powder
+        ];
     }
 }
 
