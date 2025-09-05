@@ -765,8 +765,10 @@ class RecipeManager {
                             quantity: parseFloat(quantity),
                             unit: unit || ingredient.default_unit,
                             notes: notes || ''
-                                });
-    }
+                        });
+                    }
+                }
+            });
 
     showBarcodeScanner(ingredientsContainer) {
         // Use the shared barcode scanner component
