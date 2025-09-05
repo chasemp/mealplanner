@@ -311,6 +311,47 @@ npm run test:all:timeout
 
 **Key Insight**: Always have timeout-protected test commands to prevent blocking operations during development.
 
+### 4. **NPM Command Safety & Development Velocity**
+**Critical Lesson**: NPM commands can hang indefinitely, blocking development workflow
+
+**The Problem**: Commands like `npm test`, `npm install`, or `npm run dev` can hang for various reasons:
+- Network issues during package downloads
+- Test processes that don't exit properly
+- Build processes stuck in infinite loops
+- Development servers that fail to start but don't error
+
+**The Solution**: ALWAYS use timeout commands to prevent blocking operations
+```bash
+# Essential timeout patterns
+timeout 30s npm test              # Unit/integration tests
+timeout 60s npm install           # Package installations
+timeout 30s npm run build         # Build processes
+timeout 45s npm run test:e2e      # End-to-end tests
+
+# If timeout occurs, investigate rather than increase timeout
+# This forces you to fix root causes instead of masking problems
+```
+
+**Implementation Strategy**:
+1. **Create `.cursorrules` file** to enforce timeout usage across the project
+2. **Update package.json scripts** to include timeout by default
+3. **Document timeout patterns** for different command types
+4. **Train development habits** to always use timeout
+
+**Development Velocity Impact**:
+- ✅ **Prevents frustrating blocks** - No more waiting indefinitely for hung processes
+- ✅ **Forces problem-solving** - Timeouts reveal underlying issues that need fixing
+- ✅ **Maintains momentum** - Development continues even when individual commands fail
+- ✅ **Improves reliability** - Identifies flaky tests and processes early
+
+**Timeout Guidelines**:
+- **30 seconds**: Most npm commands (test, lint, format)
+- **60 seconds**: Package installations and updates
+- **45 seconds**: End-to-end tests
+- **15 seconds**: Quick validation commands
+
+This simple practice dramatically improves development experience and prevents the common "stuck waiting for npm" problem.
+
 ### 3. Test Automation
 - **Unit Tests**: Vitest with jsdom
 - **Integration Tests**: Mock database interactions
