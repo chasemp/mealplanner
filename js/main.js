@@ -2,12 +2,13 @@
 class MealPlannerApp {
     constructor() {
         this.currentTab = 'recipes';
-        this.version = '2025.09.05.1346';
+        this.version = '2025.09.05.1358';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
         this.ingredientsManager = null;
         this.groceryListManager = null;
+        this.settingsManager = null;
         this.googleCalendarIntegration = null;
         this.mealRotationEngine = null;
         this.serviceWorker = null;
@@ -35,9 +36,10 @@ class MealPlannerApp {
             
             this.setupEventListeners();
             this.initializeTheme();
-            this.initializeRecipeManager();
-            this.initializeIngredientsManager();
-            this.initializeGroceryListManager();
+                    this.initializeRecipeManager();
+        this.initializeIngredientsManager();
+        this.initializeGroceryListManager();
+        this.initializeSettingsManager();
             this.initializeGoogleCalendar();
             this.initializeMealRotationEngine();
             this.initializeServiceWorker();
@@ -195,6 +197,13 @@ class MealPlannerApp {
             window.groceryListManager = this.groceryListManager;
             console.log('✅ Grocery list manager initialized');
         }
+    }
+
+    initializeSettingsManager() {
+        console.log('⚙️ Initializing settings manager...');
+        this.settingsManager = new SettingsManager();
+        window.settingsManager = this.settingsManager;
+        console.log('✅ Settings manager initialized');
     }
 
     initializeGoogleCalendar() {
