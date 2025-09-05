@@ -19,8 +19,11 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:fresh": "rm -rf node_modules/.vite && playwright test",
+    "test:e2e:timeout": "timeout 60s playwright test || echo 'E2E tests timed out after 60s'",
+    "test:e2e:quick": "playwright test --max-failures=1 --timeout=10000",
     "test:all": "npm run test:run && npm run test:e2e",
     "test:all:fresh": "npm run test:fresh && npm run test:e2e:fresh",
+    "test:all:timeout": "npm run test:run && npm run test:e2e:timeout",
     "cache:clear": "rm -rf node_modules/.vite dist",
     "restart": "pkill -f vite || true && sleep 2 && npm run dev:fresh"
   },

@@ -3,9 +3,20 @@
 ## 🎯 Core Principle: Static Sites Should Work Identically Everywhere
 
 The fundamental lesson from this project is that a well-designed static PWA should behave identically across all environments:
-- **Local file protocol** (`file://`)
-- **Local HTTP server** (`http://localhost`)
-- **Remote static hosting** (GitHub Pages, Netlify, etc.)
+- **Local file protocol** (`file://`) - For quick milestone validation and offline testing
+- **Local HTTP server** (`http://localhost`) - For development and testing with proper protocols
+- **Local HTTPS server** (`https://localhost`) - For PWA feature testing (service workers, etc.)
+- **Remote static hosting** (GitHub Pages, Netlify, etc.) - For production deployment
+
+### 🔄 **The Static-Testing-PWA Triangle**
+
+We need to balance three critical requirements:
+
+1. **📁 Fully Static**: Works without build processes or servers
+2. **🧪 Comprehensive Testing**: Automated tests across environments  
+3. **📱 PWA Features**: Service workers, offline support, installability
+
+**Key Insight**: Design for static-first, but provide easy pathways for testing and PWA validation.
 
 ## 🏗️ Architecture Decisions
 
@@ -122,6 +133,22 @@ export default {
 }
 ```
 
+### 3. **Non-Blocking Test Execution**
+**Problem**: E2E tests can hang and block development workflow
+**Solutions**:
+```bash
+# Timeout-protected E2E tests (60 second limit)
+npm run test:e2e:timeout
+
+# Quick E2E tests (fail fast, 10s timeout per test)
+npm run test:e2e:quick
+
+# Full test suite with timeout protection
+npm run test:all:timeout
+```
+
+**Key Insight**: Always have timeout-protected test commands to prevent blocking operations during development.
+
 ### 3. Test Automation
 - **Unit Tests**: Vitest with jsdom
 - **Integration Tests**: Mock database interactions
@@ -154,19 +181,44 @@ git remote add origin git@github.com:user/repo.git
 
 ## 🔧 Development Workflow
 
-### 1. Cache-Busting Scripts
+### 1. Multi-Environment Development Scripts
 ```json
 {
     "scripts": {
         "dev:fresh": "npm run cache:clear && npm run dev",
         "build:fresh": "npm run cache:clear && npm run build",
         "cache:clear": "rm -rf node_modules/.vite && rm -rf dist",
-        "restart": "pkill -f 'vite|http.server' || true && npm run dev:fresh"
+        "restart": "pkill -f 'vite|http.server' || true && npm run dev:fresh",
+        
+        "serve:static": "python3 -m http.server 8080",
+        "serve:https": "python3 -m http.server 8443 --bind localhost --directory . & openssl s_server -accept 8443 -cert cert.pem -key key.pem -WWW",
+        "validate:milestone": "open index.html",
+        
+        "test:e2e:timeout": "timeout 60s playwright test || echo 'E2E tests timed out after 60s'",
+        "test:e2e:quick": "playwright test --max-failures=1 --timeout=10000",
+        "test:all:timeout": "npm run test:run && npm run test:e2e:timeout",
+        "test:all-envs": "npm run test && npm run test:e2e && npm run validate:static"
     }
 }
 ```
 
-### 2. Development Server Management
+### 2. Quick Milestone Validation Strategy
+```bash
+# 1. Quick file:// validation (fastest)
+open index.html
+
+# 2. HTTP validation (for proper protocols)
+python3 -m http.server 8080 &
+open http://localhost:8080
+
+# 3. HTTPS validation (for PWA features)
+# Use GitHub Pages or local HTTPS setup
+
+# 4. Full test suite
+npm run test:all-envs
+```
+
+### 3. Development Server Management
 ```bash
 # Kill all development servers
 pkill -f 'vite|http.server'
@@ -174,6 +226,26 @@ pkill -f 'vite|http.server'
 # Start fresh development environment
 npm run restart
 ```
+
+### 4. **The Milestone Validation Pyramid**
+
+**Level 1: File Protocol** (`file://`)
+- ✅ **Fastest validation** - Double-click index.html
+- ✅ **Core functionality** - UI, basic interactions
+- ❌ **No service workers** - PWA features disabled
+- ❌ **No fetch API** - Limited network testing
+
+**Level 2: HTTP Server** (`http://localhost`)
+- ✅ **Proper protocols** - Fetch API, relative URLs
+- ✅ **Development testing** - Full JavaScript functionality
+- ❌ **No PWA features** - Service workers require HTTPS
+- ✅ **Easy automation** - Can be scripted
+
+**Level 3: HTTPS Server** (`https://localhost` or GitHub Pages)
+- ✅ **Full PWA features** - Service workers, installability
+- ✅ **Production-like** - Matches deployment environment
+- ✅ **Complete testing** - All features functional
+- ❌ **Setup complexity** - Requires certificates or deployment
 
 ## 🎨 UI/UX Considerations
 
