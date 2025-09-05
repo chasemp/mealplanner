@@ -806,4 +806,33 @@ index.html + ./js/main.js + ./css/styles.css
 
 ---
 
+## Production-Ready CSS Build System
+
+Replacing Tailwind CDN with a proper build system provides significant performance and reliability improvements for production PWAs.
+
+**Performance Impact:**
+- **CDN**: ~3MB download (entire Tailwind library)
+- **Compiled**: ~33KB (99% reduction, only used classes)
+- **Benefits**: Faster loading, offline compatibility, better caching
+
+**Implementation:**
+- `tailwind.config.js` - Configure content paths and purging
+- `postcss.config.js` - PostCSS processing pipeline  
+- `css/tailwind.css` - Source file with @tailwind directives
+- `npm run build:css` - Production build with minification
+- `npm run dev:css` - Development watch mode
+
+**Build Integration:**
+```json
+{
+  "scripts": {
+    "build:css": "tailwindcss -i css/tailwind.css -o css/tailwind-compiled.css --minify",
+    "build": "npm run build:css && vite build",
+    "dev:css": "tailwindcss -i css/tailwind.css -o css/tailwind-compiled.css --watch"
+  }
+}
+```
+
+---
+
 *This document captures the lessons learned from building the MealPlanner PWA, emphasizing the importance of the static PWA sweet spot: modular organization without build complexity.*
