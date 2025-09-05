@@ -31,8 +31,11 @@ class MealPlannerApp {
         
         // Hide loading and show app
         setTimeout(() => {
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('main-app').classList.remove('hidden');
+            const loading = document.getElementById('loading');
+            const mainApp = document.getElementById('main-app');
+            
+            if (loading) loading.style.display = 'none';
+            if (mainApp) mainApp.classList.remove('hidden');
             
             this.setupEventListeners();
             this.initializeTheme();
@@ -473,7 +476,7 @@ class MealPlannerApp {
     }
 
     async scheduleBackgroundSync(tag = 'database-sync') {
-        if (this.serviceWorker && 'sync' in window.ServiceWorkerRegistration.prototype) {
+        if (this.serviceWorker && window.ServiceWorkerRegistration && 'sync' in window.ServiceWorkerRegistration.prototype) {
             try {
                 await this.serviceWorker.sync.register(tag);
                 console.log('🔄 Background sync scheduled:', tag);
@@ -1189,7 +1192,7 @@ class MealPlannerApp {
         
         // Check for saved theme preference or default to light mode
         const savedTheme = localStorage.getItem('theme');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const prefersDark = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)').matches : false;
         
         if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
             document.documentElement.classList.add('dark');

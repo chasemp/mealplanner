@@ -113,7 +113,7 @@ describe('Settings Manager', () => {
                 sourceType: 'demo',
                 localDbPath: '',
                 githubRepo: '',
-                githubDeployKey: '',
+                // githubDeployKey removed for security - stored in IndexedDB
                 githubReadOnly: false,
                 showBreakfast: true,
                 showLunch: true,
@@ -268,7 +268,9 @@ describe('Settings Manager', () => {
             deployKeyInput.value = testKey;
             deployKeyInput.dispatchEvent(new dom.window.Event('change'));
             
-            expect(settingsManager.settings.githubDeployKey).toBe(testKey);
+            // Deploy key is no longer stored in settings for security
+            // It should be stored in SecureTokenStorage (IndexedDB)
+            expect(settingsManager.settings.githubDeployKey).toBeUndefined();
         });
 
         it('should handle read-only mode toggle', () => {
