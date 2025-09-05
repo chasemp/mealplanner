@@ -770,9 +770,39 @@ class RecipeManager {
                 }
             });
 
-            // Save recipe logic would go here
+            // Save recipe logic
             console.log('Recipe data collected:', recipeData, 'Ingredients:', ingredients);
-            this.showNotification('Recipe functionality coming soon!', 'info');
+            
+            // Create recipe object
+            const recipe = {
+                ...recipeData,
+                ingredients: ingredients,
+                id: existingRecipe ? existingRecipe.id : this.generateRecipeId(),
+                created_at: existingRecipe ? existingRecipe.created_at : new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            };
+
+            if (existingRecipe) {
+                // Update existing recipe
+                const index = this.recipes.findIndex(r => r.id === existingRecipe.id);
+                if (index !== -1) {
+                    this.recipes[index] = recipe;
+                    this.showNotification(`Recipe "${recipe.title}" updated successfully!`, 'success');
+                }
+            } else {
+                // Add new recipe
+                this.recipes.push(recipe);
+                this.showNotification(`Recipe "${recipe.title}" created successfully!`, 'success');
+            }
+
+            // Close the modal
+            const modal = document.getElementById('recipe-form-modal');
+            if (modal) {
+                modal.remove();
+            }
+
+            // Refresh the recipe list
+            this.render();
             
         } catch (error) {
             console.error('Error handling recipe form:', error);
@@ -930,9 +960,137 @@ class RecipeManager {
         const recipe = this.recipes.find(r => r.id === recipeId);
         if (recipe) {
             console.log('Showing recipe detail:', recipe.title);
-            // This would open a detailed view modal or page
-            this.showNotification(`Recipe detail for "${recipe.title}" would open here`, 'info');
+            this.createRecipeDetailModal(recipe);
         }
+    }
+
+    createRecipeDetailModal(recipe) {
+        // Remove existing modal if present
+        const existingModal = document.getElementById('recipe-detail-modal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+
+        const modal = document.createElement('div');
+        modal.id = 'recipe-detail-modal';
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
+        
+        // Get recipe ingredients for display
+        const ingredientsList = recipe.ingredients ? recipe.ingredients.map(ing => 
+            `<li class="flex justify-between py-1">
+                <span>${ing.name}</span>
+                <span class="text-gray-600">${ing.quantity} ${ing.unit}</span>
+            </li>`
+        ).join('') : '<li class="text-gray-500">No ingredients listed</li>';
+
+        modal.innerHTML = `
+            <div class="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="p-6">
+                    <!-- Header -->
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">${recipe.title}</h2>
+                            <p class="text-gray-600 dark:text-gray-400 mt-1">${recipe.description || 'No description'}</p>
+                        </div>
+                        <button id="close-recipe-detail" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Recipe Info -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <div class="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <div class="text-lg font-semibold text-blue-600 dark:text-blue-400">${recipe.serving_count || 'N/A'}</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">Servings</div>
+                        </div>
+                        <div class="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <div class="text-lg font-semibold text-green-600 dark:text-green-400">${recipe.prep_time || 0}min</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">Prep Time</div>
+                        </div>
+                        <div class="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <div class="text-lg font-semibold text-orange-600 dark:text-orange-400">${recipe.cook_time || 0}min</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">Cook Time</div>
+                        </div>
+                        <div class="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <div class="text-lg font-semibold text-purple-600 dark:text-purple-400">${(recipe.prep_time || 0) + (recipe.cook_time || 0)}min</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">Total Time</div>
+                        </div>
+                    </div>
+
+                    <!-- Ingredients -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Ingredients</h3>
+                        <ul class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 space-y-1">
+                            ${ingredientsList}
+                        </ul>
+                    </div>
+
+                    <!-- Instructions -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Instructions</h3>
+                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                            <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">${recipe.instructions || 'No instructions provided'}</p>
+                        </div>
+                    </div>
+
+                    <!-- Tags -->
+                    ${recipe.tags && recipe.tags.length > 0 ? `
+                        <div class="mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Tags</h3>
+                            <div class="flex flex-wrap gap-2">
+                                ${recipe.tags.map(tag => `<span class="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-sm">${tag}</span>`).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <!-- Action Buttons -->
+                    <div class="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-600">
+                        <button id="edit-recipe-detail" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+                            Edit Recipe
+                        </button>
+                        <button id="close-recipe-detail-btn" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // Add event listeners
+        const closeBtn = modal.querySelector('#close-recipe-detail');
+        const closeBtnBottom = modal.querySelector('#close-recipe-detail-btn');
+        const editBtn = modal.querySelector('#edit-recipe-detail');
+
+        const closeModal = () => {
+            modal.remove();
+        };
+
+        closeBtn.addEventListener('click', closeModal);
+        closeBtnBottom.addEventListener('click', closeModal);
+        editBtn.addEventListener('click', () => {
+            closeModal();
+            this.showRecipeForm(recipe);
+        });
+
+        // Close on backdrop click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Close on Escape key
+        const handleEscape = (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+                document.removeEventListener('keydown', handleEscape);
+            }
+        };
+        document.addEventListener('keydown', handleEscape);
     }
 
     editRecipe(recipeId) {
@@ -940,6 +1098,12 @@ class RecipeManager {
         if (recipe) {
             this.showRecipeForm(recipe);
         }
+    }
+
+    generateRecipeId() {
+        // Generate a unique ID for new recipes
+        const maxId = this.recipes.length > 0 ? Math.max(...this.recipes.map(r => r.id)) : 0;
+        return maxId + 1;
     }
 
     async deleteRecipe(recipeId) {
