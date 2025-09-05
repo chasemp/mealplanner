@@ -264,6 +264,31 @@ git config user.email "your@email.com"
 git remote add origin git@github.com:user/repo.git
 ```
 
+### 4. Cache-Busting for Static PWAs
+
+**The Problem**: Static sites are aggressively cached by browsers, CDNs, and GitHub Pages. Users may see old versions for hours or days after deployment.
+
+**The Solution**: Version-based query parameters force cache invalidation.
+
+```html
+<!-- index.html -->
+<link rel="stylesheet" href="./css/styles.css?v=2025.09.05.0823">
+<script src="./js/main.js?v=2025.09.05.0823"></script>
+```
+
+**Automated Version Management**:
+```bash
+# Create update-version.cjs script for timestamp-based versions
+npm run version:update    # Updates all version numbers
+npm run deploy:bust       # Version + commit + push in one command
+```
+
+**Cache-Busting Best Practices**:
+- ✅ **Timestamp versions**: `YYYY.MM.DD.HHMM` format for uniqueness
+- ✅ **Consistent versioning**: Update all assets together to avoid mismatches
+- ✅ **Version logging**: Console logs help debug cache issues in production
+- ✅ **Automated workflow**: Reduce manual errors with npm scripts
+
 ## 🔧 Development Workflow
 
 ### 1. Multi-Environment Development Scripts
