@@ -2,7 +2,7 @@
 class MealPlannerApp {
     constructor() {
         this.currentTab = 'recipes';
-        this.version = '2025.09.05.1416';
+        this.version = '2025.09.05.1501';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;

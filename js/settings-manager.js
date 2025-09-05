@@ -7,7 +7,7 @@ class SettingsManager {
             sourceType: 'demo',
             localDbPath: '',
             githubRepo: '',
-            githubDeployKey: '',
+            // githubDeployKey: '', // 🔐 REMOVED - stored securely in IndexedDB
             githubReadOnly: false,
             showBreakfast: true,
             showLunch: true,
@@ -56,7 +56,8 @@ class SettingsManager {
         const readOnlyInput = document.getElementById('github-read-only');
         
         if (repoInput) repoInput.value = this.settings.githubRepo;
-        if (deployKeyInput) deployKeyInput.value = this.settings.githubDeployKey;
+        // 🔐 NEVER populate deploy key field - it's stored securely in IndexedDB
+        if (deployKeyInput) deployKeyInput.placeholder = 'Deploy key stored securely (hidden)';
         if (readOnlyInput) readOnlyInput.checked = this.settings.githubReadOnly;
 
         // Apply meal type visibility
@@ -151,9 +152,41 @@ class SettingsManager {
         }
         
         if (deployKeyInput) {
-            deployKeyInput.addEventListener('change', (e) => {
-                this.settings.githubDeployKey = e.target.value;
-                this.saveSettings();
+            deployKeyInput.addEventListener('change', async (e) => {
+                const deployKey = e.target.value.trim();
+                
+                if (deployKey) {
+                    // 🔐 Store deploy key securely in IndexedDB (never in localStorage)
+                    try {
+                        const secureStorage = new SecureTokenStorage();
+                        await secureStorage.storeTokens({
+                            github_deploy_key: deployKey,
+                            stored_at: new Date().toISOString()
+                        });
+                        
+                        // Clear the input field for security
+                        e.target.value = '';
+                        
+                        // Show confirmation but don't store in settings
+                        this.showNotification('Deploy key stored securely', 'success');
+                        console.log('✅ Deploy key stored securely in IndexedDB');
+                    } catch (error) {
+                        console.error('❌ Failed to store deploy key:', error);
+                        this.showNotification('Failed to store deploy key securely', 'error');
+                    }
+                } else {
+                    // Clear stored deploy key
+                    try {
+                        const secureStorage = new SecureTokenStorage();
+                        await secureStorage.clearTokens();
+                        this.showNotification('Deploy key cleared', 'info');
+                    } catch (error) {
+                        console.error('❌ Failed to clear deploy key:', error);
+                    }
+                }
+                
+                // ⚠️ NEVER store deploy key in regular settings
+                // this.settings.githubDeployKey = e.target.value; // REMOVED FOR SECURITY
             });
         }
         
@@ -313,9 +346,10 @@ class SettingsManager {
         }
 
         // Initialize GitHub API
+        // 🔐 Deploy key will be loaded from secure storage by GitHubDatabaseSync
         this.githubApi = new GitHubDatabaseSync(
             this.settings.githubRepo,
-            this.settings.githubDeployKey,
+            null, // Deploy key loaded securely from IndexedDB
             this.settings.githubReadOnly
         );
 
@@ -478,113 +512,304 @@ class SettingsManager {
     }
 }
 
-// GitHub Database Sync Class
+// GitHub Database Sync Class using WASM Git
 class GitHubDatabaseSync {
-    constructor(repoUrl, deployKey, readOnly = false) {
+    constructor(repoUrl, deployKey = null, readOnly = false) {
         this.repoUrl = repoUrl;
-        this.deployKey = deployKey;
+        this.deployKey = deployKey; // ⚠️ Temporary - will be loaded from secure storage
         this.readOnly = readOnly;
         
         // Parse repository info
-        const match = repoUrl.match(/github\.com\/([^\/]+)\/([^\/]+)/);
+        const match = repoUrl.match(/github\.com[\/:]([^\/]+)\/([^\/\.]+)/);
         if (!match) {
             throw new Error('Invalid GitHub repository URL');
         }
         
         this.owner = match[1];
         this.repo = match[2];
-        this.apiBase = 'https://api.github.com';
+        this.sshUrl = `git@github.com:${this.owner}/${this.repo}.git`;
+        this.httpsUrl = `https://github.com/${this.owner}/${this.repo}.git`;
+        this.localPath = `/tmp/mealplanner-repo`;
+        this.dbFileName = 'mealplanner.json';
+        
+        // Initialize wasm-git (will be loaded asynchronously)
+        this.git = null;
+        this.fs = null;
+        
+        // Initialize secure storage for deploy keys (browser-only)
+        this.secureStorage = typeof window !== 'undefined' ? new SecureTokenStorage() : null;
         
         console.log(`GitHub sync initialized: ${this.owner}/${this.repo} (${readOnly ? 'read-only' : 'read-write'})`);
     }
 
-    async loadDatabase() {
+    // 🔐 Secure Deploy Key Management
+    async storeDeployKeySecurely(deployKey) {
+        if (!this.secureStorage) {
+            console.warn('Secure storage not available - deploy key will be memory-only');
+            return;
+        }
+        
         try {
-            // Try to fetch the database file from the repository
-            const response = await fetch(`${this.apiBase}/repos/${this.owner}/${this.repo}/contents/mealplanner.json`);
-            
-            if (response.status === 404) {
-                console.log('No existing database found in repository');
-                return null;
-            }
-            
-            if (!response.ok) {
-                throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
-            }
-            
-            const data = await response.json();
-            const content = JSON.parse(atob(data.content));
-            
-            // Convert back from base64 to Uint8Array
-            const binaryString = atob(content.data);
-            const uint8Array = new Uint8Array(binaryString.length);
-            for (let i = 0; i < binaryString.length; i++) {
-                uint8Array[i] = binaryString.charCodeAt(i);
-            }
-            
-            console.log('Database loaded from GitHub successfully');
-            return uint8Array;
-            
+            // Store deploy key in encrypted IndexedDB (browser-only, never synced)
+            await this.secureStorage.storeTokens({
+                github_deploy_key: deployKey,
+                stored_at: new Date().toISOString()
+            });
+            console.log('✅ Deploy key stored securely in IndexedDB');
         } catch (error) {
-            console.error('Failed to load database from GitHub:', error);
+            console.error('❌ Failed to store deploy key securely:', error);
             throw error;
         }
     }
 
-    async saveDatabase(textData) {
+    async getDeployKeySecurely() {
+        if (!this.secureStorage) {
+            // For testing: try to get from environment variable
+            if (typeof process !== 'undefined' && process.env && process.env.GITHUB_DEPLOY_KEY) {
+                console.log('📋 Using deploy key from environment variable (testing)');
+                return process.env.GITHUB_DEPLOY_KEY;
+            }
+            return null;
+        }
+        
+        try {
+            const tokens = await this.secureStorage.getTokens();
+            if (tokens && tokens.github_deploy_key) {
+                console.log('✅ Deploy key retrieved from secure storage');
+                return tokens.github_deploy_key;
+            }
+            return null;
+        } catch (error) {
+            console.error('❌ Failed to retrieve deploy key:', error);
+            return null;
+        }
+    }
+
+    async clearDeployKeySecurely() {
+        if (!this.secureStorage) return;
+        
+        try {
+            await this.secureStorage.clearTokens();
+            console.log('✅ Deploy key cleared from secure storage');
+        } catch (error) {
+            console.error('❌ Failed to clear deploy key:', error);
+        }
+    }
+
+    async initializeGit() {
+        if (this.git) return; // Already initialized
+        
+        try {
+            // Import wasm-git async version for browser compatibility
+            const lg2Module = await import('wasm-git/lg2_async.js');
+            
+            // Initialize the WASM module
+            this.git = await lg2Module.default();
+            this.fs = this.git.FS;
+            
+            console.log('✅ WASM Git initialized successfully');
+        } catch (error) {
+            console.error('❌ Failed to initialize WASM Git:', error);
+            throw new Error(`Failed to initialize Git: ${error.message}`);
+        }
+    }
+
+    async loadDatabase() {
+        try {
+            // 🔐 Load deploy key from secure storage if not already provided
+            if (!this.deployKey) {
+                this.deployKey = await this.getDeployKeySecurely();
+            }
+            
+            await this.initializeGit();
+            
+            // Setup SSH credentials if deploy key is provided
+            if (this.deployKey && !this.readOnly) {
+                await this.setupSSHCredentials();
+            }
+            
+            // Clone or pull the repository
+            const repoExists = await this.ensureRepository();
+            if (!repoExists) {
+                console.log('No existing database found in repository');
+                return null;
+            }
+            
+            // Read the database file
+            const dbPath = `${this.localPath}/${this.dbFileName}`;
+            try {
+                const fileData = this.fs.readFile(dbPath);
+                console.log('Database loaded from GitHub successfully');
+                return fileData;
+            } catch (error) {
+                if (error.code === 'ENOENT') {
+                    console.log('No existing database found in repository');
+                    return null;
+                }
+                throw error;
+            }
+        } catch (error) {
+            console.error('Failed to load database from GitHub:', error);
+            throw error;
+        } finally {
+            // 🔐 Clear deploy key from memory after use (security)
+            this.deployKey = null;
+        }
+    }
+
+    async saveDatabase(databaseData) {
         if (this.readOnly) {
             throw new Error('Cannot save in read-only mode');
         }
 
+        // 🔐 Load deploy key from secure storage if not already provided
+        if (!this.deployKey) {
+            this.deployKey = await this.getDeployKeySecurely();
+        }
+        
         if (!this.deployKey) {
             throw new Error('Deploy key required for write access');
         }
 
         try {
-            // Get current file SHA (if exists)
-            let sha = null;
-            try {
-                const response = await fetch(`${this.apiBase}/repos/${this.owner}/${this.repo}/contents/mealplanner.json`);
-                if (response.ok) {
-                    const data = await response.json();
-                    sha = data.sha;
-                }
-            } catch (error) {
-                // File doesn't exist, that's okay
-            }
-
-            // Prepare the commit
-            const content = btoa(textData);
-            const payload = {
-                message: `Update MealPlanner database - ${new Date().toISOString()}`,
-                content: content,
-                branch: 'main'
-            };
-
-            if (sha) {
-                payload.sha = sha;
-            }
-
-            // Note: In a real implementation, you'd need to use the deploy key for authentication
-            // This is a simplified version that assumes the repository is public or you have other auth
-            const response = await fetch(`${this.apiBase}/repos/${this.owner}/${this.repo}/contents/mealplanner.json`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    // 'Authorization': `Bearer ${this.getAccessToken()}` // Would need proper auth
-                },
-                body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) {
-                throw new Error(`Failed to save to GitHub: ${response.status} ${response.statusText}`);
-            }
-
+            await this.initializeGit();
+            await this.setupSSHCredentials();
+            
+            // Ensure repository is cloned and up to date
+            await this.ensureRepository();
+            
+            // Write the database file
+            const dbPath = `${this.localPath}/${this.dbFileName}`;
+            this.fs.writeFile(dbPath, databaseData);
+            
+            // Git add, commit, and push
+            await this.commitAndPush('Update MealPlanner database');
+            
             console.log('Database saved to GitHub successfully');
-            return true;
+            return { success: true };
 
         } catch (error) {
             console.error('Failed to save database to GitHub:', error);
+            throw error;
+        } finally {
+            // 🔐 Clear deploy key from memory after use (security)
+            this.deployKey = null;
+        }
+    }
+
+    async setupSSHCredentials() {
+        if (!this.deployKey) return;
+        
+        try {
+            // ⚠️ SECURITY: SSH key is provided in-memory only
+            // Never write to WASM filesystem to prevent accidental export
+            
+            // For wasm-git, we need to configure SSH authentication
+            // The key stays in JavaScript memory, not written to virtual filesystem
+            
+            // Set up Git credentials callback for SSH authentication
+            // This approach keeps the key in memory only during the operation
+            if (this.git && this.git.setCredentialsCallback) {
+                this.git.setCredentialsCallback((url, usernameFromUrl) => {
+                    if (url.includes('github.com')) {
+                        return {
+                            type: 'ssh',
+                            username: 'git',
+                            privateKey: this.deployKey,
+                            publicKey: '', // GitHub doesn't need public key for auth
+                            passphrase: '' // Assuming no passphrase for deploy keys
+                        };
+                    }
+                    return null;
+                });
+            }
+            
+            console.log('✅ SSH credentials configured (memory-only)');
+        } catch (error) {
+            console.error('❌ Failed to setup SSH credentials:', error);
+            throw error;
+        }
+    }
+
+    async ensureRepository() {
+        try {
+            // Check if repository already exists locally
+            try {
+                this.fs.stat(this.localPath);
+                // Repository exists, pull latest changes
+                console.log('Repository exists, pulling latest changes...');
+                await this.pullChanges();
+                return true;
+            } catch (error) {
+                // Repository doesn't exist, clone it
+                console.log('Cloning repository...');
+                return await this.cloneRepository();
+            }
+        } catch (error) {
+            console.error('Failed to ensure repository:', error);
+            throw error;
+        }
+    }
+
+    async cloneRepository() {
+        try {
+            const url = this.deployKey ? this.sshUrl : this.httpsUrl;
+            
+            // Use wasm-git to clone the repository
+            await this.git.callMain(['clone', url, this.localPath]);
+            
+            console.log('✅ Repository cloned successfully');
+            return true;
+        } catch (error) {
+            if (error.message && error.message.includes('not found')) {
+                // Repository doesn't exist or is empty
+                console.log('Repository not found or empty, will create on first push');
+                
+                // Initialize a new repository
+                this.fs.mkdir(this.localPath, 0o755);
+                await this.git.callMain(['init', this.localPath]);
+                
+                // Set up remote
+                process.chdir(this.localPath);
+                await this.git.callMain(['remote', 'add', 'origin', this.deployKey ? this.sshUrl : this.httpsUrl]);
+                
+                return false; // No existing database
+            }
+            throw error;
+        }
+    }
+
+    async pullChanges() {
+        try {
+            process.chdir(this.localPath);
+            await this.git.callMain(['pull', 'origin', 'main']);
+            console.log('✅ Changes pulled successfully');
+        } catch (error) {
+            console.warn('Pull failed (possibly empty repository):', error.message);
+            // This is okay for new repositories
+        }
+    }
+
+    async commitAndPush(message) {
+        try {
+            process.chdir(this.localPath);
+            
+            // Configure git user (required for commits)
+            await this.git.callMain(['config', 'user.name', 'MealPlanner App']);
+            await this.git.callMain(['config', 'user.email', 'mealplanner@app.local']);
+            
+            // Add the database file
+            await this.git.callMain(['add', this.dbFileName]);
+            
+            // Commit changes
+            await this.git.callMain(['commit', '-m', message]);
+            
+            // Push to remote
+            await this.git.callMain(['push', 'origin', 'main']);
+            
+            console.log('✅ Changes committed and pushed successfully');
+        } catch (error) {
+            console.error('❌ Failed to commit and push:', error);
             throw error;
         }
     }

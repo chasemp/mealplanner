@@ -1,5 +1,13 @@
 // Vitest setup file for unit and integration tests
 import { vi } from 'vitest'
+import dotenv from 'dotenv'
+import fetch from 'node-fetch'
+
+// Load environment variables from .env.test for GitHub integration tests
+dotenv.config({ path: '.env.test' })
+
+// Polyfill fetch for Node.js environment
+global.fetch = fetch
 
 // Mock localStorage for tests
 const localStorageMock = {
