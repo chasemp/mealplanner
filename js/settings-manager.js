@@ -207,6 +207,29 @@ class SettingsManager {
                 this.exportDatabase();
             });
         }
+
+        // Calendar sync button
+        const syncBtn = document.getElementById('sync-calendar-btn');
+        if (syncBtn) {
+            syncBtn.addEventListener('click', () => {
+                this.syncCalendar();
+            });
+        }
+
+        // Calendar settings
+        const calendarSettings = ['calendar-name', 'event-duration', 'breakfast-time', 'lunch-time', 'dinner-time', 'include-ingredients', 'include-prep-time'];
+        calendarSettings.forEach(settingId => {
+            const input = document.getElementById(settingId);
+            if (input) {
+                const eventType = input.type === 'checkbox' ? 'change' : 'input';
+                input.addEventListener(eventType, (e) => {
+                    const value = input.type === 'checkbox' ? e.target.checked : e.target.value;
+                    const camelCaseKey = settingId.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+                    this.settings[camelCaseKey] = value;
+                    this.saveSettings();
+                });
+            }
+        });
     }
 
     showSourceOptions(sourceType) {
@@ -423,6 +446,27 @@ class SettingsManager {
             timestamp: new Date().toISOString(),
             data: base64
         }, null, 2);
+    }
+
+    async syncCalendar() {
+        try {
+            this.showNotification('Syncing meal plans with Google Calendar...', 'info');
+            
+            // Check if Google Calendar integration is available
+            if (window.googleCalendarIntegration) {
+                const result = await window.googleCalendarIntegration.syncMealPlans(this.settings);
+                if (result.success) {
+                    this.showNotification(`Calendar sync successful! ${result.eventsCreated} events created.`, 'success');
+                } else {
+                    throw new Error(result.error || 'Calendar sync failed');
+                }
+            } else {
+                throw new Error('Google Calendar integration not available');
+            }
+        } catch (error) {
+            console.error('Calendar sync failed:', error);
+            this.showNotification(`Calendar sync failed: ${error.message}`, 'error');
+        }
     }
 
     showNotification(message, type = 'info') {
