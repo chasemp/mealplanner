@@ -352,9 +352,460 @@ class RecipeManager {
 
     showRecipeForm(recipe = null) {
         console.log('Opening recipe form...', recipe ? 'Edit mode' : 'Add mode');
-        // This would open a modal or navigate to a form page
-        // For now, show a simple notification
-        this.showNotification(recipe ? 'Edit recipe form would open here' : 'Add recipe form would open here', 'info');
+        
+        const isEdit = recipe !== null;
+        const modalId = 'recipe-form-modal';
+        
+        // Remove existing modal if present
+        const existingModal = document.getElementById(modalId);
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        // Create modal HTML
+        const modal = document.createElement('div');
+        modal.id = modalId;
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+        modal.innerHTML = `
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+                            ${isEdit ? 'Edit Recipe' : 'Add New Recipe'}
+                        </h2>
+                        <button id="close-recipe-form" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <form id="recipe-form" class="p-6 space-y-6">
+                    <!-- Basic Information -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="md:col-span-2">
+                            <label for="recipe-title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Recipe Title *
+                            </label>
+                            <input type="text" id="recipe-title" name="title" required
+                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                   placeholder="Enter recipe title"
+                                   value="${isEdit ? recipe.title : ''}">
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <label for="recipe-description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Description
+                            </label>
+                            <textarea id="recipe-description" name="description" rows="2"
+                                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                      placeholder="Brief description of the recipe">${isEdit ? recipe.description : ''}</textarea>
+                        </div>
+                        
+                        <div>
+                            <label for="recipe-servings" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Servings *
+                            </label>
+                            <input type="number" id="recipe-servings" name="serving_count" required min="1" max="20"
+                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                   value="${isEdit ? recipe.serving_count : '4'}">
+                        </div>
+                        
+                        <div>
+                            <label for="recipe-meal-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Meal Type
+                            </label>
+                            <select id="recipe-meal-type" name="meal_type"
+                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                                <option value="breakfast" ${isEdit && recipe.meal_type === 'breakfast' ? 'selected' : ''}>Breakfast</option>
+                                <option value="lunch" ${isEdit && recipe.meal_type === 'lunch' ? 'selected' : ''}>Lunch</option>
+                                <option value="dinner" ${isEdit && recipe.meal_type === 'dinner' ? 'selected' : 'selected'}>Dinner</option>
+                                <option value="snack" ${isEdit && recipe.meal_type === 'snack' ? 'selected' : ''}>Snack</option>
+                                <option value="dessert" ${isEdit && recipe.meal_type === 'dessert' ? 'selected' : ''}>Dessert</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="recipe-prep-time" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Prep Time (minutes)
+                            </label>
+                            <input type="number" id="recipe-prep-time" name="prep_time" min="0" max="480"
+                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                   value="${isEdit ? recipe.prep_time : '15'}">
+                        </div>
+                        
+                        <div>
+                            <label for="recipe-cook-time" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Cook Time (minutes)
+                            </label>
+                            <input type="number" id="recipe-cook-time" name="cook_time" min="0" max="480"
+                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                   value="${isEdit ? recipe.cook_time : '30'}">
+                        </div>
+                    </div>
+                    
+                    <!-- Ingredients Section -->
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Ingredients</h3>
+                            <button type="button" id="add-ingredient-row" class="btn-secondary text-sm">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                                Add Ingredient
+                            </button>
+                        </div>
+                        
+                        <div id="ingredients-container" class="space-y-3">
+                            ${this.renderIngredientRows(isEdit ? recipe.ingredients : [])}
+                        </div>
+                    </div>
+                    
+                    <!-- Instructions Section -->
+                    <div>
+                        <label for="recipe-instructions" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Instructions *
+                        </label>
+                        <textarea id="recipe-instructions" name="instructions" required rows="8"
+                                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                  placeholder="Enter step-by-step cooking instructions...">${isEdit ? recipe.instructions : ''}</textarea>
+                        <p class="text-xs text-gray-500 mt-1">Tip: Number your steps (1., 2., 3.) for better readability</p>
+                    </div>
+                    
+                    <!-- Tags Section -->
+                    <div>
+                        <label for="recipe-tags" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Tags
+                        </label>
+                        <input type="text" id="recipe-tags" name="tags"
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                               placeholder="Enter tags separated by commas (e.g., healthy, quick, vegetarian)"
+                               value="${isEdit ? recipe.tags.join(', ') : ''}">
+                    </div>
+                    
+                    <!-- Form Actions -->
+                    <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200 dark:border-gray-700">
+                        <button type="button" id="cancel-recipe-form" class="btn-secondary">
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn-primary">
+                            ${isEdit ? 'Update Recipe' : 'Save Recipe'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        `;
+        
+        // Add modal to page
+        document.body.appendChild(modal);
+        
+        // Attach event listeners
+        this.attachRecipeFormListeners(modal, recipe);
+        
+        // Focus on title input
+        setTimeout(() => {
+            const titleInput = modal.querySelector('#recipe-title');
+            if (titleInput) titleInput.focus();
+        }, 100);
+    }
+
+    renderIngredientRows(ingredients = []) {
+        if (ingredients.length === 0) {
+            ingredients = [{ ingredient_id: '', name: '', quantity: '', unit: '', notes: '' }];
+        }
+        
+        return ingredients.map((ingredient, index) => `
+            <div class="ingredient-row grid grid-cols-12 gap-2 items-end">
+                <div class="col-span-5">
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Ingredient ${index === 0 ? '*' : ''}
+                    </label>
+                    <select class="ingredient-select w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                            name="ingredients[${index}][ingredient_id]" ${index === 0 ? 'required' : ''}>
+                        <option value="">Select ingredient...</option>
+                        ${this.ingredients.map(ing => `
+                            <option value="${ing.id}" data-unit="${ing.default_unit}" 
+                                    ${ingredient.ingredient_id == ing.id ? 'selected' : ''}>
+                                ${ing.name}
+                            </option>
+                        `).join('')}
+                    </select>
+                </div>
+                
+                <div class="col-span-2">
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Quantity ${index === 0 ? '*' : ''}
+                    </label>
+                    <input type="number" step="0.25" min="0" 
+                           class="w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                           name="ingredients[${index}][quantity]" 
+                           value="${ingredient.quantity}"
+                           placeholder="1.5" ${index === 0 ? 'required' : ''}>
+                </div>
+                
+                <div class="col-span-2">
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Unit
+                    </label>
+                    <select class="unit-select w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                            name="ingredients[${index}][unit]">
+                        <option value="pieces" ${ingredient.unit === 'pieces' ? 'selected' : ''}>pieces</option>
+                        <option value="cups" ${ingredient.unit === 'cups' ? 'selected' : ''}>cups</option>
+                        <option value="tbsp" ${ingredient.unit === 'tbsp' ? 'selected' : ''}>tbsp</option>
+                        <option value="tsp" ${ingredient.unit === 'tsp' ? 'selected' : ''}>tsp</option>
+                        <option value="lbs" ${ingredient.unit === 'lbs' ? 'selected' : ''}>lbs</option>
+                        <option value="oz" ${ingredient.unit === 'oz' ? 'selected' : ''}>oz</option>
+                        <option value="cloves" ${ingredient.unit === 'cloves' ? 'selected' : ''}>cloves</option>
+                        <option value="slices" ${ingredient.unit === 'slices' ? 'selected' : ''}>slices</option>
+                    </select>
+                </div>
+                
+                <div class="col-span-2">
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Notes
+                    </label>
+                    <input type="text" 
+                           class="w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                           name="ingredients[${index}][notes]" 
+                           value="${ingredient.notes || ''}"
+                           placeholder="optional">
+                </div>
+                
+                <div class="col-span-1">
+                    ${ingredients.length > 1 || index > 0 ? `
+                        <button type="button" class="remove-ingredient w-full p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900 rounded-md">
+                            <svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                        </button>
+                    ` : `
+                        <div class="w-full p-2"></div>
+                    `}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    renderSingleIngredientRow(ingredient, index, showRemoveButton = false) {
+        return `
+            <div class="ingredient-row grid grid-cols-12 gap-2 items-end">
+                <div class="col-span-5">
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Ingredient ${index === 0 ? '*' : ''}
+                    </label>
+                    <select class="ingredient-select w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                            name="ingredients[${index}][ingredient_id]" ${index === 0 ? 'required' : ''}>
+                        <option value="">Select ingredient...</option>
+                        ${this.ingredients.map(ing => `
+                            <option value="${ing.id}" data-unit="${ing.default_unit}" 
+                                    ${ingredient.ingredient_id == ing.id ? 'selected' : ''}>
+                                ${ing.name}
+                            </option>
+                        `).join('')}
+                    </select>
+                </div>
+                
+                <div class="col-span-2">
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Quantity ${index === 0 ? '*' : ''}
+                    </label>
+                    <input type="number" step="0.25" min="0" 
+                           class="w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                           name="ingredients[${index}][quantity]" 
+                           value="${ingredient.quantity}"
+                           placeholder="1.5" ${index === 0 ? 'required' : ''}>
+                </div>
+                
+                <div class="col-span-2">
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Unit
+                    </label>
+                    <select class="unit-select w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                            name="ingredients[${index}][unit]">
+                        <option value="pieces" ${ingredient.unit === 'pieces' ? 'selected' : ''}>pieces</option>
+                        <option value="cups" ${ingredient.unit === 'cups' ? 'selected' : ''}>cups</option>
+                        <option value="tbsp" ${ingredient.unit === 'tbsp' ? 'selected' : ''}>tbsp</option>
+                        <option value="tsp" ${ingredient.unit === 'tsp' ? 'selected' : ''}>tsp</option>
+                        <option value="lbs" ${ingredient.unit === 'lbs' ? 'selected' : ''}>lbs</option>
+                        <option value="oz" ${ingredient.unit === 'oz' ? 'selected' : ''}>oz</option>
+                        <option value="cloves" ${ingredient.unit === 'cloves' ? 'selected' : ''}>cloves</option>
+                        <option value="slices" ${ingredient.unit === 'slices' ? 'selected' : ''}>slices</option>
+                    </select>
+                </div>
+                
+                <div class="col-span-2">
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Notes
+                    </label>
+                    <input type="text" 
+                           class="w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                           name="ingredients[${index}][notes]" 
+                           value="${ingredient.notes || ''}"
+                           placeholder="optional">
+                </div>
+                
+                <div class="col-span-1">
+                    ${showRemoveButton || index > 0 ? `
+                        <button type="button" class="remove-ingredient w-full p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900 rounded-md">
+                            <svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                        </button>
+                    ` : `
+                        <div class="w-full p-2"></div>
+                    `}
+                </div>
+            </div>
+        `;
+    }
+
+    attachRecipeFormListeners(modal, recipe) {
+        const form = modal.querySelector('#recipe-form');
+        const closeBtn = modal.querySelector('#close-recipe-form');
+        const cancelBtn = modal.querySelector('#cancel-recipe-form');
+        const addIngredientBtn = modal.querySelector('#add-ingredient-row');
+        const ingredientsContainer = modal.querySelector('#ingredients-container');
+
+        // Close modal handlers
+        const closeModal = () => {
+            modal.remove();
+        };
+
+        closeBtn?.addEventListener('click', closeModal);
+        cancelBtn?.addEventListener('click', closeModal);
+        
+        // Close on backdrop click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+        // Add ingredient row
+        addIngredientBtn?.addEventListener('click', () => {
+            const currentRows = ingredientsContainer.querySelectorAll('.ingredient-row').length;
+            const newRowHtml = this.renderSingleIngredientRow({ ingredient_id: '', name: '', quantity: '', unit: '', notes: '' }, currentRows, true);
+            
+            ingredientsContainer.insertAdjacentHTML('beforeend', newRowHtml);
+            
+            // Attach listeners to new row
+            this.attachIngredientRowListeners(ingredientsContainer.lastElementChild);
+        });
+
+        // Attach listeners to existing ingredient rows
+        ingredientsContainer.querySelectorAll('.ingredient-row').forEach(row => {
+            this.attachIngredientRowListeners(row);
+        });
+
+        // Form submission
+        form?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.handleRecipeFormSubmit(form, recipe);
+        });
+    }
+
+    attachIngredientRowListeners(row) {
+        // Ingredient selection handler
+        const ingredientSelect = row.querySelector('.ingredient-select');
+        const unitSelect = row.querySelector('.unit-select');
+        
+        ingredientSelect?.addEventListener('change', (e) => {
+            const selectedOption = e.target.selectedOptions[0];
+            const defaultUnit = selectedOption?.dataset.unit;
+            
+            if (defaultUnit && unitSelect) {
+                unitSelect.value = defaultUnit;
+            }
+        });
+
+        // Remove ingredient handler
+        const removeBtn = row.querySelector('.remove-ingredient');
+        removeBtn?.addEventListener('click', () => {
+            row.remove();
+        });
+    }
+
+    async handleRecipeFormSubmit(form, existingRecipe) {
+        try {
+            // Collect form data
+            const formData = new FormData(form);
+            const recipeData = {
+                title: formData.get('title').trim(),
+                description: formData.get('description').trim(),
+                serving_count: parseInt(formData.get('serving_count')),
+                meal_type: formData.get('meal_type'),
+                prep_time: parseInt(formData.get('prep_time')) || 0,
+                cook_time: parseInt(formData.get('cook_time')) || 0,
+                instructions: formData.get('instructions').trim(),
+                tags: formData.get('tags').split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
+            };
+
+            // Validate required fields
+            if (!recipeData.title) {
+                this.showNotification('Recipe title is required', 'error');
+                return;
+            }
+
+            if (!recipeData.instructions) {
+                this.showNotification('Instructions are required', 'error');
+                return;
+            }
+
+            // Collect ingredients
+            const ingredients = [];
+            const ingredientRows = form.querySelectorAll('.ingredient-row');
+            
+            ingredientRows.forEach((row, index) => {
+                const ingredientId = row.querySelector(`[name="ingredients[${index}][ingredient_id]"]`)?.value;
+                const quantity = row.querySelector(`[name="ingredients[${index}][quantity]"]`)?.value;
+                const unit = row.querySelector(`[name="ingredients[${index}][unit]"]`)?.value;
+                const notes = row.querySelector(`[name="ingredients[${index}][notes]"]`)?.value;
+
+                if (ingredientId && quantity) {
+                    const ingredient = this.ingredients.find(ing => ing.id == ingredientId);
+                    if (ingredient) {
+                        ingredients.push({
+                            ingredient_id: parseInt(ingredientId),
+                            name: ingredient.name,
+                            quantity: parseFloat(quantity),
+                            unit: unit || ingredient.default_unit,
+                            notes: notes || ''
+                        });
+                    }
+                }
+            });
+
+            if (ingredients.length === 0) {
+                this.showNotification('At least one ingredient is required', 'error');
+                return;
+            }
+
+            recipeData.ingredients = ingredients;
+
+            // Save recipe
+            if (existingRecipe) {
+                // Update existing recipe
+                recipeData.id = existingRecipe.id;
+                const index = this.recipes.findIndex(r => r.id === existingRecipe.id);
+                if (index !== -1) {
+                    this.recipes[index] = { ...this.recipes[index], ...recipeData };
+                }
+                this.showNotification(`"${recipeData.title}" has been updated!`, 'success');
+            } else {
+                // Add new recipe
+                recipeData.id = Math.max(0, ...this.recipes.map(r => r.id)) + 1;
+                recipeData.created_date = new Date().toISOString().split('T')[0];
+                this.recipes.push(recipeData);
+                this.showNotification(`"${recipeData.title}" has been added!`, 'success');
+            }
+
+            // Close modal and refresh view
+            document.getElementById('recipe-form-modal')?.remove();
+            this.render();
+
+        } catch (error) {
+            console.error('Error saving recipe:', error);
+            this.showNotification('Error saving recipe. Please try again.', 'error');
+        }
     }
 
     showRecipeDetail(recipeId) {
@@ -397,6 +848,14 @@ class RecipeManager {
             notification.remove();
         }, 3000);
     }
+}
+
+// Make RecipeManager globally available for testing
+if (typeof window !== 'undefined') {
+    window.RecipeManager = RecipeManager;
+}
+if (typeof global !== 'undefined') {
+    global.RecipeManager = RecipeManager;
 }
 
 // Global registry for recipe manager
