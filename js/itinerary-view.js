@@ -29,9 +29,6 @@ class ItineraryView {
                             <option value="4" selected>4 Weeks</option>
                             <option value="8">8 Weeks</option>
                         </select>
-                        <button id="generate-plan-${this.mealType}" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm">
-                            Generate Plan
-                        </button>
                     </div>
                 </div>
 
@@ -235,13 +232,6 @@ class ItineraryView {
             });
         }
 
-        // Generate plan button
-        const generateBtn = document.getElementById(`generate-plan-${this.mealType}`);
-        if (generateBtn) {
-            generateBtn.addEventListener('click', () => {
-                this.generateMealPlan();
-            });
-        }
     }
 
     listenForMealMoves() {
