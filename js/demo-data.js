@@ -1,8 +1,11 @@
 // Centralized Demo Data for MealPlanner
 // Ensures consistency between recipes, ingredients, and scheduled meals
 
+console.log('📱 Demo Data Script Loading...');
+
 class DemoDataManager {
     constructor() {
+        console.log('📱 DemoDataManager constructor called');
         this.initializeData();
     }
 
@@ -384,7 +387,9 @@ class DemoDataManager {
 
 // Export for use in other modules
 if (typeof window !== 'undefined') {
+    console.log('📱 Making DemoDataManager globally available...');
     window.DemoDataManager = DemoDataManager;
+    console.log('📱 window.DemoDataManager set:', !!window.DemoDataManager);
 }
 
 if (typeof module !== 'undefined' && module.exports) {

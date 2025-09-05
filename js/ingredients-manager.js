@@ -16,17 +16,28 @@ class IngredientsManager {
     }
 
     async loadIngredients() {
+        console.log('📱 Mobile Debug - Loading ingredients...');
+        console.log('📱 window.DemoDataManager available:', !!window.DemoDataManager);
+        
         // Load from centralized demo data for consistency
         if (window.DemoDataManager) {
-            const demoData = new window.DemoDataManager();
-            this.ingredients = demoData.getIngredients();
-            console.log(`✅ Loaded ${this.ingredients.length} consistent ingredients from demo data`);
+            try {
+                const demoData = new window.DemoDataManager();
+                this.ingredients = demoData.getIngredients();
+                console.log(`✅ Loaded ${this.ingredients.length} consistent ingredients from demo data`);
+                console.log('📱 First ingredient:', this.ingredients[0]);
+            } catch (error) {
+                console.error('❌ Error creating DemoDataManager:', error);
+                this.ingredients = [];
+            }
         } else {
             // Fallback to empty array if demo data not available
             this.ingredients = [];
             console.warn('⚠️ Demo data manager not available, using empty ingredients list');
+            console.log('📱 Available window properties:', Object.keys(window).filter(key => key.includes('Demo') || key.includes('Manager')));
         }
         
+        console.log('📱 Final ingredients count:', this.ingredients.length);
         this.applyFilters();
     }
 

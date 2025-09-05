@@ -33,16 +33,28 @@ class RecipeManager {
     }
 
     async loadRecipes() {
+        console.log('📱 Mobile Debug - Loading recipes...');
+        console.log('📱 window.DemoDataManager available:', !!window.DemoDataManager);
+        
         // Load from centralized demo data for consistency
         if (window.DemoDataManager) {
-            const demoData = new window.DemoDataManager();
-            this.recipes = demoData.getRecipes();
-            console.log(`✅ Recipe Manager loaded ${this.recipes.length} consistent recipes from demo data`);
+            try {
+                const demoData = new window.DemoDataManager();
+                this.recipes = demoData.getRecipes();
+                console.log(`✅ Recipe Manager loaded ${this.recipes.length} consistent recipes from demo data`);
+                console.log('📱 First recipe:', this.recipes[0]);
+            } catch (error) {
+                console.error('❌ Error creating DemoDataManager:', error);
+                this.recipes = [];
+            }
         } else {
             // Fallback to empty array if demo data not available
             this.recipes = [];
             console.warn('⚠️ Demo data manager not available, using empty recipes list');
+            console.log('📱 Available window properties:', Object.keys(window).filter(key => key.includes('Demo') || key.includes('Manager')));
         }
+        
+        console.log('📱 Final recipes count:', this.recipes.length);
     }
 
     render() {
