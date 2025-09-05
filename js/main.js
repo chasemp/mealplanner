@@ -2,11 +2,12 @@
 class MealPlannerApp {
     constructor() {
         this.currentTab = 'recipes';
-        this.version = '2025.09.05.0920';
+        this.version = '2025.09.05.0943';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
         this.groceryListManager = null;
+        this.googleCalendarIntegration = null;
         this.currentViews = {
             breakfast: 'itinerary',
             lunch: 'itinerary', 
@@ -32,6 +33,7 @@ class MealPlannerApp {
             this.initializeTheme();
             this.initializeRecipeManager();
             this.initializeGroceryListManager();
+            this.initializeGoogleCalendar();
             this.initializeItineraryViews();
             this.generateCalendarDays();
             
@@ -65,6 +67,11 @@ class MealPlannerApp {
             this.handleExportDatabase();
         });
 
+        // Google Calendar integration
+        document.getElementById('google-calendar-btn')?.addEventListener('click', () => {
+            this.handleGoogleCalendarAction();
+        });
+
         // View toggle buttons
         document.getElementById('view-toggle-breakfast')?.addEventListener('click', () => {
             this.toggleView('breakfast');
@@ -81,6 +88,11 @@ class MealPlannerApp {
         // Theme toggle button
         document.getElementById('theme-toggle')?.addEventListener('click', () => {
             this.toggleTheme();
+        });
+
+        // Listen for Google Calendar auth changes
+        document.addEventListener('googleCalendarAuthChanged', (e) => {
+            this.updateGoogleCalendarUI(e.detail.isAuthenticated);
         });
     }
 
@@ -165,6 +177,26 @@ class MealPlannerApp {
         }
     }
 
+    initializeGoogleCalendar() {
+        console.log('🗓️ Initializing Google Calendar Integration...');
+        
+        // Google Calendar integration is initialized globally
+        this.googleCalendarIntegration = window.googleCalendarIntegration;
+        
+        if (this.googleCalendarIntegration) {
+            // Set initial managed mode from storage
+            const managedMode = this.googleCalendarIntegration.getManagedMode();
+            this.googleCalendarIntegration.setManagedMode(managedMode);
+            
+            // Update UI to reflect current auth status
+            this.updateGoogleCalendarUI(this.googleCalendarIntegration.isAuthenticated);
+            
+            console.log('✅ Google Calendar Integration initialized');
+        } else {
+            console.error('❌ Google Calendar Integration not found');
+        }
+    }
+
     initializeItineraryViews() {
         console.log('🍽️ Initializing meal planning views...');
         
@@ -228,6 +260,202 @@ class MealPlannerApp {
         this.currentViews[mealType] = newView;
         
         console.log(`Switched ${mealType} to ${newView} view`);
+    }
+
+    handleGoogleCalendarAction() {
+        if (!this.googleCalendarIntegration) {
+            console.error('Google Calendar integration not available');
+            return;
+        }
+
+        if (this.googleCalendarIntegration.isAuthenticated) {
+            // Show calendar options modal
+            this.showGoogleCalendarModal();
+        } else {
+            // Authenticate first
+            this.authenticateGoogleCalendar();
+        }
+    }
+
+    async authenticateGoogleCalendar() {
+        try {
+            console.log('🔐 Authenticating with Google Calendar...');
+            const success = await this.googleCalendarIntegration.authenticate();
+            
+            if (success) {
+                this.updateGoogleCalendarUI(true);
+                this.showGoogleCalendarModal();
+            }
+        } catch (error) {
+            console.error('Authentication failed:', error);
+        }
+    }
+
+    updateGoogleCalendarUI(isAuthenticated) {
+        const button = document.getElementById('google-calendar-btn');
+        const status = document.getElementById('google-calendar-status');
+        
+        if (button && status) {
+            if (isAuthenticated) {
+                button.className = 'text-sm bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded flex items-center space-x-1';
+                status.textContent = 'Sync';
+                button.title = 'Sync meal plan with Google Calendar';
+            } else {
+                button.className = 'text-sm bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded flex items-center space-x-1';
+                status.textContent = 'Connect';
+                button.title = 'Connect to Google Calendar';
+            }
+        }
+    }
+
+    showGoogleCalendarModal() {
+        const managedMode = this.googleCalendarIntegration.getManagedMode();
+        
+        const modal = this.createModal('Google Calendar Sync', `
+            <div class="space-y-4">
+                <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                    <h4 class="font-medium text-blue-900 dark:text-blue-100 mb-2">Calendar Management Mode</h4>
+                    <div class="space-y-2">
+                        <label class="flex items-center space-x-2">
+                            <input type="radio" name="calendar-mode" value="managed" ${managedMode ? 'checked' : ''} 
+                                   class="text-blue-600">
+                            <div>
+                                <div class="font-medium">🔒 Managed Calendar (Recommended)</div>
+                                <div class="text-sm text-gray-600 dark:text-gray-400">
+                                    MealPlanner has complete control. Creates dedicated calendar and syncs all changes.
+                                </div>
+                            </div>
+                        </label>
+                        <label class="flex items-center space-x-2">
+                            <input type="radio" name="calendar-mode" value="collaborative" ${!managedMode ? 'checked' : ''} 
+                                   class="text-blue-600">
+                            <div>
+                                <div class="font-medium">🤝 Collaborative Mode</div>
+                                <div class="text-sm text-gray-600 dark:text-gray-400">
+                                    Respects existing events. Only adds new meals, won't remove manual entries.
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="space-y-2">
+                    <h4 class="font-medium">Sync Options</h4>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" id="include-ingredients" class="text-blue-600">
+                        <span>Include ingredients in event descriptions</span>
+                    </label>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" id="include-instructions" class="text-blue-600">
+                        <span>Include cooking instructions</span>
+                    </label>
+                </div>
+                
+                <div class="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg">
+                    <div class="text-sm text-yellow-800 dark:text-yellow-200">
+                        <strong>Note:</strong> This will sync your current meal plan to Google Calendar. 
+                        ${managedMode ? 'Existing meal events will be replaced.' : 'Conflicting time slots will be skipped.'}
+                    </div>
+                </div>
+            </div>
+        `, [
+            { text: 'Cancel', action: 'close' },
+            { text: 'Test Connection', action: 'test' },
+            { text: 'Sync Now', action: 'sync', primary: true }
+        ]);
+
+        // Handle modal actions
+        modal.addEventListener('modal-action', async (e) => {
+            const action = e.detail.action;
+            
+            if (action === 'test') {
+                await this.testGoogleCalendarConnection();
+            } else if (action === 'sync') {
+                // Get selected options
+                const selectedMode = modal.querySelector('input[name="calendar-mode"]:checked').value;
+                const includeIngredients = modal.querySelector('#include-ingredients').checked;
+                const includeInstructions = modal.querySelector('#include-instructions').checked;
+                
+                // Update managed mode
+                this.googleCalendarIntegration.setManagedMode(selectedMode === 'managed');
+                
+                // Sync meal plan
+                await this.syncMealPlanToCalendar({
+                    includeIngredients,
+                    includeInstructions
+                });
+            }
+        });
+    }
+
+    async testGoogleCalendarConnection() {
+        try {
+            const result = await this.googleCalendarIntegration.testConnection();
+            
+            if (result.success) {
+                this.showNotification(`✅ ${result.message}`, 'success');
+            } else {
+                this.showNotification(`❌ ${result.message}`, 'error');
+            }
+        } catch (error) {
+            this.showNotification(`❌ Connection test failed: ${error.message}`, 'error');
+        }
+    }
+
+    async syncMealPlanToCalendar(options = {}) {
+        try {
+            // Get all scheduled meals from current views
+            const allScheduledMeals = this.getAllScheduledMeals();
+            
+            if (allScheduledMeals.length === 0) {
+                this.showNotification('No meals scheduled to sync', 'info');
+                return;
+            }
+
+            console.log(`📅 Syncing ${allScheduledMeals.length} meals to Google Calendar...`);
+            
+            await this.googleCalendarIntegration.syncMealPlan(allScheduledMeals, options);
+            
+        } catch (error) {
+            console.error('Sync failed:', error);
+            this.showNotification(`Sync failed: ${error.message}`, 'error');
+        }
+    }
+
+    getAllScheduledMeals() {
+        // Collect meals from all itinerary views
+        const allMeals = [];
+        
+        Object.entries(this.itineraryViews).forEach(([mealType, view]) => {
+            if (view && view.getScheduledMeals) {
+                const meals = view.getScheduledMeals();
+                allMeals.push(...meals.map(meal => ({
+                    ...meal,
+                    mealType
+                })));
+            }
+        });
+        
+        // Also collect from calendar views if they have different data
+        Object.entries(this.calendarViews).forEach(([mealType, view]) => {
+            if (view && view.getAllScheduledMeals) {
+                const meals = view.getAllScheduledMeals();
+                // Avoid duplicates by checking if meal already exists
+                meals.forEach(meal => {
+                    const exists = allMeals.some(existing => 
+                        existing.id === meal.id && existing.mealType === mealType
+                    );
+                    if (!exists) {
+                        allMeals.push({
+                            ...meal,
+                            mealType
+                        });
+                    }
+                });
+            }
+        });
+        
+        return allMeals;
     }
 
     handleDataSourceChange(sourceType) {
