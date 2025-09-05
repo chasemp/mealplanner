@@ -393,9 +393,10 @@ describe('IngredientsManager', () => {
       
       ingredientsManager.setupEventListeners()
       
-      // Simulate category change
+      // Simulate category change with proper event
       categoryFilter.value = 'produce'
-      categoryFilter.dispatchEvent(new Event('change'))
+      const changeEvent = new Event('change', { bubbles: true })
+      categoryFilter.dispatchEvent(changeEvent)
       
       expect(ingredientsManager.currentFilter.category).toBe('produce')
     })
