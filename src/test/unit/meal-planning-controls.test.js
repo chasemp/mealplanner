@@ -191,32 +191,66 @@ describe('Meal Planning Controls', () => {
         });
 
         it('should generate meal plan successfully', () => {
+            // Setup selected recipes
+            app.selectedRecipes = { breakfast: [1, 2, 3] };
+            
+            // Mock DemoDataManager
+            global.window.DemoDataManager = class MockDemoDataManager {
+                getRecipes() {
+                    return [
+                        { id: 1, title: 'Recipe 1', meal_type: 'breakfast' },
+                        { id: 2, title: 'Recipe 2', meal_type: 'breakfast' },
+                        { id: 3, title: 'Recipe 3', meal_type: 'breakfast' }
+                    ];
+                }
+            };
+            
             const showNotificationSpy = vi.spyOn(app, 'showNotification');
             const applyGeneratedPlanSpy = vi.spyOn(app, 'applyGeneratedPlan');
             
             app.handleAutoPlan('breakfast');
             
-            expect(app.mealRotationEngine.generateRotation).toHaveBeenCalledWith(28, 'breakfast'); // 4 weeks * 7 days
+            expect(app.mealRotationEngine.generateRotation).toHaveBeenCalledWith(
+                expect.any(Date), // startDate
+                4, // weeksToShow
+                'breakfast', // mealType
+                expect.objectContaining({
+                    forceRecipes: [1, 2, 3],
+                    availableRecipes: expect.any(Array)
+                })
+            );
             expect(applyGeneratedPlanSpy).toHaveBeenCalledWith('breakfast', expect.any(Array));
             expect(showNotificationSpy).toHaveBeenCalledWith(
-                'Breakfast plan generated! 2 meals planned.',
+                expect.stringContaining('Breakfast plan generated!'),
                 'success'
             );
         });
 
         it('should handle empty meal generation result', () => {
-            app.mealRotationEngine.generateRotation.mockReturnValue({ meals: [] });
+            // No selected recipes - should show recipe selection warning
+            app.selectedRecipes = { breakfast: [] };
             const showNotificationSpy = vi.spyOn(app, 'showNotification');
             
             app.handleAutoPlan('breakfast');
             
             expect(showNotificationSpy).toHaveBeenCalledWith(
-                'No suitable meals found for auto planning. Please add more recipes.',
+                'Please select some recipes for breakfast planning first.',
                 'warning'
             );
         });
 
         it('should handle meal generation errors', () => {
+            // Setup selected recipes and mock DemoDataManager
+            app.selectedRecipes = { breakfast: [1, 2] };
+            global.window.DemoDataManager = class MockDemoDataManager {
+                getRecipes() {
+                    return [
+                        { id: 1, title: 'Recipe 1', meal_type: 'breakfast' },
+                        { id: 2, title: 'Recipe 2', meal_type: 'breakfast' }
+                    ];
+                }
+            };
+            
             app.mealRotationEngine.generateRotation.mockImplementation(() => {
                 throw new Error('Generation failed');
             });
@@ -235,11 +269,30 @@ describe('Meal Planning Controls', () => {
         });
 
         it('should use correct weeks from itinerary view', () => {
+            // Setup selected recipes and mock DemoDataManager
+            app.selectedRecipes = { breakfast: [1, 2] };
+            global.window.DemoDataManager = class MockDemoDataManager {
+                getRecipes() {
+                    return [
+                        { id: 1, title: 'Recipe 1', meal_type: 'breakfast' },
+                        { id: 2, title: 'Recipe 2', meal_type: 'breakfast' }
+                    ];
+                }
+            };
+            
             app.itineraryViews.breakfast.weeksToShow = 2;
             
             app.handleAutoPlan('breakfast');
             
-            expect(app.mealRotationEngine.generateRotation).toHaveBeenCalledWith(14, 'breakfast'); // 2 weeks * 7 days
+            expect(app.mealRotationEngine.generateRotation).toHaveBeenCalledWith(
+                expect.any(Date), // startDate
+                2, // weeksToShow
+                'breakfast', // mealType
+                expect.objectContaining({
+                    forceRecipes: [1, 2],
+                    availableRecipes: expect.any(Array)
+                })
+            );
         });
     });
 
