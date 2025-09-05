@@ -117,16 +117,34 @@ class GroceryListManager {
                         </p>
                     </div>
                     
-                    <div class="flex items-center space-x-3">
-                        <select id="week-selector" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+                        <select id="week-selector" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 w-full sm:w-auto">
                             ${this.renderWeekOptions()}
                         </select>
-                        <button id="generate-list-btn" class="btn-primary flex items-center space-x-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                            </svg>
-                            <span>Generate List</span>
-                        </button>
+                        
+                        <!-- Export Actions -->
+                        <div class="flex items-center space-x-2">
+                            <button id="copy-list-btn" class="btn-secondary flex items-center justify-center space-x-2 flex-1 sm:flex-none" title="Copy to clipboard">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                </svg>
+                                <span class="hidden sm:inline">Copy</span>
+                            </button>
+                            
+                            <button id="export-list-btn" class="btn-secondary flex items-center justify-center space-x-2 flex-1 sm:flex-none" title="Export as file">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <span class="hidden sm:inline">Export</span>
+                            </button>
+                            
+                            <button id="share-list-btn" class="btn-primary flex items-center justify-center space-x-2 flex-1 sm:flex-none" title="Share list">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path>
+                                </svg>
+                                <span class="hidden sm:inline">Share</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -400,11 +418,27 @@ class GroceryListManager {
     }
 
     attachEventListeners() {
-        // Generate list button
-        const generateBtn = this.container.querySelector('#generate-list-btn');
-        if (generateBtn) {
-            generateBtn.addEventListener('click', () => {
-                this.generateGroceryList();
+        // Copy list button
+        const copyBtn = this.container.querySelector('#copy-list-btn');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', () => {
+                this.copyGroceryList();
+            });
+        }
+
+        // Export list button
+        const exportBtn = this.container.querySelector('#export-list-btn');
+        if (exportBtn) {
+            exportBtn.addEventListener('click', () => {
+                this.exportGroceryList();
+            });
+        }
+
+        // Share list button
+        const shareBtn = this.container.querySelector('#share-list-btn');
+        if (shareBtn) {
+            shareBtn.addEventListener('click', () => {
+                this.shareGroceryList();
             });
         }
 

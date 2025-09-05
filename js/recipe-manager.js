@@ -7,6 +7,7 @@ class RecipeManager {
         this.currentRecipe = null;
         this.searchTerm = '';
         this.selectedCategory = 'all';
+        this.selectedLabel = 'all';
         this.sortBy = 'name';
         this.init();
     }
@@ -76,24 +77,35 @@ class RecipeManager {
                         </div>
                     </div>
                     
-                    <div class="flex items-center space-x-4">
-                        <select id="recipe-category" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500">
-                            <option value="all">All Meal Types</option>
-                            <option value="breakfast">Breakfast</option>
-                            <option value="lunch">Lunch</option>
-                            <option value="dinner">Dinner</option>
-                            <option value="snack">Snack</option>
-                        </select>
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                        <!-- Filter Controls -->
+                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 flex-1">
+                            <select id="recipe-category" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 w-full sm:w-auto">
+                                <option value="all">All Meal Types</option>
+                                <option value="breakfast">Breakfast</option>
+                                <option value="lunch">Lunch</option>
+                                <option value="dinner">Dinner</option>
+                                <option value="snack">Snack</option>
+                            </select>
+                            
+                            <select id="recipe-label" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 w-full sm:w-auto">
+                                <option value="all">All Labels</option>
+                                ${this.getAllLabels().map(label => `
+                                    <option value="${label}" ${this.selectedLabel === label ? 'selected' : ''}>${label}</option>
+                                `).join('')}
+                            </select>
+                            
+                            <select id="recipe-sort" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 w-full sm:w-auto">
+                                <option value="name">Sort by Name</option>
+                                <option value="date">Sort by Date</option>
+                                <option value="prep_time">Sort by Prep Time</option>
+                                <option value="serving_count">Sort by Servings</option>
+                            </select>
+                        </div>
                         
-                        <select id="recipe-sort" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500">
-                            <option value="name">Sort by Name</option>
-                            <option value="date">Sort by Date</option>
-                            <option value="prep_time">Sort by Prep Time</option>
-                            <option value="serving_count">Sort by Servings</option>
-                        </select>
-                        
-                        <button id="add-recipe-btn" class="btn-primary flex items-center space-x-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <!-- Add Recipe Button -->
+                        <button id="add-recipe-btn" class="btn-primary flex items-center justify-center space-x-2 w-full sm:w-auto">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                             </svg>
                             <span>Add Recipe</span>
@@ -102,22 +114,18 @@ class RecipeManager {
                 </div>
 
                 <!-- Recipe Stats -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <div class="bg-white rounded-lg shadow p-4">
                         <div class="text-2xl font-bold text-blue-600">${this.getFilteredRecipes().length}</div>
                         <div class="text-sm text-gray-600">Total Recipes</div>
                     </div>
                     <div class="bg-white rounded-lg shadow p-4">
-                        <div class="text-2xl font-bold text-green-600">${this.getAverageServings()}</div>
-                        <div class="text-sm text-gray-600">Avg Servings</div>
+                        <div class="text-2xl font-bold text-green-600">${this.getUniqueLabels().length}</div>
+                        <div class="text-sm text-gray-600">Labels</div>
                     </div>
                     <div class="bg-white rounded-lg shadow p-4">
-                        <div class="text-2xl font-bold text-orange-600">${this.getAveragePrepTime()}</div>
-                        <div class="text-sm text-gray-600">Avg Prep (min)</div>
-                    </div>
-                    <div class="bg-white rounded-lg shadow p-4">
-                        <div class="text-2xl font-bold text-purple-600">${this.getUniqueIngredients()}</div>
-                        <div class="text-sm text-gray-600">Unique Ingredients</div>
+                        <div class="text-2xl font-bold text-purple-600">${this.getFavoriteRecipes().length}</div>
+                        <div class="text-sm text-gray-600">Favorites</div>
                     </div>
                 </div>
 
@@ -169,7 +177,7 @@ class RecipeManager {
                                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                                 </svg>
-                                ${recipe.serving_count} servings
+                                ${recipe.serving_count || recipe.servings || 'N/A'} servings
                             </span>
                         </div>
                         <span class="px-2 py-1 bg-gray-100 rounded-full text-xs capitalize">${recipe.meal_type}</span>
@@ -217,13 +225,25 @@ class RecipeManager {
             filtered = filtered.filter(recipe => 
                 recipe.title.toLowerCase().includes(term) ||
                 recipe.description.toLowerCase().includes(term) ||
-                recipe.tags.some(tag => tag.toLowerCase().includes(term))
+                (recipe.tags && recipe.tags.some(tag => tag.toLowerCase().includes(term))) ||
+                (recipe.labels && recipe.labels.some(label => label.toLowerCase().includes(term)))
             );
         }
 
         // Filter by category
         if (this.selectedCategory !== 'all') {
             filtered = filtered.filter(recipe => recipe.meal_type === this.selectedCategory);
+        }
+
+        // Filter by label
+        if (this.selectedLabel !== 'all') {
+            filtered = filtered.filter(recipe => {
+                const recipeLabels = [
+                    ...(recipe.labels || []),
+                    ...(recipe.tags || [])
+                ];
+                return recipeLabels.some(label => label.toLowerCase() === this.selectedLabel.toLowerCase());
+            });
         }
 
         // Sort recipes
@@ -236,7 +256,7 @@ class RecipeManager {
                 case 'prep_time':
                     return (a.prep_time + a.cook_time) - (b.prep_time + b.cook_time);
                 case 'serving_count':
-                    return b.serving_count - a.serving_count;
+                    return (b.serving_count || b.servings || 0) - (a.serving_count || a.servings || 0);
                 default:
                     return 0;
             }
@@ -245,26 +265,45 @@ class RecipeManager {
         return filtered;
     }
 
-    getAverageServings() {
-        if (this.recipes.length === 0) return 0;
-        const total = this.recipes.reduce((sum, recipe) => sum + recipe.serving_count, 0);
-        return Math.round(total / this.recipes.length);
-    }
-
-    getAveragePrepTime() {
-        if (this.recipes.length === 0) return 0;
-        const total = this.recipes.reduce((sum, recipe) => sum + recipe.prep_time + recipe.cook_time, 0);
-        return Math.round(total / this.recipes.length);
-    }
-
-    getUniqueIngredients() {
-        const ingredientIds = new Set();
+    getUniqueLabels() {
+        const labels = new Set();
         this.recipes.forEach(recipe => {
-            recipe.ingredients.forEach(ingredient => {
-                ingredientIds.add(ingredient.ingredient_id);
-            });
+            if (recipe.labels && Array.isArray(recipe.labels)) {
+                recipe.labels.forEach(label => labels.add(label));
+            }
+            // Also include tags as labels for backward compatibility
+            if (recipe.tags && Array.isArray(recipe.tags)) {
+                recipe.tags.forEach(tag => labels.add(tag));
+            }
         });
-        return ingredientIds.size;
+        return Array.from(labels);
+    }
+
+    getFavoriteRecipes() {
+        return this.recipes.filter(recipe => recipe.favorite === true);
+    }
+
+    getAllLabels() {
+        // Get all available labels from recipes plus some predefined ones
+        const recipeLabels = this.getUniqueLabels();
+        const predefinedLabels = [
+            'quick', 'healthy', 'vegetarian', 'vegan', 'gluten-free', 'dairy-free',
+            'comfort-food', 'spicy', 'sweet', 'savory', 'protein-rich', 'low-carb',
+            'kid-friendly', 'party', 'holiday', 'summer', 'winter', 'easy', 'advanced'
+        ];
+        
+        // Combine and deduplicate
+        const allLabels = [...new Set([...recipeLabels, ...predefinedLabels])];
+        return allLabels.sort();
+    }
+
+    getIngredientById(id) {
+        return this.ingredients.find(ingredient => ingredient.id === id);
+    }
+
+    getIngredientNameById(id) {
+        const ingredient = this.getIngredientById(id);
+        return ingredient ? ingredient.name : 'Unknown Ingredient';
     }
 
     attachEventListeners() {
@@ -282,6 +321,15 @@ class RecipeManager {
         if (categorySelect) {
             categorySelect.addEventListener('change', (e) => {
                 this.selectedCategory = e.target.value;
+                this.render();
+            });
+        }
+
+        // Label filter
+        const labelSelect = this.container.querySelector('#recipe-label');
+        if (labelSelect) {
+            labelSelect.addEventListener('change', (e) => {
+                this.selectedLabel = e.target.value;
                 this.render();
             });
         }
@@ -463,15 +511,43 @@ class RecipeManager {
                         <p class="text-xs text-gray-500 mt-1">Tip: Number your steps (1., 2., 3.) for better readability</p>
                     </div>
                     
-                    <!-- Tags Section -->
+                    <!-- Labels Section -->
                     <div>
-                        <label for="recipe-tags" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Tags
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Labels
                         </label>
-                        <input type="text" id="recipe-tags" name="tags"
-                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                               placeholder="Enter tags separated by commas (e.g., healthy, quick, vegetarian)"
-                               value="${isEdit ? recipe.tags.join(', ') : ''}">
+                        <div class="space-y-3">
+                            <!-- Label Input -->
+                            <div class="flex gap-2">
+                                <input type="text" id="recipe-labels" name="labels"
+                                       class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                       placeholder="Add labels (e.g., healthy, quick, vegetarian)"
+                                       value="${isEdit && recipe.labels ? recipe.labels.join(', ') : (isEdit && recipe.tags ? recipe.tags.join(', ') : '')}">
+                                <button type="button" id="add-label-btn" class="px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm">
+                                    Add
+                                </button>
+                            </div>
+                            
+                            <!-- Popular Labels -->
+                            <div>
+                                <div class="text-xs text-gray-500 mb-2">Popular labels:</div>
+                                <div class="flex flex-wrap gap-1">
+                                    ${this.getAllLabels().slice(0, 12).map(label => `
+                                        <button type="button" class="popular-label-btn px-2 py-1 text-xs bg-gray-100 hover:bg-blue-100 text-gray-700 rounded-full border" data-label="${label}">
+                                            ${label}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            
+                            <!-- Selected Labels Display -->
+                            <div id="selected-labels-display" class="min-h-[2rem] p-2 border border-gray-200 rounded-md bg-gray-50">
+                                <div class="text-xs text-gray-500 mb-1">Selected labels:</div>
+                                <div id="selected-labels-container" class="flex flex-wrap gap-1">
+                                    <!-- Selected labels will be displayed here -->
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     <!-- Form Actions -->
@@ -770,39 +846,9 @@ class RecipeManager {
                 }
             });
 
-            // Save recipe logic
+            // Save recipe logic would go here
             console.log('Recipe data collected:', recipeData, 'Ingredients:', ingredients);
-            
-            // Create recipe object
-            const recipe = {
-                ...recipeData,
-                ingredients: ingredients,
-                id: existingRecipe ? existingRecipe.id : this.generateRecipeId(),
-                created_at: existingRecipe ? existingRecipe.created_at : new Date().toISOString(),
-                updated_at: new Date().toISOString()
-            };
-
-            if (existingRecipe) {
-                // Update existing recipe
-                const index = this.recipes.findIndex(r => r.id === existingRecipe.id);
-                if (index !== -1) {
-                    this.recipes[index] = recipe;
-                    this.showNotification(`Recipe "${recipe.title}" updated successfully!`, 'success');
-                }
-            } else {
-                // Add new recipe
-                this.recipes.push(recipe);
-                this.showNotification(`Recipe "${recipe.title}" created successfully!`, 'success');
-            }
-
-            // Close the modal
-            const modal = document.getElementById('recipe-form-modal');
-            if (modal) {
-                modal.remove();
-            }
-
-            // Refresh the recipe list
-            this.render();
+            this.showNotification('Recipe functionality coming soon!', 'info');
             
         } catch (error) {
             console.error('Error handling recipe form:', error);
@@ -958,71 +1004,113 @@ class RecipeManager {
 
     showRecipeDetail(recipeId) {
         const recipe = this.recipes.find(r => r.id === recipeId);
-        if (recipe) {
-            console.log('Showing recipe detail:', recipe.title);
-            this.createRecipeDetailModal(recipe);
-        }
-    }
+        if (!recipe) return;
 
-    createRecipeDetailModal(recipe) {
+        console.log('Showing recipe detail:', recipe.title);
+        
         // Remove existing modal if present
         const existingModal = document.getElementById('recipe-detail-modal');
         if (existingModal) {
             existingModal.remove();
         }
 
+        // Create modal HTML
         const modal = document.createElement('div');
         modal.id = 'recipe-detail-modal';
-        modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
         
-        // Get recipe ingredients for display
-        const ingredientsList = recipe.ingredients ? recipe.ingredients.map(ing => 
-            `<li class="flex justify-between py-1">
-                <span>${ing.name}</span>
-                <span class="text-gray-600">${ing.quantity} ${ing.unit}</span>
-            </li>`
-        ).join('') : '<li class="text-gray-500">No ingredients listed</li>';
+        // Prepare ingredients list with resolved names
+        const ingredientsList = recipe.ingredients.map(ingredient => {
+            const ingredientName = this.getIngredientNameById(ingredient.ingredient_id) || 'Unknown ingredient';
+            return `
+                <li class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
+                    <span class="font-medium text-gray-900 dark:text-white">${ingredientName}</span>
+                    <span class="text-gray-600 dark:text-gray-300">
+                        ${ingredient.quantity} ${ingredient.unit}
+                        ${ingredient.notes ? `<span class="text-sm text-gray-500 ml-2">(${ingredient.notes})</span>` : ''}
+                    </span>
+                </li>
+            `;
+        }).join('');
+
+        // Format instructions (split by commas and number them)
+        let instructions = '';
+        if (recipe.instructions && typeof recipe.instructions === 'string') {
+            instructions = recipe.instructions.split(',').map((step, index) => {
+                return `<li class="mb-2"><span class="font-semibold text-blue-600 dark:text-blue-400">${index + 1}.</span> ${step.trim()}</li>`;
+            }).join('');
+        } else if (Array.isArray(recipe.instructions)) {
+            instructions = recipe.instructions.map((step, index) => {
+                return `<li class="mb-2"><span class="font-semibold text-blue-600 dark:text-blue-400">${index + 1}.</span> ${step}</li>`;
+            }).join('');
+        } else {
+            instructions = '<li class="mb-2 text-gray-500">No instructions available</li>';
+        }
+
+        // Format labels/tags
+        const labels = recipe.labels || recipe.tags || [];
+        const labelsHtml = labels.length > 0 ? 
+            labels.map(label => `<span class="inline-block bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full text-sm mr-2 mb-2">${label}</span>`).join('') :
+            '<span class="text-gray-500 dark:text-gray-400">No labels</span>';
 
         modal.innerHTML = `
-            <div class="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                <div class="p-6">
-                    <!-- Header -->
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">${recipe.title}</h2>
-                            <p class="text-gray-600 dark:text-gray-400 mt-1">${recipe.description || 'No description'}</p>
-                        </div>
-                        <button id="close-recipe-detail" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <!-- Header -->
+                <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">${recipe.title}</h2>
+                    <button id="close-recipe-detail" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
 
-                    <!-- Recipe Info -->
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                        <div class="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                            <div class="text-lg font-semibold text-blue-600 dark:text-blue-400">${recipe.serving_count || 'N/A'}</div>
-                            <div class="text-sm text-gray-600 dark:text-gray-400">Servings</div>
+                <div class="p-6">
+                    <!-- Recipe Image (if available) -->
+                    ${recipe.image_url ? `
+                        <div class="mb-6">
+                            <img src="${recipe.image_url}" alt="${recipe.title}" class="w-full h-64 object-cover rounded-lg">
                         </div>
-                        <div class="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                            <div class="text-lg font-semibold text-green-600 dark:text-green-400">${recipe.prep_time || 0}min</div>
-                            <div class="text-sm text-gray-600 dark:text-gray-400">Prep Time</div>
+                    ` : ''}
+
+                    <!-- Description and Basic Info -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <div class="md:col-span-2">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Description</h3>
+                            <p class="text-gray-700 dark:text-gray-300">${recipe.description || 'No description available'}</p>
                         </div>
-                        <div class="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                            <div class="text-lg font-semibold text-orange-600 dark:text-orange-400">${recipe.cook_time || 0}min</div>
-                            <div class="text-sm text-gray-600 dark:text-gray-400">Cook Time</div>
-                        </div>
-                        <div class="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                            <div class="text-lg font-semibold text-purple-600 dark:text-purple-400">${(recipe.prep_time || 0) + (recipe.cook_time || 0)}min</div>
-                            <div class="text-sm text-gray-600 dark:text-gray-400">Total Time</div>
+                        <div class="space-y-3">
+                            <div class="flex items-center text-gray-600 dark:text-gray-400">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span>Prep: ${recipe.prep_time || 'N/A'} min</span>
+                            </div>
+                            <div class="flex items-center text-gray-600 dark:text-gray-400">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path>
+                                </svg>
+                                <span>Cook: ${recipe.cook_time || 'N/A'} min</span>
+                            </div>
+                            <div class="flex items-center text-gray-600 dark:text-gray-400">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                </svg>
+                                <span>Serves: ${recipe.serving_count || recipe.servings || 'N/A'}</span>
+                            </div>
+                            <div class="flex items-center text-gray-600 dark:text-gray-400">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.99 1.99 0 013 12V7a4 4 0 014-4z"></path>
+                                </svg>
+                                <span>Type: ${recipe.meal_type || 'N/A'}</span>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Ingredients -->
                     <div class="mb-6">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Ingredients</h3>
-                        <ul class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 space-y-1">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Ingredients (${recipe.ingredients.length})</h3>
+                        <ul class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
                             ${ingredientsList}
                         </ul>
                     </div>
@@ -1030,29 +1118,17 @@ class RecipeManager {
                     <!-- Instructions -->
                     <div class="mb-6">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Instructions</h3>
-                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                            <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">${recipe.instructions || 'No instructions provided'}</p>
-                        </div>
+                        <ol class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 space-y-2">
+                            ${instructions}
+                        </ol>
                     </div>
 
-                    <!-- Tags -->
-                    ${recipe.tags && recipe.tags.length > 0 ? `
-                        <div class="mb-6">
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Tags</h3>
-                            <div class="flex flex-wrap gap-2">
-                                ${recipe.tags.map(tag => `<span class="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-sm">${tag}</span>`).join('')}
-                            </div>
+                    <!-- Labels/Tags -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Labels</h3>
+                        <div class="flex flex-wrap">
+                            ${labelsHtml}
                         </div>
-                    ` : ''}
-
-                    <!-- Action Buttons -->
-                    <div class="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-600">
-                        <button id="edit-recipe-detail" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
-                            Edit Recipe
-                        </button>
-                        <button id="close-recipe-detail-btn" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
-                            Close
-                        </button>
                     </div>
                 </div>
             </div>
@@ -1062,25 +1138,13 @@ class RecipeManager {
 
         // Add event listeners
         const closeBtn = modal.querySelector('#close-recipe-detail');
-        const closeBtnBottom = modal.querySelector('#close-recipe-detail-btn');
-        const editBtn = modal.querySelector('#edit-recipe-detail');
-
         const closeModal = () => {
             modal.remove();
         };
 
         closeBtn.addEventListener('click', closeModal);
-        closeBtnBottom.addEventListener('click', closeModal);
-        editBtn.addEventListener('click', () => {
-            closeModal();
-            this.showRecipeForm(recipe);
-        });
-
-        // Close on backdrop click
         modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                closeModal();
-            }
+            if (e.target === modal) closeModal();
         });
 
         // Close on Escape key
@@ -1098,12 +1162,6 @@ class RecipeManager {
         if (recipe) {
             this.showRecipeForm(recipe);
         }
-    }
-
-    generateRecipeId() {
-        // Generate a unique ID for new recipes
-        const maxId = this.recipes.length > 0 ? Math.max(...this.recipes.map(r => r.id)) : 0;
-        return maxId + 1;
     }
 
     async deleteRecipe(recipeId) {
