@@ -643,6 +643,7 @@ class RecipeManager {
         const closeBtn = modal.querySelector('#close-recipe-form');
         const cancelBtn = modal.querySelector('#cancel-recipe-form');
         const addIngredientBtn = modal.querySelector('#add-ingredient-row');
+        const scanBarcodeBtn = modal.querySelector('#scan-ingredient-barcode');
         const ingredientsContainer = modal.querySelector('#ingredients-container');
 
         // Close modal handlers
@@ -667,6 +668,11 @@ class RecipeManager {
             
             // Attach listeners to new row
             this.attachIngredientRowListeners(ingredientsContainer.lastElementChild);
+        });
+
+        // Scan barcode for ingredient
+        scanBarcodeBtn?.addEventListener('click', () => {
+            this.showBarcodeScanner(ingredientsContainer);
         });
 
         // Attach listeners to existing ingredient rows
@@ -747,18 +753,127 @@ class RecipeManager {
                             quantity: parseFloat(quantity),
                             unit: unit || ingredient.default_unit,
                             notes: notes || ''
-                        });
-                    }
-                }
-            });
+                                });
+    }
 
-            if (ingredients.length === 0) {
-                this.showNotification('At least one ingredient is required', 'error');
-                return;
+    showBarcodeScanner(ingredientsContainer) {
+        // Use the shared barcode scanner component
+        const sharedScanner = window.SharedBarcodeScanner?.getInstance();
+        if (!sharedScanner) {
+            console.error('Barcode scanner not available');
+            return;
+        }
+
+        // Show the scanner with recipe context
+        sharedScanner.show('recipe', 
+            (ingredient, context) => {
+                console.log('Product scanned for recipe:', ingredient);
+                
+                // Add a new ingredient row with the scanned ingredient
+                const currentRows = ingredientsContainer.querySelectorAll('.ingredient-row').length;
+                const newRowHtml = this.renderSingleIngredientRow({
+                    ingredient_id: ingredient.id,
+                    name: ingredient.name,
+                    quantity: '1',
+                    unit: ingredient.default_unit || 'pieces',
+                    notes: ''
+                }, currentRows, true);
+                
+                ingredientsContainer.insertAdjacentHTML('beforeend', newRowHtml);
+                
+                // Attach listeners to new row
+                this.attachIngredientRowListeners(ingredientsContainer.lastElementChild);
+                
+                // Show success message
+                this.showNotification(`Added "${ingredient.name}" to recipe ingredients`, 'success');
+            },
+            (error) => {
+                console.error('Barcode scanner error:', error);
+                this.showNotification(`Scanner error: ${error.message}`, 'error');
             }
+        );
+    }
 
-            recipeData.ingredients = ingredients;
+    showNotification(message, type = 'info') {
+        // Create a simple notification
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 px-4 py-2 rounded-lg shadow-lg z-50 text-white ${
+            type === 'success' ? 'bg-green-500' :
+            type === 'error' ? 'bg-red-500' :
+            'bg-blue-500'
+        }`;
+        notification.textContent = message;
+        
+        document.body.appendChild(notification);
+        
+        // Auto-remove after 3 seconds
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 3000);
+    }
 
+    handleRecipeFormSubmit(form, existingRecipe) {
+        const formData = new FormData(form);
+        
+        // Get basic recipe data
+        const recipeData = {
+            title: formData.get('title')?.trim(),
+            description: formData.get('description')?.trim(),
+            servings: parseInt(formData.get('servings')) || 1,
+            prep_time: parseInt(formData.get('prep_time')) || 0,
+            cook_time: parseInt(formData.get('cook_time')) || 0,
+            instructions: formData.get('instructions')?.trim(),
+            tags: formData.get('tags')?.trim(),
+            difficulty: formData.get('difficulty') || 'easy',
+            cuisine: formData.get('cuisine')?.trim(),
+            meal_type: formData.get('meal_type') || 'dinner'
+        };
+
+        // Validate required fields
+        if (!recipeData.title) {
+            this.showNotification('Recipe title is required', 'error');
+            return;
+        }
+
+        if (!recipeData.instructions) {
+            this.showNotification('Instructions are required', 'error');
+            return;
+        }
+
+        // Collect ingredients
+        const ingredientRows = form.querySelectorAll('.ingredient-row');
+        const ingredients = [];
+        
+        ingredientRows.forEach(row => {
+            const ingredientId = row.querySelector('.ingredient-select')?.value;
+            const quantity = row.querySelector('.quantity-input')?.value;
+            const unit = row.querySelector('.unit-select')?.value;
+            const notes = row.querySelector('.notes-input')?.value;
+            
+            if (ingredientId && quantity) {
+                const ingredient = this.getIngredientById(parseInt(ingredientId));
+                if (ingredient) {
+                    ingredients.push({
+                        ingredient_id: parseInt(ingredientId),
+                        name: ingredient.name,
+                        quantity: parseFloat(quantity),
+                        unit: unit || ingredient.default_unit,
+                        notes: notes || ''
+                    });
+                }
+            }
+        });
+
+        if (ingredients.length === 0) {
+            this.showNotification('At least one ingredient is required', 'error');
+            return;
+        }
+
+        recipeData.ingredients = ingredients;
+
+        try {
             // Save recipe
             if (existingRecipe) {
                 // Update existing recipe
