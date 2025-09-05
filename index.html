@@ -18,9 +18,17 @@
     
     <!-- Styles -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="./css/styles.css?v=2025.09.05.0905">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {}
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="./css/styles.css?v=2025.09.05.0913">
 </head>
-<body class="bg-gray-50 min-h-screen">
+  <body class="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors">
     <div id="app">
         <!-- Loading state -->
         <div id="loading" class="flex items-center justify-center min-h-screen">
@@ -34,21 +42,34 @@
         <!-- Main App (hidden initially) -->
         <div id="main-app" class="hidden">
             <!-- Header -->
-            <header class="bg-white shadow">
+            <header class="bg-white dark:bg-gray-800 shadow">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="flex justify-between items-center h-16">
                         <div class="flex items-center">
-                            <h1 class="text-xl font-semibold text-gray-900">MealPlanner</h1>
+                            <h1 class="text-xl font-semibold text-gray-900 dark:text-white">MealPlanner</h1>
                         </div>
                         <div class="flex items-center space-x-4">
-                            <button id="new-db-btn" class="text-sm text-green-600 hover:text-green-700">
-                                New DB
-                            </button>
-                            <button id="export-db-btn" class="text-sm text-blue-600 hover:text-blue-700">
-                                Export DB
-                            </button>
-                            <button id="import-db-btn" class="text-sm text-blue-600 hover:text-blue-700">
-                                Import DB
+                            <!-- Data Source Controls -->
+                            <div class="flex items-center space-x-2">
+                                <label for="data-source-select" class="text-sm text-gray-600 dark:text-gray-400">Source:</label>
+                                <select id="data-source-select" class="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                    <option value="demo" selected>Demo Data</option>
+                                    <option value="new">New Database</option>
+                                    <option value="existing">Existing Database</option>
+                                </select>
+                                <button id="export-db-btn" class="text-sm bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded" title="Export current database">
+                                    Export
+                                </button>
+                            </div>
+                            
+                            <!-- Theme Toggle -->
+                            <button id="theme-toggle" class="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 transition-colors" title="Toggle dark mode">
+                                <svg id="theme-toggle-light-icon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                                </svg>
+                                <svg id="theme-toggle-dark-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                                </svg>
                             </button>
                         </div>
                     </div>
@@ -56,25 +77,25 @@
             </header>
 
             <!-- Navigation Tabs -->
-            <nav class="bg-white border-b border-gray-200">
+            <nav class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="flex space-x-8">
-                        <button class="nav-tab active py-4 px-1 border-b-2 border-blue-500 text-blue-600 font-medium text-sm" data-tab="recipes">
+                        <button class="nav-tab active py-4 px-1 border-b-2 border-blue-500 text-blue-600 dark:text-blue-400 font-medium text-sm" data-tab="recipes">
                             Recipes
                         </button>
-                        <button class="nav-tab py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium text-sm" data-tab="ingredients">
+                        <button class="nav-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="ingredients">
                             Ingredients
                         </button>
-                        <button class="nav-tab py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium text-sm" data-tab="breakfast">
+                        <button class="nav-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="breakfast">
                             Breakfast
                         </button>
-                        <button class="nav-tab py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium text-sm" data-tab="lunch">
+                        <button class="nav-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="lunch">
                             Lunch
                         </button>
-                        <button class="nav-tab py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium text-sm" data-tab="dinner">
+                        <button class="nav-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="dinner">
                             Dinner
                         </button>
-                        <button class="nav-tab py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium text-sm" data-tab="grocery">
+                        <button class="nav-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="grocery">
                             Grocery List
                         </button>
                     </div>
@@ -241,7 +262,7 @@
         
         <!-- Version Footer -->
         <footer class="fixed bottom-2 right-2 text-xs text-gray-400 bg-white/80 backdrop-blur-sm px-2 py-1 rounded shadow-sm">
-            <span id="version-display">v2025.09.05.0905</span>
+            <span id="version-display">v2025.09.05.0913</span>
         </footer>
     </div>
 
@@ -253,6 +274,6 @@
     <script src="./js/calendar-view.js?v=2025.09.05.0857"></script>
     <script src="./js/recipe-manager.js?v=2025.09.05.0853"></script>
     <script src="./js/grocery-list-manager.js?v=2025.09.05.0853"></script>
-    <script src="./js/main.js?v=2025.09.05.0905"></script>
+    <script src="./js/main.js?v=2025.09.05.0913"></script>
 </body>
 </html>
