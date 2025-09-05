@@ -125,14 +125,21 @@ class CalendarView {
                 const mealDisplay = mealsForDate.length > 0 ? this.renderDayMeals(mealsForDate) : '';
                 
                 daysHtml += `
-                    <div class="min-h-[100px] border-r border-b ${cellClass} p-2 cursor-pointer" 
+                    <div class="calendar-day min-h-[100px] border-r border-b ${cellClass} p-2 cursor-pointer transition-colors" 
                          data-date="${this.formatDateKey(cellDate)}"
-                         onclick="window.calendarViews['${this.mealType}'].selectDate('${this.formatDateKey(cellDate)}')">
-                        <div class="text-sm ${isCurrentMonth ? 'text-gray-900' : 'text-gray-400'} mb-1">
+                         data-meal-type="${this.mealType}"
+                         onclick="window.calendarViews['${this.mealType}'].selectDate('${this.formatDateKey(cellDate)}')"
+                         ondragover="event.preventDefault(); this.classList.add('drag-over')"
+                         ondragleave="this.classList.remove('drag-over')"
+                         ondrop="window.calendarViews['${this.mealType}'].handleDrop(event, '${this.formatDateKey(cellDate)}')">
+                        <div class="text-sm ${isCurrentMonth ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400'} mb-1">
                             ${cellDay}
                         </div>
-                        <div class="space-y-1">
+                        <div class="meal-container space-y-1">
                             ${mealDisplay}
+                        </div>
+                        <div class="drop-indicator hidden absolute inset-0 bg-blue-200 dark:bg-blue-800 bg-opacity-50 border-2 border-dashed border-blue-400 rounded flex items-center justify-center">
+                            <span class="text-blue-600 dark:text-blue-300 font-medium">Drop meal here</span>
                         </div>
                     </div>
                 `;
@@ -144,9 +151,15 @@ class CalendarView {
 
     renderDayMeals(meals) {
         return meals.map(meal => `
-            <div class="text-xs bg-blue-500 text-white px-2 py-1 rounded truncate" 
-                 title="${meal.name}">
-                ${meal.name}
+            <div class="meal-item text-xs bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded truncate cursor-move transition-colors" 
+                 title="${meal.name}"
+                 draggable="true"
+                 data-meal-id="${meal.id}"
+                 data-meal-name="${meal.name}"
+                 data-meal-type="${meal.mealType}"
+                 data-original-date="${this.formatDateKey(meal.date)}">
+                <span class="drag-handle">⋮⋮</span>
+                <span class="meal-name">${meal.name}</span>
             </div>
         `).join('');
     }
@@ -283,6 +296,290 @@ class CalendarView {
         if (todayBtn) {
             todayBtn.addEventListener('click', () => this.goToToday());
         }
+
+        // Drag and drop event listeners
+        this.attachDragDropListeners();
+    }
+
+    attachDragDropListeners() {
+        // Add drag event listeners to meal items
+        this.container.addEventListener('dragstart', (e) => {
+            if (e.target.classList.contains('meal-item')) {
+                this.handleDragStart(e);
+            }
+        });
+
+        this.container.addEventListener('dragend', (e) => {
+            if (e.target.classList.contains('meal-item')) {
+                this.handleDragEnd(e);
+            }
+        });
+
+        // Add drop zone styling
+        this.container.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const calendarDay = e.target.closest('.calendar-day');
+            if (calendarDay) {
+                calendarDay.classList.add('drag-over');
+                const dropIndicator = calendarDay.querySelector('.drop-indicator');
+                if (dropIndicator) {
+                    dropIndicator.classList.remove('hidden');
+                }
+            }
+        });
+
+        this.container.addEventListener('dragleave', (e) => {
+            const calendarDay = e.target.closest('.calendar-day');
+            if (calendarDay && !calendarDay.contains(e.relatedTarget)) {
+                calendarDay.classList.remove('drag-over');
+                const dropIndicator = calendarDay.querySelector('.drop-indicator');
+                if (dropIndicator) {
+                    dropIndicator.classList.add('hidden');
+                }
+            }
+        });
+    }
+
+    handleDragStart(e) {
+        const mealItem = e.target;
+        const mealData = {
+            id: mealItem.dataset.mealId,
+            name: mealItem.dataset.mealName,
+            mealType: mealItem.dataset.mealType,
+            originalDate: mealItem.dataset.originalDate
+        };
+
+        // Store meal data for the drop handler
+        e.dataTransfer.setData('application/json', JSON.stringify(mealData));
+        e.dataTransfer.effectAllowed = 'move';
+
+        // Add visual feedback
+        mealItem.classList.add('dragging');
+        mealItem.style.opacity = '0.5';
+
+        console.log('🎯 Drag started:', mealData);
+    }
+
+    handleDragEnd(e) {
+        const mealItem = e.target;
+        
+        // Remove visual feedback
+        mealItem.classList.remove('dragging');
+        mealItem.style.opacity = '1';
+
+        // Clean up all drag-over states
+        this.container.querySelectorAll('.calendar-day').forEach(day => {
+            day.classList.remove('drag-over');
+            const dropIndicator = day.querySelector('.drop-indicator');
+            if (dropIndicator) {
+                dropIndicator.classList.add('hidden');
+            }
+        });
+
+        console.log('🎯 Drag ended');
+    }
+
+    handleDrop(e, targetDate) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const calendarDay = e.target.closest('.calendar-day');
+        if (calendarDay) {
+            calendarDay.classList.remove('drag-over');
+            const dropIndicator = calendarDay.querySelector('.drop-indicator');
+            if (dropIndicator) {
+                dropIndicator.classList.add('hidden');
+            }
+        }
+
+        try {
+            const mealData = JSON.parse(e.dataTransfer.getData('application/json'));
+            
+            // Validate the drop
+            if (!this.validateDrop(mealData, targetDate)) {
+                return;
+            }
+
+            // Perform the move
+            this.moveMeal(mealData, targetDate);
+            
+            console.log('🎯 Meal dropped:', mealData, 'to', targetDate);
+        } catch (error) {
+            console.error('Error handling drop:', error);
+            this.showDropError('Failed to move meal. Please try again.');
+        }
+    }
+
+    validateDrop(mealData, targetDate) {
+        // Check if dropping on the same date
+        if (mealData.originalDate === targetDate) {
+            console.log('🎯 Dropped on same date, no action needed');
+            return false;
+        }
+
+        // Check if target date already has a meal of the same type
+        const targetMeals = this.getMealsForDate(new Date(targetDate));
+        const conflictingMeal = targetMeals.find(meal => 
+            meal.mealType === mealData.mealType && meal.id !== mealData.id
+        );
+
+        if (conflictingMeal) {
+            this.showConflictDialog(mealData, conflictingMeal, targetDate);
+            return false;
+        }
+
+        return true;
+    }
+
+    moveMeal(mealData, targetDate) {
+        // Find and update the meal in scheduledMeals
+        const mealIndex = this.scheduledMeals.findIndex(meal => meal.id === mealData.id);
+        if (mealIndex !== -1) {
+            this.scheduledMeals[mealIndex].date = new Date(targetDate);
+            
+            // Re-render the calendar to show the updated meal positions
+            this.render();
+            
+            // Show success notification
+            this.showMoveSuccess(mealData.name, targetDate);
+            
+            // Trigger update event for other components
+            this.notifyMealMoved(mealData, targetDate);
+        }
+    }
+
+    showConflictDialog(draggedMeal, existingMeal, targetDate) {
+        const modal = this.createConflictModal(draggedMeal, existingMeal, targetDate);
+        document.body.appendChild(modal);
+    }
+
+    createConflictModal(draggedMeal, existingMeal, targetDate) {
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+        modal.innerHTML = `
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4">
+                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Meal Conflict</h2>
+                </div>
+                <div class="px-6 py-4">
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">
+                        There's already a ${existingMeal.mealType} meal scheduled for ${this.formatDate(new Date(targetDate))}:
+                    </p>
+                    <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded mb-4">
+                        <strong class="text-gray-900 dark:text-white">${existingMeal.name}</strong>
+                    </div>
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">
+                        What would you like to do with <strong>${draggedMeal.name}</strong>?
+                    </p>
+                </div>
+                <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end space-x-2">
+                    <button class="conflict-action px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-gray-200 rounded" data-action="cancel">
+                        Cancel
+                    </button>
+                    <button class="conflict-action px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded" data-action="swap">
+                        Swap Meals
+                    </button>
+                    <button class="conflict-action px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded" data-action="replace">
+                        Replace Existing
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Add event listeners
+        modal.querySelectorAll('.conflict-action').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const action = btn.dataset.action;
+                this.handleConflictResolution(action, draggedMeal, existingMeal, targetDate);
+                document.body.removeChild(modal);
+            });
+        });
+
+        return modal;
+    }
+
+    handleConflictResolution(action, draggedMeal, existingMeal, targetDate) {
+        switch (action) {
+            case 'cancel':
+                console.log('🎯 Meal move cancelled');
+                break;
+            case 'swap':
+                this.swapMeals(draggedMeal, existingMeal, targetDate);
+                break;
+            case 'replace':
+                this.replaceMeal(draggedMeal, existingMeal, targetDate);
+                break;
+        }
+    }
+
+    swapMeals(draggedMeal, existingMeal, targetDate) {
+        // Move dragged meal to target date
+        const draggedIndex = this.scheduledMeals.findIndex(meal => meal.id === draggedMeal.id);
+        const existingIndex = this.scheduledMeals.findIndex(meal => meal.id === existingMeal.id);
+
+        if (draggedIndex !== -1 && existingIndex !== -1) {
+            // Swap the dates
+            const originalDate = this.scheduledMeals[draggedIndex].date;
+            this.scheduledMeals[draggedIndex].date = new Date(targetDate);
+            this.scheduledMeals[existingIndex].date = originalDate;
+
+            this.render();
+            this.showMoveSuccess(`Swapped ${draggedMeal.name} and ${existingMeal.name}`, targetDate);
+        }
+    }
+
+    replaceMeal(draggedMeal, existingMeal, targetDate) {
+        // Remove existing meal and move dragged meal
+        const existingIndex = this.scheduledMeals.findIndex(meal => meal.id === existingMeal.id);
+        if (existingIndex !== -1) {
+            this.scheduledMeals.splice(existingIndex, 1);
+        }
+
+        this.moveMeal(draggedMeal, targetDate);
+        this.showMoveSuccess(`Replaced ${existingMeal.name} with ${draggedMeal.name}`, targetDate);
+    }
+
+    showMoveSuccess(message, targetDate) {
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+        notification.textContent = `✅ ${message}`;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+        }, 3000);
+    }
+
+    showDropError(message) {
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+        notification.textContent = `❌ ${message}`;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+        }, 3000);
+    }
+
+    notifyMealMoved(mealData, targetDate) {
+        // Dispatch custom event for other components to listen to
+        const event = new CustomEvent('mealMoved', {
+            detail: {
+                mealId: mealData.id,
+                mealName: mealData.name,
+                mealType: mealData.mealType,
+                originalDate: mealData.originalDate,
+                newDate: targetDate
+            }
+        });
+        
+        document.dispatchEvent(event);
     }
 }
 

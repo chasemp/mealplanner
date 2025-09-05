@@ -63,6 +63,9 @@ class ItineraryView {
         `;
 
         this.attachEventListeners();
+        
+        // Listen for meal move events from calendar view
+        this.listenForMealMoves();
     }
 
     formatDateRange() {
@@ -239,6 +242,55 @@ class ItineraryView {
                 this.generateMealPlan();
             });
         }
+    }
+
+    listenForMealMoves() {
+        // Listen for meal move events from calendar view
+        document.addEventListener('mealMoved', (e) => {
+            const { mealId, mealName, mealType, originalDate, newDate } = e.detail;
+            
+            // Only respond to moves for our meal type
+            if (mealType === this.mealType) {
+                console.log(`🔄 Itinerary view updating for ${mealType} meal move:`, mealName);
+                
+                // Update our local data if we have it
+                this.updateMealData(mealId, newDate);
+                
+                // Re-render to show the updated schedule
+                this.render();
+                
+                // Show notification
+                this.showMoveNotification(mealName, newDate);
+            }
+        });
+    }
+
+    updateMealData(mealId, newDate) {
+        // Update meal data in our local storage
+        // This would typically sync with the database
+        console.log(`📅 Updating meal ${mealId} to ${newDate}`);
+        
+        // In a real implementation, this would update the database
+        // For now, we'll just log the change
+    }
+
+    showMoveNotification(mealName, newDate) {
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 left-4 bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+        notification.innerHTML = `
+            <div class="flex items-center space-x-2">
+                <span>🔄</span>
+                <span>Itinerary updated: ${mealName} moved to ${new Date(newDate).toLocaleDateString()}</span>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+        }, 3000);
     }
 
     generateMealPlan() {
