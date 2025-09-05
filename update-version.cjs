@@ -20,7 +20,8 @@ const files = [
         path: 'index.html',
         patterns: [
             { regex: /styles\.css\?v=[\d.]+/g, replacement: `styles.css?v=${version}` },
-            { regex: /main\.js\?v=[\d.]+/g, replacement: `main.js?v=${version}` }
+            { regex: /main\.js\?v=[\d.]+/g, replacement: `main.js?v=${version}` },
+            { regex: /<span id="version-display">v[\d.]+<\/span>/g, replacement: `<span id="version-display">v${version}</span>` }
         ]
     },
     {
