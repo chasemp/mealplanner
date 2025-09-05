@@ -2,11 +2,14 @@
 class MealPlannerApp {
     constructor() {
         this.currentTab = 'recipes';
+        this.version = '2025.09.05.0823';
         this.init();
     }
 
     init() {
-        console.log('🚀 Initializing MealPlanner...');
+        console.log(`🚀 Initializing MealPlanner v${this.version}...`);
+        console.log('📍 Location:', window.location.href);
+        console.log('🕐 Timestamp:', new Date().toISOString());
         
         // Hide loading and show app
         setTimeout(() => {
@@ -16,7 +19,7 @@ class MealPlannerApp {
             this.setupEventListeners();
             this.generateCalendarDays();
             
-            console.log('✅ MealPlanner initialized successfully!');
+            console.log(`✅ MealPlanner v${this.version} initialized successfully!`);
         }, 1000);
     }
 
