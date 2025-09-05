@@ -16,17 +16,27 @@ const createTestDatabase = () => {
       
       if (sql.includes('INSERT INTO ingredients')) {
         const id = nextId++
-        const [name, category, default_unit, cost_per_unit, storage_notes, nutrition_per_100g, barcode, brand] = params
+        // Handle different INSERT parameter patterns
+        let name, category, default_unit, cost_per_unit, storage_notes, nutrition_per_100g, barcode, brand
+        
+        if (sql.includes('(name, category, default_unit, nutrition_per_100g)')) {
+          [name, category, default_unit, nutrition_per_100g] = params
+        } else if (sql.includes('(name, category, default_unit, cost_per_unit, storage_notes)')) {
+          [name, category, default_unit, cost_per_unit, storage_notes] = params
+        } else {
+          [name, category, default_unit, cost_per_unit, storage_notes, nutrition_per_100g, barcode, brand] = params
+        }
+        
         mockData.set(id, {
           id,
           name: name || `Ingredient ${id}`,
-          category: category || 'other',
-          default_unit: default_unit || 'pieces',
-          cost_per_unit: cost_per_unit || null,
-          storage_notes: storage_notes || null,
-          nutrition_per_100g: nutrition_per_100g || null,
-          barcode: barcode || null,
-          brand: brand || null,
+          category: category,
+          default_unit: default_unit,
+          cost_per_unit: cost_per_unit,
+          storage_notes: storage_notes,
+          nutrition_per_100g: nutrition_per_100g,
+          barcode: barcode,
+          brand: brand,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
@@ -98,6 +108,25 @@ const createTestDatabase = () => {
       if (sql.includes('SELECT') && sql.includes('ingredients')) {
         const ingredients = Array.from(mockData.values())
         
+        // Handle specific column selections
+        if (sql.includes('SELECT name, default_unit')) {
+          return [{
+            columns: ['name', 'default_unit'],
+            values: ingredients.map(ing => [ing.name, ing.default_unit])
+          }]
+        }
+        
+        if (sql.includes('SELECT nutrition_per_100g')) {
+          const ingredient = ingredients.find(ing => sql.includes(`WHERE name = ?`) ? ing.name === params[0] : true)
+          if (ingredient) {
+            return [{
+              columns: ['nutrition_per_100g'],
+              values: [[ingredient.nutrition_per_100g]]
+            }]
+          }
+          return [{ columns: [], values: [] }]
+        }
+        
         // Handle nutrition_per_100g JSON queries
         if (sql.includes('nutrition_per_100g') && sql.includes('JSON')) {
           const ingredient = ingredients[0] // For test simplicity
@@ -161,12 +190,14 @@ const createTestDatabase = () => {
         if (sql.includes('GROUP BY category')) {
           const categoryGroups = new Map()
           ingredients.forEach(ing => {
-            const count = categoryGroups.get(ing.category) || 0
-            categoryGroups.set(ing.category, count + 1)
+            if (ing.category) { // Only count non-null categories
+              const count = categoryGroups.get(ing.category) || 0
+              categoryGroups.set(ing.category, count + 1)
+            }
           })
           return [{
             columns: ['category', 'count'],
-            values: Array.from(categoryGroups.entries())
+            values: Array.from(categoryGroups.entries()).map(([category, count]) => [category, count])
           }]
         }
         
@@ -189,10 +220,10 @@ const createTestDatabase = () => {
         // Handle JOIN queries with recipe_count
         if (sql.includes('LEFT JOIN') && sql.includes('recipe_count')) {
           return [{
-            columns: ['id', 'name', 'category', 'default_unit', 'cost_per_unit', 'storage_notes', 'nutrition_per_100g', 'barcode', 'brand', 'recipe_count'],
+            columns: ['id', 'name', 'category', 'default_unit', 'cost_per_unit', 'storage_notes', 'nutrition_per_100g', 'barcode', 'recipe_count'],
             values: ingredients.map(ing => [
               ing.id, ing.name, ing.category, ing.default_unit, ing.cost_per_unit, 
-              ing.storage_notes, ing.nutrition_per_100g, ing.barcode, ing.brand, 0
+              ing.storage_notes, ing.nutrition_per_100g, ing.barcode, 0
             ])
           }]
         }
