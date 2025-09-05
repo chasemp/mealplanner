@@ -29,56 +29,42 @@ class GroceryListManager {
     }
 
     async loadIngredients() {
-        this.ingredients = [
-            { id: 1, name: 'Chicken Breast', category: 'meat', default_unit: 'lbs' },
-            { id: 2, name: 'Red Onion', category: 'produce', default_unit: 'pieces' },
-            { id: 3, name: 'Garlic', category: 'produce', default_unit: 'cloves' },
-            { id: 4, name: 'Olive Oil', category: 'pantry', default_unit: 'tbsp' },
-            { id: 5, name: 'Salt', category: 'pantry', default_unit: 'tsp' },
-            { id: 6, name: 'Black Pepper', category: 'pantry', default_unit: 'tsp' },
-            { id: 7, name: 'Rice', category: 'grains', default_unit: 'cups' },
-            { id: 8, name: 'Cheddar Cheese', category: 'dairy', default_unit: 'oz' },
-            { id: 9, name: 'Milk', category: 'dairy', default_unit: 'cups' },
-            { id: 10, name: 'Eggs', category: 'dairy', default_unit: 'pieces' }
-        ];
+        // Load from centralized demo data for consistency
+        if (window.DemoDataManager) {
+            const demoData = new window.DemoDataManager();
+            this.ingredients = demoData.getIngredients();
+            console.log(`✅ Grocery List Manager loaded ${this.ingredients.length} consistent ingredients from demo data`);
+        } else {
+            // Fallback to empty array if demo data not available
+            this.ingredients = [];
+            console.warn('⚠️ Demo data manager not available, using empty ingredients list');
+        }
     }
 
     async loadRecipes() {
-        this.recipes = [
-            {
-                id: 1,
-                title: 'Grilled Chicken with Rice',
-                serving_count: 4,
-                ingredients: [
-                    { ingredient_id: 1, name: 'Chicken Breast', quantity: 1.5, unit: 'lbs' },
-                    { ingredient_id: 7, name: 'Rice', quantity: 1, unit: 'cups' },
-                    { ingredient_id: 5, name: 'Salt', quantity: 1, unit: 'tsp' },
-                    { ingredient_id: 6, name: 'Black Pepper', quantity: 0.5, unit: 'tsp' }
-                ]
-            },
-            {
-                id: 2,
-                title: 'Cheesy Garlic Rice',
-                serving_count: 6,
-                ingredients: [
-                    { ingredient_id: 7, name: 'Rice', quantity: 1.5, unit: 'cups' },
-                    { ingredient_id: 3, name: 'Garlic', quantity: 4, unit: 'cloves' },
-                    { ingredient_id: 4, name: 'Olive Oil', quantity: 2, unit: 'tbsp' },
-                    { ingredient_id: 8, name: 'Cheddar Cheese', quantity: 8, unit: 'oz' }
-                ]
-            }
-        ];
+        // Load from centralized demo data for consistency
+        if (window.DemoDataManager) {
+            const demoData = new window.DemoDataManager();
+            this.recipes = demoData.getRecipes();
+            console.log(`✅ Grocery List Manager loaded ${this.recipes.length} consistent recipes from demo data`);
+        } else {
+            // Fallback to empty array if demo data not available
+            this.recipes = [];
+            console.warn('⚠️ Demo data manager not available, using empty recipes list');
+        }
     }
 
     async loadScheduledMeals() {
-        // Mock scheduled meals for current week
-        const weekStart = this.currentWeek;
-        this.scheduledMeals = [
-            { id: 1, recipe_id: 1, scheduled_date: this.addDays(weekStart, 0), meal_type: 'dinner' },
-            { id: 2, recipe_id: 2, scheduled_date: this.addDays(weekStart, 1), meal_type: 'dinner' },
-            { id: 3, recipe_id: 1, scheduled_date: this.addDays(weekStart, 3), meal_type: 'lunch' },
-            { id: 4, recipe_id: 2, scheduled_date: this.addDays(weekStart, 5), meal_type: 'dinner' }
-        ];
+        // Load from centralized demo data for consistency
+        if (window.DemoDataManager) {
+            const demoData = new window.DemoDataManager();
+            this.scheduledMeals = demoData.getScheduledMeals();
+            console.log(`✅ Grocery List Manager loaded ${this.scheduledMeals.length} consistent scheduled meals from demo data`);
+        } else {
+            // Fallback to empty array if demo data not available
+            this.scheduledMeals = [];
+            console.warn('⚠️ Demo data manager not available, using empty scheduled meals list');
+        }
     }
 
     async loadPantryItems() {
