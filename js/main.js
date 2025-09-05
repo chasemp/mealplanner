@@ -2,13 +2,15 @@
 class MealPlannerApp {
     constructor() {
         this.currentTab = 'recipes';
-        this.version = '2025.09.05.1012';
+        this.version = '2025.09.05.1228';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
         this.groceryListManager = null;
         this.googleCalendarIntegration = null;
         this.mealRotationEngine = null;
+        this.serviceWorker = null;
+        this.installPrompt = null;
         this.currentViews = {
             breakfast: 'itinerary',
             lunch: 'itinerary', 
@@ -36,6 +38,8 @@ class MealPlannerApp {
             this.initializeGroceryListManager();
             this.initializeGoogleCalendar();
             this.initializeMealRotationEngine();
+            this.initializeServiceWorker();
+            this.initializePWAFeatures();
             this.initializeItineraryViews();
             this.generateCalendarDays();
             
@@ -215,6 +219,245 @@ class MealPlannerApp {
         window.mealRotationEngine = this.mealRotationEngine;
         
         console.log('✅ Meal Rotation Engine initialized');
+    }
+
+    async initializeServiceWorker() {
+        console.log('🔧 Initializing Service Worker...');
+        
+        if ('serviceWorker' in navigator) {
+            try {
+                // Register service worker
+                const registration = await navigator.serviceWorker.register('/sw.js', {
+                    scope: '/'
+                });
+                
+                this.serviceWorker = registration;
+                
+                console.log('✅ Service Worker registered:', registration.scope);
+                
+                // Handle updates
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    console.log('🔄 Service Worker: New version available');
+                    
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            this.showUpdateAvailable();
+                        }
+                    });
+                });
+                
+                // Listen for messages from service worker
+                navigator.serviceWorker.addEventListener('message', (event) => {
+                    this.handleServiceWorkerMessage(event.data);
+                });
+                
+                // Check if there's a waiting service worker
+                if (registration.waiting) {
+                    this.showUpdateAvailable();
+                }
+                
+            } catch (error) {
+                console.error('❌ Service Worker registration failed:', error);
+            }
+        } else {
+            console.log('⚠️ Service Worker not supported');
+        }
+    }
+
+    async initializePWAFeatures() {
+        console.log('📱 Initializing PWA Features...');
+        
+        // Handle install prompt
+        window.addEventListener('beforeinstallprompt', (event) => {
+            console.log('📱 PWA: Install prompt available');
+            event.preventDefault();
+            this.installPrompt = event;
+            this.showInstallButton();
+        });
+        
+        // Handle app installed
+        window.addEventListener('appinstalled', () => {
+            console.log('📱 PWA: App installed successfully');
+            this.installPrompt = null;
+            this.hideInstallButton();
+            this.showNotification('MealPlanner installed successfully!', 'success');
+        });
+        
+        // Check if already installed
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            console.log('📱 PWA: Running in standalone mode');
+            this.hideInstallButton();
+        }
+        
+        // Initialize push notifications (if supported)
+        if ('Notification' in window && 'serviceWorker' in navigator) {
+            this.initializePushNotifications();
+        }
+        
+        console.log('✅ PWA Features initialized');
+    }
+
+    async initializePushNotifications() {
+        try {
+            // Check current permission
+            let permission = Notification.permission;
+            
+            if (permission === 'default') {
+                // Don't request permission automatically - let user decide
+                console.log('🔔 Push notifications: Permission not requested yet');
+                return;
+            }
+            
+            if (permission === 'granted' && this.serviceWorker) {
+                // Get or create push subscription
+                const subscription = await this.serviceWorker.pushManager.getSubscription();
+                
+                if (!subscription) {
+                    console.log('🔔 Push notifications: No subscription found');
+                } else {
+                    console.log('🔔 Push notifications: Active subscription found');
+                }
+            }
+            
+        } catch (error) {
+            console.error('❌ Push notifications initialization failed:', error);
+        }
+    }
+
+    handleServiceWorkerMessage(data) {
+        console.log('💬 Service Worker message:', data);
+        
+        switch (data.type) {
+            case 'SYNC_MEAL_PLANS':
+                if (this.googleCalendarIntegration && this.googleCalendarIntegration.isAuthenticated) {
+                    this.syncMealPlanToCalendar();
+                }
+                break;
+                
+            case 'CACHE_UPDATED':
+                this.showNotification('App updated and ready to use offline!', 'info');
+                break;
+        }
+    }
+
+    showUpdateAvailable() {
+        const updateBanner = document.createElement('div');
+        updateBanner.id = 'update-banner';
+        updateBanner.className = 'fixed top-0 left-0 right-0 bg-blue-600 text-white p-3 text-center z-50';
+        updateBanner.innerHTML = `
+            <div class="flex items-center justify-center space-x-4">
+                <span>🔄 A new version of MealPlanner is available!</span>
+                <button id="update-btn" class="bg-white text-blue-600 px-3 py-1 rounded text-sm font-medium hover:bg-gray-100">
+                    Update Now
+                </button>
+                <button id="dismiss-update" class="text-blue-200 hover:text-white">
+                    ✕
+                </button>
+            </div>
+        `;
+        
+        document.body.appendChild(updateBanner);
+        
+        // Handle update button
+        document.getElementById('update-btn').addEventListener('click', () => {
+            this.applyUpdate();
+        });
+        
+        // Handle dismiss button
+        document.getElementById('dismiss-update').addEventListener('click', () => {
+            updateBanner.remove();
+        });
+    }
+
+    async applyUpdate() {
+        if (this.serviceWorker && this.serviceWorker.waiting) {
+            // Tell the waiting service worker to skip waiting
+            this.serviceWorker.waiting.postMessage({ type: 'SKIP_WAITING' });
+            
+            // Reload the page to use the new service worker
+            window.location.reload();
+        }
+    }
+
+    showInstallButton() {
+        // Add install button to header if not already present
+        if (document.getElementById('install-btn')) return;
+        
+        const header = document.querySelector('header .flex');
+        if (header) {
+            const installBtn = document.createElement('button');
+            installBtn.id = 'install-btn';
+            installBtn.className = 'text-sm bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded flex items-center space-x-1';
+            installBtn.title = 'Install MealPlanner as an app';
+            installBtn.innerHTML = `
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                </svg>
+                <span>Install</span>
+            `;
+            
+            installBtn.addEventListener('click', () => {
+                this.promptInstall();
+            });
+            
+            header.appendChild(installBtn);
+        }
+    }
+
+    hideInstallButton() {
+        const installBtn = document.getElementById('install-btn');
+        if (installBtn) {
+            installBtn.remove();
+        }
+    }
+
+    async promptInstall() {
+        if (this.installPrompt) {
+            try {
+                const result = await this.installPrompt.prompt();
+                console.log('📱 PWA: Install prompt result:', result.outcome);
+                
+                if (result.outcome === 'accepted') {
+                    this.installPrompt = null;
+                }
+            } catch (error) {
+                console.error('❌ PWA: Install prompt failed:', error);
+            }
+        }
+    }
+
+    async requestNotificationPermission() {
+        if ('Notification' in window) {
+            try {
+                const permission = await Notification.requestPermission();
+                
+                if (permission === 'granted') {
+                    this.showNotification('Notifications enabled! You\'ll receive meal reminders.', 'success');
+                    this.initializePushNotifications();
+                } else {
+                    this.showNotification('Notifications disabled. You can enable them in browser settings.', 'info');
+                }
+                
+                return permission;
+            } catch (error) {
+                console.error('❌ Notification permission request failed:', error);
+                return 'denied';
+            }
+        }
+        
+        return 'unsupported';
+    }
+
+    async scheduleBackgroundSync(tag = 'database-sync') {
+        if (this.serviceWorker && 'sync' in window.ServiceWorkerRegistration.prototype) {
+            try {
+                await this.serviceWorker.sync.register(tag);
+                console.log('🔄 Background sync scheduled:', tag);
+            } catch (error) {
+                console.error('❌ Background sync registration failed:', error);
+            }
+        }
     }
 
     initializeItineraryViews() {
@@ -897,6 +1140,14 @@ class MealPlannerApp {
             { ingredientId: 'ing-11', quantity: 1 } // Curry Powder
         ];
     }
+}
+
+// Make MealPlannerApp globally available for testing
+if (typeof window !== 'undefined') {
+    window.MealPlannerApp = MealPlannerApp;
+}
+if (typeof global !== 'undefined') {
+    global.MealPlannerApp = MealPlannerApp;
 }
 
 // Initialize the app when DOM is ready

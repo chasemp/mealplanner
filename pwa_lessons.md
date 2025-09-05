@@ -64,33 +64,64 @@
     - Custom domain configuration (mealplanner.523.life)
     - Static site optimization
 
-### 🚧 **Phase 3: Advanced Features (IN PROGRESS)**
-11. **🔄 Drag & Drop Scheduling** *(NEXT)*
+### ✅ **Phase 3: Advanced Features (COMPLETED)**
+11. **✅ Drag & Drop Scheduling**
     - Drag meals between dates in calendar view
     - Visual feedback during drag operations
     - Conflict resolution and validation
     - Touch support for mobile devices
 
-12. **⏳ Intelligent Meal Rotation**
+12. **✅ Intelligent Meal Rotation**
     - Recipe preference weights and rotation rules
     - Constraint-based scheduling (no back-to-back meals)
     - Ingredient optimization (shared ingredients)
     - Pantry stock consideration
 
-13. **⏳ Google Calendar Integration**
+13. **✅ Google Calendar Integration**
     - OAuth integration for calendar access
     - Publish meal plans (recipe names only)
     - Sync with existing calendar events
     - Privacy-focused implementation
 
-### 📋 **Phase 4: Enhancement & Optimization (PLANNED)**
-14. **Service Worker & PWA Features**
+### 🚧 **Phase 4: Core Feature Completion (IN PROGRESS)**
+14. **🔄 Recipe Management Enhancement** *(NEXT)*
+    - Complete Add Recipe functionality with full form
+    - Recipe editing and deletion
+    - Image upload and management
+    - Recipe validation and error handling
+
+15. **⏳ Ingredient Management Enhancement**
+    - Complete Add Ingredient functionality
+    - Category selection and validation
+    - Ingredient editing and deletion
+    - Duplicate detection and prevention
+
+16. **⏳ Barcode Scanning Implementation**
+    - Camera access and barcode detection
+    - Product database integration (OpenFoodFacts API)
+    - PWA installation detection and graceful degradation
+    - Offline barcode caching
+
+17. **⏳ Meal Planning UX Improvements**
+    - Clear buttons for each meal type planning
+    - Clarify Auto Plan vs Generate Plan functionality
+    - Bulk meal planning operations
+    - Planning history and undo functionality
+
+18. **⏳ Grocery List Enhancement**
+    - Native export functionality (PDF/print/share)
+    - Clear and regenerate functionality
+    - Cumulative week selection (This Week/Next Week/Week of)
+    - Shopping list templates and customization
+
+### 📋 **Phase 5: Enhancement & Optimization (PLANNED)**
+19. **Service Worker & PWA Features**
     - Offline functionality
     - Background sync
     - Push notifications for meal reminders
     - App installation prompts
 
-15. **Advanced Grocery Features**
+20. **Advanced Grocery Features**
     - Store layout optimization
     - Price tracking and budgeting
     - Shopping list sharing
