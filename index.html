@@ -26,7 +26,7 @@
             }
         }
     </script>
-    <link rel="stylesheet" href="./css/styles.css?v=2025.09.05.0920">
+    <link rel="stylesheet" href="./css/styles.css?v=2025.09.05.0943">
 </head>
   <body class="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors">
     <div id="app">
@@ -59,6 +59,16 @@
                                 </select>
                                 <button id="export-db-btn" class="text-sm bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded" title="Export current database">
                                     Export
+                                </button>
+                            </div>
+                            
+                            <!-- Google Calendar Integration -->
+                            <div class="flex items-center space-x-2">
+                                <button id="google-calendar-btn" class="text-sm bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded flex items-center space-x-1" title="Sync with Google Calendar">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <span id="google-calendar-status">Connect</span>
                                 </button>
                             </div>
                             
@@ -262,7 +272,7 @@
         
         <!-- Version Footer -->
         <footer class="fixed bottom-2 right-2 text-xs text-gray-400 bg-white/80 backdrop-blur-sm px-2 py-1 rounded shadow-sm">
-            <span id="version-display">v2025.09.05.0920</span>
+            <span id="version-display">v2025.09.05.0943</span>
         </footer>
     </div>
 
@@ -274,6 +284,7 @@
     <script src="./js/calendar-view.js?v=2025.09.05.0857"></script>
     <script src="./js/recipe-manager.js?v=2025.09.05.0853"></script>
     <script src="./js/grocery-list-manager.js?v=2025.09.05.0853"></script>
-    <script src="./js/main.js?v=2025.09.05.0920"></script>
+    <script src="./js/google-calendar-integration.js?v=2025.09.05.0920"></script>
+    <script src="./js/main.js?v=2025.09.05.0943"></script>
 </body>
 </html>
