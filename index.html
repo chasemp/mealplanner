@@ -64,6 +64,7 @@
             <div class="text-center">
                 <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
                 <p class="text-gray-600">Loading MealPlanner...</p>
+                <p id="loading-timeout" class="text-sm text-gray-400 mt-2 hidden">Taking longer than expected... Check console for errors.</p>
             </div>
         </div>
 
@@ -357,11 +358,41 @@
             }
         }
 
+        // Show timeout message after 5 seconds
+        setTimeout(() => {
+            const timeoutMsg = document.getElementById('loading-timeout');
+            if (timeoutMsg && !timeoutMsg.classList.contains('hidden')) {
+                timeoutMsg.classList.remove('hidden');
+            }
+        }, 5000);
+
         // Initialize the app when DOM is ready
+        function initializeApp() {
+            try {
+                console.log('Initializing MealPlanner...');
+                const app = new StaticMealPlanner();
+                console.log('MealPlanner initialized successfully');
+            } catch (error) {
+                console.error('Failed to initialize MealPlanner:', error);
+                document.body.innerHTML = `
+                    <div class="min-h-screen bg-gray-100 flex items-center justify-center">
+                        <div class="bg-white p-8 rounded-lg shadow-lg max-w-md">
+                            <h1 class="text-xl font-bold text-red-600 mb-4">Initialization Error</h1>
+                            <p class="text-gray-700 mb-4">Failed to load MealPlanner. Please check the console for details.</p>
+                            <p class="text-sm text-gray-500">Error: ${error.message}</p>
+                            <button onclick="location.reload()" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                                Retry
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => new StaticMealPlanner());
+            document.addEventListener('DOMContentLoaded', initializeApp);
         } else {
-            new StaticMealPlanner();
+            initializeApp();
         }
     </script>
 </body>
