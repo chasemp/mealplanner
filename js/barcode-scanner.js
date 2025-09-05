@@ -266,8 +266,8 @@ class ProductDatabase {
             console.log(`📦 API Response for ${barcode}:`, data);
             
             if (data.status === 0) {
-                console.log(`❌ Product not found in API: ${barcode}`);
-                return null;
+                console.log(`❌ Product not found in API: ${barcode}, falling back to mock data`);
+                return this.getMockProduct(barcode);
             }
 
             const product = this.parseProductData(data.product);
@@ -352,6 +352,46 @@ class ProductDatabase {
                 image: null,
                 quantity: '1L',
                 packaging: 'Carton',
+                stores: 'Demo Store',
+                countries: 'Demo Country'
+            },
+            '7622210992741': {
+                barcode: '7622210992741',
+                name: 'Coca-Cola Classic',
+                brand: 'Coca-Cola',
+                category: 'beverages',
+                ingredients: 'Carbonated water, sugar, caramel color, phosphoric acid, natural flavors, caffeine',
+                nutrition: {
+                    energy: 140,
+                    protein: 0,
+                    carbs: 39,
+                    fat: 0,
+                    fiber: 0,
+                    sodium: 0.045
+                },
+                image: null,
+                quantity: '355ml',
+                packaging: 'Can',
+                stores: 'Demo Store',
+                countries: 'Demo Country'
+            },
+            '3017620422003': {
+                barcode: '3017620422003',
+                name: 'Nutella Hazelnut Spread',
+                brand: 'Ferrero',
+                category: 'spreads',
+                ingredients: 'Sugar, palm oil, hazelnuts, cocoa, milk powder, lecithin, vanillin',
+                nutrition: {
+                    energy: 539,
+                    protein: 6.3,
+                    carbs: 57.5,
+                    fat: 30.9,
+                    fiber: 0,
+                    sodium: 0.107
+                },
+                image: null,
+                quantity: '400g',
+                packaging: 'Jar',
                 stores: 'Demo Store',
                 countries: 'Demo Country'
             }
