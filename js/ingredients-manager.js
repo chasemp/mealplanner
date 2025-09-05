@@ -31,14 +31,25 @@ class IngredientsManager {
     }
 
     applyFilters() {
+        console.log('🔍 Applying filters:', this.currentFilter);
+        console.log('📦 Total ingredients:', this.ingredients.length);
+        
         this.filteredIngredients = this.ingredients.filter(ingredient => {
             const matchesSearch = !this.currentFilter.search || 
                 ingredient.name.toLowerCase().includes(this.currentFilter.search.toLowerCase());
             const matchesCategory = !this.currentFilter.category || 
                 ingredient.category === this.currentFilter.category;
             
-            return matchesSearch && matchesCategory;
+            const matches = matchesSearch && matchesCategory;
+            
+            if (this.currentFilter.search) {
+                console.log(`🔍 "${ingredient.name}" matches search "${this.currentFilter.search}": ${matchesSearch}`);
+            }
+            
+            return matches;
         });
+        
+        console.log('✅ Filtered ingredients:', this.filteredIngredients.length);
     }
 
     render() {
