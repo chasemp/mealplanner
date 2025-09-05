@@ -394,9 +394,6 @@ class IngredientsManager {
             scanBtn.addEventListener('click', () => this.showBarcodeScanner());
         }
 
-        // Scanner modal event listeners
-        this.attachScannerEventListeners();
-
         // Edit ingredient buttons
         this.container.querySelectorAll('.edit-ingredient').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -709,21 +706,33 @@ class IngredientsManager {
         }
     }
 
+    showBarcodeScanner() {
+        // Use the shared barcode scanner component
+        const sharedScanner = window.SharedBarcodeScanner?.getInstance();
+        if (!sharedScanner) {
+            this.showNotification('Barcode scanner not available', 'error');
+            return;
+        }
+
+        // Show the scanner with ingredients context
+        sharedScanner.show('ingredients', 
+            (ingredient, context) => {
+                console.log('Product scanned for ingredients:', ingredient);
+                this.showNotification(`Added "${ingredient.name}" to ingredients`, 'success');
+                // Refresh the ingredients view
+                this.applyFilters();
+                this.render();
+            },
+            (error) => {
+                console.error('Barcode scanner error:', error);
+                this.showNotification(`Scanner error: ${error.message}`, 'error');
+            }
+        );
+    }
+
     handleBarcodeScanning() {
-        // Check if app is installed as PWA
-        if (!this.isInstalled()) {
-            this.showNotification('Barcode scanning requires the app to be installed. Please install the app first.', 'info');
-            return;
-        }
-
-        // Check if camera is available
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            this.showNotification('Camera access is not available on this device', 'error');
-            return;
-        }
-
-        this.showNotification('Barcode scanning feature coming soon!', 'info');
-        // TODO: Implement barcode scanning functionality
+        // Legacy method - redirect to new implementation
+        this.showBarcodeScanner();
     }
 
     isInstalled() {
