@@ -26,7 +26,7 @@
             }
         }
     </script>
-    <link rel="stylesheet" href="./css/styles.css?v=2025.09.05.1228">
+    <link rel="stylesheet" href="./css/styles.css?v=2025.09.05.1239">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="./manifest.json">
@@ -141,19 +141,8 @@
 
                 <!-- Ingredients Tab -->
                 <div id="ingredients-tab" class="tab-content hidden">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-gray-900">Ingredients</h2>
-                        <div class="flex space-x-3">
-                            <button id="scan-barcode-btn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium">
-                                📱 Scan Barcode
-                            </button>
-                            <button id="add-ingredient-btn" class="btn-primary">
-                                Add Ingredient
-                            </button>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <p class="text-gray-600">Ingredients management with barcode scanning support.</p>
+                    <div id="ingredients-manager-container">
+                        <!-- Ingredients manager will be rendered here -->
                     </div>
                 </div>
 
@@ -287,7 +276,7 @@
         
         <!-- Version Footer -->
         <footer class="fixed bottom-2 right-2 text-xs text-gray-400 bg-white/80 backdrop-blur-sm px-2 py-1 rounded shadow-sm">
-            <span id="version-display">v2025.09.05.1228</span>
+            <span id="version-display">v2025.09.05.1239</span>
         </footer>
     </div>
 
@@ -298,9 +287,10 @@
     <script src="./js/itinerary-view.js?v=2025.09.05.0853"></script>
     <script src="./js/calendar-view.js?v=2025.09.05.0857"></script>
     <script src="./js/recipe-manager.js?v=2025.09.05.0853"></script>
+    <script src="./js/ingredients-manager.js?v=2025.09.05.0853"></script>
     <script src="./js/grocery-list-manager.js?v=2025.09.05.0853"></script>
     <script src="./js/google-calendar-integration.js?v=2025.09.05.0920"></script>
     <script src="./js/meal-rotation-engine.js?v=2025.09.05.0943"></script>
-    <script src="./js/main.js?v=2025.09.05.1228"></script>
+    <script src="./js/main.js?v=2025.09.05.1239"></script>
 </body>
 </html>
