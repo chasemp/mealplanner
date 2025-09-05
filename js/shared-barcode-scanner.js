@@ -79,6 +79,20 @@ class SharedBarcodeScanner {
                         </button>
                     </div>
                     
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Or enter barcode manually (for testing):
+                        </label>
+                        <div class="flex gap-2">
+                            <input type="text" id="manual-barcode-input" 
+                                   placeholder="Enter barcode number..." 
+                                   class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <button id="manual-barcode-submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors">
+                                Lookup
+                            </button>
+                        </div>
+                    </div>
+                    
                     <div id="shared-scanner-error" class="p-3 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded-lg hidden mb-4">
                         <p class="text-sm"></p>
                     </div>
