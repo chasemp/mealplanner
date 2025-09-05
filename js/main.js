@@ -2,7 +2,7 @@
 class MealPlannerApp {
     constructor() {
         this.currentTab = 'recipes';
-        this.version = '2025.09.05.0826';
+        this.version = '2025.09.05.0836';
         this.init();
     }
 
@@ -10,6 +10,9 @@ class MealPlannerApp {
         console.log(`🚀 Initializing MealPlanner v${this.version}...`);
         console.log('📍 Location:', window.location.href);
         console.log('🕐 Timestamp:', new Date().toISOString());
+        
+        // Update version display
+        this.updateVersionDisplay();
         
         // Hide loading and show app
         setTimeout(() => {
@@ -21,6 +24,14 @@ class MealPlannerApp {
             
             console.log(`✅ MealPlanner v${this.version} initialized successfully!`);
         }, 1000);
+    }
+
+    updateVersionDisplay() {
+        const versionElement = document.getElementById('version-display');
+        if (versionElement) {
+            versionElement.textContent = `v${this.version}`;
+            versionElement.title = `MealPlanner v${this.version}\nLoaded: ${new Date().toLocaleString()}\nLocation: ${window.location.href}`;
+        }
     }
 
     setupEventListeners() {
