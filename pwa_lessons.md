@@ -289,6 +289,51 @@ npm run deploy:bust       # Version + commit + push in one command
 - ✅ **Version logging**: Console logs help debug cache issues in production
 - ✅ **Automated workflow**: Reduce manual errors with npm scripts
 
+### 5. GitHub Pages Branch Strategy
+
+**The Problem**: GitHub Pages deployment conflicts when using multiple deployment methods.
+
+**Common Mistake**: GitHub Actions trying to deploy to main branch while GitHub Pages is configured for `gh-pages` branch.
+
+**The Solution**: Align your deployment workflow with GitHub Pages settings.
+
+```yaml
+# .github/workflows/deploy.yml - Deploy static files to gh-pages branch
+name: Deploy MealPlanner to GitHub Pages
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Deploy to gh-pages branch
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: .
+        publish_branch: gh-pages
+        exclude_assets: 'node_modules,src,scripts,test-results,playwright-report,.github,*.config.js,*.md,package*.json'
+```
+
+**Deployment Flow**:
+1. **Development**: Work on `main` branch with static files
+2. **Push Trigger**: `git push origin main` → GitHub Actions
+3. **Automated Deploy**: Copies static files to `gh-pages` branch  
+4. **GitHub Pages**: Serves from `gh-pages` branch
+5. **Cache-Busting**: Version parameters ensure fresh content
+
+**Critical Files for Static Deployment**:
+```bash
+.nojekyll              # Prevent Jekyll processing
+CNAME                  # Custom domain configuration  
+index.html             # Entry point with versioned assets
+js/main.js?v=timestamp # Cache-busted JavaScript
+css/styles.css?v=timestamp # Cache-busted CSS
+```
+
 ## 🔧 Development Workflow
 
 ### 1. Multi-Environment Development Scripts
