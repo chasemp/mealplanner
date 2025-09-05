@@ -50,11 +50,11 @@ class IngredientsManager {
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Ingredients</h2>
                     <div class="flex flex-wrap gap-3">
-                        <button id="scan-barcode-btn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center space-x-2">
+                        <button id="scan-barcode-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h2M4 4h5m0 0v5m0 0h5m0 0v5"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h2M4 4h5m3 0h6m-9 4h2m3 0h2M9 20h2m3 0h2"></path>
                             </svg>
-                            <span>📱 Scan Barcode</span>
+                            <span>Scan Barcode</span>
                         </button>
                         <button id="add-ingredient-btn" class="btn-primary flex items-center space-x-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -129,12 +129,84 @@ class IngredientsManager {
                     }
                 </div>
             </div>
+            
+            <!-- Barcode Scanner Modal -->
+            <div id="barcode-scanner-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+                <div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Scan Barcode</h3>
+                        <button id="close-scanner-btn" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div id="scanner-content">
+                        <div id="scanner-status" class="text-center mb-4">
+                            <p class="text-gray-600 dark:text-gray-400">Click "Start Scanning" to begin</p>
+                        </div>
+                        
+                        <div id="camera-container" class="relative bg-black rounded-lg overflow-hidden mb-4 hidden" style="aspect-ratio: 4/3;">
+                            <video id="scanner-video" class="w-full h-full object-cover" autoplay muted playsinline></video>
+                            <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <div class="border-2 border-blue-500 w-48 h-32 rounded-lg opacity-70"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-2">
+                            <button id="start-scanner-btn" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors">
+                                Start Scanning
+                            </button>
+                            <button id="stop-scanner-btn" class="flex-1 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors hidden">
+                                Stop Scanning
+                            </button>
+                        </div>
+                        
+                        <div id="scanner-error" class="mt-4 p-3 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded-lg hidden">
+                            <p class="text-sm"></p>
+                        </div>
+                        
+                        <div id="scanner-result" class="mt-4 p-3 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-lg hidden">
+                            <p class="text-sm font-medium">Barcode detected!</p>
+                            <p id="barcode-value" class="text-xs mt-1"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         `;
+        
+        // Initialize barcode scanner
+        this.initializeBarcodeScanner();
+    }
+
+    async initializeBarcodeScanner() {
+        if (typeof window.BarcodeScanner === 'undefined') {
+            console.warn('⚠️ BarcodeScanner not available');
+            return;
+        }
+
+        this.barcodeScanner = new window.BarcodeScanner();
+        this.productDatabase = new window.ProductDatabase();
+        
+        const supported = window.BarcodeScanner.isSupported();
+        console.log('📱 Barcode scanner support:', supported);
+        
+        if (!supported.supported) {
+            // Hide scan button if not supported
+            const scanBtn = document.getElementById('scan-barcode-btn');
+            if (scanBtn) {
+                scanBtn.style.display = 'none';
+            }
+        }
     }
 
     createIngredientCard(ingredient) {
         const nutrition = typeof ingredient.nutrition_per_100g === 'string' ? 
             JSON.parse(ingredient.nutrition_per_100g) : ingredient.nutrition_per_100g;
+        
+        // Calculate recipe usage
+        const recipeUsage = this.getIngredientRecipeUsage(ingredient.id);
         
         return `
             <div class="ingredient-card bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow p-6" data-ingredient-id="${ingredient.id}">
@@ -193,6 +265,29 @@ class IngredientsManager {
                             <p class="text-xs text-gray-700 dark:text-gray-300">${ingredient.storage_notes}</p>
                         </div>
                     ` : ''}
+                    
+                    ${recipeUsage.recipes.length > 0 ? `
+                        <div class="pt-2 border-t border-gray-200 dark:border-gray-700">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Used in ${recipeUsage.recipes.length} recipe${recipeUsage.recipes.length !== 1 ? 's' : ''}:</p>
+                            <div class="space-y-1">
+                                ${recipeUsage.recipes.slice(0, 3).map(usage => `
+                                    <div class="flex justify-between items-center text-xs">
+                                        <span class="text-gray-700 dark:text-gray-300 truncate">${usage.recipeName}</span>
+                                        <span class="text-gray-500 dark:text-gray-400 ml-2 flex-shrink-0">${usage.quantity} ${usage.unit}</span>
+                                    </div>
+                                `).join('')}
+                                ${recipeUsage.recipes.length > 3 ? `
+                                    <div class="text-xs text-blue-600 dark:text-blue-400">
+                                        +${recipeUsage.recipes.length - 3} more recipes
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    ` : `
+                        <div class="pt-2 border-t border-gray-200 dark:border-gray-700">
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Not used in any recipes yet</p>
+                        </div>
+                    `}
                 </div>
             </div>
         `;
@@ -206,6 +301,52 @@ class IngredientsManager {
         return this.ingredients.reduce((total, ingredient) => {
             return total + ((ingredient.cost_per_unit || 0) * (ingredient.avg_quantity || 1));
         }, 0);
+    }
+
+    getIngredientRecipeUsage(ingredientId) {
+        const recipes = [];
+        
+        // Get recipes from recipe manager or demo data
+        let allRecipes = [];
+        
+        if (window.recipeManager && window.recipeManager.recipes) {
+            allRecipes = window.recipeManager.recipes;
+        } else if (window.DemoDataManager) {
+            const demoData = new window.DemoDataManager();
+            allRecipes = demoData.getRecipes();
+        }
+        
+        // Find recipes that use this ingredient
+        allRecipes.forEach(recipe => {
+            if (recipe.ingredients && Array.isArray(recipe.ingredients)) {
+                const ingredientUsage = recipe.ingredients.find(ing => {
+                    // Match by ID or name (for flexibility)
+                    return ing.ingredient_id === ingredientId || 
+                           (ing.name && ing.name.toLowerCase() === this.getIngredientName(ingredientId).toLowerCase());
+                });
+                
+                if (ingredientUsage) {
+                    recipes.push({
+                        recipeId: recipe.id,
+                        recipeName: recipe.title || recipe.name,
+                        quantity: ingredientUsage.quantity || 0,
+                        unit: ingredientUsage.unit || 'units',
+                        mealType: recipe.meal_type || 'unknown'
+                    });
+                }
+            }
+        });
+        
+        return {
+            recipes: recipes,
+            totalRecipes: recipes.length,
+            totalQuantityNeeded: recipes.reduce((sum, r) => sum + (parseFloat(r.quantity) || 0), 0)
+        };
+    }
+
+    getIngredientName(ingredientId) {
+        const ingredient = this.ingredients.find(ing => ing.id === ingredientId);
+        return ingredient ? ingredient.name : '';
     }
 
     attachEventListeners() {
@@ -247,13 +388,14 @@ class IngredientsManager {
             });
         }
 
-        // Scan barcode button
+        // Barcode scanner button
         const scanBtn = this.container.querySelector('#scan-barcode-btn');
         if (scanBtn) {
-            scanBtn.addEventListener('click', () => {
-                this.handleBarcodeScanning();
-            });
+            scanBtn.addEventListener('click', () => this.showBarcodeScanner());
         }
+
+        // Scanner modal event listeners
+        this.attachScannerEventListeners();
 
         // Edit ingredient buttons
         this.container.querySelectorAll('.edit-ingredient').forEach(btn => {

@@ -419,12 +419,20 @@ class RecipeManager {
                     <div>
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-lg font-medium text-gray-900 dark:text-white">Ingredients</h3>
-                            <button type="button" id="add-ingredient-row" class="btn-secondary text-sm">
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                </svg>
-                                Add Ingredient
-                            </button>
+                            <div class="flex gap-2">
+                                <button type="button" id="scan-ingredient-barcode" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded text-sm transition-colors flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h2M4 4h5m3 0h6m-9 4h2m3 0h2M9 20h2m3 0h2"></path>
+                                    </svg>
+                                    Scan
+                                </button>
+                                <button type="button" id="add-ingredient-row" class="btn-secondary text-sm">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Add Ingredient
+                                </button>
+                            </div>
                         </div>
                         
                         <div id="ingredients-container" class="space-y-3">
