@@ -663,6 +663,40 @@ npm run restart
 
 ## 📱 Mobile-First PWA Design Lessons
 
+### 🎯 Centralized Demo Data Strategy
+**Critical Lesson**: Consistent, centralized demo data is essential for a professional PWA experience
+
+**The Problem**: Scattered hardcoded data across multiple components creates:
+- Inconsistent user experience with orphaned references
+- Broken search functionality due to mismatched data
+- Scheduled meals referencing non-existent recipes
+- Different ingredient lists in different components
+- Confusing demo experience that doesn't showcase features properly
+
+**The Solution**: Implement a centralized DemoDataManager with:
+- **Single source of truth** for all demo data (ingredients, recipes, scheduled meals)
+- **Realistic relationships** ensuring all references are valid
+- **Comprehensive coverage** (30+ ingredients, 8+ recipes, multiple meal types)
+- **Cross-component consistency** - all managers use the same data source
+- **Proper validation** with consistency checking methods
+- **Search-friendly structure** supporting filtering and search functionality
+- **Comprehensive testing** to ensure data relationships remain intact
+
+**Key Implementation Points**:
+```javascript
+// Centralized demo data manager
+const demoData = new DemoDataManager();
+this.ingredients = demoData.getIngredients();
+this.recipes = demoData.getRecipes();
+this.scheduledMeals = demoData.getScheduledMeals();
+
+// Validation ensures consistency
+const issues = demoData.validateConsistency();
+// Returns [] if all relationships are valid
+```
+
+**Impact**: Professional demo experience that properly showcases all PWA features
+
 ### Critical Mobile UX Issues Discovered
 After installing the PWA on Android, several mobile-specific UI issues were identified:
 

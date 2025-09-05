@@ -20,59 +20,29 @@ class RecipeManager {
     }
 
     async loadIngredients() {
-        // Mock implementation - in real app this would query the database
-        this.ingredients = [
-            { id: 1, name: 'Chicken Breast', category: 'meat', default_unit: 'lbs' },
-            { id: 2, name: 'Red Onion', category: 'produce', default_unit: 'pieces' },
-            { id: 3, name: 'Garlic', category: 'produce', default_unit: 'cloves' },
-            { id: 4, name: 'Olive Oil', category: 'pantry', default_unit: 'tbsp' },
-            { id: 5, name: 'Salt', category: 'pantry', default_unit: 'tsp' },
-            { id: 6, name: 'Black Pepper', category: 'pantry', default_unit: 'tsp' },
-            { id: 7, name: 'Rice', category: 'grains', default_unit: 'cups' },
-            { id: 8, name: 'Cheddar Cheese', category: 'dairy', default_unit: 'oz' }
-        ];
+        // Load from centralized demo data for consistency
+        if (window.DemoDataManager) {
+            const demoData = new window.DemoDataManager();
+            this.ingredients = demoData.getIngredients();
+            console.log(`✅ Recipe Manager loaded ${this.ingredients.length} consistent ingredients from demo data`);
+        } else {
+            // Fallback to empty array if demo data not available
+            this.ingredients = [];
+            console.warn('⚠️ Demo data manager not available, using empty ingredients list');
+        }
     }
 
     async loadRecipes() {
-        // Mock implementation - in real app this would query the database
-        this.recipes = [
-            {
-                id: 1,
-                title: 'Grilled Chicken with Rice',
-                description: 'Simple and healthy grilled chicken served with seasoned rice',
-                instructions: '1. Season chicken with salt and pepper\n2. Grill chicken for 6-8 minutes per side\n3. Cook rice according to package directions\n4. Serve chicken over rice',
-                serving_count: 4,
-                prep_time: 15,
-                cook_time: 25,
-                meal_type: 'dinner',
-                tags: ['healthy', 'easy', 'gluten-free'],
-                ingredients: [
-                    { ingredient_id: 1, name: 'Chicken Breast', quantity: 1.5, unit: 'lbs', notes: '' },
-                    { ingredient_id: 7, name: 'Rice', quantity: 1, unit: 'cups', notes: '' },
-                    { ingredient_id: 5, name: 'Salt', quantity: 1, unit: 'tsp', notes: '' },
-                    { ingredient_id: 6, name: 'Black Pepper', quantity: 0.5, unit: 'tsp', notes: '' }
-                ],
-                created_at: '2024-12-01'
-            },
-            {
-                id: 2,
-                title: 'Cheesy Garlic Rice',
-                description: 'Creamy rice dish with garlic and melted cheese',
-                instructions: '1. Sauté garlic in olive oil\n2. Add rice and cook until golden\n3. Add broth and simmer\n4. Stir in cheese until melted',
-                serving_count: 6,
-                prep_time: 10,
-                cook_time: 20,
-                meal_type: 'dinner',
-                tags: ['vegetarian', 'comfort-food'],
-                ingredients: [
-                    { ingredient_id: 7, name: 'Rice', quantity: 1.5, unit: 'cups', notes: '' },
-                    { ingredient_id: 3, name: 'Garlic', quantity: 4, unit: 'cloves', notes: 'minced' },
-                    { ingredient_id: 4, name: 'Olive Oil', quantity: 2, unit: 'tbsp', notes: '' },
-                    { ingredient_id: 8, name: 'Cheddar Cheese', quantity: 8, unit: 'oz', notes: 'shredded' }
-                ],
-                created_at: '2024-12-02'
-            }
-        ];
+        // Load from centralized demo data for consistency
+        if (window.DemoDataManager) {
+            const demoData = new window.DemoDataManager();
+            this.recipes = demoData.getRecipes();
+            console.log(`✅ Recipe Manager loaded ${this.recipes.length} consistent recipes from demo data`);
+        } else {
+            // Fallback to empty array if demo data not available
+            this.recipes = [];
+            console.warn('⚠️ Demo data manager not available, using empty recipes list');
+        }
     }
 
     render() {
