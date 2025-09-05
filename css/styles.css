@@ -108,8 +108,33 @@ select {
 @media (max-width: 640px) {
     /* Tab navigation optimization */
     .flex.space-x-8 {
-        justify-content: space-around;
-        space-x: 0;
+        overflow-x: auto;
+        justify-content: flex-start;
+        gap: 1rem;
+        padding-bottom: 0.5rem;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .nav-tab {
+        flex-shrink: 0;
+        white-space: nowrap;
+        min-width: fit-content;
+        font-size: 0.75rem;
+        padding: 0.75rem 0.5rem;
+    }
+    
+    /* Add scrollbar styling for mobile navigation */
+    .flex.space-x-8::-webkit-scrollbar {
+        height: 3px;
+    }
+    
+    .flex.space-x-8::-webkit-scrollbar-track {
+        background: #f1f5f9;
+    }
+    
+    .flex.space-x-8::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
     }
     
     .tab-button {
