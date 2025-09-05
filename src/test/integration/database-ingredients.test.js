@@ -16,32 +16,128 @@ const createTestDatabase = () => {
       
       if (sql.includes('INSERT INTO ingredients')) {
         const id = nextId++
-        const [name, category, default_unit, cost_per_unit, storage_notes, nutrition_per_100g] = params
+        const [name, category, default_unit, cost_per_unit, storage_notes, nutrition_per_100g, barcode, brand] = params
         mockData.set(id, {
           id,
-          name,
-          category,
-          default_unit,
-          cost_per_unit,
-          storage_notes,
-          nutrition_per_100g,
+          name: name || `Ingredient ${id}`,
+          category: category || 'other',
+          default_unit: default_unit || 'pieces',
+          cost_per_unit: cost_per_unit || null,
+          storage_notes: storage_notes || null,
+          nutrition_per_100g: nutrition_per_100g || null,
+          barcode: barcode || null,
+          brand: brand || null,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
         return []
       }
       
+      if (sql.includes('UPDATE ingredients')) {
+        // Handle UPDATE queries
+        if (sql.includes('WHERE id = ?')) {
+          const id = params[params.length - 1] // Last parameter is the ID
+          const ingredient = mockData.get(id)
+          if (ingredient) {
+            // Update based on the SQL structure
+            if (sql.includes('name = ?')) {
+              ingredient.name = params[0]
+            }
+            if (sql.includes('category = ?')) {
+              ingredient.category = params[1]
+            }
+            if (sql.includes('cost_per_unit = ?')) {
+              ingredient.cost_per_unit = params[2]
+            }
+            ingredient.updated_at = new Date().toISOString()
+            mockData.set(id, ingredient)
+          }
+        }
+        return []
+      }
+      
+      if (sql.includes('DELETE FROM ingredients')) {
+        if (sql.includes('WHERE id = ?') && params.length > 0) {
+          mockData.delete(params[0])
+        } else if (sql.includes('WHERE name = ?') && params.length > 0) {
+          // Find and delete by name
+          for (const [id, ingredient] of mockData.entries()) {
+            if (ingredient.name === params[0]) {
+              mockData.delete(id)
+              break
+            }
+          }
+        }
+        return []
+      }
+      
+      if (sql.includes('COUNT(*)')) {
+        let count = 0
+        if (sql.includes('WHERE name = ?') && params.length > 0) {
+          for (const ingredient of mockData.values()) {
+            if (ingredient.name === params[0]) {
+              count++
+            }
+          }
+        } else if (sql.includes('WHERE name LIKE ?') && params.length > 0) {
+          const pattern = params[0].replace(/%/g, '')
+          for (const ingredient of mockData.values()) {
+            if (ingredient.name.toLowerCase().includes(pattern.toLowerCase())) {
+              count++
+            }
+          }
+        } else {
+          count = mockData.size
+        }
+        return [{
+          columns: ['count'],
+          values: [[count]]
+        }]
+      }
+      
       if (sql.includes('SELECT') && sql.includes('ingredients')) {
         const ingredients = Array.from(mockData.values())
         
-        // Handle WHERE clauses
+        // Handle nutrition_per_100g JSON queries
+        if (sql.includes('nutrition_per_100g') && sql.includes('JSON')) {
+          const ingredient = ingredients[0] // For test simplicity
+          if (ingredient && ingredient.nutrition_per_100g) {
+            try {
+              const nutrition = JSON.parse(ingredient.nutrition_per_100g)
+              return [{
+                columns: ['nutrition_per_100g'],
+                values: [[ingredient.nutrition_per_100g]]
+              }]
+            } catch (e) {
+              return [{ columns: [], values: [] }]
+            }
+          }
+        }
+        
+        // Handle WHERE name = ? queries
+        if (sql.includes('WHERE name = ?') && params.length > 0) {
+          const ingredient = ingredients.find(ing => ing.name === params[0])
+          if (ingredient) {
+            return [{
+              columns: ['id', 'name', 'category', 'default_unit', 'cost_per_unit', 'storage_notes', 'nutrition_per_100g', 'barcode', 'brand', 'recipe_count'],
+              values: [[
+                ingredient.id, ingredient.name, ingredient.category, ingredient.default_unit, 
+                ingredient.cost_per_unit, ingredient.storage_notes, ingredient.nutrition_per_100g, 
+                ingredient.barcode, ingredient.brand, 0
+              ]]
+            }]
+          }
+          return [{ columns: [], values: [] }]
+        }
+        
+        // Handle WHERE category = ? queries
         if (sql.includes('WHERE category = ?') && params.length > 0) {
           const filteredIngredients = ingredients.filter(ing => ing.category === params[0])
           return [{
-            columns: ['id', 'name', 'category', 'default_unit', 'cost_per_unit', 'storage_notes', 'nutrition_per_100g', 'recipe_count', 'avg_quantity'],
+            columns: ['id', 'name', 'category', 'default_unit', 'cost_per_unit', 'storage_notes', 'nutrition_per_100g', 'barcode', 'brand', 'recipe_count'],
             values: filteredIngredients.map(ing => [
               ing.id, ing.name, ing.category, ing.default_unit, ing.cost_per_unit, 
-              ing.storage_notes, ing.nutrition_per_100g, 0, null
+              ing.storage_notes, ing.nutrition_per_100g, ing.barcode, ing.brand, 0
             ])
           }]
         }
@@ -53,10 +149,10 @@ const createTestDatabase = () => {
             ing.name.toLowerCase().includes(pattern.toLowerCase())
           )
           return [{
-            columns: ['id', 'name', 'category', 'default_unit', 'cost_per_unit', 'storage_notes', 'nutrition_per_100g', 'recipe_count', 'avg_quantity'],
+            columns: ['id', 'name', 'category', 'default_unit', 'cost_per_unit', 'storage_notes', 'nutrition_per_100g', 'barcode', 'brand', 'recipe_count'],
             values: filteredIngredients.map(ing => [
               ing.id, ing.name, ing.category, ing.default_unit, ing.cost_per_unit, 
-              ing.storage_notes, ing.nutrition_per_100g, 0, null
+              ing.storage_notes, ing.nutrition_per_100g, ing.barcode, ing.brand, 0
             ])
           }]
         }
@@ -79,22 +175,34 @@ const createTestDatabase = () => {
           const ingredient = mockData.get(params[0])
           if (ingredient) {
             return [{
-              columns: ['id', 'name', 'category', 'default_unit', 'cost_per_unit', 'storage_notes', 'nutrition_per_100g', 'recipe_count', 'avg_quantity'],
+              columns: ['id', 'name', 'category', 'default_unit', 'cost_per_unit', 'storage_notes', 'nutrition_per_100g', 'barcode', 'brand', 'recipe_count'],
               values: [[
                 ingredient.id, ingredient.name, ingredient.category, ingredient.default_unit, 
-                ingredient.cost_per_unit, ingredient.storage_notes, ingredient.nutrition_per_100g, 0, null
+                ingredient.cost_per_unit, ingredient.storage_notes, ingredient.nutrition_per_100g, 
+                ingredient.barcode, ingredient.brand, 0
               ]]
             }]
           }
           return [{ columns: [], values: [] }]
         }
         
+        // Handle JOIN queries with recipe_count
+        if (sql.includes('LEFT JOIN') && sql.includes('recipe_count')) {
+          return [{
+            columns: ['id', 'name', 'category', 'default_unit', 'cost_per_unit', 'storage_notes', 'nutrition_per_100g', 'barcode', 'brand', 'recipe_count'],
+            values: ingredients.map(ing => [
+              ing.id, ing.name, ing.category, ing.default_unit, ing.cost_per_unit, 
+              ing.storage_notes, ing.nutrition_per_100g, ing.barcode, ing.brand, 0
+            ])
+          }]
+        }
+        
         // Default: return all ingredients
         return [{
-          columns: ['id', 'name', 'category', 'default_unit', 'cost_per_unit', 'storage_notes', 'nutrition_per_100g', 'recipe_count', 'avg_quantity'],
+          columns: ['id', 'name', 'category', 'default_unit', 'cost_per_unit', 'storage_notes', 'nutrition_per_100g', 'barcode', 'brand', 'recipe_count'],
           values: ingredients.map(ing => [
             ing.id, ing.name, ing.category, ing.default_unit, ing.cost_per_unit, 
-            ing.storage_notes, ing.nutrition_per_100g, 0, null
+            ing.storage_notes, ing.nutrition_per_100g, ing.barcode, ing.brand, 0
           ])
         }]
       }

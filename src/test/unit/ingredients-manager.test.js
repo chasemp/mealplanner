@@ -389,6 +389,8 @@ describe('IngredientsManager', () => {
 
     it('should set up category filter event listener', () => {
       const categoryFilter = document.getElementById('category-filter')
+      expect(categoryFilter).toBeTruthy() // Ensure element exists
+      
       ingredientsManager.setupEventListeners()
       
       // Simulate category change

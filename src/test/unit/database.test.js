@@ -37,8 +37,8 @@ describe('Database Schema', () => {
     
     initializeDatabase(mockDb)
     
-    // Should call exec twice: once for schema, once for sample data
-    expect(mockDb.exec).toHaveBeenCalledTimes(2)
+    // Should call exec three times: schema, count check, sample data
+    expect(mockDb.exec).toHaveBeenCalledTimes(3)
   })
 
   it('should not add sample recipes to populated database', () => {
@@ -47,8 +47,8 @@ describe('Database Schema', () => {
     
     initializeDatabase(mockDb)
     
-    // Should only call exec once for schema
-    expect(mockDb.exec).toHaveBeenCalledTimes(1)
+    // Should call exec twice: schema and count check (no sample data)
+    expect(mockDb.exec).toHaveBeenCalledTimes(2)
   })
 })
 
