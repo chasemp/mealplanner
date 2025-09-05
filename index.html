@@ -18,7 +18,7 @@
     
     <!-- Styles -->
     <link rel="stylesheet" href="css/tailwind-compiled.css">
-    <link rel="stylesheet" href="./css/styles.css?v=2025.09.05.1655">
+    <link rel="stylesheet" href="./css/styles.css?v=2025.09.05.1726">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="./manifest.json">
@@ -221,6 +221,23 @@
                                 </svg>
                                 <span>Auto Plan</span>
                             </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Recipe Selection Section -->
+                    <div id="dinner-recipe-selection" class="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Select Recipes for Planning</h3>
+                        <div id="dinner-recipe-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- Recipe selection cards will be rendered here -->
+                        </div>
+                        <div class="mt-4 flex items-center justify-between">
+                            <div class="text-sm text-gray-600 dark:text-gray-400">
+                                <span id="selected-recipe-count">0</span> recipes selected
+                            </div>
+                            <div class="flex gap-2">
+                                <button id="select-all-recipes" class="btn-secondary text-sm">Select All</button>
+                                <button id="clear-recipe-selection" class="btn-secondary text-sm">Clear Selection</button>
+                            </div>
                         </div>
                     </div>
                     
@@ -498,7 +515,7 @@
         
         <!-- Version Footer -->
         <footer class="fixed bottom-2 right-2 text-xs text-gray-400 bg-white/80 backdrop-blur-sm px-2 py-1 rounded shadow-sm">
-            <span id="version-display">v2025.09.05.1626</span>
+            <span id="version-display">v2025.09.05.1726</span>
         </footer>
     </div>
 
@@ -506,17 +523,17 @@
     <div id="modal-container"></div>
 
     <!-- JavaScript -->
-    <script src="./js/itinerary-view.js?v=2025.09.05.0853"></script>
-    <script src="./js/calendar-view.js?v=2025.09.05.0857"></script>
-    <script src="./js/demo-data.js?v=2025.09.05.1358"></script>
-    <script src="./js/barcode-scanner.js?v=2025.09.05.1655"></script>
-    <script src="./js/shared-barcode-scanner.js?v=2025.09.05.1655"></script>
-    <script src="./js/recipe-manager.js?v=2025.09.05.1655"></script>
-    <script src="./js/ingredients-manager.js?v=2025.09.05.1655"></script>
-    <script src="./js/grocery-list-manager.js?v=2025.09.05.1655"></script>
-    <script src="./js/google-calendar-integration.js?v=2025.09.05.1655"></script>
-    <script src="./js/meal-rotation-engine.js?v=2025.09.05.1655"></script>
-    <script src="./js/settings-manager.js?v=2025.09.05.1655"></script>
-    <script src="./js/main.js?v=2025.09.05.1655"></script>
+    <script src="./js/itinerary-view.js?v=2025.09.05.1722"></script>
+    <script src="./js/calendar-view.js?v=2025.09.05.1722"></script>
+    <script src="./js/demo-data.js?v=2025.09.05.1722"></script>
+    <script src="./js/barcode-scanner.js?v=2025.09.05.1722"></script>
+    <script src="./js/shared-barcode-scanner.js?v=2025.09.05.1722"></script>
+    <script src="./js/recipe-manager.js?v=2025.09.05.1723"></script>
+    <script src="./js/ingredients-manager.js?v=2025.09.05.1726"></script>
+    <script src="./js/grocery-list-manager.js?v=2025.09.05.1722"></script>
+    <script src="./js/google-calendar-integration.js?v=2025.09.05.1722"></script>
+    <script src="./js/meal-rotation-engine.js?v=2025.09.05.1722"></script>
+    <script src="./js/settings-manager.js?v=2025.09.05.1722"></script>
+    <script src="./js/main.js?v=2025.09.05.1726"></script>
 </body>
 </html>

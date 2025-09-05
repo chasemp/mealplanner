@@ -2,7 +2,7 @@
 class MealPlannerApp {
     constructor() {
         this.currentTab = 'recipes';
-        this.version = '2025.09.05.1655';
+        this.version = '2025.09.05.1726';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
@@ -17,6 +17,11 @@ class MealPlannerApp {
             breakfast: 'itinerary',
             lunch: 'itinerary', 
             dinner: 'itinerary'
+        };
+        this.selectedRecipes = {
+            breakfast: [],
+            lunch: [],
+            dinner: []
         };
         this.init();
     }
@@ -50,6 +55,9 @@ class MealPlannerApp {
             this.generateCalendarDays();
             
             console.log(`✅ MealPlanner v${this.version} initialized successfully!`);
+            
+            // Make app globally available for other components
+            window.app = this;
         }, 1000);
     }
 
@@ -555,6 +563,121 @@ class MealPlannerApp {
         });
         
         console.log('✅ Meal planning views initialized');
+        
+        // Initialize recipe selection for meal types
+        this.initializeRecipeSelection();
+    }
+
+    initializeRecipeSelection() {
+        // Initialize recipe selection for dinner (can extend to other meal types later)
+        this.renderRecipeSelection('dinner');
+        this.attachRecipeSelectionListeners('dinner');
+    }
+
+    renderRecipeSelection(mealType) {
+        const gridContainer = document.getElementById(`${mealType}-recipe-grid`);
+        if (!gridContainer) return;
+
+        // Get recipes from demo data
+        let recipes = [];
+        if (window.DemoDataManager) {
+            const demoData = new window.DemoDataManager();
+            recipes = demoData.getRecipes().filter(recipe => 
+                recipe.meal_type === mealType || recipe.meal_type === 'dinner'
+            );
+        }
+
+        // Render recipe selection cards
+        gridContainer.innerHTML = recipes.map(recipe => `
+            <div class="recipe-selection-card border-2 border-gray-200 dark:border-gray-600 rounded-lg p-4 cursor-pointer hover:border-blue-500 transition-colors ${
+                this.selectedRecipes[mealType].includes(recipe.id) ? 'border-blue-500 bg-blue-50 dark:bg-blue-900' : ''
+            }" data-recipe-id="${recipe.id}">
+                <div class="flex items-start justify-between mb-2">
+                    <h4 class="font-medium text-gray-900 dark:text-white text-sm">${recipe.title}</h4>
+                    <div class="flex-shrink-0 ml-2">
+                        <input type="checkbox" class="recipe-checkbox" ${
+                            this.selectedRecipes[mealType].includes(recipe.id) ? 'checked' : ''
+                        }>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">${recipe.description}</p>
+                <div class="flex items-center justify-between text-xs text-gray-500">
+                    <span>${(recipe.prep_time || 0) + (recipe.cook_time || 0)}min</span>
+                    <span>${recipe.servings || recipe.serving_count || 'N/A'} servings</span>
+                </div>
+            </div>
+        `).join('');
+
+        // Update selected count
+        this.updateSelectedRecipeCount(mealType);
+    }
+
+    attachRecipeSelectionListeners(mealType) {
+        const gridContainer = document.getElementById(`${mealType}-recipe-grid`);
+        const selectAllBtn = document.getElementById('select-all-recipes');
+        const clearSelectionBtn = document.getElementById('clear-recipe-selection');
+
+        // Recipe card click handlers
+        if (gridContainer) {
+            gridContainer.addEventListener('click', (e) => {
+                const card = e.target.closest('.recipe-selection-card');
+                if (card) {
+                    const recipeId = parseInt(card.dataset.recipeId);
+                    this.toggleRecipeSelection(mealType, recipeId);
+                }
+            });
+        }
+
+        // Select all button
+        if (selectAllBtn) {
+            selectAllBtn.addEventListener('click', () => {
+                this.selectAllRecipes(mealType);
+            });
+        }
+
+        // Clear selection button
+        if (clearSelectionBtn) {
+            clearSelectionBtn.addEventListener('click', () => {
+                this.clearRecipeSelection(mealType);
+            });
+        }
+    }
+
+    toggleRecipeSelection(mealType, recipeId) {
+        const selectedRecipes = this.selectedRecipes[mealType];
+        const index = selectedRecipes.indexOf(recipeId);
+        
+        if (index > -1) {
+            selectedRecipes.splice(index, 1);
+        } else {
+            selectedRecipes.push(recipeId);
+        }
+        
+        this.renderRecipeSelection(mealType);
+        console.log(`${mealType} selected recipes:`, selectedRecipes);
+    }
+
+    selectAllRecipes(mealType) {
+        if (window.DemoDataManager) {
+            const demoData = new window.DemoDataManager();
+            const recipes = demoData.getRecipes().filter(recipe => 
+                recipe.meal_type === mealType || recipe.meal_type === 'dinner'
+            );
+            this.selectedRecipes[mealType] = recipes.map(r => r.id);
+            this.renderRecipeSelection(mealType);
+        }
+    }
+
+    clearRecipeSelection(mealType) {
+        this.selectedRecipes[mealType] = [];
+        this.renderRecipeSelection(mealType);
+    }
+
+    updateSelectedRecipeCount(mealType) {
+        const countElement = document.getElementById('selected-recipe-count');
+        if (countElement) {
+            countElement.textContent = this.selectedRecipes[mealType].length;
+        }
     }
 
     initializeMealPlanningControls() {
@@ -602,27 +725,54 @@ class MealPlannerApp {
             return;
         }
 
+        // Check if any recipes are selected
+        const selectedRecipeIds = this.selectedRecipes[mealType] || [];
+        if (selectedRecipeIds.length === 0) {
+            this.showNotification(`Please select some recipes for ${mealType} planning first.`, 'warning');
+            return;
+        }
+
         try {
-            // Use the meal rotation engine to generate a plan
+            // Get selected recipes from demo data
+            let selectedRecipes = [];
+            if (window.DemoDataManager) {
+                const demoData = new window.DemoDataManager();
+                const allRecipes = demoData.getRecipes();
+                selectedRecipes = allRecipes.filter(recipe => selectedRecipeIds.includes(recipe.id));
+            }
+
+            if (selectedRecipes.length === 0) {
+                this.showNotification('Selected recipes could not be found. Please try again.', 'error');
+                return;
+            }
+
+            // Use the meal rotation engine to generate a plan with selected recipes
             const weeksToShow = itineraryView.weeksToShow || 4;
-            const totalDays = weeksToShow * 7;
+            const startDate = new Date();
             
-            // Generate rotation for the specified period
-            const rotation = this.mealRotationEngine.generateRotation(totalDays, mealType);
+            // Generate rotation for the specified period using only selected recipes
+            const rotation = this.mealRotationEngine.generateRotation(
+                startDate, 
+                weeksToShow, 
+                mealType, 
+                { 
+                    forceRecipes: selectedRecipeIds,
+                    availableRecipes: selectedRecipes
+                }
+            );
             
             if (rotation && rotation.meals && rotation.meals.length > 0) {
                 // Apply the generated plan to the itinerary view
                 this.applyGeneratedPlan(mealType, rotation.meals);
                 
                 // Show success notification with stats
-                const stats = rotation.stats || {};
-                const message = `${mealType.charAt(0).toUpperCase() + mealType.slice(1)} plan generated! ${rotation.meals.length} meals planned.`;
+                const message = `${mealType.charAt(0).toUpperCase() + mealType.slice(1)} plan generated! ${rotation.meals.length} meals planned using ${selectedRecipes.length} selected recipes.`;
                 this.showNotification(message, 'success');
                 
                 // Log generation stats
-                console.log(`📊 ${mealType} plan stats:`, stats);
+                console.log(`📊 ${mealType} plan stats:`, rotation.stats);
             } else {
-                this.showNotification('No suitable meals found for auto planning. Please add more recipes.', 'warning');
+                this.showNotification('No meals could be generated with the selected recipes. Please try selecting more recipes.', 'warning');
             }
         } catch (error) {
             console.error('Error generating meal plan:', error);
@@ -683,17 +833,92 @@ class MealPlannerApp {
     }
 
     clearMealPlanData(mealType) {
-        // This would normally clear from database
-        // For now, we'll just clear any local data and refresh views
         console.log(`🗑️ Clearing ${mealType} data from storage...`);
         
-        // In a real implementation, this would:
-        // 1. Delete scheduled meals from database for this meal type
-        // 2. Clear local data structures
-        // 3. Update any cached data
+        try {
+            // Get current scheduled meals from localStorage or demo data
+            let scheduledMeals = this.getScheduledMeals();
+            const originalCount = scheduledMeals.length;
+            
+            // Filter out meals of this type
+            scheduledMeals = scheduledMeals.filter(meal => meal.meal_type !== mealType);
+            
+            // Save the updated meals back to storage
+            this.saveScheduledMeals(scheduledMeals);
+            
+            console.log(`✅ Cleared ${originalCount - scheduledMeals.length} ${mealType} meals from schedule`);
+            
+            // Clear any local selection state for this meal type
+            if (this.selectedRecipes) {
+                this.selectedRecipes[mealType] = [];
+                this.renderRecipeSelection(mealType);
+            }
+            
+            // Clear meal rotation engine data for this meal type
+            if (this.mealRotationEngine && this.mealRotationEngine.clearMealType) {
+                this.mealRotationEngine.clearMealType(mealType);
+            }
+            
+        } catch (error) {
+            console.error('Error clearing meal plan data:', error);
+            throw error;
+        }
+    }
+
+    // Get scheduled meals from localStorage or demo data
+    getScheduledMeals() {
+        try {
+            // Try to get from localStorage first
+            const stored = localStorage.getItem('mealplanner_scheduled_meals');
+            if (stored) {
+                return JSON.parse(stored);
+            }
+        } catch (error) {
+            console.warn('Error loading from localStorage:', error);
+        }
         
-        // For now, just log the action
-        console.log(`✅ ${mealType} meal plan data cleared`);
+        // Fallback to demo data
+        if (window.DemoDataManager) {
+            const demoData = new window.DemoDataManager();
+            return demoData.getScheduledMeals();
+        }
+        
+        return [];
+    }
+
+    // Save scheduled meals to localStorage
+    saveScheduledMeals(scheduledMeals) {
+        try {
+            localStorage.setItem('mealplanner_scheduled_meals', JSON.stringify(scheduledMeals));
+            console.log(`💾 Saved ${scheduledMeals.length} scheduled meals to localStorage`);
+            
+            // Trigger refresh of dependent components
+            this.refreshMealPlanViews();
+        } catch (error) {
+            console.error('Error saving to localStorage:', error);
+        }
+    }
+
+    // Refresh all meal plan related views
+    refreshMealPlanViews() {
+        // Refresh itinerary views
+        Object.values(this.itineraryViews).forEach(view => {
+            if (view && view.render) {
+                view.render();
+            }
+        });
+        
+        // Refresh calendar views
+        Object.values(this.calendarViews).forEach(view => {
+            if (view && view.render) {
+                view.render();
+            }
+        });
+        
+        // Refresh grocery list
+        if (this.groceryListManager && this.groceryListManager.render) {
+            this.groceryListManager.render();
+        }
     }
 
     toggleView(mealType) {

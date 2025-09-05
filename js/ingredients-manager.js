@@ -4,7 +4,7 @@ class IngredientsManager {
         this.container = container;
         this.ingredients = [];
         this.filteredIngredients = [];
-        this.currentFilter = { search: '', category: '' };
+        this.currentFilter = { search: '', category: '', label: '' };
         this.init();
     }
 
@@ -50,8 +50,10 @@ class IngredientsManager {
                 ingredient.name.toLowerCase().includes(this.currentFilter.search.toLowerCase());
             const matchesCategory = !this.currentFilter.category || 
                 ingredient.category === this.currentFilter.category;
+            const matchesLabel = !this.currentFilter.label || 
+                (ingredient.labels && ingredient.labels.includes(this.currentFilter.label));
             
-            const matches = matchesSearch && matchesCategory;
+            const matches = matchesSearch && matchesCategory && matchesLabel;
             
             if (this.currentFilter.search) {
                 console.log(`🔍 "${ingredient.name}" matches search "${this.currentFilter.search}": ${matchesSearch}`);
@@ -61,6 +63,16 @@ class IngredientsManager {
         });
         
         console.log('✅ Filtered ingredients:', this.filteredIngredients.length);
+    }
+
+    getAllLabels() {
+        const allLabels = new Set();
+        this.ingredients.forEach(ingredient => {
+            if (ingredient.labels && Array.isArray(ingredient.labels)) {
+                ingredient.labels.forEach(label => allLabels.add(label));
+            }
+        });
+        return Array.from(allLabels).sort();
     }
 
     render() {
@@ -89,7 +101,7 @@ class IngredientsManager {
 
                 <!-- Search and Filter Controls -->
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
                             <label for="ingredient-search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Search Ingredients
@@ -110,6 +122,21 @@ class IngredientsManager {
                                 ${categories.map(cat => `
                                     <option value="${cat}" ${this.currentFilter.category === cat ? 'selected' : ''}>
                                         ${cat.charAt(0).toUpperCase() + cat.slice(1)}
+                                    </option>
+                                `).join('')}
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="ingredient-label-filter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Filter by Label
+                            </label>
+                            <select id="ingredient-label-filter" 
+                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                                <option value="">All Labels</option>
+                                ${this.getAllLabels().map(label => `
+                                    <option value="${label}" ${this.currentFilter.label === label ? 'selected' : ''}>
+                                        ${label}
                                     </option>
                                 `).join('')}
                             </select>
@@ -310,6 +337,20 @@ class IngredientsManager {
                             <p class="text-xs text-gray-500 dark:text-gray-400">Not used in any recipes yet</p>
                         </div>
                     `}
+                    
+                    <!-- Labels Section -->
+                    ${ingredient.labels && ingredient.labels.length > 0 ? `
+                        <div class="pt-2 border-t border-gray-200 dark:border-gray-700">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Labels:</p>
+                            <div class="flex flex-wrap gap-1">
+                                ${ingredient.labels.map(label => `
+                                    <span class="ingredient-label inline-block bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded-full text-xs cursor-pointer hover:bg-green-200 dark:hover:bg-green-800 transition-colors" data-label="${label}">
+                                        ${label}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
                 </div>
             </div>
         `;
@@ -392,11 +433,32 @@ class IngredientsManager {
             });
         }
 
+        // Label filter
+        const labelFilter = this.container.querySelector('#ingredient-label-filter');
+        if (labelFilter) {
+            labelFilter.addEventListener('change', (e) => {
+                this.currentFilter.label = e.target.value;
+                this.applyFilters();
+                this.render();
+            });
+        }
+
+        // Clickable labels
+        this.container.querySelectorAll('.ingredient-label').forEach(labelSpan => {
+            labelSpan.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const label = labelSpan.dataset.label;
+                this.currentFilter.label = label;
+                this.applyFilters();
+                this.render();
+            });
+        });
+
         // Clear filters
         const clearFiltersBtn = this.container.querySelector('#clear-filters-btn');
         if (clearFiltersBtn) {
             clearFiltersBtn.addEventListener('click', () => {
-                this.currentFilter = { search: '', category: '' };
+                this.currentFilter = { search: '', category: '', label: '' };
                 this.applyFilters();
                 this.render();
             });

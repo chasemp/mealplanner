@@ -8,9 +8,38 @@ class ItineraryView {
         this.startDate = new Date();
         this.weeksToShow = 4;
         this.currentView = 'itinerary';
+        this.scheduledMeals = [];
+    }
+
+    loadScheduledMeals() {
+        try {
+            // Try to get from main app first
+            if (window.app && window.app.getScheduledMeals) {
+                this.scheduledMeals = window.app.getScheduledMeals().filter(meal => meal.meal_type === this.mealType);
+            } else {
+                // Fallback to localStorage
+                const stored = localStorage.getItem('mealplanner_scheduled_meals');
+                if (stored) {
+                    const allMeals = JSON.parse(stored);
+                    this.scheduledMeals = allMeals.filter(meal => meal.meal_type === this.mealType);
+                } else if (window.DemoDataManager) {
+                    // Final fallback to demo data
+                    const demoData = new window.DemoDataManager();
+                    this.scheduledMeals = demoData.getScheduledMeals().filter(meal => meal.meal_type === this.mealType);
+                }
+            }
+            
+            console.log(`📅 Loaded ${this.scheduledMeals.length} ${this.mealType} meals for itinerary`);
+        } catch (error) {
+            console.error('Error loading scheduled meals:', error);
+            this.scheduledMeals = [];
+        }
     }
 
     render() {
+        // Load current scheduled meals
+        this.loadScheduledMeals();
+        
         this.container.innerHTML = `
             <div class="itinerary-view">
                 <!-- Header -->
