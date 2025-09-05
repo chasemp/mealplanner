@@ -16,137 +16,16 @@ class IngredientsManager {
     }
 
     async loadIngredients() {
-        // Mock implementation - in real app this would query the database
-        this.ingredients = [
-            {
-                id: 1,
-                name: 'Chicken Breast',
-                category: 'meat',
-                default_unit: 'lbs',
-                cost_per_unit: 5.99,
-                storage_notes: 'Keep refrigerated, use within 3 days',
-                nutrition_per_100g: {
-                    calories: 165,
-                    protein: 31,
-                    carbs: 0,
-                    fat: 3.6
-                },
-                recipe_count: 8,
-                avg_quantity: 1.2
-            },
-            {
-                id: 2,
-                name: 'Red Onion',
-                category: 'produce',
-                default_unit: 'pieces',
-                cost_per_unit: 0.89,
-                storage_notes: 'Store in cool, dry place',
-                nutrition_per_100g: {
-                    calories: 40,
-                    protein: 1.1,
-                    carbs: 9.3,
-                    fat: 0.1
-                },
-                recipe_count: 12,
-                avg_quantity: 0.5
-            },
-            {
-                id: 3,
-                name: 'Garlic',
-                category: 'produce',
-                default_unit: 'cloves',
-                cost_per_unit: 0.15,
-                storage_notes: 'Store in cool, dry place',
-                nutrition_per_100g: {
-                    calories: 149,
-                    protein: 6.4,
-                    carbs: 33,
-                    fat: 0.5
-                },
-                recipe_count: 15,
-                avg_quantity: 2.3
-            },
-            {
-                id: 4,
-                name: 'Olive Oil',
-                category: 'pantry',
-                default_unit: 'tbsp',
-                cost_per_unit: 0.25,
-                storage_notes: 'Store in cool, dark place',
-                nutrition_per_100g: {
-                    calories: 884,
-                    protein: 0,
-                    carbs: 0,
-                    fat: 100
-                },
-                recipe_count: 20,
-                avg_quantity: 2.1
-            },
-            {
-                id: 5,
-                name: 'Salt',
-                category: 'pantry',
-                default_unit: 'tsp',
-                cost_per_unit: 0.02,
-                storage_notes: 'Store in dry place',
-                nutrition_per_100g: {
-                    calories: 0,
-                    protein: 0,
-                    carbs: 0,
-                    fat: 0
-                },
-                recipe_count: 25,
-                avg_quantity: 0.8
-            },
-            {
-                id: 6,
-                name: 'Black Pepper',
-                category: 'pantry',
-                default_unit: 'tsp',
-                cost_per_unit: 0.05,
-                storage_notes: 'Store in airtight container',
-                nutrition_per_100g: {
-                    calories: 251,
-                    protein: 10.4,
-                    carbs: 64,
-                    fat: 3.3
-                },
-                recipe_count: 18,
-                avg_quantity: 0.3
-            },
-            {
-                id: 7,
-                name: 'Rice',
-                category: 'grains',
-                default_unit: 'cups',
-                cost_per_unit: 0.75,
-                storage_notes: 'Store in airtight container',
-                nutrition_per_100g: {
-                    calories: 130,
-                    protein: 2.7,
-                    carbs: 28,
-                    fat: 0.3
-                },
-                recipe_count: 6,
-                avg_quantity: 1.5
-            },
-            {
-                id: 8,
-                name: 'Cheddar Cheese',
-                category: 'dairy',
-                default_unit: 'oz',
-                cost_per_unit: 0.45,
-                storage_notes: 'Keep refrigerated',
-                nutrition_per_100g: {
-                    calories: 403,
-                    protein: 25,
-                    carbs: 1.3,
-                    fat: 33
-                },
-                recipe_count: 4,
-                avg_quantity: 2.0
-            }
-        ];
+        // Load from centralized demo data for consistency
+        if (window.DemoDataManager) {
+            const demoData = new window.DemoDataManager();
+            this.ingredients = demoData.getIngredients();
+            console.log(`✅ Loaded ${this.ingredients.length} consistent ingredients from demo data`);
+        } else {
+            // Fallback to empty array if demo data not available
+            this.ingredients = [];
+            console.warn('⚠️ Demo data manager not available, using empty ingredients list');
+        }
         
         this.applyFilters();
     }
