@@ -1,0 +1,52 @@
+{
+  "name": "mealplanner",
+  "version": "1.0.0",
+  "description": "A PWA for meal planning with local SQLite storage",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:fresh": "rm -rf node_modules/.vite && npm run dev",
+    "dev:helper": "node scripts/dev-helper.js",
+    "build": "vite build",
+    "build:fresh": "rm -rf dist node_modules/.vite && vite build",
+    "preview": "vite preview",
+    "deploy": "npm run build:fresh && gh-pages -d dist",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:fresh": "rm -rf node_modules/.vite && vitest run",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:fresh": "rm -rf node_modules/.vite && playwright test",
+    "test:all": "npm run test:run && npm run test:e2e",
+    "test:all:fresh": "npm run test:fresh && npm run test:e2e:fresh",
+    "cache:clear": "rm -rf node_modules/.vite dist",
+    "restart": "pkill -f vite || true && sleep 2 && npm run dev:fresh"
+  },
+  "keywords": [
+    "pwa",
+    "meal-planning",
+    "sqlite",
+    "recipes"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@vitejs/plugin-legacy": "^7.2.1",
+    "@vitest/ui": "^3.2.4",
+    "autoprefixer": "^10.4.21",
+    "gh-pages": "^6.3.0",
+    "jsdom": "^26.1.0",
+    "playwright": "^1.55.0",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.17",
+    "vite": "^7.1.4",
+    "vite-plugin-pwa": "^1.0.3",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "sql.js": "^1.13.0"
+  }
+}

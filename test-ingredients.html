@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ingredients Test - MealPlanner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="max-w-7xl mx-auto py-6 px-4">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-900">Ingredients Management Test</h1>
+            <div class="flex space-x-3">
+                <button id="scan-barcode-btn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium">
+                    📱 Scan Barcode
+                </button>
+                <button id="add-ingredient-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium">
+                    Add Ingredient
+                </button>
+            </div>
+        </div>
+        
+        <!-- Search and Filter -->
+        <div class="bg-white rounded-lg shadow p-4 mb-6">
+            <div class="flex flex-col md:flex-row md:items-center space-y-3 md:space-y-0 md:space-x-4">
+                <div class="flex-1">
+                    <input type="text" id="ingredient-search" placeholder="Search ingredients..." 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <select id="category-filter" class="px-3 py-2 border border-gray-300 rounded-md">
+                    <option value="">All Categories</option>
+                    <option value="produce">Produce</option>
+                    <option value="dairy">Dairy</option>
+                    <option value="meat">Meat & Protein</option>
+                    <option value="pantry">Pantry</option>
+                    <option value="grains">Grains</option>
+                </select>
+                <button id="bulk-import-btn" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
+                    Bulk Import
+                </button>
+            </div>
+        </div>
+        
+        <!-- Ingredients Grid -->
+        <div id="ingredients-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <!-- Sample ingredient cards -->
+            <div class="bg-white rounded-lg shadow border hover:shadow-md transition-shadow">
+                <div class="p-4">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-2xl">🥬</span>
+                            <div>
+                                <h3 class="font-medium text-gray-900">Red Onion</h3>
+                                <span class="inline-block px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
+                                    Produce
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex space-x-1">
+                            <button class="edit-ingredient-btn text-gray-400 hover:text-blue-600" title="Edit">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                            </button>
+                            <button class="delete-ingredient-btn text-gray-400 hover:text-red-600" title="Delete">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-2 text-sm text-gray-600">
+                        <div class="flex justify-between">
+                            <span>Default unit:</span>
+                            <span class="font-medium">pieces</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Used in recipes:</span>
+                            <span class="font-medium">5</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Est. cost:</span>
+                            <span class="font-medium text-green-600">$0.75</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow border hover:shadow-md transition-shadow">
+                <div class="p-4">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-2xl">🥩</span>
+                            <div>
+                                <h3 class="font-medium text-gray-900">Chicken Breast</h3>
+                                <span class="inline-block px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">
+                                    Meat & Protein
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex space-x-1">
+                            <button class="edit-ingredient-btn text-gray-400 hover:text-blue-600" title="Edit">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                            </button>
+                            <button class="delete-ingredient-btn text-gray-400 hover:text-red-600" title="Delete">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-2 text-sm text-gray-600">
+                        <div class="flex justify-between">
+                            <span>Default unit:</span>
+                            <span class="font-medium">lbs</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Used in recipes:</span>
+                            <span class="font-medium">3</span>
+                        </div>
+                        <div class="pt-2 border-t">
+                            <div class="text-xs text-gray-500">Per 100g:</div>
+                            <div class="flex justify-between">
+                                <span>Calories:</span>
+                                <span>165</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Est. cost:</span>
+                            <span class="font-medium text-green-600">$4.99</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow border hover:shadow-md transition-shadow">
+                <div class="p-4">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-2xl">🥛</span>
+                            <div>
+                                <h3 class="font-medium text-gray-900">Milk</h3>
+                                <span class="inline-block px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                                    Dairy
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex space-x-1">
+                            <button class="edit-ingredient-btn text-gray-400 hover:text-blue-600" title="Edit">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                            </button>
+                            <button class="delete-ingredient-btn text-gray-400 hover:text-red-600" title="Delete">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-2 text-sm text-gray-600">
+                        <div class="flex justify-between">
+                            <span>Default unit:</span>
+                            <span class="font-medium">cups</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Used in recipes:</span>
+                            <span class="font-medium">2</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Est. cost:</span>
+                            <span class="font-medium text-green-600">$3.49</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Container -->
+    <div id="modal-container"></div>
+
+    <script>
+        // Demo functionality
+        document.getElementById('add-ingredient-btn').addEventListener('click', () => {
+            showAddIngredientModal();
+        });
+
+        document.getElementById('scan-barcode-btn').addEventListener('click', () => {
+            showBarcodeScannerModal();
+        });
+
+        document.getElementById('ingredient-search').addEventListener('input', (e) => {
+            console.log('Searching for:', e.target.value);
+            // Demo search functionality
+        });
+
+        document.getElementById('category-filter').addEventListener('change', (e) => {
+            console.log('Filtering by category:', e.target.value);
+            // Demo filter functionality
+        });
+
+        function showAddIngredientModal() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
+                    <div class="p-6">
+                        <h2 class="text-xl font-bold mb-4">Add New Ingredient</h2>
+                        
+                        <form class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                                    <input type="text" required placeholder="e.g., Tomatoes"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                                    <select class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                        <option value="produce">Produce</option>
+                                        <option value="dairy">Dairy</option>
+                                        <option value="meat">Meat & Protein</option>
+                                        <option value="pantry">Pantry</option>
+                                        <option value="grains">Grains</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Default Unit</label>
+                                    <select class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                        <option value="pieces">pieces</option>
+                                        <option value="cups">cups</option>
+                                        <option value="tbsp">tbsp</option>
+                                        <option value="tsp">tsp</option>
+                                        <option value="lbs">lbs</option>
+                                        <option value="oz">oz</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Cost per Unit ($)</label>
+                                    <input type="number" step="0.01" min="0" placeholder="2.99"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Storage Notes</label>
+                                <textarea rows="2" placeholder="e.g., Store in refrigerator, use within 5 days"
+                                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Calories (per 100g)</label>
+                                    <input type="number" min="0" placeholder="25"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Protein (g)</label>
+                                    <input type="number" step="0.1" min="0" placeholder="1.2"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Carbs (g)</label>
+                                    <input type="number" step="0.1" min="0" placeholder="5.8"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Fat (g)</label>
+                                    <input type="number" step="0.1" min="0" placeholder="0.3"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                </div>
+                            </div>
+                            
+                            <div class="flex justify-end space-x-3 pt-4">
+                                <button type="button" onclick="this.closest('.fixed').remove()" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">Cancel</button>
+                                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">Add Ingredient</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('modal-container').appendChild(modal);
+            
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.remove();
+            });
+        }
+
+        function showBarcodeScannerModal() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4">
+                    <div class="p-6">
+                        <h2 class="text-xl font-bold mb-4">Scan Barcode</h2>
+                        
+                        <div class="space-y-4">
+                            <div class="bg-gray-100 rounded-lg p-8 text-center">
+                                <div class="text-gray-500">
+                                    <div class="text-4xl mb-2">📱</div>
+                                    <p>Camera access would open here</p>
+                                    <p class="text-sm mt-2">Point camera at barcode to scan</p>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                                <h3 class="font-medium text-green-800 mb-2">Demo: Product Found!</h3>
+                                <div class="space-y-2">
+                                    <p><strong>Name:</strong> Organic Tomatoes</p>
+                                    <p><strong>Brand:</strong> Fresh Farm</p>
+                                    <p><strong>Category:</strong> Produce</p>
+                                    <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md mt-3">
+                                        Add to Ingredients
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="flex justify-end">
+                                <button onclick="this.closest('.fixed').remove()" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('modal-container').appendChild(modal);
+            
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.remove();
+            });
+        }
+    </script>
+</body>
+</html>
