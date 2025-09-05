@@ -770,6 +770,17 @@ class RecipeManager {
                 }
             });
 
+            // Save recipe logic would go here
+            console.log('Recipe data collected:', recipeData, 'Ingredients:', ingredients);
+            this.showNotification('Recipe functionality coming soon!', 'info');
+            
+        } catch (error) {
+            console.error('Error handling recipe form:', error);
+            this.showNotification('Error saving recipe', 'error');
+        }
+    }
+
+
     showBarcodeScanner(ingredientsContainer) {
         // Use the shared barcode scanner component
         const sharedScanner = window.SharedBarcodeScanner?.getInstance();
