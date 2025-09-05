@@ -149,16 +149,29 @@ class MealRotationEngine {
 
     // Select optimal recipe using scoring algorithm
     selectOptimalRecipe(availableRecipes, context, constraints, forcedRecipes) {
+        // Filter out invalid recipes first (respects constraints)
+        const validRecipes = availableRecipes.filter(recipe => 
+            this.isRecipeValid(recipe, context, constraints)
+        );
+
+        if (validRecipes.length === 0) {
+            console.warn('No valid recipes available for selection');
+            return null;
+        }
+
         // If we have forced recipes, prioritize them
         if (forcedRecipes.length > 0 && Math.random() < 0.7) {
-            const forced = forcedRecipes[Math.floor(Math.random() * forcedRecipes.length)];
-            if (this.isRecipeValid(forced, context, constraints)) {
+            const validForcedRecipes = forcedRecipes.filter(recipe => 
+                this.isRecipeValid(recipe, context, constraints)
+            );
+            if (validForcedRecipes.length > 0) {
+                const forced = validForcedRecipes[Math.floor(Math.random() * validForcedRecipes.length)];
                 context.lastReasoning = ['Forced inclusion by user preference'];
                 return forced;
             }
         }
 
-        const scores = availableRecipes.map(recipe => ({
+        const scores = validRecipes.map(recipe => ({
             recipe,
             score: this.calculateRecipeScore(recipe, context, constraints),
             reasoning: []
