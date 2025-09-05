@@ -2,7 +2,13 @@
 class MealPlannerApp {
     constructor() {
         this.currentTab = 'recipes';
-        this.version = '2025.09.05.0836';
+        this.version = '2025.09.05.0840';
+        this.itineraryViews = {};
+        this.currentViews = {
+            breakfast: 'itinerary',
+            lunch: 'itinerary', 
+            dinner: 'itinerary'
+        };
         this.init();
     }
 
@@ -20,6 +26,7 @@ class MealPlannerApp {
             document.getElementById('main-app').classList.remove('hidden');
             
             this.setupEventListeners();
+            this.initializeItineraryViews();
             this.generateCalendarDays();
             
             console.log(`✅ MealPlanner v${this.version} initialized successfully!`);
@@ -54,6 +61,19 @@ class MealPlannerApp {
 
         document.getElementById('import-db-btn')?.addEventListener('click', () => {
             console.log('Import DB clicked');
+        });
+
+        // View toggle buttons
+        document.getElementById('view-toggle-breakfast')?.addEventListener('click', () => {
+            this.toggleView('breakfast');
+        });
+
+        document.getElementById('view-toggle-lunch')?.addEventListener('click', () => {
+            this.toggleView('lunch');
+        });
+
+        document.getElementById('view-toggle-dinner')?.addEventListener('click', () => {
+            this.toggleView('dinner');
         });
     }
 
@@ -114,6 +134,54 @@ class MealPlannerApp {
                 }
             }
         });
+    }
+
+    initializeItineraryViews() {
+        console.log('🍽️ Initializing itinerary views...');
+        
+        // Initialize itinerary views for each meal type
+        const mealTypes = ['breakfast', 'lunch', 'dinner'];
+        
+        mealTypes.forEach(mealType => {
+            const container = document.getElementById(`${mealType}-itinerary`);
+            if (container) {
+                this.itineraryViews[mealType] = new ItineraryView(container, mealType);
+                this.itineraryViews[mealType].render();
+                
+                // Store in global registry for onclick handlers
+                window.itineraryViews[mealType] = this.itineraryViews[mealType];
+                
+                console.log(`✅ ${mealType} itinerary view initialized`);
+            }
+        });
+    }
+
+    toggleView(mealType) {
+        const currentView = this.currentViews[mealType];
+        const newView = currentView === 'itinerary' ? 'calendar' : 'itinerary';
+        
+        // Hide current view
+        document.getElementById(`${mealType}-${currentView}`).classList.add('hidden');
+        
+        // Show new view
+        document.getElementById(`${mealType}-${newView}`).classList.remove('hidden');
+        
+        // Update button text
+        const button = document.getElementById(`view-toggle-${mealType}`);
+        if (button) {
+            if (newView === 'calendar') {
+                button.innerHTML = '📋 Itinerary View';
+                button.setAttribute('data-view', 'itinerary');
+            } else {
+                button.innerHTML = '📅 Calendar View';
+                button.setAttribute('data-view', 'calendar');
+            }
+        }
+        
+        // Update current view state
+        this.currentViews[mealType] = newView;
+        
+        console.log(`Switched ${mealType} to ${newView} view`);
     }
 }
 
