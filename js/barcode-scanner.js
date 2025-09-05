@@ -168,14 +168,19 @@ class BarcodeScanner {
         // In a real implementation, this would use a library like QuaggaJS
         // For now, we'll just log that we're trying
         
-        // Simulate occasional detection for demo purposes
-        if (Math.random() < 0.001) { // Very low chance for demo
-            const mockBarcode = '1234567890123';
-            console.log(`📱 Fallback detected mock barcode: ${mockBarcode}`);
-            if (this.onBarcodeDetected) {
-                this.onBarcodeDetected(mockBarcode, 'ean_13');
-            }
-            this.stopScanning();
+        // TODO: Implement actual barcode detection using QuaggaJS or similar
+        // For now, show a message to use manual input
+        console.log('📱 Fallback barcode detection - native BarcodeDetector not available');
+        
+        // Show helpful message in the UI
+        const statusElement = document.getElementById('shared-scanner-status');
+        if (statusElement) {
+            statusElement.innerHTML = `
+                <p class="text-yellow-600 dark:text-yellow-400 text-sm">
+                    ⚠️ Automatic barcode detection not available on this browser.<br>
+                    Please use "Enter barcode manually" below.
+                </p>
+            `;
         }
     }
 
@@ -249,6 +254,7 @@ class ProductDatabase {
 
         try {
             console.log(`🔍 Looking up product: ${barcode}`);
+            console.log(`🌐 API URL: ${this.baseUrl}/${barcode}.json`);
             
             const response = await fetch(`${this.baseUrl}/${barcode}.json`);
             
@@ -257,18 +263,20 @@ class ProductDatabase {
             }
 
             const data = await response.json();
+            console.log(`📦 API Response for ${barcode}:`, data);
             
             if (data.status === 0) {
-                console.log(`❌ Product not found: ${barcode}`);
+                console.log(`❌ Product not found in API: ${barcode}`);
                 return null;
             }
 
             const product = this.parseProductData(data.product);
+            console.log(`🏷️ Parsed product data:`, product);
             
             // Cache the result
             this.cacheProduct(barcode, product);
             
-            console.log(`✅ Product found: ${product.name}`);
+            console.log(`✅ Product found: ${product.name} (${product.brand})`);
             return product;
 
         } catch (error) {
