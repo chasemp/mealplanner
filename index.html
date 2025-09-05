@@ -26,7 +26,7 @@
             }
         }
     </script>
-    <link rel="stylesheet" href="./css/styles.css?v=2025.09.05.1358">
+    <link rel="stylesheet" href="./css/styles.css?v=2025.09.05.1411">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="./manifest.json">
@@ -408,25 +408,93 @@
                             
                             <!-- Calendar Integration -->
                             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Calendar Integration</h3>
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Calendar Integration</h3>
+                                    <button id="sync-calendar-btn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm flex items-center space-x-2">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v1h1a1 1 0 000 2H5v1a1 1 0 01-2 0V6H2a1 1 0 000-2h1V3a1 1 0 011-1zm0 5a1 1 0 011 1v1h1a1 1 0 110 2H5v1a1 1 0 11-2 0v-1H2a1 1 0 110-2h1V8a1 1 0 011-1zm6-3a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0V8h-1a1 1 0 110-2h1V5a1 1 0 011-1z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        <span>Sync Now</span>
+                                    </button>
+                                </div>
                                 <div class="space-y-4">
-                                    <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md p-4">
-                                        <p class="text-sm text-yellow-800 dark:text-yellow-200">
-                                            <strong>Note:</strong> Calendar sync button remains in the top-right header for quick access.
-                                            Configure your calendar preferences here.
+                                    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md p-4">
+                                        <p class="text-sm text-blue-800 dark:text-blue-200">
+                                            <strong>Calendar Sync:</strong> Sync your meal plans with Google Calendar. 
+                                            Configure preferences below and use the sync button for immediate updates.
                                         </p>
                                     </div>
-                                    <div class="flex items-center space-x-3">
-                                        <input type="checkbox" id="calendar-managed-mode" class="text-blue-600">
-                                        <label for="calendar-managed-mode" class="text-sm text-gray-700 dark:text-gray-300">
-                                            Managed Mode (MealPlanner has full authority over calendar events)
-                                        </label>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                Calendar Name
+                                            </label>
+                                            <input type="text" id="calendar-name" placeholder="MealPlanner" 
+                                                   class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                Event Duration (minutes)
+                                            </label>
+                                            <select id="event-duration" class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                                <option value="30">30 minutes</option>
+                                                <option value="60" selected>1 hour</option>
+                                                <option value="90">1.5 hours</option>
+                                                <option value="120">2 hours</option>
+                                            </select>
+                                        </div>
                                     </div>
-                                    <div class="flex items-center space-x-3">
-                                        <input type="checkbox" id="calendar-notifications" class="text-blue-600">
-                                        <label for="calendar-notifications" class="text-sm text-gray-700 dark:text-gray-300">
-                                            Enable meal reminder notifications
-                                        </label>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                Breakfast Time
+                                            </label>
+                                            <input type="time" id="breakfast-time" value="08:00" 
+                                                   class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                Lunch Time
+                                            </label>
+                                            <input type="time" id="lunch-time" value="12:00" 
+                                                   class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                Dinner Time
+                                            </label>
+                                            <input type="time" id="dinner-time" value="18:00" 
+                                                   class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="space-y-3">
+                                        <div class="flex items-center space-x-3">
+                                            <input type="checkbox" id="calendar-managed-mode" class="text-blue-600">
+                                            <label for="calendar-managed-mode" class="text-sm text-gray-700 dark:text-gray-300">
+                                                Managed Mode (MealPlanner has full authority over calendar events)
+                                            </label>
+                                        </div>
+                                        <div class="flex items-center space-x-3">
+                                            <input type="checkbox" id="calendar-notifications" class="text-blue-600">
+                                            <label for="calendar-notifications" class="text-sm text-gray-700 dark:text-gray-300">
+                                                Enable meal reminder notifications
+                                            </label>
+                                        </div>
+                                        <div class="flex items-center space-x-3">
+                                            <input type="checkbox" id="include-ingredients" class="text-blue-600">
+                                            <label for="include-ingredients" class="text-sm text-gray-700 dark:text-gray-300">
+                                                Include ingredient lists in calendar events
+                                            </label>
+                                        </div>
+                                        <div class="flex items-center space-x-3">
+                                            <input type="checkbox" id="include-prep-time" class="text-blue-600">
+                                            <label for="include-prep-time" class="text-sm text-gray-700 dark:text-gray-300">
+                                                Include prep and cook times in event descriptions
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -438,7 +506,7 @@
         
         <!-- Version Footer -->
         <footer class="fixed bottom-2 right-2 text-xs text-gray-400 bg-white/80 backdrop-blur-sm px-2 py-1 rounded shadow-sm">
-            <span id="version-display">v2025.09.05.1358</span>
+            <span id="version-display">v2025.09.05.1411</span>
         </footer>
     </div>
 
@@ -453,7 +521,8 @@
     <script src="./js/grocery-list-manager.js?v=2025.09.05.0853"></script>
     <script src="./js/google-calendar-integration.js?v=2025.09.05.0920"></script>
     <script src="./js/meal-rotation-engine.js?v=2025.09.05.0943"></script>
+    <script src="./js/demo-data.js?v=2025.09.05.1358"></script>
     <script src="./js/settings-manager.js?v=2025.09.05.1346"></script>
-    <script src="./js/main.js?v=2025.09.05.1358"></script>
+    <script src="./js/main.js?v=2025.09.05.1411"></script>
 </body>
 </html>
