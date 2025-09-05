@@ -2,7 +2,7 @@
 class MealPlannerApp {
     constructor() {
         this.currentTab = 'recipes';
-        this.version = '2025.09.05.1616';
+        this.version = '2025.09.05.1626';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
@@ -39,12 +39,10 @@ class MealPlannerApp {
             
             this.setupEventListeners();
             this.initializeTheme();
-                    this.initializeRecipeManager();
-        this.initializeIngredientsManager();
-        this.initializeGroceryListManager();
-        this.initializeSettingsManager();
-            this.initializeGoogleCalendar();
-            this.initializeMealRotationEngine();
+            
+            // Initialize managers with delay to ensure all scripts are loaded
+            this.initializeManagers();
+            
             this.initializeServiceWorker();
             this.initializePWAFeatures();
             this.initializeItineraryViews();
@@ -167,6 +165,40 @@ class MealPlannerApp {
                 }
             }
         });
+    }
+
+    async initializeManagers() {
+        console.log('📱 Initializing managers...');
+        
+        // Check if all manager classes are available
+        const managersAvailable = {
+            RecipeManager: typeof RecipeManager !== 'undefined',
+            IngredientsManager: typeof IngredientsManager !== 'undefined',
+            GroceryListManager: typeof GroceryListManager !== 'undefined',
+            SettingsManager: typeof SettingsManager !== 'undefined',
+            GoogleCalendarIntegration: typeof GoogleCalendarIntegration !== 'undefined',
+            MealRotationEngine: typeof MealRotationEngine !== 'undefined'
+        };
+        
+        console.log('📱 Manager availability:', managersAvailable);
+        
+        // Wait a bit if managers aren't ready
+        if (!managersAvailable.RecipeManager || !managersAvailable.IngredientsManager) {
+            console.log('📱 Waiting for managers to load...');
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        
+        // Initialize managers
+        try {
+            this.initializeRecipeManager();
+            this.initializeIngredientsManager();
+            this.initializeGroceryListManager();
+            this.initializeSettingsManager();
+            this.initializeGoogleCalendar();
+            this.initializeMealRotationEngine();
+        } catch (error) {
+            console.error('❌ Error initializing managers:', error);
+        }
     }
 
     initializeRecipeManager() {
