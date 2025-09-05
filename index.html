@@ -26,7 +26,7 @@
             }
         }
     </script>
-    <link rel="stylesheet" href="./css/styles.css?v=2025.09.05.1346">
+    <link rel="stylesheet" href="./css/styles.css?v=2025.09.05.1358">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="./manifest.json">
@@ -64,18 +64,6 @@
                             <h1 class="text-xl font-semibold text-gray-900 dark:text-white">MealPlanner</h1>
                         </div>
                         <div class="flex items-center space-x-4">
-                            <!-- Data Source Controls -->
-                            <div class="flex items-center space-x-2">
-                                <label for="data-source-select" class="text-sm text-gray-600 dark:text-gray-400">Source:</label>
-                                <select id="data-source-select" class="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
-                                    <option value="demo" selected>Demo Data</option>
-                                    <option value="new">New Database</option>
-                                    <option value="existing">Existing Database</option>
-                                </select>
-                                <button id="export-db-btn" class="text-sm bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded" title="Export current database">
-                                    Export
-                                </button>
-                            </div>
                             
                             <!-- Google Calendar Integration -->
                             <div class="flex items-center space-x-2">
@@ -111,17 +99,20 @@
                         <button class="nav-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="ingredients">
                             Ingredients
                         </button>
-                        <button class="nav-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="breakfast">
+                        <button class="nav-tab meal-type-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="breakfast">
                             Breakfast
                         </button>
-                        <button class="nav-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="lunch">
+                        <button class="nav-tab meal-type-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="lunch">
                             Lunch
                         </button>
-                        <button class="nav-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="dinner">
+                        <button class="nav-tab meal-type-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="dinner">
                             Dinner
                         </button>
                         <button class="nav-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="grocery">
                             Grocery List
+                        </button>
+                        <button class="nav-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="settings">
+                            Settings
                         </button>
                     </div>
                 </div>
@@ -298,12 +289,156 @@
                         <!-- Grocery list manager will be rendered here -->
                     </div>
                 </div>
+
+                <!-- Settings Tab -->
+                <div id="settings-tab" class="tab-content hidden">
+                    <div class="max-w-4xl mx-auto">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Settings</h2>
+                        </div>
+                        
+                        <div class="space-y-8">
+                            <!-- Database Source Configuration -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Database Source</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Source Type
+                                        </label>
+                                        <select id="source-type-select" class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                            <option value="demo" selected>Demo Data (Browser Storage)</option>
+                                            <option value="local">Local Database File</option>
+                                            <option value="github">GitHub Repository</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <!-- Demo Data Options -->
+                                    <div id="demo-options" class="source-options">
+                                        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md p-4">
+                                            <p class="text-sm text-blue-800 dark:text-blue-200">
+                                                <strong>Demo Mode:</strong> Using sample data stored in browser. Perfect for testing and learning.
+                                                Data persists locally but won't sync across devices.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Local Database Options -->
+                                    <div id="local-options" class="source-options hidden">
+                                        <div class="space-y-3">
+                                            <div class="flex items-center space-x-3">
+                                                <input type="radio" id="local-new" name="local-type" value="new" class="text-blue-600">
+                                                <label for="local-new" class="text-sm text-gray-700 dark:text-gray-300">Create New Database</label>
+                                            </div>
+                                            <div class="flex items-center space-x-3">
+                                                <input type="radio" id="local-existing" name="local-type" value="existing" class="text-blue-600">
+                                                <label for="local-existing" class="text-sm text-gray-700 dark:text-gray-300">Load Existing Database</label>
+                                            </div>
+                                            <div class="mt-3">
+                                                <input type="file" id="local-file-input" accept=".db,.sqlite,.sqlite3" class="hidden">
+                                                <button id="local-file-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm">
+                                                    Choose Database File
+                                                </button>
+                                                <span id="local-file-name" class="ml-3 text-sm text-gray-600 dark:text-gray-400"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- GitHub Repository Options -->
+                                    <div id="github-options" class="source-options hidden">
+                                        <div class="space-y-4">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    Repository URL
+                                                </label>
+                                                <input type="url" id="github-repo-url" placeholder="https://github.com/username/repo" 
+                                                       class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                    Example: https://github.com/chasemp/mp
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    Deploy Key (Private Key for Write Access)
+                                                </label>
+                                                <textarea id="github-deploy-key" rows="8" placeholder="-----BEGIN OPENSSH PRIVATE KEY-----&#10;...&#10;-----END OPENSSH PRIVATE KEY-----"
+                                                          class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-xs"></textarea>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                    Required for saving changes. Generate a deploy key in your repository settings.
+                                                </p>
+                                            </div>
+                                            <div class="flex items-center space-x-3">
+                                                <input type="checkbox" id="github-read-only" class="text-blue-600">
+                                                <label for="github-read-only" class="text-sm text-gray-700 dark:text-gray-300">
+                                                    Read-only mode (no deploy key needed)
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex space-x-3 pt-4">
+                                        <button id="apply-source-btn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm">
+                                            Apply Source
+                                        </button>
+                                        <button id="export-db-btn-settings" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm">
+                                            Export Database
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Meal Type Visibility -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Meal Type Visibility</h3>
+                                <div class="space-y-3">
+                                    <div class="flex items-center space-x-3">
+                                        <input type="checkbox" id="show-breakfast" checked class="text-blue-600">
+                                        <label for="show-breakfast" class="text-sm text-gray-700 dark:text-gray-300">🍳 Show Breakfast Tab</label>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <input type="checkbox" id="show-lunch" checked class="text-blue-600">
+                                        <label for="show-lunch" class="text-sm text-gray-700 dark:text-gray-300">🥪 Show Lunch Tab</label>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <input type="checkbox" id="show-dinner" checked class="text-blue-600">
+                                        <label for="show-dinner" class="text-sm text-gray-700 dark:text-gray-300">🍽️ Show Dinner Tab</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Calendar Integration -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Calendar Integration</h3>
+                                <div class="space-y-4">
+                                    <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md p-4">
+                                        <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                                            <strong>Note:</strong> Calendar sync button remains in the top-right header for quick access.
+                                            Configure your calendar preferences here.
+                                        </p>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <input type="checkbox" id="calendar-managed-mode" class="text-blue-600">
+                                        <label for="calendar-managed-mode" class="text-sm text-gray-700 dark:text-gray-300">
+                                            Managed Mode (MealPlanner has full authority over calendar events)
+                                        </label>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <input type="checkbox" id="calendar-notifications" class="text-blue-600">
+                                        <label for="calendar-notifications" class="text-sm text-gray-700 dark:text-gray-300">
+                                            Enable meal reminder notifications
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </main>
         </div>
         
         <!-- Version Footer -->
         <footer class="fixed bottom-2 right-2 text-xs text-gray-400 bg-white/80 backdrop-blur-sm px-2 py-1 rounded shadow-sm">
-            <span id="version-display">v2025.09.05.1346</span>
+            <span id="version-display">v2025.09.05.1358</span>
         </footer>
     </div>
 
@@ -318,6 +453,7 @@
     <script src="./js/grocery-list-manager.js?v=2025.09.05.0853"></script>
     <script src="./js/google-calendar-integration.js?v=2025.09.05.0920"></script>
     <script src="./js/meal-rotation-engine.js?v=2025.09.05.0943"></script>
-    <script src="./js/main.js?v=2025.09.05.1346"></script>
+    <script src="./js/settings-manager.js?v=2025.09.05.1346"></script>
+    <script src="./js/main.js?v=2025.09.05.1358"></script>
 </body>
 </html>
