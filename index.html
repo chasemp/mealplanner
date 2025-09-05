@@ -18,7 +18,7 @@
     
     <!-- Styles -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="./css/styles.css?v=2025.09.05.0853">
+    <link rel="stylesheet" href="./css/styles.css?v=2025.09.05.0857">
 </head>
 <body class="bg-gray-50 min-h-screen">
     <div id="app">
@@ -229,9 +229,11 @@
 
                 <!-- Grocery List Tab -->
                 <div id="grocery-tab" class="tab-content hidden">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Grocery List</h2>
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <p class="text-gray-600">Grocery list generation coming soon...</p>
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900">Grocery List</h2>
+                    </div>
+                    <div id="grocery-list-container">
+                        <!-- Grocery list manager will be rendered here -->
                     </div>
                 </div>
             </main>
@@ -239,7 +241,7 @@
         
         <!-- Version Footer -->
         <footer class="fixed bottom-2 right-2 text-xs text-gray-400 bg-white/80 backdrop-blur-sm px-2 py-1 rounded shadow-sm">
-            <span id="version-display">v2025.09.05.0853</span>
+            <span id="version-display">v2025.09.05.0857</span>
         </footer>
     </div>
 
@@ -247,8 +249,9 @@
     <div id="modal-container"></div>
 
     <!-- JavaScript -->
-    <script src="./js/itinerary-view.js?v=2025.09.05.0840"></script>
-    <script src="./js/recipe-manager.js?v=2025.09.05.0840"></script>
-    <script src="./js/main.js?v=2025.09.05.0853"></script>
+    <script src="./js/itinerary-view.js?v=2025.09.05.0853"></script>
+    <script src="./js/recipe-manager.js?v=2025.09.05.0853"></script>
+    <script src="./js/grocery-list-manager.js?v=2025.09.05.0853"></script>
+    <script src="./js/main.js?v=2025.09.05.0857"></script>
 </body>
 </html>

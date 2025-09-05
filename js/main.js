@@ -2,9 +2,10 @@
 class MealPlannerApp {
     constructor() {
         this.currentTab = 'recipes';
-        this.version = '2025.09.05.0853';
+        this.version = '2025.09.05.0857';
         this.itineraryViews = {};
         this.recipeManager = null;
+        this.groceryListManager = null;
         this.currentViews = {
             breakfast: 'itinerary',
             lunch: 'itinerary', 
@@ -28,6 +29,7 @@ class MealPlannerApp {
             
             this.setupEventListeners();
             this.initializeRecipeManager();
+            this.initializeGroceryListManager();
             this.initializeItineraryViews();
             this.generateCalendarDays();
             
@@ -146,6 +148,17 @@ class MealPlannerApp {
             this.recipeManager = new RecipeManager(container);
             window.recipeManager = this.recipeManager;
             console.log('✅ Recipe manager initialized');
+        }
+    }
+
+    initializeGroceryListManager() {
+        console.log('🛒 Initializing grocery list manager...');
+        
+        const container = document.getElementById('grocery-list-container');
+        if (container) {
+            this.groceryListManager = new GroceryListManager(container);
+            window.groceryListManager = this.groceryListManager;
+            console.log('✅ Grocery list manager initialized');
         }
     }
 
