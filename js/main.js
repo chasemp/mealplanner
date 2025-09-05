@@ -2,8 +2,9 @@
 class MealPlannerApp {
     constructor() {
         this.currentTab = 'recipes';
-        this.version = '2025.09.05.0857';
+        this.version = '2025.09.05.0905';
         this.itineraryViews = {};
+        this.calendarViews = {};
         this.recipeManager = null;
         this.groceryListManager = null;
         this.currentViews = {
@@ -163,21 +164,38 @@ class MealPlannerApp {
     }
 
     initializeItineraryViews() {
-        console.log('🍽️ Initializing itinerary views...');
+        console.log('🍽️ Initializing meal planning views...');
         
-        // Initialize itinerary views for each meal type
+        // Initialize both itinerary and calendar views for each meal type
         const mealTypes = ['breakfast', 'lunch', 'dinner'];
         
+        // Initialize calendar views registry
+        this.calendarViews = {};
+        window.calendarViews = window.calendarViews || {};
+        
         mealTypes.forEach(mealType => {
-            const container = document.getElementById(`${mealType}-itinerary`);
-            if (container) {
-                this.itineraryViews[mealType] = new ItineraryView(container, mealType);
+            // Initialize itinerary view
+            const itineraryContainer = document.getElementById(`${mealType}-itinerary`);
+            if (itineraryContainer) {
+                this.itineraryViews[mealType] = new ItineraryView(itineraryContainer, mealType);
                 this.itineraryViews[mealType].render();
                 
                 // Store in global registry for onclick handlers
                 window.itineraryViews[mealType] = this.itineraryViews[mealType];
                 
                 console.log(`✅ ${mealType} itinerary view initialized`);
+            }
+            
+            // Initialize calendar view
+            const calendarContainer = document.getElementById(`${mealType}-calendar`);
+            if (calendarContainer) {
+                this.calendarViews[mealType] = new CalendarView(calendarContainer, mealType);
+                this.calendarViews[mealType].render();
+                
+                // Store in global registry for onclick handlers
+                window.calendarViews[mealType] = this.calendarViews[mealType];
+                
+                console.log(`✅ ${mealType} calendar view initialized`);
             }
         });
     }
