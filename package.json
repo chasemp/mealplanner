@@ -25,7 +25,9 @@
     "test:all:fresh": "npm run test:fresh && npm run test:e2e:fresh",
     "test:all:timeout": "npm run test:run && npm run test:e2e:timeout",
     "cache:clear": "rm -rf node_modules/.vite dist",
-    "restart": "pkill -f vite || true && sleep 2 && npm run dev:fresh"
+    "restart": "pkill -f vite || true && sleep 2 && npm run dev:fresh",
+    "version:update": "node update-version.cjs",
+    "deploy:bust": "npm run version:update && git add -A && git commit -m 'Cache bust: update version' && git push origin main"
   },
   "keywords": [
     "pwa",
