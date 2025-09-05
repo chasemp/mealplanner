@@ -2,8 +2,9 @@
 class MealPlannerApp {
     constructor() {
         this.currentTab = 'recipes';
-        this.version = '2025.09.05.0840';
+        this.version = '2025.09.05.0853';
         this.itineraryViews = {};
+        this.recipeManager = null;
         this.currentViews = {
             breakfast: 'itinerary',
             lunch: 'itinerary', 
@@ -26,6 +27,7 @@ class MealPlannerApp {
             document.getElementById('main-app').classList.remove('hidden');
             
             this.setupEventListeners();
+            this.initializeRecipeManager();
             this.initializeItineraryViews();
             this.generateCalendarDays();
             
@@ -134,6 +136,17 @@ class MealPlannerApp {
                 }
             }
         });
+    }
+
+    initializeRecipeManager() {
+        console.log('🍳 Initializing recipe manager...');
+        
+        const container = document.getElementById('recipe-manager-container');
+        if (container) {
+            this.recipeManager = new RecipeManager(container);
+            window.recipeManager = this.recipeManager;
+            console.log('✅ Recipe manager initialized');
+        }
     }
 
     initializeItineraryViews() {

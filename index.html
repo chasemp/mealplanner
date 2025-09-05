@@ -18,7 +18,7 @@
     
     <!-- Styles -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="./css/styles.css?v=2025.09.05.0840">
+    <link rel="stylesheet" href="./css/styles.css?v=2025.09.05.0853">
 </head>
 <body class="bg-gray-50 min-h-screen">
     <div id="app">
@@ -87,12 +87,9 @@
                 <div id="recipes-tab" class="tab-content">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl font-bold text-gray-900">Recipes</h2>
-                        <button id="add-recipe-btn" class="btn-primary">
-                            Add Recipe
-                        </button>
                     </div>
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <p class="text-gray-600">Recipe management coming soon...</p>
+                    <div id="recipe-manager-container">
+                        <!-- Recipe manager will be rendered here -->
                     </div>
                 </div>
 
@@ -242,7 +239,7 @@
         
         <!-- Version Footer -->
         <footer class="fixed bottom-2 right-2 text-xs text-gray-400 bg-white/80 backdrop-blur-sm px-2 py-1 rounded shadow-sm">
-            <span id="version-display">v2025.09.05.0840</span>
+            <span id="version-display">v2025.09.05.0853</span>
         </footer>
     </div>
 
@@ -250,7 +247,8 @@
     <div id="modal-container"></div>
 
     <!-- JavaScript -->
-    <script src="./js/itinerary-view.js?v=2025.09.05.0836"></script>
-    <script src="./js/main.js?v=2025.09.05.0840"></script>
+    <script src="./js/itinerary-view.js?v=2025.09.05.0840"></script>
+    <script src="./js/recipe-manager.js?v=2025.09.05.0840"></script>
+    <script src="./js/main.js?v=2025.09.05.0853"></script>
 </body>
 </html>
