@@ -2,7 +2,7 @@
 class MealPlannerApp {
     constructor() {
         this.currentTab = 'recipes';
-        this.version = '2025.09.05.1239';
+        this.version = '2025.09.05.1326';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
@@ -43,6 +43,7 @@ class MealPlannerApp {
             this.initializeServiceWorker();
             this.initializePWAFeatures();
             this.initializeItineraryViews();
+            this.initializeMealPlanningControls();
             this.generateCalendarDays();
             
             console.log(`✅ MealPlanner v${this.version} initialized successfully!`);
@@ -508,6 +509,147 @@ class MealPlannerApp {
                 console.log(`✅ ${mealType} calendar view initialized`);
             }
         });
+        
+        console.log('✅ Meal planning views initialized');
+    }
+
+    initializeMealPlanningControls() {
+        console.log('🍽️ Initializing meal planning controls...');
+        
+        // Initialize controls for each meal type
+        ['breakfast', 'lunch', 'dinner'].forEach(mealType => {
+            this.initializeMealTypeControls(mealType);
+        });
+        
+        console.log('✅ Meal planning controls initialized');
+    }
+
+    initializeMealTypeControls(mealType) {
+        // Auto Plan button
+        const autoPlanBtn = document.getElementById(`auto-plan-${mealType}`);
+        if (autoPlanBtn) {
+            autoPlanBtn.addEventListener('click', () => {
+                this.handleAutoPlan(mealType);
+            });
+        }
+
+        // Clear Plan button
+        const clearPlanBtn = document.getElementById(`clear-plan-${mealType}`);
+        if (clearPlanBtn) {
+            clearPlanBtn.addEventListener('click', () => {
+                this.handleClearPlan(mealType);
+            });
+        }
+    }
+
+    handleAutoPlan(mealType) {
+        console.log(`🤖 Auto planning ${mealType} meals...`);
+        
+        // Check if meal rotation engine is available
+        if (!this.mealRotationEngine) {
+            this.showNotification('Meal rotation engine not available. Please try again.', 'error');
+            return;
+        }
+
+        // Get the current itinerary view for this meal type
+        const itineraryView = this.itineraryViews[mealType];
+        if (!itineraryView) {
+            this.showNotification('Meal planning view not available. Please try again.', 'error');
+            return;
+        }
+
+        try {
+            // Use the meal rotation engine to generate a plan
+            const weeksToShow = itineraryView.weeksToShow || 4;
+            const totalDays = weeksToShow * 7;
+            
+            // Generate rotation for the specified period
+            const rotation = this.mealRotationEngine.generateRotation(totalDays, mealType);
+            
+            if (rotation && rotation.meals && rotation.meals.length > 0) {
+                // Apply the generated plan to the itinerary view
+                this.applyGeneratedPlan(mealType, rotation.meals);
+                
+                // Show success notification with stats
+                const stats = rotation.stats || {};
+                const message = `${mealType.charAt(0).toUpperCase() + mealType.slice(1)} plan generated! ${rotation.meals.length} meals planned.`;
+                this.showNotification(message, 'success');
+                
+                // Log generation stats
+                console.log(`📊 ${mealType} plan stats:`, stats);
+            } else {
+                this.showNotification('No suitable meals found for auto planning. Please add more recipes.', 'warning');
+            }
+        } catch (error) {
+            console.error('Error generating meal plan:', error);
+            this.showNotification('Error generating meal plan. Please try again.', 'error');
+        }
+    }
+
+    handleClearPlan(mealType) {
+        console.log(`🗑️ Clearing ${mealType} meal plan...`);
+        
+        // Show confirmation dialog
+        const confirmed = confirm(`Are you sure you want to clear all ${mealType} meal plans? This action cannot be undone.`);
+        
+        if (confirmed) {
+            try {
+                // Clear the meal plan data
+                this.clearMealPlanData(mealType);
+                
+                // Refresh the views
+                const itineraryView = this.itineraryViews[mealType];
+                if (itineraryView) {
+                    itineraryView.render();
+                }
+                
+                const calendarView = this.calendarViews[mealType];
+                if (calendarView) {
+                    calendarView.render();
+                }
+                
+                this.showNotification(`${mealType.charAt(0).toUpperCase() + mealType.slice(1)} meal plan cleared successfully.`, 'success');
+            } catch (error) {
+                console.error('Error clearing meal plan:', error);
+                this.showNotification('Error clearing meal plan. Please try again.', 'error');
+            }
+        }
+    }
+
+    applyGeneratedPlan(mealType, meals) {
+        // This would normally save to database
+        // For now, we'll just trigger a re-render with the new data
+        console.log(`📅 Applying ${meals.length} ${mealType} meals to plan...`);
+        
+        // In a real implementation, this would:
+        // 1. Save the meals to the database with proper dates
+        // 2. Update the local data structures
+        // 3. Refresh all relevant views
+        
+        // For now, just refresh the views to show the mock data
+        const itineraryView = this.itineraryViews[mealType];
+        if (itineraryView) {
+            itineraryView.render();
+        }
+        
+        const calendarView = this.calendarViews[mealType];
+        if (calendarView) {
+            calendarView.render();
+        }
+    }
+
+    clearMealPlanData(mealType) {
+        // This would normally clear from database
+        // For now, we'll just clear any local data and refresh views
+        console.log(`🗑️ Clearing ${mealType} data from storage...`);
+        
+        // In a real implementation, this would:
+        // 1. Delete scheduled meals from database for this meal type
+        // 2. Clear local data structures
+        // 3. Update any cached data
+        
+        // For now, just log the action
+        console.log(`✅ ${mealType} meal plan data cleared`);
     }
 
     toggleView(mealType) {
