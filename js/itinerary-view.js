@@ -62,7 +62,7 @@ class ItineraryView {
                 </div>
 
                 <!-- Planning Summary -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div class="bg-white rounded-lg shadow p-4">
                         <div class="text-2xl font-bold text-blue-600">${this.getTotalMeals()}</div>
                         <div class="text-sm text-gray-600">Total Meals</div>
@@ -70,14 +70,6 @@ class ItineraryView {
                     <div class="bg-white rounded-lg shadow p-4">
                         <div class="text-2xl font-bold text-green-600">${this.getUniqueRecipes()}</div>
                         <div class="text-sm text-gray-600">Unique Recipes</div>
-                    </div>
-                    <div class="bg-white rounded-lg shadow p-4">
-                        <div class="text-2xl font-bold text-orange-600">${this.getSharedIngredients()}</div>
-                        <div class="text-sm text-gray-600">Shared Ingredients</div>
-                    </div>
-                    <div class="bg-white rounded-lg shadow p-4">
-                        <div class="text-2xl font-bold text-purple-600">$${this.getEstimatedCost()}</div>
-                        <div class="text-sm text-gray-600">Estimated Cost</div>
                     </div>
                 </div>
 
