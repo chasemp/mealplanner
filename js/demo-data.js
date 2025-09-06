@@ -74,7 +74,8 @@ class DemoDataManager {
                     'Roast vegetables in oven at 400°F for 20 minutes',
                     'Serve hot'
                 ],
-                tags: ['healthy', 'protein', 'low-carb'],
+                tags: ['healthy', 'protein', 'low-carb', 'chicken'],
+                labels: ['healthy', 'protein', 'low-carb', 'chicken'],
                 ingredients: [
                     { ingredient_id: 1, quantity: 1.5, unit: 'lbs' },
                     { ingredient_id: 6, quantity: 1, unit: 'lbs' },
@@ -102,7 +103,8 @@ class DemoDataManager {
                     'Cook pasta according to package directions',
                     'Serve sauce over pasta with cheese'
                 ],
-                tags: ['italian', 'comfort-food', 'pasta'],
+                tags: ['italian', 'comfort-food', 'pasta', 'beef'],
+                labels: ['italian', 'comfort-food', 'pasta', 'beef'],
                 ingredients: [
                     { ingredient_id: 2, quantity: 1, unit: 'lbs' },
                     { ingredient_id: 14, quantity: 1, unit: 'lbs' },
@@ -131,6 +133,7 @@ class DemoDataManager {
                     'Butter toast and serve with eggs'
                 ],
                 tags: ['breakfast', 'quick', 'easy'],
+                labels: ['breakfast', 'quick', 'easy'],
                 ingredients: [
                     { ingredient_id: 4, quantity: 0.5, unit: 'dozen' },
                     { ingredient_id: 15, quantity: 0.25, unit: 'loaves' },
@@ -157,6 +160,7 @@ class DemoDataManager {
                     'Serve salmon over rice with vegetables'
                 ],
                 tags: ['healthy', 'asian', 'fish'],
+                labels: ['healthy', 'asian', 'fish'],
                 ingredients: [
                     { ingredient_id: 3, quantity: 1, unit: 'lbs' },
                     { ingredient_id: 13, quantity: 0.5, unit: 'lbs' },
@@ -183,6 +187,7 @@ class DemoDataManager {
                     'Top with cheese and serve'
                 ],
                 tags: ['healthy', 'vegetarian', 'mediterranean'],
+                labels: ['healthy', 'vegetarian', 'mediterranean'],
                 ingredients: [
                     { ingredient_id: 11, quantity: 0.5, unit: 'lbs' },
                     { ingredient_id: 12, quantity: 0.5, unit: 'lbs' },
@@ -211,7 +216,8 @@ class DemoDataManager {
                     'Add soy sauce and seasonings',
                     'Serve over rice'
                 ],
-                tags: ['quick', 'healthy', 'asian'],
+                tags: ['quick', 'healthy', 'asian', 'chicken'],
+                labels: ['quick', 'healthy', 'asian', 'chicken'],
                 ingredients: [
                     { ingredient_id: 1, quantity: 1, unit: 'lbs' },
                     { ingredient_id: 6, quantity: 0.5, unit: 'lbs' },
@@ -240,6 +246,7 @@ class DemoDataManager {
                     'Garnish with herbs and serve'
                 ],
                 tags: ['healthy', 'vegetarian', 'quinoa'],
+                labels: ['healthy', 'vegetarian', 'quinoa'],
                 ingredients: [
                     { ingredient_id: 17, quantity: 0.5, unit: 'lbs' },
                     { ingredient_id: 6, quantity: 0.5, unit: 'lbs' },
@@ -267,7 +274,8 @@ class DemoDataManager {
                     'Season with herbs and spices',
                     'Serve hot with bread'
                 ],
-                tags: ['comfort-food', 'stew', 'hearty'],
+                tags: ['comfort-food', 'stew', 'hearty', 'beef'],
+                labels: ['comfort-food', 'stew', 'hearty', 'beef'],
                 ingredients: [
                     { ingredient_id: 2, quantity: 1.5, unit: 'lbs' },
                     { ingredient_id: 16, quantity: 1, unit: 'lbs' },
