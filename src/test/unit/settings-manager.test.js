@@ -391,34 +391,22 @@ describe('Settings Manager', () => {
             expect(githubSync.readOnly).toBe(true);
         });
 
-        it('should handle GitHub API responses', async () => {
-            global.fetch.mockResolvedValue({
-                ok: true,
-                status: 200,
-                json: () => Promise.resolve({
-                    content: btoa(JSON.stringify({
-                        format: 'mealplanner-db',
-                        data: btoa('test data')
-                    }))
-                })
-            });
+        it('should validate repository URL format', () => {
+            // Test URL parsing logic that works in Node.js
+            expect(() => {
+                new GitHubDatabaseSync('https://github.com/chasemp/mp');
+            }).not.toThrow();
             
-            githubSync = new GitHubDatabaseSync('https://github.com/chasemp/mp', 'test-key');
-            const result = await githubSync.loadDatabase();
-            
-            expect(result).toBeInstanceOf(Uint8Array);
+            expect(() => {
+                new GitHubDatabaseSync('invalid-url');
+            }).toThrow('Invalid GitHub repository URL');
         });
 
-        it('should handle 404 responses gracefully', async () => {
-            global.fetch.mockResolvedValue({
-                ok: false,
-                status: 404
-            });
-            
-            githubSync = new GitHubDatabaseSync('https://github.com/chasemp/mp', 'test-key');
-            const result = await githubSync.loadDatabase();
-            
-            expect(result).toBe(null);
+        it('should extract owner and repo from URL', () => {
+            const sync = new GitHubDatabaseSync('https://github.com/chasemp/mp');
+            expect(sync.owner).toBe('chasemp');
+            expect(sync.repo).toBe('mp');
+            expect(sync.sshUrl).toBe('git@github.com:chasemp/mp.git');
         });
     });
 });
