@@ -151,11 +151,7 @@ class IngredientsManager {
                 </div>
 
                 <!-- Ingredients Stats -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-                        <div class="text-2xl font-bold text-blue-600">${this.filteredIngredients.length}</div>
-                        <div class="text-sm text-gray-600 dark:text-gray-400">Total Ingredients</div>
-                    </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
                         <div class="text-2xl font-bold text-green-600">${categories.length}</div>
                         <div class="text-sm text-gray-600 dark:text-gray-400">Categories</div>
@@ -163,10 +159,6 @@ class IngredientsManager {
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
                         <div class="text-2xl font-bold text-purple-600">${this.getActiveIngredients()}</div>
                         <div class="text-sm text-gray-600 dark:text-gray-400">In Recipes</div>
-                    </div>
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-                        <div class="text-2xl font-bold text-orange-600">$${this.getTotalValue().toFixed(2)}</div>
-                        <div class="text-sm text-gray-600 dark:text-gray-400">Estimated Value</div>
                     </div>
                 </div>
 
