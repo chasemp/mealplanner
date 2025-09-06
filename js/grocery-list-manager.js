@@ -56,14 +56,20 @@ class GroceryListManager {
 
     async loadScheduledMeals() {
         // Load from centralized demo data for consistency
-        if (window.DemoDataManager) {
-            const demoData = new window.DemoDataManager();
-            this.scheduledMeals = demoData.getScheduledMeals();
-            console.log(`✅ Grocery List Manager loaded ${this.scheduledMeals.length} consistent scheduled meals from demo data`);
+        // Load scheduled meals from app storage (real data) or demo data as fallback
+        if (window.app && window.app.getScheduledMeals) {
+            this.scheduledMeals = window.app.getScheduledMeals();
+            console.log(`✅ Grocery List Manager loaded ${this.scheduledMeals.length} scheduled meals from app storage`);
         } else {
-            // Fallback to empty array if demo data not available
-            this.scheduledMeals = [];
-            console.warn('⚠️ Demo data manager not available, using empty scheduled meals list');
+            // Fallback to demo data if app not available
+            if (window.DemoDataManager) {
+                const demoData = new window.DemoDataManager();
+                this.scheduledMeals = demoData.getScheduledMeals();
+                console.log(`✅ Grocery List Manager loaded ${this.scheduledMeals.length} scheduled meals from demo data (fallback)`);
+            } else {
+                this.scheduledMeals = [];
+                console.warn('⚠️ No scheduled meals source available');
+            }
         }
     }
 
@@ -393,6 +399,22 @@ class GroceryListManager {
     getIngredientCategory(ingredientId) {
         const ingredient = this.ingredients.find(i => i.id === ingredientId);
         return ingredient ? ingredient.category : 'other';
+    }
+
+    // Generate grocery list from current scheduled meals (called when meals change)
+    generateFromScheduledMeals() {
+        console.log('🛒 Regenerating grocery list from scheduled meals...');
+        
+        // Reload scheduled meals from app storage
+        this.loadScheduledMeals();
+        
+        // Regenerate grocery items
+        this.groceryItems = this.generateGroceryItems();
+        
+        // Re-render the grocery list
+        this.render();
+        
+        console.log(`✅ Generated grocery list with ${this.groceryItems.length} items`);
     }
 
     groupItemsByCategory(items) {

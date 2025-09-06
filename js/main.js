@@ -2,7 +2,7 @@
 class MealPlannerApp {
     constructor() {
         this.currentTab = 'recipes';
-        this.version = '2025.09.05.2125';
+        this.version = '2025.09.05.2132';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
@@ -866,24 +866,41 @@ class MealPlannerApp {
     }
 
     applyGeneratedPlan(mealType, meals) {
-        // This would normally save to database
-        // For now, we'll just trigger a re-render with the new data
         console.log(`📅 Applying ${meals.length} ${mealType} meals to plan...`);
         
-        // In a real implementation, this would:
-        // 1. Save the meals to the database with proper dates
-        // 2. Update the local data structures
-        // 3. Refresh all relevant views
-        
-        // For now, just refresh the views to show the mock data
-        const itineraryView = this.itineraryViews[mealType];
-        if (itineraryView) {
-            itineraryView.render();
-        }
-        
-        const calendarView = this.calendarViews[mealType];
-        if (calendarView) {
-            calendarView.render();
+        try {
+            // Get current scheduled meals
+            let scheduledMeals = this.getScheduledMeals();
+            
+            // Remove existing meals of this type (to avoid duplicates)
+            scheduledMeals = scheduledMeals.filter(meal => meal.meal_type !== mealType);
+            
+            // Convert generated meals to proper scheduled meal format
+            const newScheduledMeals = meals.map((meal, index) => ({
+                id: `${mealType}-${Date.now()}-${index}`,
+                recipe_id: meal.recipe_id || meal.id,
+                recipe_name: meal.recipe_name || meal.name || meal.title,
+                meal_type: mealType,
+                scheduled_date: meal.scheduled_date || meal.date,
+                servings: meal.servings || 4,
+                ingredients: meal.ingredients || [],
+                created_at: new Date().toISOString()
+            }));
+            
+            // Add new meals to the schedule
+            scheduledMeals.push(...newScheduledMeals);
+            
+            // Save to storage
+            this.saveScheduledMeals(scheduledMeals);
+            
+            console.log(`✅ Applied ${newScheduledMeals.length} ${mealType} meals to schedule`);
+            
+            // Show success notification
+            this.showNotification(`${mealType.charAt(0).toUpperCase() + mealType.slice(1)} meal plan generated successfully!`, 'success');
+            
+        } catch (error) {
+            console.error('Error applying generated plan:', error);
+            this.showNotification('Error applying meal plan. Please try again.', 'error');
         }
     }
 
@@ -954,6 +971,36 @@ class MealPlannerApp {
         }
     }
 
+    // Remove a specific meal from the schedule
+    removeMealFromSchedule(mealId, dateStr, mealType) {
+        console.log(`🗑️ Removing meal ${mealId} (${mealType}) from ${dateStr}`);
+        
+        try {
+            let scheduledMeals = this.getScheduledMeals();
+            const originalCount = scheduledMeals.length;
+            
+            // Remove the specific meal by ID or date+type combination
+            scheduledMeals = scheduledMeals.filter(meal => {
+                if (mealId && meal.id) {
+                    return meal.id !== mealId;
+                } else {
+                    // Fallback: remove by date and meal type
+                    const mealDate = new Date(meal.scheduled_date);
+                    return !(mealDate.toDateString() === dateStr && meal.meal_type === mealType);
+                }
+            });
+            
+            this.saveScheduledMeals(scheduledMeals);
+            
+            console.log(`✅ Removed ${originalCount - scheduledMeals.length} meal(s) from schedule`);
+            
+            return true;
+        } catch (error) {
+            console.error('Error removing meal from schedule:', error);
+            return false;
+        }
+    }
+
     // Refresh all meal plan related views
     refreshMealPlanViews() {
         // Refresh itinerary views
@@ -970,9 +1017,9 @@ class MealPlannerApp {
             }
         });
         
-        // Refresh grocery list
-        if (this.groceryListManager && this.groceryListManager.render) {
-            this.groceryListManager.render();
+        // Refresh grocery list to reflect scheduled meal changes
+        if (this.groceryListManager && this.groceryListManager.generateFromScheduledMeals) {
+            this.groceryListManager.generateFromScheduledMeals();
         }
     }
 
