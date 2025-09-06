@@ -2,7 +2,7 @@
 class MealPlannerApp {
     constructor() {
         this.currentTab = 'recipes';
-        this.version = '2025.09.05.1726';
+        this.version = '2025.09.05.1800';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
@@ -11,6 +11,9 @@ class MealPlannerApp {
         this.settingsManager = null;
         this.googleCalendarIntegration = null;
         this.mealRotationEngine = null;
+        this.performanceManager = null;
+        this.advancedPlanningManager = null;
+        this.pantryManager = null;
         this.serviceWorker = null;
         this.installPrompt = null;
         this.currentViews = {
@@ -201,8 +204,11 @@ class MealPlannerApp {
             this.initializeRecipeManager();
             this.initializeIngredientsManager();
             this.initializeGroceryListManager();
-            this.initializeSettingsManager();
-            this.initializeGoogleCalendar();
+                    this.initializeSettingsManager();
+        this.initializeGoogleCalendar();
+        this.initializePerformanceManager();
+        this.initializeAdvancedPlanning();
+        this.initializePantryManager();
             this.initializeMealRotationEngine();
         } catch (error) {
             console.error('❌ Error initializing managers:', error);
@@ -285,6 +291,43 @@ class MealPlannerApp {
         window.mealRotationEngine = this.mealRotationEngine;
         
         console.log('✅ Meal Rotation Engine initialized');
+    }
+
+    initializePerformanceManager() {
+        console.log('🚀 Initializing performance manager...');
+        if (typeof PerformanceManager !== 'undefined') {
+            this.performanceManager = new PerformanceManager();
+            window.performanceManager = this.performanceManager;
+            console.log('✅ Performance manager initialized');
+        } else {
+            console.log('⚠️ PerformanceManager not available');
+        }
+    }
+
+    initializeAdvancedPlanning() {
+        console.log('🎯 Initializing advanced planning manager...');
+        if (typeof AdvancedPlanningManager !== 'undefined') {
+            this.advancedPlanningManager = new AdvancedPlanningManager();
+            window.advancedPlanningManager = this.advancedPlanningManager;
+            console.log('✅ Advanced planning manager initialized');
+        } else {
+            console.log('⚠️ AdvancedPlanningManager not available');
+        }
+    }
+
+    initializePantryManager() {
+        console.log('🏪 Initializing pantry manager...');
+        if (typeof PantryManager !== 'undefined') {
+            // Initialize with a container if we're on the pantry tab
+            const pantryContainer = document.getElementById('pantry-container');
+            if (pantryContainer) {
+                this.pantryManager = new PantryManager(pantryContainer);
+            }
+            window.pantryManager = this.pantryManager;
+            console.log('✅ Pantry manager initialized');
+        } else {
+            console.log('⚠️ PantryManager not available');
+        }
     }
 
     async initializeServiceWorker() {
