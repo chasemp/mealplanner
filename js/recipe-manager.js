@@ -9,6 +9,7 @@ class RecipeManager {
         this.selectedCategory = 'all';
         this.selectedLabel = 'all';
         this.sortBy = 'name';
+        this.showFavoritesOnly = false;
         this.init();
     }
 
@@ -81,26 +82,31 @@ class RecipeManager {
                         <!-- Filter Controls -->
                         <div class="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 flex-1">
                             <select id="recipe-category" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 w-full sm:w-auto">
-                                <option value="all">All Meal Types</option>
-                                <option value="breakfast">Breakfast</option>
-                                <option value="lunch">Lunch</option>
-                                <option value="dinner">Dinner</option>
-                                <option value="snack">Snack</option>
+                                <option value="all" ${this.selectedCategory === 'all' ? 'selected' : ''}>All Meal Types</option>
+                                <option value="breakfast" ${this.selectedCategory === 'breakfast' ? 'selected' : ''}>Breakfast</option>
+                                <option value="lunch" ${this.selectedCategory === 'lunch' ? 'selected' : ''}>Lunch</option>
+                                <option value="dinner" ${this.selectedCategory === 'dinner' ? 'selected' : ''}>Dinner</option>
+                                <option value="snack" ${this.selectedCategory === 'snack' ? 'selected' : ''}>Snack</option>
                             </select>
                             
                             <select id="recipe-label" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 w-full sm:w-auto">
-                                <option value="all">All Labels</option>
+                                <option value="all" ${this.selectedLabel === 'all' ? 'selected' : ''}>All Labels</option>
                                 ${this.getAllLabels().map(label => `
                                     <option value="${label}" ${this.selectedLabel === label ? 'selected' : ''}>${label}</option>
                                 `).join('')}
                             </select>
                             
                             <select id="recipe-sort" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 w-full sm:w-auto">
-                                <option value="name">Sort by Name</option>
-                                <option value="date">Sort by Date</option>
-                                <option value="prep_time">Sort by Prep Time</option>
-                                <option value="serving_count">Sort by Servings</option>
+                                <option value="name" ${this.sortBy === 'name' ? 'selected' : ''}>Sort by Name</option>
+                                <option value="date" ${this.sortBy === 'date' ? 'selected' : ''}>Sort by Date</option>
+                                <option value="prep_time" ${this.sortBy === 'prep_time' ? 'selected' : ''}>Sort by Prep Time</option>
+                                <option value="serving_count" ${this.sortBy === 'serving_count' ? 'selected' : ''}>Sort by Servings</option>
                             </select>
+                            
+                            <!-- Clear Filters Button -->
+                            <button id="clear-recipe-filters-btn" class="border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors w-full sm:w-auto">
+                                Clear Filters
+                            </button>
                         </div>
                         
                         <!-- Add Recipe Button -->
@@ -123,9 +129,16 @@ class RecipeManager {
                         <div class="text-2xl font-bold text-green-600">${this.getUniqueLabels().length}</div>
                         <div class="text-sm text-gray-600">Labels</div>
                     </div>
-                    <div class="bg-white rounded-lg shadow p-4">
-                        <div class="text-2xl font-bold text-purple-600">${this.getFavoriteRecipes().length}</div>
-                        <div class="text-sm text-gray-600">Favorites</div>
+                    <div class="bg-white rounded-lg shadow p-4 cursor-pointer hover:bg-gray-50 transition-colors ${this.showFavoritesOnly ? 'ring-2 ring-yellow-400 bg-yellow-50' : ''}" id="favorites-filter-btn">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-2xl font-bold text-purple-600">${this.getFavoriteRecipes().length}</div>
+                                <div class="text-sm text-gray-600">Favorites ${this.showFavoritesOnly ? '(Active)' : ''}</div>
+                            </div>
+                            <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                            </svg>
+                        </div>
                     </div>
                 </div>
 
@@ -138,6 +151,9 @@ class RecipeManager {
                 ${this.getFilteredRecipes().length === 0 ? this.renderEmptyState() : ''}
             </div>
         `;
+        
+        // Re-attach event listeners after rendering
+        this.attachEventListeners();
     }
 
     renderRecipeCards() {
@@ -150,6 +166,11 @@ class RecipeManager {
                     <div class="flex items-start justify-between mb-3">
                         <h3 class="text-lg font-semibold text-gray-900 line-clamp-2">${recipe.title}</h3>
                         <div class="flex items-center space-x-1 ml-2">
+                            <button class="hover:text-yellow-500 toggle-favorite" data-recipe-id="${recipe.id}" title="${recipe.favorite ? 'Remove from favorites' : 'Add to favorites'}">
+                                <svg class="w-4 h-4 ${recipe.favorite ? 'text-yellow-500 fill-current' : 'text-gray-400'}" fill="${recipe.favorite ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                                </svg>
+                            </button>
                             <button class="text-gray-400 hover:text-blue-600 edit-recipe" data-recipe-id="${recipe.id}">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
@@ -244,6 +265,11 @@ class RecipeManager {
                 ];
                 return recipeLabels.some(label => label.toLowerCase() === this.selectedLabel.toLowerCase());
             });
+        }
+
+        // Filter by favorites
+        if (this.showFavoritesOnly) {
+            filtered = filtered.filter(recipe => recipe.favorite === true);
         }
 
         // Sort recipes
@@ -342,6 +368,37 @@ class RecipeManager {
                 this.render();
             });
         }
+
+        // Clear filters button
+        const clearFiltersBtn = this.container.querySelector('#clear-recipe-filters-btn');
+        if (clearFiltersBtn) {
+            clearFiltersBtn.addEventListener('click', () => {
+                this.searchTerm = '';
+                this.selectedCategory = 'all';
+                this.selectedLabel = 'all';
+                this.sortBy = 'name';
+                this.showFavoritesOnly = false;
+                this.render();
+            });
+        }
+
+        // Favorites filter button
+        const favoritesFilterBtn = this.container.querySelector('#favorites-filter-btn');
+        if (favoritesFilterBtn) {
+            favoritesFilterBtn.addEventListener('click', () => {
+                this.showFavoritesOnly = !this.showFavoritesOnly;
+                this.render();
+            });
+        }
+
+        // Toggle favorite buttons
+        this.container.querySelectorAll('.toggle-favorite').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const recipeId = parseInt(btn.dataset.recipeId);
+                this.toggleFavorite(recipeId);
+            });
+        });
 
         // Add recipe button
         const addBtn = this.container.querySelector('#add-recipe-btn, #add-first-recipe');
@@ -1171,6 +1228,18 @@ class RecipeManager {
             this.recipes = this.recipes.filter(r => r.id !== recipeId);
             this.render();
             this.showNotification(`"${recipe.title}" has been deleted`, 'success');
+        }
+    }
+
+    toggleFavorite(recipeId) {
+        const recipe = this.recipes.find(r => r.id === recipeId);
+        if (recipe) {
+            recipe.favorite = !recipe.favorite;
+            this.render();
+            this.showNotification(
+                `"${recipe.title}" ${recipe.favorite ? 'added to' : 'removed from'} favorites`, 
+                'success'
+            );
         }
     }
 
