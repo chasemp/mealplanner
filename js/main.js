@@ -2,7 +2,7 @@
 class MealPlannerApp {
     constructor() {
         this.currentTab = 'recipes';
-        this.version = '2025.09.05.1800';
+        this.version = '2025.09.05.1830';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
@@ -278,19 +278,30 @@ class MealPlannerApp {
     initializeMealRotationEngine() {
         console.log('🧠 Initializing Meal Rotation Engine...');
         
-        this.mealRotationEngine = new MealRotationEngine();
-        
-        // Initialize with current recipes and user preferences
-        const recipes = this.getMockRecipes(); // This will be replaced with actual database call
-        const userPreferences = JSON.parse(localStorage.getItem('mealPreferences') || '{}');
-        const pantryItems = this.getMockPantryItems(); // This will be replaced with actual database call
-        
-        this.mealRotationEngine.initialize(recipes, userPreferences, pantryItems);
-        
-        // Make globally available for testing
-        window.mealRotationEngine = this.mealRotationEngine;
-        
-        console.log('✅ Meal Rotation Engine initialized');
+        try {
+            // Check if MealRotationEngine class is available
+            if (typeof MealRotationEngine === 'undefined') {
+                console.error('❌ MealRotationEngine class not found');
+                return;
+            }
+            
+            this.mealRotationEngine = new MealRotationEngine();
+            
+            // Initialize with current recipes and user preferences
+            const recipes = this.getMockRecipes();
+            const userPreferences = JSON.parse(localStorage.getItem('mealPreferences') || '{}');
+            const pantryItems = this.getMockPantryItems();
+            
+            this.mealRotationEngine.initialize(recipes, userPreferences, pantryItems);
+            
+            // Make globally available for testing
+            window.mealRotationEngine = this.mealRotationEngine;
+            
+            console.log('✅ Meal Rotation Engine initialized successfully');
+        } catch (error) {
+            console.error('❌ Failed to initialize Meal Rotation Engine:', error);
+            this.mealRotationEngine = null;
+        }
     }
 
     initializePerformanceManager() {
@@ -757,7 +768,8 @@ class MealPlannerApp {
         
         // Check if meal rotation engine is available
         if (!this.mealRotationEngine) {
-            this.showNotification('Meal rotation engine not available. Please try again.', 'error');
+            console.error('❌ Meal rotation engine not available for auto planning');
+            this.showNotification('Meal rotation engine not available. Please refresh the page and try again.', 'error');
             return;
         }
 
