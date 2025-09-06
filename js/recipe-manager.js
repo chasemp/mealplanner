@@ -1115,18 +1115,26 @@ class RecipeManager {
                 <!-- Header -->
                 <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
                     <h2 class="text-2xl font-bold text-gray-900 dark:text-white">${recipe.title}</h2>
-                    <button id="close-recipe-detail" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
+                    <div class="flex items-center space-x-3">
+                        <button id="edit-recipe-detail" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                            </svg>
+                            <span>Edit</span>
+                        </button>
+                        <button id="close-recipe-detail" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="p-6">
                     <!-- Recipe Image (if available) -->
                     ${recipe.image_url ? `
-                        <div class="mb-6">
-                            <img src="${recipe.image_url}" alt="${recipe.title}" class="w-full h-64 object-cover rounded-lg">
+                        <div class="mb-6 flex justify-center">
+                            <img src="${recipe.image_url}" alt="${recipe.title}" class="w-3/5 h-40 object-cover rounded-lg">
                         </div>
                     ` : ''}
 
@@ -1195,11 +1203,16 @@ class RecipeManager {
 
         // Add event listeners
         const closeBtn = modal.querySelector('#close-recipe-detail');
+        const editBtn = modal.querySelector('#edit-recipe-detail');
         const closeModal = () => {
             modal.remove();
         };
 
         closeBtn.addEventListener('click', closeModal);
+        editBtn.addEventListener('click', () => {
+            closeModal();
+            this.showRecipeForm(recipe);
+        });
         modal.addEventListener('click', (e) => {
             if (e.target === modal) closeModal();
         });
