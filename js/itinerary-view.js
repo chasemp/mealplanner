@@ -103,22 +103,38 @@ class ItineraryView {
     }
 
     getTotalMeals() {
-        return this.weeksToShow * 7; // One meal per day
+        // Return actual count of scheduled meals for this meal type
+        return this.scheduledMeals.length;
     }
 
     getUniqueRecipes() {
-        // Mock data for now
-        return Math.min(this.getTotalMeals(), 15);
+        // Count unique recipe names in scheduled meals
+        const uniqueRecipes = new Set(this.scheduledMeals.map(meal => meal.recipe_name || meal.name));
+        return uniqueRecipes.size;
     }
 
     getSharedIngredients() {
-        // Mock data for now
+        // Calculate shared ingredients across scheduled meals
+        // For now, estimate based on unique recipes (can be enhanced later)
         return Math.floor(this.getUniqueRecipes() * 0.6);
     }
 
     getEstimatedCost() {
-        // Mock data for now
+        // Calculate estimated cost based on actual scheduled meals
+        // For now, use average cost per meal (can be enhanced with real ingredient costs)
         return (this.getTotalMeals() * 8.50).toFixed(2);
+    }
+
+    getScheduledMealForDate(date) {
+        // Find a scheduled meal for the given date
+        const dateStr = date.toDateString();
+        return this.scheduledMeals.find(meal => {
+            if (meal.scheduled_date) {
+                const mealDate = new Date(meal.scheduled_date);
+                return mealDate.toDateString() === dateStr;
+            }
+            return false;
+        }) || null;
     }
 
     renderWeeks() {
@@ -187,9 +203,11 @@ class ItineraryView {
             const dayNumber = date.getDate();
             const monthName = date.toLocaleDateString('en-US', { month: 'short' });
             
-            // Mock meal data
-            const hasMeal = Math.random() > 0.3;
-            const mealName = hasMeal ? this.getMockMealName() : null;
+            // Get actual scheduled meal for this date
+            const scheduledMeal = this.getScheduledMealForDate(date);
+            const hasMeal = scheduledMeal !== null;
+            const mealName = hasMeal ? (scheduledMeal.recipe_name || scheduledMeal.name) : null;
+            const dateStr = date.toDateString();
             
             daysHtml += `
                 <div class="p-4 border-b border-gray-100 last:border-b-0 hover:bg-gray-50">
@@ -217,10 +235,14 @@ class ItineraryView {
                         </div>
                         <div class="flex items-center space-x-2">
                             ${hasMeal ? `
-                                <button class="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
-                                <button class="text-red-600 hover:text-red-800 text-sm">Remove</button>
+                                <button class="text-blue-600 hover:text-blue-800 text-sm" onclick="window.itineraryViews['${this.mealType}'].editMeal('${scheduledMeal?.id || ''}', '${dateStr}')">Edit</button>
+                                <button class="text-red-600 hover:text-red-800 text-sm" onclick="window.itineraryViews['${this.mealType}'].removeMeal('${scheduledMeal?.id || ''}', '${dateStr}')" title="Remove meal">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
                             ` : `
-                                <button class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm">
+                                <button class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm" onclick="window.itineraryViews['${this.mealType}'].addMeal('${dateStr}')">
                                     Add Meal
                                 </button>
                             `}
@@ -261,6 +283,29 @@ class ItineraryView {
             });
         }
 
+    }
+
+    removeMeal(mealId, dateStr) {
+        console.log(`🗑️ Removing meal ${mealId} from ${dateStr}`);
+        
+        if (window.app && window.app.removeMealFromSchedule) {
+            window.app.removeMealFromSchedule(mealId, dateStr, this.mealType);
+            this.render(); // Re-render to show updated data
+        } else {
+            console.error('❌ App removeMealFromSchedule method not available');
+        }
+    }
+
+    editMeal(mealId, dateStr) {
+        console.log(`✏️ Editing meal ${mealId} on ${dateStr}`);
+        // TODO: Implement meal editing functionality
+        alert('Edit meal functionality coming soon!');
+    }
+
+    addMeal(dateStr) {
+        console.log(`➕ Adding meal on ${dateStr}`);
+        // TODO: Implement add meal functionality
+        alert('Add meal functionality coming soon!');
     }
 
     listenForMealMoves() {
