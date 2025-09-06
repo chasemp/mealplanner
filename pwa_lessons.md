@@ -190,6 +190,127 @@ We need to balance three critical requirements:
 ### 1. Static Site with Intelligent Asset Management
 **The Sweet Spot**: Modular files served directly by GitHub Pages without build complexity
 
+## 📡 **GitHub Pages Static PWA Deployment Lessons**
+
+### **🚨 Critical Script Loading & Initialization Issues**
+
+#### **Lesson 1: Avoid Duplicate Global Instances**
+**Problem**: Creating global instances at the bottom of module files causes conflicts with app-managed instances.
+```javascript
+// ❌ BAD - Creates conflicts
+// At bottom of meal-rotation-engine.js
+window.mealRotationEngine = new MealRotationEngine();
+
+// ✅ GOOD - Export class, let app manage instances
+if (typeof window !== 'undefined') {
+    window.MealRotationEngine = MealRotationEngine;
+}
+```
+
+#### **Lesson 2: Robust Initialization with Error Handling**
+**Problem**: Static PWAs on GitHub Pages can have unpredictable script loading order.
+```javascript
+// ✅ GOOD - Always check class availability
+initializeMealRotationEngine() {
+    try {
+        if (typeof MealRotationEngine === 'undefined') {
+            console.error('❌ MealRotationEngine class not found');
+            return;
+        }
+        this.mealRotationEngine = new MealRotationEngine();
+        // ... initialization
+    } catch (error) {
+        console.error('❌ Failed to initialize:', error);
+        this.mealRotationEngine = null;
+    }
+}
+```
+
+#### **Lesson 3: Cache-Busting is Critical for Static PWAs**
+**Problem**: GitHub Pages aggressive caching can serve stale JavaScript files.
+**Solution**: Always update ALL script versions simultaneously:
+```html
+<!-- ✅ GOOD - All scripts have same version -->
+<script src="./js/main.js?v=2025.09.05.1830"></script>
+<script src="./js/engine.js?v=2025.09.05.1830"></script>
+```
+
+#### **Lesson 4: GitHub Pages Deployment Timing**
+**Key Insight**: GitHub Pages deployment is **not instantaneous**:
+- Commit push: ~30 seconds
+- Cache invalidation: 1-5 minutes
+- Global CDN propagation: 5-15 minutes
+
+**Best Practice**: Always test locally first, then wait 2-3 minutes after push before testing live site.
+
+#### **Lesson 5: Static PWA Error Recovery**
+**Problem**: Users may hit cached broken versions during deployment.
+**Solution**: Provide clear error messages with recovery instructions:
+```javascript
+// ✅ GOOD - Clear user guidance
+if (!this.mealRotationEngine) {
+    this.showNotification(
+        'Meal rotation engine not available. Please refresh the page and try again.', 
+        'error'
+    );
+}
+```
+
+### **🔄 Static PWA Development Workflow**
+1. **Local Development**: Test with `file://` protocol first
+2. **Local HTTP Testing**: Use `python -m http.server` for realistic testing
+3. **Commit & Push**: Update all cache-busting versions
+4. **Wait 2-3 minutes**: Allow GitHub Pages deployment
+5. **Test Live**: Verify functionality on actual domain
+6. **Hard Refresh**: Use Ctrl+F5 to bypass browser cache if needed
+
+### **📊 Static PWA Debugging Strategy**
+```javascript
+// Always include comprehensive logging for static PWAs
+console.log('🧠 Initializing Meal Rotation Engine...');
+console.log('✅ Meal Rotation Engine initialized successfully');
+console.error('❌ Failed to initialize:', error);
+```
+
+**Why**: Static PWAs can't use traditional debugging tools, so console logging is essential for production debugging.
+
+#### **Lesson 6: Event Listener Destruction in Dynamic HTML**
+**Problem**: Static PWAs often use `innerHTML` to update UI, which destroys all event listeners.
+```javascript
+// ❌ BAD - Event listeners lost on every render
+render() {
+    this.container.innerHTML = `<div>...</div>`;
+}
+attachEventListeners() {
+    // Called once in constructor - listeners lost after first render!
+}
+
+// ✅ GOOD - Re-attach listeners after each render
+render() {
+    this.container.innerHTML = `<div>...</div>`;
+    this.attachEventListeners(); // Critical for static PWAs!
+}
+```
+
+**Root Cause**: Unlike frameworks with virtual DOM, static PWAs replace entire DOM subtrees.
+**Solution**: Always call `attachEventListeners()` at the end of every `render()` method.
+
+**Static PWA Pattern**:
+```javascript
+class ComponentManager {
+    render() {
+        // 1. Update HTML
+        this.container.innerHTML = this.generateHTML();
+        
+        // 2. Re-attach ALL event listeners
+        this.attachEventListeners();
+        
+        // 3. Initialize any dynamic components
+        this.initializeDynamicComponents();
+    }
+}
+```
+
 ```
 project/
 ├── index.html              # Main entry point

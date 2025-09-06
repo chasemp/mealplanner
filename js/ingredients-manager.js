@@ -225,6 +225,9 @@ class IngredientsManager {
             </div>
         `;
         
+        // Re-attach event listeners after rendering (critical for static PWAs)
+        this.attachEventListeners();
+        
         // Initialize barcode scanner
         this.initializeBarcodeScanner();
     }
