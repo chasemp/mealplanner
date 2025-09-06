@@ -669,5 +669,8 @@ if (typeof module !== 'undefined' && module.exports) {
     module.exports = MealRotationEngine;
 }
 
-// Global instance
-window.mealRotationEngine = new MealRotationEngine();
+// Make class globally available but don't create instance
+// The main app will create and manage the instance
+if (typeof window !== 'undefined') {
+    window.MealRotationEngine = MealRotationEngine;
+}
