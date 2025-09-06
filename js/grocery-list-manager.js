@@ -489,6 +489,92 @@ class GroceryListManager {
     }
 
     exportGroceryList() {
+        // Show export options modal
+        this.showExportModal();
+    }
+
+    showExportModal() {
+        // Remove existing modal if present
+        const existingModal = document.getElementById('export-modal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+
+        const modal = document.createElement('div');
+        modal.id = 'export-modal';
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
+        
+        modal.innerHTML = `
+            <div class="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Export Grocery List</h3>
+                    <button id="close-export-modal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="space-y-3">
+                    <button id="export-text" class="w-full flex items-center justify-center px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Export as Text File
+                    </button>
+                    
+                    <button id="export-pdf" class="w-full flex items-center justify-center px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                        </svg>
+                        Export as PDF
+                    </button>
+                    
+                    <button id="export-email" class="w-full flex items-center justify-center px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        Send via Email
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // Add event listeners
+        const closeBtn = modal.querySelector('#close-export-modal');
+        const exportTextBtn = modal.querySelector('#export-text');
+        const exportPdfBtn = modal.querySelector('#export-pdf');
+        const exportEmailBtn = modal.querySelector('#export-email');
+
+        const closeModal = () => {
+            modal.remove();
+        };
+
+        closeBtn.addEventListener('click', closeModal);
+        exportTextBtn.addEventListener('click', () => {
+            this.exportAsText();
+            closeModal();
+        });
+        exportPdfBtn.addEventListener('click', () => {
+            this.exportAsPDF();
+            closeModal();
+        });
+        exportEmailBtn.addEventListener('click', () => {
+            this.exportViaEmail();
+            closeModal();
+        });
+
+        // Close on backdrop click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+    }
+
+    exportAsText() {
         const groceryItems = this.generateGroceryItems();
         const text = this.formatGroceryListForExport(groceryItems);
         
@@ -503,7 +589,139 @@ class GroceryListManager {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
         
-        this.showNotification('Grocery list exported!', 'success');
+        this.showNotification('Grocery list exported as text!', 'success');
+    }
+
+    exportAsPDF() {
+        // Create a printable HTML version and use browser's print-to-PDF
+        const printWindow = window.open('', '_blank');
+        const groceryHTML = this.generateGroceryListHTML();
+        
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Grocery List - ${this.formatDate(this.currentWeek)}</title>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        max-width: 800px;
+                        margin: 0 auto;
+                        padding: 20px;
+                        line-height: 1.6;
+                    }
+                    .header {
+                        text-align: center;
+                        border-bottom: 2px solid #333;
+                        padding-bottom: 10px;
+                        margin-bottom: 20px;
+                    }
+                    .category {
+                        margin-bottom: 20px;
+                        break-inside: avoid;
+                    }
+                    .category-title {
+                        font-weight: bold;
+                        font-size: 1.2em;
+                        color: #333;
+                        border-bottom: 1px solid #ccc;
+                        padding-bottom: 5px;
+                        margin-bottom: 10px;
+                    }
+                    .item {
+                        display: flex;
+                        justify-content: space-between;
+                        padding: 5px 0;
+                        border-bottom: 1px dotted #ccc;
+                    }
+                    .item:last-child {
+                        border-bottom: none;
+                    }
+                    .checkbox {
+                        width: 15px;
+                        height: 15px;
+                        border: 1px solid #333;
+                        display: inline-block;
+                        margin-right: 10px;
+                    }
+                    @media print {
+                        body { margin: 0; }
+                        .no-print { display: none; }
+                    }
+                </style>
+            </head>
+            <body>
+                ${groceryHTML}
+                <div class="no-print" style="text-align: center; margin-top: 30px;">
+                    <button onclick="window.print()" style="padding: 10px 20px; font-size: 16px;">Print as PDF</button>
+                    <button onclick="window.close()" style="padding: 10px 20px; font-size: 16px; margin-left: 10px;">Close</button>
+                </div>
+            </body>
+            </html>
+        `);
+        
+        printWindow.document.close();
+        
+        // Auto-trigger print dialog after a short delay
+        setTimeout(() => {
+            printWindow.print();
+        }, 500);
+        
+        this.showNotification('Grocery list opened for PDF export!', 'success');
+    }
+
+    exportViaEmail() {
+        const groceryItems = this.generateGroceryItems();
+        const text = this.formatGroceryListForExport(groceryItems);
+        const subject = `Grocery List - ${this.formatDate(this.currentWeek)}`;
+        const body = encodeURIComponent(text);
+        
+        const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${body}`;
+        
+        // Try to open email client
+        const link = document.createElement('a');
+        link.href = mailtoLink;
+        link.click();
+        
+        this.showNotification('Email client opened with grocery list!', 'success');
+    }
+
+    generateGroceryListHTML() {
+        const weekStart = this.formatDate(this.currentWeek);
+        const weekEnd = this.formatDate(new Date(this.currentWeek.getTime() + 6 * 24 * 60 * 60 * 1000));
+        const groceryItems = this.generateGroceryItems();
+        const groupedItems = this.groupItemsByCategory(groceryItems);
+        
+        let html = `
+            <div class="header">
+                <h1>Grocery List</h1>
+                <p>Week of ${weekStart} - ${weekEnd}</p>
+                <p>Generated on ${new Date().toLocaleDateString()}</p>
+            </div>
+        `;
+        
+        for (const [category, items] of Object.entries(groupedItems)) {
+            html += `
+                <div class="category">
+                    <div class="category-title">${category.charAt(0).toUpperCase() + category.slice(1)}</div>
+            `;
+            
+            items.forEach(item => {
+                html += `
+                    <div class="item">
+                        <div>
+                            <span class="checkbox"></span>
+                            ${item.name}
+                        </div>
+                        <div>${item.quantity} ${item.unit}</div>
+                    </div>
+                `;
+            });
+            
+            html += `</div>`;
+        }
+        
+        return html;
     }
 
     printGroceryList() {
