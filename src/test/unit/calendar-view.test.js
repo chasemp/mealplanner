@@ -152,25 +152,25 @@ class MockCalendarView {
             'Grilled Chicken Salad', 'Pasta Primavera', 'Beef Stir Fry', 'Salmon with Rice'
         ]
         
-        // Add some test meals for December 2024
+        // Add some test meals for December 2024 using explicit date construction
         meals.push({
             id: 'dinner-1',
             name: 'Grilled Chicken Salad',
-            date: new Date('2024-12-02'),
+            date: new Date(2024, 11, 2), // December 2, 2024 (month is 0-indexed)
             mealType: 'dinner'
         })
         
         meals.push({
             id: 'dinner-2',
             name: 'Pasta Primavera',
-            date: new Date('2024-12-05'),
+            date: new Date(2024, 11, 5), // December 5, 2024 (month is 0-indexed)
             mealType: 'dinner'
         })
         
         meals.push({
             id: 'breakfast-1',
             name: 'Pancakes',
-            date: new Date('2024-12-02'),
+            date: new Date(2024, 11, 2), // December 2, 2024 (month is 0-indexed)
             mealType: 'breakfast'
         })
         
@@ -303,8 +303,8 @@ describe('CalendarView', () => {
 
     describe('date formatting', () => {
         it('should format month and year correctly', () => {
-            // Reset to December 2024 to ensure consistent test
-            calendarView.viewDate = new Date('2024-12-01')
+            // Use explicit date construction to avoid timezone issues
+            calendarView.viewDate = new Date(2024, 11, 1) // December 1, 2024 (month is 0-indexed)
             const formatted = calendarView.formatMonthYear()
             expect(formatted).toBe('December 2024')
         })
@@ -316,7 +316,8 @@ describe('CalendarView', () => {
         })
 
         it('should format display date correctly', () => {
-            const date = new Date('2024-12-01')
+            // Use explicit date construction to avoid timezone issues
+            const date = new Date(2024, 11, 1) // December 1, 2024 (month is 0-indexed)
             const formatted = calendarView.formatDate(date)
             expect(formatted).toBe('Dec 1')
         })
@@ -342,8 +343,8 @@ describe('CalendarView', () => {
         })
 
         it('should get all scheduled meals for current month', () => {
-            // Reset to December 2024 to ensure we're looking at the right month
-            calendarView.viewDate = new Date('2024-12-01')
+            // Use explicit date construction to avoid timezone issues
+            calendarView.viewDate = new Date(2024, 11, 1) // December 1, 2024 (month is 0-indexed)
             const allMeals = calendarView.getAllScheduledMeals()
             expect(allMeals).toHaveLength(2) // 2 dinner meals in December 2024
             
