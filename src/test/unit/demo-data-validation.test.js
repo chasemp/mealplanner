@@ -165,8 +165,8 @@ describe('Demo Data Validation', () => {
                 expect(recipe.prep_time).toBeDefined();
                 expect(recipe.cook_time).toBeDefined();
                 expect(recipe.servings).toBeDefined();
-                expect(recipe.tags).toBeDefined();
                 expect(recipe.labels).toBeDefined();
+                expect(recipe.tags).toBeUndefined(); // tags consolidated to labels
                 expect(recipe.ingredients).toBeDefined();
                 expect(recipe.instructions).toBeDefined();
 

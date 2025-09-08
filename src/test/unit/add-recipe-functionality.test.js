@@ -13,6 +13,30 @@ const dom = new JSDOM(`
 global.window = dom.window;
 global.document = dom.window.document;
 
+// Mock localStorage
+global.localStorage = {
+    data: {},
+    getItem(key) { return this.data[key] || null; },
+    setItem(key, value) { this.data[key] = value; },
+    removeItem(key) { delete this.data[key]; },
+    clear() { this.data = {}; }
+};
+
+// Mock DemoDataManager
+global.window.DemoDataManager = class MockDemoDataManager {
+    getIngredients() {
+        return [
+            { id: 1, name: 'Ground Beef', category: 'meat', default_unit: 'lbs', labels: ['protein', 'meat'] },
+            { id: 2, name: 'Onion', category: 'produce', default_unit: 'pieces', labels: ['vegetable', 'produce'] },
+            { id: 3, name: 'Tomato', category: 'produce', default_unit: 'pieces', labels: ['vegetable', 'produce'] }
+        ];
+    }
+    
+    getRecipes() {
+        return [];
+    }
+};
+
 // Import RecipeManager after DOM setup
 await import('../../../js/recipe-manager.js');
 const RecipeManager = global.RecipeManager;
@@ -199,7 +223,7 @@ describe('Add Recipe Functionality', () => {
             const ingredientSelect = modal.querySelector('.ingredient-select');
             const unitSelect = modal.querySelector('.unit-select');
             
-            // Select chicken breast (should have default unit 'lbs')
+            // Select Ground Beef (should have default unit 'lbs')
             ingredientSelect.value = '1';
             ingredientSelect.dispatchEvent(new Event('change'));
             
@@ -419,7 +443,7 @@ describe('Add Recipe Functionality', () => {
             form.dispatchEvent(new Event('submit'));
             
             const newRecipe = recipeManager.recipes[recipeManager.recipes.length - 1];
-            expect(newRecipe.tags).toEqual(['healthy', 'quick', 'vegetarian']);
+            expect(newRecipe.labels).toEqual(['healthy', 'quick', 'vegetarian']);
         });
 
         it('should handle multiple ingredients correctly', () => {
