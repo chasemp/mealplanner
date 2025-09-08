@@ -474,9 +474,9 @@ class GroceryListManager {
         }
 
         // Export and print buttons
-        const exportBtn = this.container.querySelector('#export-list-btn');
-        if (exportBtn) {
-            exportBtn.addEventListener('click', () => {
+        const exportBtn2 = this.container.querySelector('#export-list-btn');
+        if (exportBtn2) {
+            exportBtn2.addEventListener('click', () => {
                 this.exportGroceryList();
             });
         }

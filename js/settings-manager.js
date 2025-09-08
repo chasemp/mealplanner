@@ -61,7 +61,10 @@ class SettingsManager {
         if (readOnlyInput) readOnlyInput.checked = this.settings.githubReadOnly;
 
         // Apply meal time visibility (defer to ensure DOM is ready)
-        setTimeout(() => this.applyMealTimeVisibility(), 100);
+        setTimeout(() => {
+            console.log('⏰ Applying meal time visibility after timeout...');
+            this.applyMealTimeVisibility();
+        }, 500);
 
         // Apply calendar settings
         const managedModeInput = document.getElementById('calendar-managed-mode');
