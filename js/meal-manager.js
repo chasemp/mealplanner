@@ -481,21 +481,23 @@ class MealManager {
         // Add recipe button
         if (addRecipeBtn) {
             addRecipeBtn.addEventListener('click', () => {
+                // Get current recipes from the form
                 const currentRecipes = this.getCurrentFormRecipes();
-                currentRecipes.push({ recipeId: '', servings: 4, notes: '' });
+                
+                // Add a new empty recipe
+                const newRecipe = { recipeId: '', servings: 4, notes: '' };
+                currentRecipes.push(newRecipe);
+                
+                // Re-render the recipe selection with all recipes
                 recipesContainer.innerHTML = this.renderRecipeSelection(currentRecipes);
+                
+                // Re-attach event listeners for the new recipe rows
+                this.attachRecipeRowListeners(recipesContainer);
             });
         }
 
-        // Recipe container event delegation
-        if (recipesContainer) {
-            recipesContainer.addEventListener('click', (e) => {
-                if (e.target.closest('.remove-recipe')) {
-                    const recipeRow = e.target.closest('.recipe-row');
-                    recipeRow.remove();
-                }
-            });
-        }
+        // Initial recipe row listeners
+        this.attachRecipeRowListeners(recipesContainer);
 
         // Form submission
         if (form) {
@@ -506,32 +508,64 @@ class MealManager {
         }
     }
 
+    attachRecipeRowListeners(container) {
+        if (!container) return;
+        
+        // Remove existing listeners to avoid duplicates
+        const existingListener = container._removeRecipeListener;
+        if (existingListener) {
+            container.removeEventListener('click', existingListener);
+        }
+        
+        // Create new listener
+        const removeRecipeListener = (e) => {
+            if (e.target.closest('.remove-recipe')) {
+                const recipeRow = e.target.closest('.recipe-row');
+                recipeRow.remove();
+            }
+        };
+        
+        // Store reference and add listener
+        container._removeRecipeListener = removeRecipeListener;
+        container.addEventListener('click', removeRecipeListener);
+    }
+
     getCurrentFormRecipes() {
-        const recipeRows = document.querySelectorAll('.recipe-row');
+        const recipeRows = document.querySelectorAll('#meal-recipes-container .recipe-row');
         return Array.from(recipeRows).map(row => {
             const select = row.querySelector('.recipe-select');
             const servingsInput = row.querySelector('.recipe-servings');
             return {
-                recipeId: parseInt(select.value) || '',
-                servings: parseInt(servingsInput.value) || 4,
+                recipeId: select && select.value ? parseInt(select.value) : '',
+                servings: servingsInput && servingsInput.value ? parseInt(servingsInput.value) : 4,
                 notes: ''
             };
-        }).filter(recipe => recipe.recipeId);
+        });
     }
 
     async saveMeal() {
         const form = document.getElementById('meal-form');
-        const formData = new FormData(form);
+        if (!form) {
+            console.error('Meal form not found');
+            return;
+        }
 
         try {
+            // Get form data manually to avoid FormData issues in tests
+            const nameInput = document.getElementById('meal-name');
+            const descriptionInput = document.getElementById('meal-description');
+            const servingsInput = document.getElementById('meal-servings');
+            const tagsInput = document.getElementById('meal-tags');
+            const mealTypeInputs = document.querySelectorAll('input[name="meal-types"]:checked');
+
             const mealData = {
                 id: this.currentMeal ? this.currentMeal.id : Date.now(),
-                name: formData.get('meal-name').trim(),
-                description: formData.get('meal-description').trim(),
+                name: nameInput ? nameInput.value.trim() : '',
+                description: descriptionInput ? descriptionInput.value.trim() : '',
                 recipes: this.getCurrentFormRecipes(),
-                totalServings: parseInt(formData.get('meal-servings')) || 4,
-                mealTypes: formData.getAll('meal-types'),
-                tags: formData.get('meal-tags').split(',').map(tag => tag.trim()).filter(tag => tag),
+                totalServings: servingsInput ? parseInt(servingsInput.value) || 4 : 4,
+                mealTypes: Array.from(mealTypeInputs).map(input => input.value),
+                tags: tagsInput ? tagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag) : [],
                 estimatedTime: 0, // Will be calculated from recipes
                 createdAt: this.currentMeal ? this.currentMeal.createdAt : new Date().toISOString(),
                 updatedAt: new Date().toISOString()
