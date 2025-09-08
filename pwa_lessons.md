@@ -980,6 +980,53 @@ index.html + ./js/main.js + ./css/styles.css
 
 ---
 
+## 🔧 **JavaScript Timing & Test Infrastructure Lessons**
+
+### **Critical Timing Patterns for PWAs**
+- **Test Timeouts**: Use 30s for npm tests, 60s for install operations to prevent false failures
+- **Async Handling**: Properly mock async dependencies (DemoDataManager, localStorage, DOM APIs)
+- **DOM Timing**: Ensure DOM elements exist before testing interactions - add explicit checks
+- **Class Loading**: Use consistent import/export patterns to avoid constructor issues
+- **Event Handling**: Mock event listeners and DOM APIs for reliable test execution
+
+### **Regression Prevention Strategy**
+- **Comprehensive Behavior Testing**: Focus on user workflows rather than implementation details
+- **Mock External Dependencies**: Isolate components from external services and APIs
+- **Complete DOM Setup**: Provide full DOM structures in test environments
+- **Error Boundaries**: Test error conditions and edge cases systematically
+- **Async Patterns**: Properly await async operations and handle timing issues
+
+### **Test Infrastructure Best Practices**
+```javascript
+// ✅ Good: Complete DOM setup
+document.body.innerHTML = `
+    <div id="container">
+        <button id="action-btn">Action</button>
+        <input id="search-input" />
+        <!-- All required elements -->
+    </div>
+`;
+
+// ✅ Good: Proper async mocking
+global.window.DemoDataManager = class MockDemoDataManager {
+    getIngredients() { return mockData; }
+    getRecipes() { return mockRecipes; }
+};
+
+// ✅ Good: Explicit element checks
+const button = container.querySelector('#action-btn');
+expect(button).toBeTruthy(); // Ensure element exists
+button.click();
+```
+
+### **Performance & Reliability Patterns**
+- **Timeout Strategy**: Consistent timeout patterns prevent hanging tests
+- **Mock Completeness**: Mock ALL methods that tests might call
+- **DOM Verification**: Always verify DOM elements exist before interaction
+- **Class Export**: Use both `window` and `global` exports for test compatibility
+
+---
+
 ## Production-Ready CSS Build System
 
 Replacing Tailwind CDN with a proper build system provides significant performance and reliability improvements for production PWAs.
