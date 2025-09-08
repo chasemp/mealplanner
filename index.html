@@ -6,9 +6,9 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <meta name="cache-bust" content="2025.09.08.1602">
+    <meta name="cache-bust" content="2025.09.08.1804">
     <meta name="build-timestamp" content="1725825300000">
-    <title>MealPlanner v2025.09.08.1602</title>
+    <title>MealPlanner v2025.09.08.1804</title>
     <meta name="description" content="A PWA for meal planning with local SQLite storage">
     
     <!-- PWA Meta Tags -->
@@ -23,7 +23,7 @@
     
     <!-- Styles -->
     <link rel="stylesheet" href="css/tailwind-compiled.css">
-    <link rel="stylesheet" href="./css/styles.css?v=2025.09.08.1602">
+    <link rel="stylesheet" href="./css/styles.css?v=2025.09.08.1804">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="./manifest.json">
@@ -326,6 +326,55 @@
                             <div class="flex gap-2">
                                 <button id="select-all-recipes" class="btn-secondary text-sm">Select All</button>
                                 <button id="clear-recipe-selection" class="btn-secondary text-sm">Clear Selection</button>
+                                <button id="schedule-selected-recipes" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                                    📅 Schedule Selected
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Scheduling Options Panel (hidden by default) -->
+                    <div id="scheduling-options-panel" class="mb-8 bg-blue-50 dark:bg-blue-900 rounded-lg shadow p-6 hidden">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">📅 Scheduling Options</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Time Period</label>
+                                <select id="scheduling-period" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                                    <option value="1">1 Week</option>
+                                    <option value="2">2 Weeks</option>
+                                    <option value="4" selected>4 Weeks</option>
+                                    <option value="8">8 Weeks</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Start Date</label>
+                                <input type="date" id="scheduling-start-date" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Scheduling Mode</label>
+                                <select id="scheduling-mode" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                                    <option value="intelligent">🧠 Intelligent Rotation</option>
+                                    <option value="random">🎲 Random Distribution</option>
+                                    <option value="sequential">📋 Sequential Order</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center justify-between">
+                            <div class="flex items-center space-x-4">
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="skip-weekends" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Skip weekends</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="avoid-repeats" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" checked>
+                                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Avoid recent repeats</span>
+                                </label>
+                            </div>
+                            <div class="flex gap-2">
+                                <button id="cancel-scheduling" class="btn-secondary">Cancel</button>
+                                <button id="generate-schedule" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium">
+                                    🚀 Generate Schedule
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -604,7 +653,7 @@
         
         <!-- Version Footer -->
         <footer class="fixed bottom-2 right-2 text-xs text-gray-400 bg-white/80 backdrop-blur-sm px-2 py-1 rounded shadow-sm">
-            <span id="version-display">v2025.09.08.1602</span>
+            <span id="version-display">v2025.09.08.1804</span>
         </footer>
     </div>
 
@@ -612,24 +661,24 @@
     <div id="modal-container"></div>
 
     <!-- JavaScript -->
-    <script src="./js/itinerary-view.js?v=2025.09.08.1602"></script>
-    <script src="./js/calendar-view.js?v=2025.09.08.1602"></script>
-      <script src="./js/demo-data.js?v=2025.09.08.1602"></script>
-    <script src="./js/barcode-scanner.js?v=2025.09.08.1602"></script>
-    <script src="./js/shared-barcode-scanner.js?v=2025.09.08.1602"></script>
-    <script src="./js/recipe-manager.js?v=2025.09.08.1602"></script>
-        <script src="./js/meal-manager.js?v=2025.09.08.1602"></script>
-        <script src="./js/schedule-manager.js?v=2025.09.08.1602"></script>
-    <script src="./js/ingredients-manager.js?v=2025.09.08.1602"></script>
-    <script src="./js/grocery-list-manager.js?v=2025.09.08.1602"></script>
-    <script src="./js/google-calendar-integration.js?v=2025.09.08.1602"></script>
-    <script src="./js/meal-rotation-engine.js?v=2025.09.08.1602"></script>
-    <script src="./js/settings-manager.js?v=2025.09.08.1602"></script>
-    <script src="./js/performance-manager.js?v=2025.09.08.1602"></script>
-    <script src="./js/advanced-planning.js?v=2025.09.08.1602"></script>
-    <script src="./js/pantry-manager.js?v=2025.09.08.1602"></script>
-    <script src="./js/mobile-navigation.js?v=2025.09.08.1602"></script>
-    <script src="./js/main.js?v=2025.09.08.1602"></script>
+    <script src="./js/itinerary-view.js?v=2025.09.08.1804"></script>
+    <script src="./js/calendar-view.js?v=2025.09.08.1804"></script>
+      <script src="./js/demo-data.js?v=2025.09.08.1804"></script>
+    <script src="./js/barcode-scanner.js?v=2025.09.08.1804"></script>
+    <script src="./js/shared-barcode-scanner.js?v=2025.09.08.1804"></script>
+    <script src="./js/recipe-manager.js?v=2025.09.08.1804"></script>
+        <script src="./js/meal-manager.js?v=2025.09.08.1804"></script>
+        <script src="./js/schedule-manager.js?v=2025.09.08.1804"></script>
+    <script src="./js/ingredients-manager.js?v=2025.09.08.1804"></script>
+    <script src="./js/grocery-list-manager.js?v=2025.09.08.1804"></script>
+    <script src="./js/google-calendar-integration.js?v=2025.09.08.1804"></script>
+    <script src="./js/meal-rotation-engine.js?v=2025.09.08.1804"></script>
+    <script src="./js/settings-manager.js?v=2025.09.08.1804"></script>
+    <script src="./js/performance-manager.js?v=2025.09.08.1804"></script>
+    <script src="./js/advanced-planning.js?v=2025.09.08.1804"></script>
+    <script src="./js/pantry-manager.js?v=2025.09.08.1804"></script>
+    <script src="./js/mobile-navigation.js?v=2025.09.08.1804"></script>
+    <script src="./js/main.js?v=2025.09.08.1804"></script>
     
     <!-- Settings Dropdown Script -->
     <script>

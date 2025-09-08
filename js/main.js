@@ -2,7 +2,7 @@
 class MealPlannerApp {
     constructor() {
         this.currentTab = 'dinner';
-        this.version = '2025.09.08.1602';
+        this.version = '2025.09.08.1804';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
@@ -670,6 +670,9 @@ class MealPlannerApp {
         // Initialize recipe selection for dinner (can extend to other meal types later)
         this.renderRecipeSelection('dinner');
         this.attachRecipeSelectionListeners('dinner');
+        
+        // Initialize the scheduling pipeline
+        this.initializeSchedulingPipeline();
     }
 
     renderRecipeSelection(mealType) {
@@ -773,9 +776,318 @@ class MealPlannerApp {
 
     updateSelectedRecipeCount(mealType) {
         const countElement = document.getElementById('selected-recipe-count');
+        const scheduleBtn = document.getElementById('schedule-selected-recipes');
+        
         if (countElement) {
             countElement.textContent = this.selectedRecipes[mealType].length;
         }
+        
+        // Enable/disable schedule button based on selection
+        if (scheduleBtn) {
+            const hasSelection = this.selectedRecipes[mealType].length > 0;
+            scheduleBtn.disabled = !hasSelection;
+            scheduleBtn.classList.toggle('opacity-50', !hasSelection);
+            scheduleBtn.classList.toggle('cursor-not-allowed', !hasSelection);
+        }
+    }
+
+    initializeSchedulingPipeline() {
+        console.log('📅 Initializing meal scheduling pipeline...');
+        
+        // Schedule Selected Recipes button
+        const scheduleBtn = document.getElementById('schedule-selected-recipes');
+        if (scheduleBtn) {
+            scheduleBtn.addEventListener('click', () => {
+                this.showSchedulingOptions();
+            });
+        }
+        
+        // Cancel Scheduling button
+        const cancelBtn = document.getElementById('cancel-scheduling');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+                this.hideSchedulingOptions();
+            });
+        }
+        
+        // Generate Schedule button
+        const generateBtn = document.getElementById('generate-schedule');
+        if (generateBtn) {
+            generateBtn.addEventListener('click', () => {
+                this.generateMealSchedule();
+            });
+        }
+        
+        // Initialize start date to today
+        const startDateInput = document.getElementById('scheduling-start-date');
+        if (startDateInput) {
+            const today = new Date();
+            startDateInput.value = today.toISOString().split('T')[0];
+        }
+        
+        console.log('✅ Meal scheduling pipeline initialized');
+    }
+
+    showSchedulingOptions() {
+        const panel = document.getElementById('scheduling-options-panel');
+        const selectedCount = this.selectedRecipes['dinner'].length;
+        
+        if (panel && selectedCount > 0) {
+            panel.classList.remove('hidden');
+            panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            console.log(`📅 Showing scheduling options for ${selectedCount} selected recipes`);
+        }
+    }
+
+    hideSchedulingOptions() {
+        const panel = document.getElementById('scheduling-options-panel');
+        if (panel) {
+            panel.classList.add('hidden');
+        }
+    }
+
+    async generateMealSchedule() {
+        const generateBtn = document.getElementById('generate-schedule');
+        const originalText = generateBtn.innerHTML;
+        
+        try {
+            // Show loading state
+            generateBtn.innerHTML = '⏳ Generating...';
+            generateBtn.disabled = true;
+            
+            // Get scheduling parameters
+            const params = this.getSchedulingParameters();
+            
+            // Validate parameters
+            if (!this.validateSchedulingParameters(params)) {
+                return;
+            }
+            
+            console.log('🚀 Generating meal schedule with parameters:', params);
+            
+            // Generate the schedule using the meal rotation engine
+            const schedule = await this.createMealSchedule(params);
+            
+            if (schedule && schedule.meals.length > 0) {
+                // Apply the generated schedule
+                await this.applyGeneratedSchedule(schedule);
+                
+                // Hide scheduling options
+                this.hideSchedulingOptions();
+                
+                // Show success message
+                this.showSchedulingSuccess(schedule.meals.length);
+                
+                console.log(`✅ Successfully generated schedule with ${schedule.meals.length} meals`);
+            } else {
+                throw new Error('Failed to generate meal schedule');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error generating meal schedule:', error);
+            this.showSchedulingError(error.message);
+        } finally {
+            // Restore button state
+            generateBtn.innerHTML = originalText;
+            generateBtn.disabled = false;
+        }
+    }
+
+    getSchedulingParameters() {
+        const periodSelect = document.getElementById('scheduling-period');
+        const startDateInput = document.getElementById('scheduling-start-date');
+        const modeSelect = document.getElementById('scheduling-mode');
+        const skipWeekendsCheck = document.getElementById('skip-weekends');
+        const avoidRepeatsCheck = document.getElementById('avoid-repeats');
+        
+        return {
+            weeks: parseInt(periodSelect.value),
+            startDate: new Date(startDateInput.value),
+            mode: modeSelect.value,
+            skipWeekends: skipWeekendsCheck.checked,
+            avoidRepeats: avoidRepeatsCheck.checked,
+            selectedRecipeIds: [...this.selectedRecipes['dinner']],
+            mealType: 'dinner'
+        };
+    }
+
+    validateSchedulingParameters(params) {
+        if (!params.startDate || isNaN(params.startDate.getTime())) {
+            this.showSchedulingError('Please select a valid start date');
+            return false;
+        }
+        
+        if (params.selectedRecipeIds.length === 0) {
+            this.showSchedulingError('Please select at least one recipe');
+            return false;
+        }
+        
+        return true;
+    }
+
+    async createMealSchedule(params) {
+        // Get selected recipes with full data
+        const selectedRecipes = await this.getSelectedRecipesData(params.selectedRecipeIds);
+        
+        if (params.mode === 'intelligent') {
+            // Use the meal rotation engine for intelligent scheduling
+            return this.generateIntelligentSchedule(params, selectedRecipes);
+        } else if (params.mode === 'random') {
+            return this.generateRandomSchedule(params, selectedRecipes);
+        } else if (params.mode === 'sequential') {
+            return this.generateSequentialSchedule(params, selectedRecipes);
+        }
+        
+        throw new Error('Invalid scheduling mode');
+    }
+
+    async getSelectedRecipesData(recipeIds) {
+        const recipes = [];
+        
+        if (window.DemoDataManager) {
+            const demoData = new window.DemoDataManager();
+            const allRecipes = demoData.getRecipes();
+            
+            recipeIds.forEach(id => {
+                const recipe = allRecipes.find(r => r.id === id);
+                if (recipe) {
+                    recipes.push(recipe);
+                }
+            });
+        }
+        
+        return recipes;
+    }
+
+    generateIntelligentSchedule(params, selectedRecipes) {
+        if (window.MealRotationEngine) {
+            const engine = new window.MealRotationEngine();
+            engine.setRecipes(selectedRecipes);
+            
+            const options = {
+                skipWeekends: params.skipWeekends,
+                avoidRepeats: params.avoidRepeats,
+                forcedRecipes: params.selectedRecipeIds
+            };
+            
+            return engine.generateRotation(params.startDate, params.weeks, params.mealType, options);
+        }
+        
+        // Fallback to random if rotation engine not available
+        return this.generateRandomSchedule(params, selectedRecipes);
+    }
+
+    generateRandomSchedule(params, selectedRecipes) {
+        const meals = [];
+        const totalDays = params.weeks * 7;
+        
+        for (let day = 0; day < totalDays; day++) {
+            const currentDate = new Date(params.startDate);
+            currentDate.setDate(currentDate.getDate() + day);
+            
+            // Skip weekends if requested
+            if (params.skipWeekends && (currentDate.getDay() === 0 || currentDate.getDay() === 6)) {
+                continue;
+            }
+            
+            // Select random recipe
+            const randomRecipe = selectedRecipes[Math.floor(Math.random() * selectedRecipes.length)];
+            
+            meals.push({
+                id: `meal-${params.mealType}-${day}`,
+                date: new Date(currentDate),
+                mealType: params.mealType,
+                recipe: randomRecipe,
+                score: 1.0,
+                reasoning: ['Random selection']
+            });
+        }
+        
+        return { meals, stats: {}, recommendations: [] };
+    }
+
+    generateSequentialSchedule(params, selectedRecipes) {
+        const meals = [];
+        const totalDays = params.weeks * 7;
+        let recipeIndex = 0;
+        
+        for (let day = 0; day < totalDays; day++) {
+            const currentDate = new Date(params.startDate);
+            currentDate.setDate(currentDate.getDate() + day);
+            
+            // Skip weekends if requested
+            if (params.skipWeekends && (currentDate.getDay() === 0 || currentDate.getDay() === 6)) {
+                continue;
+            }
+            
+            // Select recipe in sequence
+            const selectedRecipe = selectedRecipes[recipeIndex % selectedRecipes.length];
+            recipeIndex++;
+            
+            meals.push({
+                id: `meal-${params.mealType}-${day}`,
+                date: new Date(currentDate),
+                mealType: params.mealType,
+                recipe: selectedRecipe,
+                score: 1.0,
+                reasoning: ['Sequential selection']
+            });
+        }
+        
+        return { meals, stats: {}, recommendations: [] };
+    }
+
+    async applyGeneratedSchedule(schedule) {
+        // Clear existing schedule for this meal type
+        this.clearMealPlanData('dinner');
+        
+        // Apply new schedule
+        this.applyGeneratedPlan('dinner', schedule.meals);
+        
+        // Refresh the itinerary view
+        this.refreshItineraryView('dinner');
+    }
+
+    refreshItineraryView(mealType) {
+        const itineraryContainer = document.getElementById(`${mealType}-itinerary`);
+        if (itineraryContainer && window.ItineraryView) {
+            // Re-initialize the itinerary view with new data
+            const itineraryView = new window.ItineraryView(itineraryContainer, mealType);
+            itineraryView.render();
+        }
+    }
+
+    showSchedulingSuccess(mealCount) {
+        // Create a temporary success message
+        const successMsg = document.createElement('div');
+        successMsg.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+        successMsg.innerHTML = `✅ Successfully scheduled ${mealCount} meals!`;
+        
+        document.body.appendChild(successMsg);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            if (successMsg.parentNode) {
+                successMsg.parentNode.removeChild(successMsg);
+            }
+        }, 3000);
+    }
+
+    showSchedulingError(message) {
+        // Create a temporary error message
+        const errorMsg = document.createElement('div');
+        errorMsg.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+        errorMsg.innerHTML = `❌ ${message}`;
+        
+        document.body.appendChild(errorMsg);
+        
+        // Remove after 5 seconds
+        setTimeout(() => {
+            if (errorMsg.parentNode) {
+                errorMsg.parentNode.removeChild(errorMsg);
+            }
+        }, 5000);
     }
 
     initializeMealPlanningControls() {
