@@ -1,8 +1,8 @@
 // MealPlanner Main Application
 class MealPlannerApp {
     constructor() {
-        this.currentTab = 'recipes';
-        this.version = '2025.09.08.1304';
+        this.currentTab = 'ingredients';
+        this.version = '2025.09.08.1307';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
@@ -143,8 +143,12 @@ class MealPlannerApp {
             activeTab.classList.remove('border-transparent', 'text-gray-500');
         }
 
-        // Show selected tab
-        document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+        // Show selected tab (handle scheduled tab mapping)
+        const tabId = tabName === 'scheduled' ? 'scheduled-tab' : `${tabName}-tab`;
+        const tabElement = document.getElementById(tabId);
+        if (tabElement) {
+            tabElement.classList.remove('hidden');
+        }
         this.currentTab = tabName;
 
         // Update mobile navigation if it exists
