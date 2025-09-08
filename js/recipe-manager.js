@@ -36,10 +36,21 @@ class RecipeManager {
     }
 
     async loadRecipes() {
-        console.log('📱 Mobile Debug - Loading recipes...');
-        console.log('📱 window.DemoDataManager available:', !!window.DemoDataManager);
+        console.log('📱 Loading recipes...');
         
-        // Load from centralized demo data for consistency
+        try {
+            // First try to load from localStorage
+            const saved = localStorage.getItem('mealplanner-recipes');
+            if (saved) {
+                this.recipes = JSON.parse(saved);
+                console.log('📱 Loaded recipes from localStorage:', this.recipes.length);
+                return;
+            }
+        } catch (error) {
+            console.warn('⚠️ Error loading from localStorage:', error);
+        }
+        
+        // Fallback to demo data if no saved recipes
         if (window.DemoDataManager) {
             try {
                 const demoData = new window.DemoDataManager();
@@ -58,6 +69,15 @@ class RecipeManager {
         }
         
         console.log('📱 Final recipes count:', this.recipes.length);
+    }
+
+    async saveRecipes() {
+        try {
+            localStorage.setItem('mealplanner-recipes', JSON.stringify(this.recipes));
+            console.log('✅ Recipes saved successfully');
+        } catch (error) {
+            console.error('❌ Error saving recipes:', error);
+        }
     }
 
     render() {
@@ -858,6 +878,7 @@ class RecipeManager {
 
         // Form submission
         form?.addEventListener('submit', (e) => {
+            console.log('🔥 Form submit event triggered', { form, recipe });
             e.preventDefault();
             this.handleRecipeFormSubmit(form, recipe);
         });
@@ -1004,20 +1025,31 @@ class RecipeManager {
     }
 
     handleRecipeFormSubmit(form, existingRecipe) {
-        const formData = new FormData(form);
+        console.log('🔥 handleRecipeFormSubmit called', { form, existingRecipe });
+        // Get form data manually to avoid FormData issues in tests
+        const titleInput = form.querySelector('input[name="title"]');
+        const descriptionInput = form.querySelector('textarea[name="description"]');
+        const servingsInput = form.querySelector('input[name="servings"]');
+        const prepTimeInput = form.querySelector('input[name="prep_time"]');
+        const cookTimeInput = form.querySelector('input[name="cook_time"]');
+        const instructionsInput = form.querySelector('textarea[name="instructions"]');
+        const tagsInput = form.querySelector('input[name="tags"]');
+        const difficultyInput = form.querySelector('select[name="difficulty"]');
+        const cuisineInput = form.querySelector('input[name="cuisine"]');
+        const mealTypeInput = form.querySelector('select[name="meal_type"]');
         
         // Get basic recipe data
         const recipeData = {
-            title: formData.get('title')?.trim(),
-            description: formData.get('description')?.trim(),
-            servings: parseInt(formData.get('servings')) || 1,
-            prep_time: parseInt(formData.get('prep_time')) || 0,
-            cook_time: parseInt(formData.get('cook_time')) || 0,
-            instructions: formData.get('instructions')?.trim(),
-            tags: formData.get('tags')?.trim(),
-            difficulty: formData.get('difficulty') || 'easy',
-            cuisine: formData.get('cuisine')?.trim(),
-            meal_type: formData.get('meal_type') || 'dinner'
+            title: titleInput ? titleInput.value.trim() : '',
+            description: descriptionInput ? descriptionInput.value.trim() : '',
+            serving_count: servingsInput ? parseInt(servingsInput.value) || 1 : 1,
+            prep_time: prepTimeInput ? parseInt(prepTimeInput.value) || 0 : 0,
+            cook_time: cookTimeInput ? parseInt(cookTimeInput.value) || 0 : 0,
+            instructions: instructionsInput ? instructionsInput.value.trim() : '',
+            labels: tagsInput ? tagsInput.value.trim().split(',').map(tag => tag.trim()).filter(tag => tag) : [],
+            difficulty: difficultyInput ? difficultyInput.value || 'easy' : 'easy',
+            cuisine: cuisineInput ? cuisineInput.value.trim() : '',
+            meal_type: mealTypeInput ? mealTypeInput.value || 'dinner' : 'dinner'
         };
 
         // Validate required fields
@@ -1037,9 +1069,9 @@ class RecipeManager {
         
         ingredientRows.forEach(row => {
             const ingredientId = row.querySelector('.ingredient-select')?.value;
-            const quantity = row.querySelector('.quantity-input')?.value;
-            const unit = row.querySelector('.unit-select')?.value;
-            const notes = row.querySelector('.notes-input')?.value;
+            const quantity = row.querySelector('input[name*="[quantity]"]')?.value;
+            const unit = row.querySelector('select[name*="[unit]"]')?.value;
+            const notes = row.querySelector('input[name*="[notes]"]')?.value;
             
             if (ingredientId && quantity) {
                 const ingredient = this.getIngredientById(parseInt(ingredientId));
@@ -1080,6 +1112,9 @@ class RecipeManager {
                 this.showNotification(`"${recipeData.title}" has been added!`, 'success');
             }
 
+            // Save to localStorage and refresh view
+            this.saveRecipes();
+            
             // Close modal and refresh view
             document.getElementById('recipe-form-modal')?.remove();
             this.render();
