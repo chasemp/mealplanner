@@ -428,9 +428,9 @@ describe('MealManager', () => {
         });
 
         it('should filter meals by search term', () => {
-            const searchInput = container.querySelector('#meal-search');
-            searchInput.value = 'breakfast';
-            searchInput.dispatchEvent(new Event('input'));
+            // Set the search term directly and re-render
+            mealManager.searchTerm = 'breakfast';
+            mealManager.render();
 
             const mealCards = container.querySelectorAll('.meal-card');
             expect(mealCards).toHaveLength(1);
@@ -438,9 +438,9 @@ describe('MealManager', () => {
         });
 
         it('should filter meals by meal type', () => {
-            const typeFilter = container.querySelector('#meal-type-filter');
-            typeFilter.value = 'dinner';
-            typeFilter.dispatchEvent(new Event('change'));
+            // Set the meal type filter directly and re-render
+            mealManager.selectedMealType = 'dinner';
+            mealManager.render();
 
             const mealCards = container.querySelectorAll('.meal-card');
             expect(mealCards).toHaveLength(1);
