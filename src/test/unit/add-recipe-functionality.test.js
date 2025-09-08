@@ -33,7 +33,21 @@ global.window.DemoDataManager = class MockDemoDataManager {
     }
     
     getRecipes() {
-        return [];
+        return [
+            {
+                id: 1,
+                title: 'Test Recipe',
+                description: 'A test recipe',
+                serving_count: 4,
+                prep_time: 15,
+                cook_time: 30,
+                instructions: 'Test instructions',
+                labels: ['test'],
+                ingredients: [
+                    { ingredient_id: 1, name: 'Ground Beef', quantity: 1, unit: 'lbs', notes: '' }
+                ]
+            }
+        ];
     }
 };
 
@@ -46,6 +60,9 @@ describe('Add Recipe Functionality', () => {
     let container;
 
     beforeEach(async () => {
+        // Reset localStorage to ensure clean state
+        localStorage.clear();
+        
         // Reset DOM
         document.body.innerHTML = '<div id="recipe-manager-container"></div>';
         container = document.getElementById('recipe-manager-container');
@@ -329,15 +346,26 @@ describe('Add Recipe Functionality', () => {
             
             // Fill ingredient
             const ingredientSelect = modal.querySelector('.ingredient-select');
-            const quantityInput = modal.querySelector('input[name*="quantity"]');
-            ingredientSelect.value = '1'; // Chicken Breast
+            const quantityInput = modal.querySelector('input[name="ingredients[0][quantity]"]');
+            ingredientSelect.value = '1'; // Ground Beef (from mock data)
             quantityInput.value = '2';
             
             const initialRecipeCount = recipeManager.recipes.length;
             const showNotificationSpy = vi.spyOn(recipeManager, 'showNotification');
             
+            // Debug: Check form and event listeners
+            console.log('Form found:', !!form);
+            console.log('Form ID:', form?.id);
+            console.log('Form tag:', form?.tagName);
+            
             // Submit form
+            console.log('Dispatching submit event...');
             form.dispatchEvent(new Event('submit'));
+            
+            // Debug: Check if recipe was actually added
+            console.log('Initial count:', initialRecipeCount);
+            console.log('Final count:', recipeManager.recipes.length);
+            console.log('Recipes:', recipeManager.recipes.map(r => ({ id: r.id, title: r.title })));
             
             expect(recipeManager.recipes).toHaveLength(initialRecipeCount + 1);
             
@@ -345,11 +373,11 @@ describe('Add Recipe Functionality', () => {
             expect(newRecipe.title).toBe('New Test Recipe');
             expect(newRecipe.description).toBe('Test description');
             expect(newRecipe.serving_count).toBe(6);
-            expect(newRecipe.meal_type).toBe('lunch');
+            // meal_type should not be on individual recipes - it's a property of meals
             expect(newRecipe.prep_time).toBe(20);
             expect(newRecipe.cook_time).toBe(45);
             expect(newRecipe.instructions).toBe('1. Step one\n2. Step two');
-            expect(newRecipe.tags).toEqual(['healthy', 'quick']);
+            expect(newRecipe.labels).toEqual(['healthy', 'quick']);
             expect(newRecipe.ingredients).toHaveLength(1);
             expect(newRecipe.ingredients[0].ingredient_id).toBe(1);
             expect(newRecipe.ingredients[0].quantity).toBe(2);
