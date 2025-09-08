@@ -148,7 +148,6 @@ describe('IngredientsManager', () => {
         category: 'produce',
         default_unit: 'pieces',
         recipe_count: 5,
-        cost_per_unit: 0.75,
         nutrition_per_100g: JSON.stringify({ calories: 40, protein: 1.1 })
       }
       
@@ -176,7 +175,7 @@ describe('IngredientsManager', () => {
       
       expect(cardHTML).toContain('Basic Ingredient')
       expect(cardHTML).toContain('Other') // default category
-      expect(cardHTML).not.toContain('$') // no cost
+      expect(cardHTML).toContain('Test Ingredient') // has name
     })
   })
 
@@ -193,7 +192,6 @@ describe('IngredientsManager', () => {
         <input id="ingredient-name" value="Test Ingredient" />
         <select id="ingredient-category"><option value="produce" selected>Produce</option></select>
         <select id="ingredient-unit"><option value="pieces" selected>pieces</option></select>
-        <input id="ingredient-cost" value="1.50" />
         <textarea id="ingredient-storage">Store in cool place</textarea>
         <input id="nutrition-calories" value="25" />
         <input id="nutrition-protein" value="1.2" />

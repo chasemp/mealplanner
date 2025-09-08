@@ -818,6 +818,59 @@ const issues = demoData.validateConsistency();
 
 **Impact**: Professional demo experience that properly showcases all PWA features
 
+## Lesson 7: Data Structure Consistency for Filtering Systems
+
+**The Problem**: Recipe filtering appeared broken with dropdowns not working and search returning no results, despite the filtering logic being correct.
+
+**Root Cause Analysis**:
+- Filtering code expected both `tags` and `labels` properties on recipe objects
+- Demo data only provided `tags` property, causing label-based filtering to fail
+- Search worked for title/description but failed for tag-based searches
+- Dropdown options populated correctly but filtering logic couldn't match against missing `labels`
+
+**The Solution**: Ensure data structure consistency between expected schema and actual data:
+```javascript
+// ❌ Inconsistent - filtering expects both tags and labels
+const recipe = {
+    title: 'Beef Stew',
+    tags: ['comfort-food', 'hearty'],  // Only tags provided
+    // labels: missing!
+}
+
+// ✅ Consistent - both properties available for filtering
+const recipe = {
+    title: 'Beef Stew', 
+    tags: ['comfort-food', 'hearty', 'beef'],
+    labels: ['comfort-food', 'hearty', 'beef'],  // Mirror tags for consistency
+}
+```
+
+**Key Implementation Points**:
+1. **Schema Validation**: Ensure demo data matches expected object structure
+2. **Comprehensive Tags**: Add semantic tags for better search (e.g., 'beef', 'chicken')
+3. **Dual Property Support**: Maintain both `tags` and `labels` for backward compatibility
+4. **Desktop Responsiveness**: Use fixed widths (`sm:w-40`) instead of `sm:w-auto` for dropdown visibility
+5. **Comprehensive Testing**: Test both filtering logic AND UI interaction separately
+
+**Responsive Design Fix**:
+```css
+/* ❌ Poor desktop experience - dropdowns too narrow */
+class="w-full sm:w-auto"
+
+/* ✅ Good desktop experience - adequate width for text */
+class="w-full sm:w-40"  /* Meal types */
+class="w-full sm:w-36"  /* Labels */
+class="w-full sm:w-44"  /* Sort options */
+```
+
+**Testing Strategy**:
+- **Logic Tests**: Verify filtering algorithms work with proper data
+- **UI Tests**: Verify dropdown interactions trigger re-renders correctly  
+- **Integration Tests**: Verify data structure matches filtering expectations
+- **Regression Tests**: Prevent data structure inconsistencies in future
+
+**Impact**: Robust filtering system that works reliably across all user interactions
+
 ### Critical Mobile UX Issues Discovered
 After installing the PWA on Android, several mobile-specific UI issues were identified:
 

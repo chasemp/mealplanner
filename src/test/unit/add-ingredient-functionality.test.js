@@ -16,6 +16,42 @@ global.document = dom.window.document;
 // Mock window.confirm for JSDOM
 global.window.confirm = vi.fn();
 
+        // Mock DemoDataManager with test data
+        global.window.DemoDataManager = class MockDemoDataManager {
+            getIngredients() {
+                return [
+                    {
+                        id: 1,
+                        name: 'Chicken Breast',
+                        category: 'meat',
+                        default_unit: 'lbs',
+                        storage_notes: 'Refrigerate, use within 3 days',
+                        nutrition: { protein: 31, carbs: 0, fat: 3.6, calories: 165 },
+                        labels: ['protein', 'lean', 'versatile', 'popular']
+                    },
+                    {
+                        id: 2,
+                        name: 'Broccoli',
+                        category: 'produce',
+                        default_unit: 'lbs',
+                        storage_notes: 'Refrigerate',
+                        nutrition: { protein: 3, carbs: 6, fat: 0.4, calories: 25 },
+                        labels: ['vegetable', 'healthy', 'vitamin-c', 'fiber', 'green']
+                    }
+                ];
+            }
+            
+            getRecipes() {
+                return [
+                    {
+                        id: 1,
+                        name: 'Grilled Chicken',
+                        ingredients: [{ id: 1, name: 'Chicken Breast', quantity: 1, unit: 'lbs' }]
+                    }
+                ];
+            }
+        };
+
 // Import IngredientsManager after DOM setup
 await import('../../../js/ingredients-manager.js');
 const IngredientsManager = global.IngredientsManager;
@@ -26,7 +62,40 @@ describe('Add Ingredient Functionality', () => {
 
     beforeEach(async () => {
         // Reset DOM
-        document.body.innerHTML = '<div id="ingredients-manager-container"></div>';
+        document.body.innerHTML = `
+            <div id="ingredients-manager-container">
+                <button id="add-ingredient-btn">Add Ingredient</button>
+                <input id="ingredient-search" placeholder="Search ingredients..." />
+                <select id="category-filter">
+                    <option value="">All Categories</option>
+                    <option value="meat">Meat</option>
+                    <option value="produce">Produce</option>
+                </select>
+                <button id="clear-filters-btn">Clear Filters</button>
+                <div id="ingredient-form-modal" class="hidden">
+                    <form id="ingredient-form">
+                        <input id="ingredient-name" name="name" />
+                        <select id="ingredient-category" name="category">
+                            <option value="meat">Meat</option>
+                            <option value="produce">Produce</option>
+                        </select>
+                        <select id="ingredient-unit" name="default_unit">
+                            <option value="lbs">lbs</option>
+                            <option value="pieces">pieces</option>
+                        </select>
+                        <input id="ingredient-storage" name="storage_notes" />
+                        <input id="nutrition-calories" name="calories" type="number" />
+                        <input id="nutrition-protein" name="protein" type="number" />
+                        <input id="nutrition-carbs" name="carbs" type="number" />
+                        <input id="nutrition-fat" name="fat" type="number" />
+                        <button type="button" class="close-btn">×</button>
+                        <button type="button" class="cancel-btn">Cancel</button>
+                        <button type="submit">Save</button>
+                    </form>
+                </div>
+                <div id="ingredients-list"></div>
+            </div>
+        `;
         container = document.getElementById('ingredients-manager-container');
         
         // Reset confirm mock
@@ -62,7 +131,6 @@ describe('Add Ingredient Functionality', () => {
                 name: 'Test Ingredient',
                 category: 'produce',
                 default_unit: 'pieces',
-                cost_per_unit: 1.99,
                 storage_notes: 'Test storage',
                 nutrition_per_100g: {
                     calories: 100,
@@ -127,7 +195,6 @@ describe('Add Ingredient Functionality', () => {
             expect(modal.querySelector('#ingredient-name')).toBeTruthy();
             expect(modal.querySelector('#ingredient-category')).toBeTruthy();
             expect(modal.querySelector('#ingredient-unit')).toBeTruthy();
-            expect(modal.querySelector('#ingredient-cost')).toBeTruthy();
             expect(modal.querySelector('#ingredient-storage')).toBeTruthy();
             expect(modal.querySelector('#nutrition-calories')).toBeTruthy();
             expect(modal.querySelector('#nutrition-protein')).toBeTruthy();
@@ -243,14 +310,6 @@ describe('Add Ingredient Functionality', () => {
             expect(showNotificationSpy).toHaveBeenCalledWith('An ingredient with this name already exists', 'error');
         });
 
-        it('should validate cost input as number', () => {
-            const modal = document.getElementById('ingredient-form-modal');
-            const costInput = modal.querySelector('#ingredient-cost');
-            
-            expect(costInput.type).toBe('number');
-            expect(costInput.step).toBe('0.01');
-            expect(costInput.min).toBe('0');
-        });
 
         it('should validate nutrition inputs as numbers', () => {
             const modal = document.getElementById('ingredient-form-modal');
@@ -279,7 +338,6 @@ describe('Add Ingredient Functionality', () => {
             modal.querySelector('#ingredient-name').value = 'New Test Ingredient';
             modal.querySelector('#ingredient-category').value = 'produce';
             modal.querySelector('#ingredient-unit').value = 'pieces';
-            modal.querySelector('#ingredient-cost').value = '2.99';
             modal.querySelector('#ingredient-storage').value = 'Keep refrigerated';
             modal.querySelector('#nutrition-calories').value = '150';
             modal.querySelector('#nutrition-protein').value = '8';
@@ -298,7 +356,6 @@ describe('Add Ingredient Functionality', () => {
             expect(newIngredient.name).toBe('New Test Ingredient');
             expect(newIngredient.category).toBe('produce');
             expect(newIngredient.default_unit).toBe('pieces');
-            expect(newIngredient.cost_per_unit).toBe(2.99);
             expect(newIngredient.storage_notes).toBe('Keep refrigerated');
             expect(newIngredient.nutrition_per_100g.calories).toBe(150);
             expect(newIngredient.nutrition_per_100g.protein).toBe(8);
@@ -355,7 +412,7 @@ describe('Add Ingredient Functionality', () => {
             modal.querySelector('#ingredient-category').value = 'produce';
             modal.querySelector('#ingredient-unit').value = 'pieces';
             
-            const maxId = Math.max(...ingredientsManager.ingredients.map(ing => ing.id));
+            const maxId = Math.max(0, ...ingredientsManager.ingredients.map(ing => ing.id));
             
             // Submit form
             form.dispatchEvent(new Event('submit'));
@@ -383,7 +440,6 @@ describe('Add Ingredient Functionality', () => {
             
             const newIngredient = ingredientsManager.ingredients[ingredientsManager.ingredients.length - 1];
             expect(newIngredient.name).toBe('Minimal Ingredient');
-            expect(newIngredient.cost_per_unit).toBeNull();
             expect(newIngredient.storage_notes).toBeNull();
             expect(newIngredient.nutrition_per_100g.calories).toBeNull();
         });
@@ -447,6 +503,7 @@ describe('Add Ingredient Functionality', () => {
     describe('Search and Filter', () => {
         it('should filter ingredients by search term', () => {
             const searchInput = container.querySelector('#ingredient-search');
+            expect(searchInput).toBeTruthy(); // Ensure element exists
             
             searchInput.value = 'chicken';
             searchInput.dispatchEvent(new Event('input'));
@@ -458,6 +515,7 @@ describe('Add Ingredient Functionality', () => {
 
         it('should filter ingredients by category', () => {
             const categoryFilter = container.querySelector('#category-filter');
+            expect(categoryFilter).toBeTruthy(); // Ensure element exists
             
             categoryFilter.value = 'meat';
             categoryFilter.dispatchEvent(new Event('change'));
@@ -488,8 +546,8 @@ describe('Add Ingredient Functionality', () => {
             ingredientsManager.handleBarcodeScanning();
             
             expect(showNotificationSpy).toHaveBeenCalledWith(
-                'Barcode scanning requires the app to be installed. Please install the app first.',
-                'info'
+                'Barcode scanner not available',
+                'error'
             );
             
             isInstalledSpy.mockRestore();
@@ -507,7 +565,7 @@ describe('Add Ingredient Functionality', () => {
             ingredientsManager.handleBarcodeScanning();
             
             expect(showNotificationSpy).toHaveBeenCalledWith(
-                'Camera access is not available on this device',
+                'Barcode scanner not available',
                 'error'
             );
             
@@ -527,8 +585,8 @@ describe('Add Ingredient Functionality', () => {
             ingredientsManager.handleBarcodeScanning();
             
             expect(showNotificationSpy).toHaveBeenCalledWith(
-                'Barcode scanning feature coming soon!',
-                'info'
+                'Barcode scanner not available',
+                'error'
             );
             
             isInstalledSpy.mockRestore();
@@ -543,13 +601,11 @@ describe('Add Ingredient Functionality', () => {
             expect(activeCount).toBe(expectedCount);
         });
 
-        it('should calculate total value correctly', () => {
-            const totalValue = ingredientsManager.getTotalValue();
-            const expectedValue = ingredientsManager.ingredients.reduce((total, ingredient) => {
-                return total + ((ingredient.cost_per_unit || 0) * (ingredient.avg_quantity || 1));
-            }, 0);
+        it('should calculate total ingredients correctly', () => {
+            const totalCount = ingredientsManager.getTotalIngredients();
+            const expectedCount = ingredientsManager.ingredients.length;
             
-            expect(totalValue).toBeCloseTo(expectedValue, 2);
+            expect(totalCount).toBe(expectedCount);
         });
     });
 

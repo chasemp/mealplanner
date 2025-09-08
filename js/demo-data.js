@@ -13,46 +13,46 @@ class DemoDataManager {
         // Comprehensive ingredient list
         this.ingredients = [
             // Proteins
-            { id: 1, name: 'Chicken Breast', category: 'meat', default_unit: 'lbs', cost_per_unit: 6.99, storage_notes: 'Refrigerate, use within 3 days', nutrition: { protein: 31, carbs: 0, fat: 3.6, calories: 165 }, labels: ['protein', 'lean', 'versatile', 'popular'] },
-            { id: 2, name: 'Ground Beef', category: 'meat', default_unit: 'lbs', cost_per_unit: 5.49, storage_notes: 'Refrigerate, use within 2 days', nutrition: { protein: 26, carbs: 0, fat: 15, calories: 250 }, labels: ['protein', 'hearty', 'comfort-food', 'versatile'] },
-            { id: 3, name: 'Salmon Fillet', category: 'meat', default_unit: 'lbs', cost_per_unit: 12.99, storage_notes: 'Refrigerate, use within 2 days', nutrition: { protein: 25, carbs: 0, fat: 11, calories: 206 }, labels: ['protein', 'omega-3', 'healthy-fats', 'premium', 'fish'] },
-            { id: 4, name: 'Eggs', category: 'dairy', default_unit: 'dozen', cost_per_unit: 3.49, storage_notes: 'Refrigerate', nutrition: { protein: 6, carbs: 0.6, fat: 5, calories: 70 }, labels: ['protein', 'breakfast', 'versatile', 'affordable'] },
-            { id: 5, name: 'Tofu', category: 'meat', default_unit: 'lbs', cost_per_unit: 3.99, storage_notes: 'Refrigerate after opening', nutrition: { protein: 8, carbs: 2, fat: 4, calories: 70 }, labels: ['protein', 'vegan', 'vegetarian', 'soy', 'healthy'] },
+            { id: 1, name: 'Chicken Breast', category: 'meat', default_unit: 'lbs', storage_notes: 'Refrigerate, use within 3 days', nutrition: { protein: 31, carbs: 0, fat: 3.6, calories: 165 }, labels: ['protein', 'lean', 'versatile', 'popular'] },
+            { id: 2, name: 'Ground Beef', category: 'meat', default_unit: 'lbs', storage_notes: 'Refrigerate, use within 2 days', nutrition: { protein: 26, carbs: 0, fat: 15, calories: 250 }, labels: ['protein', 'hearty', 'comfort-food', 'versatile'] },
+            { id: 3, name: 'Salmon Fillet', category: 'meat', default_unit: 'lbs', storage_notes: 'Refrigerate, use within 2 days', nutrition: { protein: 25, carbs: 0, fat: 11, calories: 206 }, labels: ['protein', 'omega-3', 'healthy-fats', 'premium', 'fish'] },
+            { id: 4, name: 'Eggs', category: 'dairy', default_unit: 'dozen', storage_notes: 'Refrigerate', nutrition: { protein: 6, carbs: 0.6, fat: 5, calories: 70 }, labels: ['protein', 'breakfast', 'versatile', 'affordable'] },
+            { id: 5, name: 'Tofu', category: 'meat', default_unit: 'lbs', storage_notes: 'Refrigerate after opening', nutrition: { protein: 8, carbs: 2, fat: 4, calories: 70 }, labels: ['protein', 'vegan', 'vegetarian', 'soy', 'healthy'] },
 
             // Vegetables
-            { id: 6, name: 'Broccoli', category: 'produce', default_unit: 'lbs', cost_per_unit: 2.99, storage_notes: 'Refrigerate', nutrition: { protein: 3, carbs: 6, fat: 0.4, calories: 25 }, labels: ['vegetable', 'healthy', 'vitamin-c', 'fiber', 'green'] },
-            { id: 7, name: 'Carrots', category: 'produce', default_unit: 'lbs', cost_per_unit: 1.49, storage_notes: 'Refrigerate', nutrition: { protein: 0.9, carbs: 10, fat: 0.2, calories: 41 }, labels: ['vegetable', 'healthy', 'vitamin-a', 'sweet', 'orange', 'affordable'] },
-            { id: 8, name: 'Bell Peppers', category: 'produce', default_unit: 'pieces', cost_per_unit: 1.99, storage_notes: 'Refrigerate', nutrition: { protein: 1, carbs: 7, fat: 0.3, calories: 31 }, labels: ['vegetable', 'colorful', 'vitamin-c', 'crunchy', 'versatile'] },
-            { id: 9, name: 'Onions', category: 'produce', default_unit: 'lbs', cost_per_unit: 1.29, storage_notes: 'Store in cool, dry place', nutrition: { protein: 1.1, carbs: 9.3, fat: 0.1, calories: 40 }, labels: ['vegetable', 'flavor-base', 'aromatic', 'versatile', 'affordable', 'staple'] },
-            { id: 10, name: 'Garlic', category: 'produce', default_unit: 'pieces', cost_per_unit: 0.99, storage_notes: 'Store in cool, dry place', nutrition: { protein: 0.6, carbs: 3, fat: 0, calories: 13 }, labels: ['aromatic', 'flavor-base', 'medicinal', 'staple', 'pungent'] },
-            { id: 11, name: 'Spinach', category: 'produce', default_unit: 'lbs', cost_per_unit: 3.99, storage_notes: 'Refrigerate', nutrition: { protein: 2.9, carbs: 3.6, fat: 0.4, calories: 23 }, labels: ['leafy-green', 'healthy', 'iron', 'vitamin-k', 'versatile'] },
-            { id: 12, name: 'Tomatoes', category: 'produce', default_unit: 'lbs', cost_per_unit: 2.49, storage_notes: 'Store at room temperature', nutrition: { protein: 0.9, carbs: 3.9, fat: 0.2, calories: 18 }, labels: ['vegetable', 'fruit', 'umami', 'versatile', 'lycopene'] },
+            { id: 6, name: 'Broccoli', category: 'produce', default_unit: 'lbs', storage_notes: 'Refrigerate', nutrition: { protein: 3, carbs: 6, fat: 0.4, calories: 25 }, labels: ['vegetable', 'healthy', 'vitamin-c', 'fiber', 'green'] },
+            { id: 7, name: 'Carrots', category: 'produce', default_unit: 'lbs', storage_notes: 'Refrigerate', nutrition: { protein: 0.9, carbs: 10, fat: 0.2, calories: 41 }, labels: ['vegetable', 'healthy', 'vitamin-a', 'sweet', 'orange', 'affordable'] },
+            { id: 8, name: 'Bell Peppers', category: 'produce', default_unit: 'pieces', storage_notes: 'Refrigerate', nutrition: { protein: 1, carbs: 7, fat: 0.3, calories: 31 }, labels: ['vegetable', 'colorful', 'vitamin-c', 'crunchy', 'versatile'] },
+            { id: 9, name: 'Onions', category: 'produce', default_unit: 'lbs', storage_notes: 'Store in cool, dry place', nutrition: { protein: 1.1, carbs: 9.3, fat: 0.1, calories: 40 }, labels: ['vegetable', 'flavor-base', 'aromatic', 'versatile', 'affordable', 'staple'] },
+            { id: 10, name: 'Garlic', category: 'produce', default_unit: 'pieces', storage_notes: 'Store in cool, dry place', nutrition: { protein: 0.6, carbs: 3, fat: 0, calories: 13 }, labels: ['aromatic', 'flavor-base', 'medicinal', 'staple', 'pungent'] },
+            { id: 11, name: 'Spinach', category: 'produce', default_unit: 'lbs', storage_notes: 'Refrigerate', nutrition: { protein: 2.9, carbs: 3.6, fat: 0.4, calories: 23 }, labels: ['leafy-green', 'healthy', 'iron', 'vitamin-k', 'versatile'] },
+            { id: 12, name: 'Tomatoes', category: 'produce', default_unit: 'lbs', storage_notes: 'Store at room temperature', nutrition: { protein: 0.9, carbs: 3.9, fat: 0.2, calories: 18 }, labels: ['vegetable', 'fruit', 'umami', 'versatile', 'lycopene'] },
 
             // Grains & Starches
-            { id: 13, name: 'Rice', category: 'grains', default_unit: 'lbs', cost_per_unit: 2.99, storage_notes: 'Store in airtight container', nutrition: { protein: 2.7, carbs: 28, fat: 0.3, calories: 130 }, labels: ['grain', 'staple', 'carbs', 'gluten-free', 'versatile', 'affordable'] },
-            { id: 14, name: 'Pasta', category: 'grains', default_unit: 'lbs', cost_per_unit: 1.99, storage_notes: 'Store in cool, dry place', nutrition: { protein: 5, carbs: 31, fat: 0.9, calories: 131 }, labels: ['grain', 'carbs', 'italian', 'comfort-food', 'versatile'] },
-            { id: 15, name: 'Bread', category: 'grains', default_unit: 'loaves', cost_per_unit: 2.49, storage_notes: 'Store at room temperature', nutrition: { protein: 3.6, carbs: 12, fat: 1.2, calories: 69 }, labels: ['grain', 'carbs', 'breakfast', 'staple', 'comfort-food'] },
-            { id: 16, name: 'Potatoes', category: 'produce', default_unit: 'lbs', cost_per_unit: 1.99, storage_notes: 'Store in cool, dark place', nutrition: { protein: 2, carbs: 17, fat: 0.1, calories: 77 }, labels: ['starch', 'carbs', 'versatile', 'comfort-food', 'affordable', 'filling'] },
-            { id: 17, name: 'Quinoa', category: 'grains', default_unit: 'lbs', cost_per_unit: 5.99, storage_notes: 'Store in airtight container', nutrition: { protein: 4.4, carbs: 22, fat: 1.9, calories: 120 }, labels: ['grain', 'superfood', 'protein', 'gluten-free', 'healthy', 'premium'] },
+            { id: 13, name: 'Rice', category: 'grains', default_unit: 'lbs', storage_notes: 'Store in airtight container', nutrition: { protein: 2.7, carbs: 28, fat: 0.3, calories: 130 }, labels: ['grain', 'staple', 'carbs', 'gluten-free', 'versatile', 'affordable'] },
+            { id: 14, name: 'Pasta', category: 'grains', default_unit: 'lbs', storage_notes: 'Store in cool, dry place', nutrition: { protein: 5, carbs: 31, fat: 0.9, calories: 131 }, labels: ['grain', 'carbs', 'italian', 'comfort-food', 'versatile'] },
+            { id: 15, name: 'Bread', category: 'grains', default_unit: 'loaves', storage_notes: 'Store at room temperature', nutrition: { protein: 3.6, carbs: 12, fat: 1.2, calories: 69 }, labels: ['grain', 'carbs', 'breakfast', 'staple', 'comfort-food'] },
+            { id: 16, name: 'Potatoes', category: 'produce', default_unit: 'lbs', storage_notes: 'Store in cool, dark place', nutrition: { protein: 2, carbs: 17, fat: 0.1, calories: 77 }, labels: ['starch', 'carbs', 'versatile', 'comfort-food', 'affordable', 'filling'] },
+            { id: 17, name: 'Quinoa', category: 'grains', default_unit: 'lbs', storage_notes: 'Store in airtight container', nutrition: { protein: 4.4, carbs: 22, fat: 1.9, calories: 120 }, labels: ['grain', 'superfood', 'protein', 'gluten-free', 'healthy', 'premium'] },
 
             // Dairy
-            { id: 18, name: 'Milk', category: 'dairy', default_unit: 'gallons', cost_per_unit: 3.99, storage_notes: 'Refrigerate', nutrition: { protein: 3.4, carbs: 5, fat: 3.3, calories: 61 } },
-            { id: 19, name: 'Cheese', category: 'dairy', default_unit: 'lbs', cost_per_unit: 6.99, storage_notes: 'Refrigerate', nutrition: { protein: 25, carbs: 1, fat: 33, calories: 402 } },
-            { id: 20, name: 'Yogurt', category: 'dairy', default_unit: 'containers', cost_per_unit: 4.99, storage_notes: 'Refrigerate', nutrition: { protein: 10, carbs: 12, fat: 4, calories: 100 } },
-            { id: 21, name: 'Butter', category: 'dairy', default_unit: 'lbs', cost_per_unit: 4.49, storage_notes: 'Refrigerate', nutrition: { protein: 0.9, carbs: 0.1, fat: 81, calories: 717 } },
+            { id: 18, name: 'Milk', category: 'dairy', default_unit: 'gallons', storage_notes: 'Refrigerate', nutrition: { protein: 3.4, carbs: 5, fat: 3.3, calories: 61 } },
+            { id: 19, name: 'Cheese', category: 'dairy', default_unit: 'lbs', storage_notes: 'Refrigerate', nutrition: { protein: 25, carbs: 1, fat: 33, calories: 402 } },
+            { id: 20, name: 'Yogurt', category: 'dairy', default_unit: 'containers', storage_notes: 'Refrigerate', nutrition: { protein: 10, carbs: 12, fat: 4, calories: 100 } },
+            { id: 21, name: 'Butter', category: 'dairy', default_unit: 'lbs', storage_notes: 'Refrigerate', nutrition: { protein: 0.9, carbs: 0.1, fat: 81, calories: 717 } },
 
             // Pantry Items
-            { id: 22, name: 'Olive Oil', category: 'pantry', default_unit: 'bottles', cost_per_unit: 7.99, storage_notes: 'Store in cool, dark place', nutrition: { protein: 0, carbs: 0, fat: 14, calories: 119 }, labels: ['oil', 'healthy-fats', 'mediterranean', 'cooking', 'premium'] },
-            { id: 23, name: 'Salt', category: 'pantry', default_unit: 'containers', cost_per_unit: 1.99, storage_notes: 'Store in dry place', nutrition: { protein: 0, carbs: 0, fat: 0, calories: 0 }, labels: ['seasoning', 'essential', 'mineral', 'preservative', 'staple'] },
-            { id: 24, name: 'Black Pepper', category: 'pantry', default_unit: 'containers', cost_per_unit: 3.99, storage_notes: 'Store in cool, dry place', nutrition: { protein: 0.1, carbs: 0.6, fat: 0, calories: 3 }, labels: ['spice', 'seasoning', 'pungent', 'staple', 'aromatic'] },
-            { id: 25, name: 'Soy Sauce', category: 'pantry', default_unit: 'bottles', cost_per_unit: 2.99, storage_notes: 'Store at room temperature', nutrition: { protein: 1.3, carbs: 0.8, fat: 0, calories: 8 }, labels: ['sauce', 'umami', 'asian', 'salty', 'fermented'] },
-            { id: 26, name: 'Lemon', category: 'produce', default_unit: 'pieces', cost_per_unit: 0.79, storage_notes: 'Refrigerate', nutrition: { protein: 0.6, carbs: 5.4, fat: 0.2, calories: 17 }, labels: ['citrus', 'vitamin-c', 'acidic', 'fresh', 'aromatic'] },
+            { id: 22, name: 'Olive Oil', category: 'pantry', default_unit: 'bottles', storage_notes: 'Store in cool, dark place', nutrition: { protein: 0, carbs: 0, fat: 14, calories: 119 }, labels: ['oil', 'healthy-fats', 'mediterranean', 'cooking', 'premium'] },
+            { id: 23, name: 'Salt', category: 'pantry', default_unit: 'containers', storage_notes: 'Store in dry place', nutrition: { protein: 0, carbs: 0, fat: 0, calories: 0 }, labels: ['seasoning', 'essential', 'mineral', 'preservative', 'staple'] },
+            { id: 24, name: 'Black Pepper', category: 'pantry', default_unit: 'containers', storage_notes: 'Store in cool, dry place', nutrition: { protein: 0.1, carbs: 0.6, fat: 0, calories: 3 }, labels: ['spice', 'seasoning', 'pungent', 'staple', 'aromatic'] },
+            { id: 25, name: 'Soy Sauce', category: 'pantry', default_unit: 'bottles', storage_notes: 'Store at room temperature', nutrition: { protein: 1.3, carbs: 0.8, fat: 0, calories: 8 }, labels: ['sauce', 'umami', 'asian', 'salty', 'fermented'] },
+            { id: 26, name: 'Lemon', category: 'produce', default_unit: 'pieces', storage_notes: 'Refrigerate', nutrition: { protein: 0.6, carbs: 5.4, fat: 0.2, calories: 17 }, labels: ['citrus', 'vitamin-c', 'acidic', 'fresh', 'aromatic'] },
 
             // Herbs & Spices
-            { id: 27, name: 'Basil', category: 'produce', default_unit: 'bunches', cost_per_unit: 2.49, storage_notes: 'Refrigerate', nutrition: { protein: 3.2, carbs: 2.6, fat: 0.6, calories: 22 } },
-            { id: 28, name: 'Parsley', category: 'produce', default_unit: 'bunches', cost_per_unit: 1.99, storage_notes: 'Refrigerate', nutrition: { protein: 3, carbs: 6.3, fat: 0.8, calories: 36 } },
-            { id: 29, name: 'Oregano', category: 'pantry', default_unit: 'containers', cost_per_unit: 2.99, storage_notes: 'Store in cool, dry place', nutrition: { protein: 9, carbs: 69, fat: 4.3, calories: 265 } },
-            { id: 30, name: 'Thyme', category: 'pantry', default_unit: 'containers', cost_per_unit: 3.49, storage_notes: 'Store in cool, dry place', nutrition: { protein: 5.6, carbs: 24, fat: 1.7, calories: 101 } }
+            { id: 27, name: 'Basil', category: 'produce', default_unit: 'bunches', storage_notes: 'Refrigerate', nutrition: { protein: 3.2, carbs: 2.6, fat: 0.6, calories: 22 } },
+            { id: 28, name: 'Parsley', category: 'produce', default_unit: 'bunches', storage_notes: 'Refrigerate', nutrition: { protein: 3, carbs: 6.3, fat: 0.8, calories: 36 } },
+            { id: 29, name: 'Oregano', category: 'pantry', default_unit: 'containers', storage_notes: 'Store in cool, dry place', nutrition: { protein: 9, carbs: 69, fat: 4.3, calories: 265 } },
+            { id: 30, name: 'Thyme', category: 'pantry', default_unit: 'containers', storage_notes: 'Store in cool, dry place', nutrition: { protein: 5.6, carbs: 24, fat: 1.7, calories: 101 } }
         ];
 
         // Comprehensive recipe list that uses the ingredients above

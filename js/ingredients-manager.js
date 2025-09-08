@@ -279,12 +279,6 @@ class IngredientsManager {
                         <span class="font-medium text-gray-900 dark:text-white">${ingredient.default_unit}</span>
                     </div>
                     
-                    ${ingredient.cost_per_unit ? `
-                        <div class="flex justify-between text-sm">
-                            <span class="text-gray-600 dark:text-gray-400">Cost per Unit:</span>
-                            <span class="font-medium text-gray-900 dark:text-white">$${ingredient.cost_per_unit}</span>
-                        </div>
-                    ` : ''}
                     
                     <div class="flex justify-between text-sm">
                         <span class="text-gray-600 dark:text-gray-400">Used in Recipes:</span>
@@ -355,10 +349,8 @@ class IngredientsManager {
         return this.ingredients.filter(i => (i.recipe_count || 0) > 0).length;
     }
 
-    getTotalValue() {
-        return this.ingredients.reduce((total, ingredient) => {
-            return total + ((ingredient.cost_per_unit || 0) * (ingredient.avg_quantity || 1));
-        }, 0);
+    getTotalIngredients() {
+        return this.ingredients.length;
     }
 
     getIngredientRecipeUsage(ingredientId) {
@@ -575,15 +567,6 @@ class IngredientsManager {
                             </select>
                         </div>
                         
-                        <div>
-                            <label for="ingredient-cost" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Cost per Unit ($)
-                            </label>
-                            <input type="number" id="ingredient-cost" name="cost_per_unit" step="0.01" min="0"
-                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                                   placeholder="0.00"
-                                   value="${isEdit ? ingredient.cost_per_unit || '' : ''}">
-                        </div>
                         
                         <div>
                             <label for="ingredient-storage" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -701,7 +684,6 @@ class IngredientsManager {
                 name: formData.get('name').trim(),
                 category: formData.get('category'),
                 default_unit: formData.get('default_unit'),
-                cost_per_unit: parseFloat(formData.get('cost_per_unit')) || null,
                 storage_notes: formData.get('storage_notes').trim() || null,
                 nutrition_per_100g: {
                     calories: parseInt(formData.get('calories')) || null,

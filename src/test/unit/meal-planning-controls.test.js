@@ -26,12 +26,36 @@ const dom = new JSDOM(`
         </div>
     </body>
     </html>
-`);
+`, { url: 'http://localhost' });
+
 global.window = dom.window;
 global.document = dom.window.document;
 
-// Mock window.confirm for JSDOM
+// Mock browser APIs for JSDOM
 global.window.confirm = vi.fn();
+global.confirm = global.window.confirm; // Also set global confirm
+global.window.matchMedia = vi.fn().mockImplementation(query => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+}));
+
+// Mock localStorage
+const localStorageMock = {
+    getItem: vi.fn(),
+    setItem: vi.fn(),
+    removeItem: vi.fn(),
+    clear: vi.fn(),
+};
+Object.defineProperty(global.window, 'localStorage', {
+    value: localStorageMock,
+    writable: true
+});
 
 // Mock classes that would be imported
 global.ItineraryView = vi.fn().mockImplementation(() => ({
@@ -50,8 +74,25 @@ global.MealRotationEngine = vi.fn().mockImplementation(() => ({
             { id: 2, name: 'Test Meal 2', date: '2024-01-02' }
         ],
         stats: { totalMeals: 2, uniqueRecipes: 2 }
-    })
+    }),
+    clearMealType: vi.fn()
 }));
+
+// Mock DemoDataManager
+const mockDemoDataInstance = {
+    getScheduledMeals: vi.fn().mockReturnValue([
+        { id: 1, meal_type: 'breakfast', recipe_name: 'Test Breakfast' },
+        { id: 2, meal_type: 'lunch', recipe_name: 'Test Lunch' },
+        { id: 3, meal_type: 'dinner', recipe_name: 'Test Dinner' }
+    ]),
+    getRecipes: vi.fn().mockReturnValue([
+        { id: 1, title: 'Recipe 1', meal_type: 'breakfast' },
+        { id: 2, title: 'Recipe 2', meal_type: 'lunch' },
+        { id: 3, title: 'Recipe 3', meal_type: 'dinner' }
+    ])
+};
+
+global.window.DemoDataManager = vi.fn().mockImplementation(() => mockDemoDataInstance);
 
 // Import MealPlannerApp after DOM setup
 await import('../../../js/main.js');
@@ -83,8 +124,25 @@ describe('Meal Planning Controls', () => {
             </div>
         `;
         
-        // Reset confirm mock
+        // Reset mocks
         global.window.confirm.mockReset();
+        global.confirm.mockReset();
+        localStorageMock.getItem.mockReset();
+        localStorageMock.setItem.mockReset();
+        mockDemoDataInstance.getScheduledMeals.mockReset();
+        mockDemoDataInstance.getRecipes.mockReset();
+        
+        // Reset the mock return values
+        mockDemoDataInstance.getScheduledMeals.mockReturnValue([
+            { id: 1, meal_type: 'breakfast', recipe_name: 'Test Breakfast' },
+            { id: 2, meal_type: 'lunch', recipe_name: 'Test Lunch' },
+            { id: 3, meal_type: 'dinner', recipe_name: 'Test Dinner' }
+        ]);
+        mockDemoDataInstance.getRecipes.mockReturnValue([
+            { id: 1, title: 'Recipe 1', meal_type: 'breakfast' },
+            { id: 2, title: 'Recipe 2', meal_type: 'lunch' },
+            { id: 3, title: 'Recipe 3', meal_type: 'dinner' }
+        ]);
         
         // Create MealPlannerApp instance
         app = new MealPlannerApp();
@@ -101,6 +159,23 @@ describe('Meal Planning Controls', () => {
             lunch: new CalendarView(),
             dinner: new CalendarView()
         };
+        
+        // Initialize selected recipes
+        app.selectedRecipes = {
+            breakfast: [],
+            lunch: [],
+            dinner: []
+        };
+        
+        // Mock methods that might be called during initialization
+        app.renderRecipeSelection = vi.fn();
+        app.getScheduledMeals = vi.fn().mockReturnValue([
+            { id: 1, meal_type: 'breakfast', recipe_name: 'Test Breakfast' },
+            { id: 2, meal_type: 'lunch', recipe_name: 'Test Lunch' },
+            { id: 3, meal_type: 'dinner', recipe_name: 'Test Dinner' }
+        ]);
+        app.saveScheduledMeals = vi.fn();
+        app.refreshMealPlanViews = vi.fn();
         
         // Initialize meal planning controls
         app.initializeMealPlanningControls();
@@ -173,7 +248,7 @@ describe('Meal Planning Controls', () => {
             app.handleAutoPlan('breakfast');
             
             expect(showNotificationSpy).toHaveBeenCalledWith(
-                'Meal rotation engine not available. Please try again.',
+                'Meal rotation engine not available. Please refresh the page and try again.',
                 'error'
             );
         });
@@ -379,8 +454,7 @@ describe('Meal Planning Controls', () => {
             
             app.applyGeneratedPlan('breakfast', mockMeals);
             
-            expect(app.itineraryViews.breakfast.render).toHaveBeenCalled();
-            expect(app.calendarViews.breakfast.render).toHaveBeenCalled();
+            expect(app.refreshMealPlanViews).toHaveBeenCalled();
         });
 
         it('should handle missing views gracefully', () => {
@@ -403,7 +477,7 @@ describe('Meal Planning Controls', () => {
             app.clearMealPlanData('breakfast');
             
             expect(consoleLogSpy).toHaveBeenCalledWith('🗑️ Clearing breakfast data from storage...');
-            expect(consoleLogSpy).toHaveBeenCalledWith('✅ breakfast meal plan data cleared');
+            expect(consoleLogSpy).toHaveBeenCalledWith('✅ Cleared 1 breakfast meals from schedule');
             
             consoleLogSpy.mockRestore();
         });
@@ -447,6 +521,7 @@ describe('Meal Planning Controls', () => {
 
         it('should handle missing meal rotation engine methods', () => {
             app.mealRotationEngine = {}; // Empty object without generateRotation method
+            app.selectedRecipes = { breakfast: [1, 2] }; // Add selected recipes to get past the warning
             const showNotificationSpy = vi.spyOn(app, 'showNotification');
             
             app.handleAutoPlan('breakfast');
@@ -487,16 +562,24 @@ describe('Meal Planning Controls', () => {
         });
 
         it('should auto-remove notifications after timeout', async () => {
+            // Use fake timers before creating notification
+            vi.useFakeTimers();
+            
             app.showNotification('Test message', 'success');
             
             let notification = document.querySelector('.fixed.top-4.right-4');
             expect(notification).toBeTruthy();
+            expect(notification.textContent).toBe('Test message');
             
-            // Wait for timeout (3 seconds + buffer)
-            await new Promise(resolve => setTimeout(resolve, 3100));
+            // Fast-forward time by 4000ms to trigger the timeout
+            vi.advanceTimersByTime(4000);
             
+            // Notification should be removed
             notification = document.querySelector('.fixed.top-4.right-4');
             expect(notification).toBeFalsy();
+            
+            // Restore real timers
+            vi.useRealTimers();
         });
     });
 });

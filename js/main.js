@@ -2,7 +2,7 @@
 class MealPlannerApp {
     constructor() {
         this.currentTab = 'recipes';
-        this.version = '2025.09.05.2146';
+        this.version = '2025.09.05.2202';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
@@ -895,6 +895,9 @@ class MealPlannerApp {
             
             console.log(`✅ Applied ${newScheduledMeals.length} ${mealType} meals to schedule`);
             
+            // Refresh views to show the new meals
+            this.refreshMealPlanViews();
+            
             // Show success notification
             this.showNotification(`${mealType.charAt(0).toUpperCase() + mealType.slice(1)} meal plan generated successfully!`, 'success');
             
@@ -1533,6 +1536,7 @@ class MealPlannerApp {
         notification.className = `fixed top-4 right-4 px-4 py-2 rounded-lg shadow-lg z-50 ${
             type === 'success' ? 'bg-green-500 text-white' :
             type === 'error' ? 'bg-red-500 text-white' :
+            type === 'warning' ? 'bg-yellow-500 text-white' :
             'bg-blue-500 text-white'
         }`;
         notification.textContent = message;
@@ -1586,11 +1590,13 @@ class MealPlannerApp {
         
         if (lightIcon && darkIcon) {
             if (isDark) {
-                lightIcon.classList.remove('hidden');
-                darkIcon.classList.add('hidden');
-            } else {
+                // In dark mode, show moon icon (dark icon) and hide sun icon (light icon)
                 lightIcon.classList.add('hidden');
                 darkIcon.classList.remove('hidden');
+            } else {
+                // In light mode, show sun icon (light icon) and hide moon icon (dark icon)
+                lightIcon.classList.remove('hidden');
+                darkIcon.classList.add('hidden');
             }
         }
     }

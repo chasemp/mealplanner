@@ -9,8 +9,8 @@ class SettingsManager {
             githubRepo: '',
             // githubDeployKey: '', // 🔐 REMOVED - stored securely in IndexedDB
             githubReadOnly: false,
-            showBreakfast: true,
-            showLunch: true,
+            showBreakfast: false,
+            showLunch: false,
             showDinner: true,
             calendarManagedMode: false,
             calendarNotifications: false
