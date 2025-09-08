@@ -7,6 +7,7 @@ class RecipeManager {
         this.currentRecipe = null;
         this.searchTerm = '';
         this.selectedCategory = 'all';
+        this.selectedType = 'all'; // New filter for recipe type (basic/combo)
         this.selectedLabel = 'all';
         this.sortBy = 'name';
         this.showFavoritesOnly = false;
@@ -81,7 +82,7 @@ class RecipeManager {
                     <div class="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
                         <!-- Filter Controls -->
                         <div class="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 flex-1">
-                            <select id="recipe-category" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 w-full sm:w-auto">
+                            <select id="recipe-category" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 w-full sm:w-40">
                                 <option value="all" ${this.selectedCategory === 'all' ? 'selected' : ''}>All Meal Types</option>
                                 <option value="breakfast" ${this.selectedCategory === 'breakfast' ? 'selected' : ''}>Breakfast</option>
                                 <option value="lunch" ${this.selectedCategory === 'lunch' ? 'selected' : ''}>Lunch</option>
@@ -89,14 +90,20 @@ class RecipeManager {
                                 <option value="snack" ${this.selectedCategory === 'snack' ? 'selected' : ''}>Snack</option>
                             </select>
                             
-                            <select id="recipe-label" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 w-full sm:w-auto">
+                            <select id="recipe-type" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 w-full sm:w-36">
+                                <option value="all" ${this.selectedType === 'all' ? 'selected' : ''}>All Types</option>
+                                <option value="basic" ${this.selectedType === 'basic' ? 'selected' : ''}>Basic Recipes</option>
+                                <option value="combo" ${this.selectedType === 'combo' ? 'selected' : ''}>Combo Recipes</option>
+                            </select>
+                            
+                            <select id="recipe-label" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 w-full sm:w-36">
                                 <option value="all" ${this.selectedLabel === 'all' ? 'selected' : ''}>All Labels</option>
                                 ${this.getAllLabels().map(label => `
                                     <option value="${label}" ${this.selectedLabel === label ? 'selected' : ''}>${label}</option>
                                 `).join('')}
                             </select>
                             
-                            <select id="recipe-sort" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 w-full sm:w-auto">
+                            <select id="recipe-sort" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 w-full sm:w-44">
                                 <option value="name" ${this.sortBy === 'name' ? 'selected' : ''}>Sort by Name</option>
                                 <option value="date" ${this.sortBy === 'date' ? 'selected' : ''}>Sort by Date</option>
                                 <option value="prep_time" ${this.sortBy === 'prep_time' ? 'selected' : ''}>Sort by Prep Time</option>
@@ -104,7 +111,7 @@ class RecipeManager {
                             </select>
                             
                             <!-- Clear Filters Button -->
-                            <button id="clear-recipe-filters-btn" class="border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors w-full sm:w-auto">
+                            <button id="clear-recipe-filters-btn" class="border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors w-full sm:w-32">
                                 Clear Filters
                             </button>
                         </div>
@@ -160,11 +167,21 @@ class RecipeManager {
         const filteredRecipes = this.getFilteredRecipes();
         
         return filteredRecipes.map(recipe => `
-            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 cursor-pointer recipe-card" 
-                 data-recipe-id="${recipe.id}">
+            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 cursor-pointer recipe-card ${recipe.type === 'combo' ? 'border-l-4 border-purple-500' : ''}" 
+                 data-recipe-id="${recipe.id}" data-recipe-type="${recipe.type || 'basic'}">
                 <div class="p-6">
                     <div class="flex items-start justify-between mb-3">
-                        <h3 class="text-lg font-semibold text-gray-900 line-clamp-2">${recipe.title}</h3>
+                        <div class="flex items-center space-x-2">
+                            ${recipe.type === 'combo' ? `
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                    </svg>
+                                    COMBO
+                                </span>
+                            ` : ''}
+                            <h3 class="text-lg font-semibold text-gray-900 line-clamp-2">${recipe.title}</h3>
+                        </div>
                         <div class="flex items-center space-x-1 ml-2">
                             <button class="hover:text-yellow-500 toggle-favorite" data-recipe-id="${recipe.id}" title="${recipe.favorite ? 'Remove from favorites' : 'Add to favorites'}">
                                 <svg class="w-4 h-4 ${recipe.favorite ? 'text-yellow-500 fill-current' : 'text-gray-400'}" fill="${recipe.favorite ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
@@ -212,7 +229,10 @@ class RecipeManager {
                             ${recipe.tags.length > 2 ? `<span class="text-xs text-gray-500">+${recipe.tags.length - 2} more</span>` : ''}
                         </div>
                         <div class="text-xs text-gray-400">
-                            ${recipe.ingredients.length} ingredients
+                            ${recipe.type === 'combo' ? 
+                                `${recipe.combo_recipes ? recipe.combo_recipes.length : 0} recipes` : 
+                                `${recipe.ingredients.length} ingredients`
+                            }
                         </div>
                     </div>
                 </div>
@@ -254,6 +274,11 @@ class RecipeManager {
         // Filter by category
         if (this.selectedCategory !== 'all') {
             filtered = filtered.filter(recipe => recipe.meal_type === this.selectedCategory);
+        }
+
+        // Filter by recipe type (basic/combo)
+        if (this.selectedType !== 'all') {
+            filtered = filtered.filter(recipe => (recipe.type || 'basic') === this.selectedType);
         }
 
         // Filter by label
@@ -351,6 +376,15 @@ class RecipeManager {
             });
         }
 
+        // Recipe type filter
+        const typeSelect = this.container.querySelector('#recipe-type');
+        if (typeSelect) {
+            typeSelect.addEventListener('change', (e) => {
+                this.selectedType = e.target.value;
+                this.render();
+            });
+        }
+
         // Label filter
         const labelSelect = this.container.querySelector('#recipe-label');
         if (labelSelect) {
@@ -375,6 +409,7 @@ class RecipeManager {
             clearFiltersBtn.addEventListener('click', () => {
                 this.searchTerm = '';
                 this.selectedCategory = 'all';
+                this.selectedType = 'all'; // Reset recipe type filter
                 this.selectedLabel = 'all';
                 this.sortBy = 'name';
                 this.showFavoritesOnly = false;
