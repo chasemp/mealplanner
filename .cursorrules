@@ -44,3 +44,19 @@
 - Parallel tool calls for efficiency
 - Comprehensive unit and integration tests
 - Mock external dependencies appropriately
+
+## UI/UX Patterns
+### Modal Design - CRITICAL PATTERN
+- ALWAYS use sticky header/footer pattern for forms with action buttons
+- Modal structure: `flex flex-col` + `max-h-[90vh]`
+- Header: `flex-shrink-0` (never shrinks)
+- Content: `overflow-y-auto flex-1` (scrollable)
+- Footer: `flex-shrink-0` (always visible)
+- Buttons outside form: use `form="form-id"` attribute
+- Applied to: ALL modals with forms (recipe, meal, ingredient, etc.)
+
+### Dropdown Positioning
+- Use parent-relative positioning (`absolute` within `relative` container)
+- Implement JavaScript viewport-aware positioning
+- Check available space and adjust left/right positioning dynamically
+- Avoid fixed viewport positioning that can cause overflow

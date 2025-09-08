@@ -187,7 +187,45 @@ We need to balance three critical requirements:
 
 ## 🏗️ Architecture Decisions
 
-### 1. Static Site with Intelligent Asset Management
+### 1. Modal Design Patterns - CRITICAL UI LESSON
+**Problem**: Long forms in modals hide action buttons below the fold, making them inaccessible.
+
+❌ **WRONG - Buttons Inside Scrollable Area:**
+```html
+<div class="modal max-h-[90vh] overflow-y-auto">
+  <div class="header">...</div>
+  <form class="scrollable-content">
+    <!-- Long form content -->
+    <div class="form-actions">
+      <button>Update</button> <!-- HIDDEN when form is long! -->
+    </div>
+  </form>
+</div>
+```
+
+✅ **CORRECT - Sticky Header/Footer Pattern:**
+```html
+<div class="modal max-h-[90vh] flex flex-col">
+  <div class="header flex-shrink-0">...</div>
+  <div class="scrollable-content overflow-y-auto flex-1">
+    <form><!-- Long form content --></form>
+  </div>
+  <div class="footer flex-shrink-0">
+    <button form="form-id">Update</button> <!-- ALWAYS VISIBLE -->
+  </div>
+</div>
+```
+
+**Key Requirements:**
+- Modal container: `flex flex-col` + `max-h-[90vh]`
+- Header: `flex-shrink-0` (never shrinks)
+- Content: `overflow-y-auto flex-1` (scrollable, takes remaining space)  
+- Footer: `flex-shrink-0` (always visible)
+- Buttons: Use `form="form-id"` attribute when outside form
+
+**Applied to:** Recipe forms, meal forms, ingredient forms - ALL modals with action buttons.
+
+### 2. Static Site with Intelligent Asset Management
 **The Sweet Spot**: Modular files served directly by GitHub Pages without build complexity
 
 ## 📡 **GitHub Pages Static PWA Deployment Lessons**
