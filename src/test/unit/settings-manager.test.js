@@ -213,7 +213,7 @@ describe('Settings Manager', () => {
             settingsManager.settings.showLunch = true;
             settingsManager.settings.showDinner = false;
             
-            settingsManager.applyMealTypeVisibility();
+            settingsManager.applyMealTimeVisibility();
             
             const breakfastTab = document.querySelector('[data-tab="breakfast"]');
             const lunchTab = document.querySelector('[data-tab="lunch"]');
@@ -229,7 +229,7 @@ describe('Settings Manager', () => {
             settingsManager.settings.showLunch = true;
             settingsManager.settings.showDinner = false;
             
-            settingsManager.applyMealTypeVisibility();
+            settingsManager.applyMealTimeVisibility();
             
             const breakfastCheckbox = document.getElementById('show-breakfast');
             const lunchCheckbox = document.getElementById('show-lunch');

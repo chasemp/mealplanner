@@ -2,7 +2,7 @@
 class MealPlannerApp {
     constructor() {
         this.currentTab = 'recipes';
-        this.version = '2025.09.08.1223';
+        this.version = '2025.09.08.1256';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
@@ -882,13 +882,20 @@ class MealPlannerApp {
                 // Refresh the views
                 const itineraryView = this.itineraryViews[mealType];
                 if (itineraryView) {
+                    // Update the view's data and re-render
+                    itineraryView.mealPlanData = this.getScheduledMeals();
                     itineraryView.render();
                 }
                 
                 const calendarView = this.calendarViews[mealType];
                 if (calendarView) {
+                    // Update the view's data and re-render
+                    calendarView.mealPlanData = this.getScheduledMeals();
                     calendarView.render();
                 }
+                
+                // Also refresh the current tab display
+                this.renderCurrentTab();
                 
                 this.showNotification(`${mealType.charAt(0).toUpperCase() + mealType.slice(1)} meal plan cleared successfully.`, 'success');
             } catch (error) {

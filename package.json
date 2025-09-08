@@ -33,6 +33,7 @@
     "cache:clear": "rm -rf node_modules/.vite dist",
     "restart": "pkill -f vite || true && sleep 2 && npm run dev:fresh",
     "version:update": "node update-version.cjs",
+    "version:check": "node -e \"const fs=require('fs'); const content=fs.readFileSync('index.html','utf8'); const versions=[...content.matchAll(/\\.js\\?v=([\\d.]+)/g)].map(m=>m[1]); const unique=[...new Set(versions)]; console.log(unique.length===1 ? '✅ All versions consistent: '+unique[0] : '❌ Version mismatch: '+unique.join(', '));\"",
     "deploy:bust": "npm run version:update && git add -A && git commit -m 'Cache bust: update version' && git push origin main"
   },
   "keywords": [

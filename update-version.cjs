@@ -20,7 +20,8 @@ const files = [
         path: 'index.html',
         patterns: [
             { regex: /styles\.css\?v=[\d.]+/g, replacement: `styles.css?v=${version}` },
-            { regex: /main\.js\?v=[\d.]+/g, replacement: `main.js?v=${version}` },
+            // Update ALL JavaScript file versions in script tags
+            { regex: /\.js\?v=[\d.]+/g, replacement: `.js?v=${version}` },
             { regex: /<span id="version-display">v[\d.]+<\/span>/g, replacement: `<span id="version-display">v${version}</span>` }
         ]
     },
@@ -61,5 +62,23 @@ files.forEach(file => {
         console.error(`❌ Error updating ${file.path}:`, error.message);
     }
 });
+
+// Validation: Check that all JS files in index.html have consistent versions
+try {
+    const indexContent = fs.readFileSync('index.html', 'utf8');
+    const jsVersions = [...indexContent.matchAll(/\.js\?v=([\d.]+)/g)].map(match => match[1]);
+    const uniqueVersions = [...new Set(jsVersions)];
+    
+    if (uniqueVersions.length === 1 && uniqueVersions[0] === version) {
+        console.log(`✅ All ${jsVersions.length} JavaScript files have consistent version: ${version}`);
+    } else {
+        console.warn(`⚠️  Version inconsistency detected:`);
+        console.warn(`   Expected: ${version}`);
+        console.warn(`   Found: ${uniqueVersions.join(', ')}`);
+        console.warn(`   Total JS files: ${jsVersions.length}`);
+    }
+} catch (error) {
+    console.error(`❌ Version validation failed:`, error.message);
+}
 
 console.log(`🎉 Version update complete: ${version}`);
