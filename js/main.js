@@ -199,13 +199,14 @@ class MealPlannerApp {
             GroceryListManager: typeof GroceryListManager !== 'undefined',
             SettingsManager: typeof SettingsManager !== 'undefined',
             GoogleCalendarIntegration: typeof GoogleCalendarIntegration !== 'undefined',
-            MealRotationEngine: typeof MealRotationEngine !== 'undefined'
+            MealRotationEngine: typeof MealRotationEngine !== 'undefined',
+            ScheduleManager: typeof ScheduleManager !== 'undefined'
         };
         
         console.log('📱 Manager availability:', managersAvailable);
         
         // Wait a bit if managers aren't ready
-        if (!managersAvailable.RecipeManager || !managersAvailable.MealManager || !managersAvailable.IngredientsManager) {
+        if (!managersAvailable.RecipeManager || !managersAvailable.MealManager || !managersAvailable.IngredientsManager || !managersAvailable.ScheduleManager) {
             console.log('📱 Waiting for managers to load...');
             await new Promise(resolve => setTimeout(resolve, 100));
         }
@@ -214,6 +215,7 @@ class MealPlannerApp {
         try {
             this.initializeRecipeManager();
             this.initializeMealManager();
+            this.initializeScheduleManager();
             this.initializeIngredientsManager();
             this.initializeGroceryListManager();
                     this.initializeSettingsManager();
@@ -247,6 +249,14 @@ class MealPlannerApp {
             window.mealManager = this.mealManager;
             console.log('✅ Meal manager initialized');
         }
+    }
+
+    initializeScheduleManager() {
+        console.log('📅 Initializing schedule manager...');
+        
+        this.scheduleManager = new ScheduleManager();
+        window.scheduleManager = this.scheduleManager;
+        console.log('✅ Schedule manager initialized');
     }
 
     initializeIngredientsManager() {
