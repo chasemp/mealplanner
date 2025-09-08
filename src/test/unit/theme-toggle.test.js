@@ -11,14 +11,32 @@ class MockMealPlannerApp {
     initializeTheme() {
         console.log('🎨 Initializing theme system...')
         
-        // Check for saved theme preference or default to light mode
-        const savedTheme = localStorage.getItem('theme')
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-        
-        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-            document.documentElement.classList.add('dark')
-            this.updateThemeIcons(true)
-        } else {
+        try {
+            // Check for saved theme preference or default to light mode
+            let savedTheme = null;
+            try {
+                savedTheme = localStorage.getItem('theme');
+            } catch (error) {
+                console.warn('localStorage not available:', error);
+            }
+            
+            let prefersDark = false;
+            try {
+                prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            } catch (error) {
+                console.warn('matchMedia not available:', error);
+            }
+            
+            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                document.documentElement.classList.add('dark')
+                this.updateThemeIcons(true)
+            } else {
+                document.documentElement.classList.remove('dark')
+                this.updateThemeIcons(false)
+            }
+        } catch (error) {
+            console.warn('Theme initialization failed:', error);
+            // Default to light theme
             document.documentElement.classList.remove('dark')
             this.updateThemeIcons(false)
         }

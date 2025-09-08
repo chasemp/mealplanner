@@ -40,6 +40,15 @@ Object.defineProperty(global.window, 'matchMedia', {
     writable: true
 });
 
+// Mock ServiceWorkerRegistration
+Object.defineProperty(global.window, 'ServiceWorkerRegistration', {
+    value: function() {},
+    writable: true
+});
+global.window.ServiceWorkerRegistration.prototype = {
+    sync: true
+};
+
 // Import the main app after setting up mocks
 // Since main.js creates a global class, we need to load it and access the global
 await import('../../../js/main.js');
@@ -52,6 +61,9 @@ describe('Service Worker & PWA Features', () => {
     beforeEach(() => {
         // Reset mocks
         vi.clearAllMocks();
+        
+        // Setup DOM structure that the app expects
+        document.body.innerHTML = '<header><div class="flex"></div></header>';
         
         // Mock service worker registration
         mockRegistration = {
@@ -322,11 +334,15 @@ describe('Service Worker & PWA Features', () => {
 
         it('should request notification permission', async () => {
             const showNotificationSpy = vi.spyOn(app, 'showNotification').mockImplementation(() => {});
-            window.Notification.requestPermission.mockResolvedValue('granted');
+            const initializePushSpy = vi.spyOn(app, 'initializePushNotifications').mockImplementation(() => {});
+            
+            // Mock Notification.requestPermission directly on the constructor
+            const mockRequestPermission = vi.fn().mockResolvedValue('granted');
+            window.Notification.requestPermission = mockRequestPermission;
             
             const result = await app.requestNotificationPermission();
             
-            expect(window.Notification.requestPermission).toHaveBeenCalled();
+            expect(mockRequestPermission).toHaveBeenCalled();
             expect(result).toBe('granted');
             expect(showNotificationSpy).toHaveBeenCalledWith(
                 'Notifications enabled! You\'ll receive meal reminders.',
@@ -334,11 +350,15 @@ describe('Service Worker & PWA Features', () => {
             );
             
             showNotificationSpy.mockRestore();
+            initializePushSpy.mockRestore();
         });
 
         it('should handle notification permission denial', async () => {
             const showNotificationSpy = vi.spyOn(app, 'showNotification').mockImplementation(() => {});
-            window.Notification.requestPermission.mockResolvedValue('denied');
+            
+            // Mock Notification.requestPermission directly on the constructor
+            const mockRequestPermission = vi.fn().mockResolvedValue('denied');
+            window.Notification.requestPermission = mockRequestPermission;
             
             const result = await app.requestNotificationPermission();
             
@@ -451,17 +471,15 @@ describe('Service Worker & PWA Features', () => {
             
             app.serviceWorker = { waiting: mockWaiting };
             
-            // Mock window.location.reload
-            const originalReload = window.location.reload;
-            window.location.reload = vi.fn();
+            // Mock window.location.reload using vi.spyOn
+            const reloadSpy = vi.spyOn(window.location, 'reload').mockImplementation(() => {});
             
             await app.applyUpdate();
             
             expect(mockWaiting.postMessage).toHaveBeenCalledWith({ type: 'SKIP_WAITING' });
-            expect(window.location.reload).toHaveBeenCalled();
+            expect(reloadSpy).toHaveBeenCalled();
             
-            // Restore original reload
-            window.location.reload = originalReload;
+            reloadSpy.mockRestore();
         });
     });
 
@@ -474,9 +492,9 @@ describe('Service Worker & PWA Features', () => {
         });
 
         it('should handle browsers without Notification API', async () => {
-            // Temporarily remove Notification API
+            // Test the code path by temporarily setting Notification to undefined
             const originalNotification = window.Notification;
-            delete window.Notification;
+            window.Notification = undefined;
             
             const result = await app.requestNotificationPermission();
             
