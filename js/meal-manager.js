@@ -76,15 +76,15 @@ class MealManager {
 
                 <!-- Filters -->
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
                             <label for="meal-search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search Meals</label>
                             <input type="text" id="meal-search" placeholder="Search by name..." 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
                         </div>
                         <div>
                             <label for="meal-type-filter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Meal Type</label>
-                            <select id="meal-type-filter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            <select id="meal-type-filter" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
                                 <option value="all">All Types</option>
                                 <option value="breakfast">Breakfast</option>
                                 <option value="lunch">Lunch</option>
@@ -94,12 +94,17 @@ class MealManager {
                         </div>
                         <div>
                             <label for="meal-sort" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort By</label>
-                            <select id="meal-sort" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            <select id="meal-sort" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
                                 <option value="name">Name</option>
                                 <option value="created">Date Created</option>
                                 <option value="servings">Servings</option>
                                 <option value="time">Total Time</option>
                             </select>
+                        </div>
+                        <div class="flex items-end">
+                            <button id="clear-meal-filters-btn" class="btn-secondary w-full">
+                                Clear Filters
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -303,6 +308,17 @@ class MealManager {
             });
         }
 
+        // Clear filters button
+        const clearFiltersBtn = document.getElementById('clear-meal-filters-btn');
+        if (clearFiltersBtn) {
+            clearFiltersBtn.addEventListener('click', () => {
+                this.searchTerm = '';
+                this.selectedMealType = 'all';
+                this.sortBy = 'name';
+                this.render();
+            });
+        }
+
         // Schedule, edit and delete buttons
         this.container.addEventListener('click', (e) => {
             if (e.target.closest('.schedule-meal-btn')) {
@@ -332,9 +348,9 @@ class MealManager {
         modal.id = 'meal-form-modal';
         modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
         modal.innerHTML = `
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
                 <!-- Header -->
-                <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                         ${isEditing ? 'Edit Meal' : 'Create New Meal'}
                     </h3>
@@ -346,7 +362,7 @@ class MealManager {
                 </div>
 
                 <!-- Form -->
-                <div class="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+                <div class="p-6 overflow-y-auto flex-1">
                     <form id="meal-form" class="space-y-6">
                         <!-- Basic Info -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -416,7 +432,7 @@ class MealManager {
                 </div>
 
                 <!-- Footer -->
-                <div class="flex items-center justify-end space-x-3 p-6 border-t border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-end space-x-3 p-6 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
                     <button type="button" id="cancel-meal-form" class="btn-secondary">Cancel</button>
                     <button type="submit" form="meal-form" class="btn-primary">
                         ${isEditing ? 'Update Meal' : 'Create Meal'}

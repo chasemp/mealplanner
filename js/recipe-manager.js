@@ -83,67 +83,91 @@ class RecipeManager {
     render() {
         this.container.innerHTML = `
             <div class="recipe-manager">
-                <!-- Header with Search and Filters -->
-                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 space-y-4 lg:space-y-0">
-                    <div class="flex-1 max-w-lg">
-                        <div class="relative">
-                            <input type="text" id="recipe-search" 
-                                   placeholder="Search recipes..." 
-                                   value="${this.searchTerm}"
-                                   class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                </svg>
+                <!-- Search and Filter Controls -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
+                        <div>
+                            <label for="recipe-search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Search Recipes
+                            </label>
+                            <div class="relative">
+                                <input type="text" id="recipe-search" 
+                                       placeholder="Search by name..." 
+                                       value="${this.searchTerm}"
+                                       class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
-                        <!-- Filter Controls -->
-                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 flex-1">
-                            <select id="recipe-category" class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 w-full sm:w-40 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        
+                        <div>
+                            <label for="recipe-category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Recipe Type
+                            </label>
+                            <select id="recipe-category" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
                                 <option value="all" ${this.selectedCategory === 'all' ? 'selected' : ''}>All Meal Types</option>
                                 <option value="breakfast" ${this.selectedCategory === 'breakfast' ? 'selected' : ''}>Breakfast</option>
                                 <option value="lunch" ${this.selectedCategory === 'lunch' ? 'selected' : ''}>Lunch</option>
                                 <option value="dinner" ${this.selectedCategory === 'dinner' ? 'selected' : ''}>Dinner</option>
                                 <option value="snack" ${this.selectedCategory === 'snack' ? 'selected' : ''}>Snack</option>
                             </select>
-                            
-                            <select id="recipe-type" class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 w-full sm:w-36 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        </div>
+                        
+                        <div>
+                            <label for="recipe-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Recipe Style
+                            </label>
+                            <select id="recipe-type" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
                                 <option value="all" ${this.selectedType === 'all' ? 'selected' : ''}>All Types</option>
                                 <option value="basic" ${this.selectedType === 'basic' ? 'selected' : ''}>Basic Recipes</option>
                                 <option value="combo" ${this.selectedType === 'combo' ? 'selected' : ''}>Combo Recipes</option>
                             </select>
-                            
-                            <select id="recipe-label" class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 w-full sm:w-36 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        </div>
+                        
+                        <div>
+                            <label for="recipe-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Filter by Label
+                            </label>
+                            <select id="recipe-label" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
                                 <option value="all" ${this.selectedLabel === 'all' ? 'selected' : ''}>All Labels</option>
                                 ${this.getAllLabels().map(label => `
                                     <option value="${label}" ${this.selectedLabel === label ? 'selected' : ''}>${label}</option>
                                 `).join('')}
                             </select>
-                            
-                            <select id="recipe-sort" class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 w-full sm:w-44 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
-                                <option value="name" ${this.sortBy === 'name' ? 'selected' : ''}>Sort by Name</option>
-                                <option value="date" ${this.sortBy === 'date' ? 'selected' : ''}>Sort by Date</option>
-                                <option value="prep_time" ${this.sortBy === 'prep_time' ? 'selected' : ''}>Sort by Prep Time</option>
-                                <option value="serving_count" ${this.sortBy === 'serving_count' ? 'selected' : ''}>Sort by Servings</option>
+                        </div>
+                        
+                        <div>
+                            <label for="recipe-sort" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Sort By
+                            </label>
+                            <select id="recipe-sort" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                                <option value="name" ${this.sortBy === 'name' ? 'selected' : ''}>Name</option>
+                                <option value="date" ${this.sortBy === 'date' ? 'selected' : ''}>Date</option>
+                                <option value="prep_time" ${this.sortBy === 'prep_time' ? 'selected' : ''}>Prep Time</option>
+                                <option value="serving_count" ${this.sortBy === 'serving_count' ? 'selected' : ''}>Servings</option>
                             </select>
-                            
-                            <!-- Clear Filters Button -->
-                            <button id="clear-recipe-filters-btn" class="border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors w-full sm:w-32">
+                        </div>
+                        
+                        <div class="flex items-end">
+                            <button id="clear-recipe-filters-btn" class="btn-secondary w-full">
                                 Clear Filters
                             </button>
                         </div>
-                        
-                        <!-- Add Recipe Button -->
-                        <button id="add-recipe-btn" class="btn-primary flex items-center justify-center space-x-2 w-full sm:w-auto">
-                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                            </svg>
-                            <span>Add Recipe</span>
-                        </button>
                     </div>
+                </div>
+                
+                <!-- Header with Add Button -->
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Recipes</h2>
+                    <button id="add-recipe-btn" class="btn-primary flex items-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        <span>Add Recipe</span>
+                    </button>
                 </div>
 
                 <!-- Recipe Stats -->
@@ -505,21 +529,20 @@ class RecipeManager {
         modal.id = modalId;
         modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
         modal.innerHTML = `
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-                <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
-                    <div class="flex items-center justify-between">
-                        <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-                            ${isEdit ? 'Edit Recipe' : 'Add New Recipe'}
-                        </h2>
-                        <button id="close-recipe-form" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+                <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+                        ${isEdit ? 'Edit Recipe' : 'Add New Recipe'}
+                    </h2>
+                    <button id="close-recipe-form" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
                 </div>
                 
-                <form id="recipe-form" class="p-6 space-y-6">
+                <div class="overflow-y-auto flex-1">
+                    <form id="recipe-form" class="p-6 space-y-6">
                     <!-- Basic Information -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="md:col-span-2">
@@ -657,17 +680,18 @@ class RecipeManager {
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Form Actions -->
-                    <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200 dark:border-gray-700">
-                        <button type="button" id="cancel-recipe-form" class="btn-secondary">
-                            Cancel
-                        </button>
-                        <button type="submit" class="btn-primary">
-                            ${isEdit ? 'Update Recipe' : 'Save Recipe'}
-                        </button>
-                    </div>
-                </form>
+                    </form>
+                </div>
+                
+                <!-- Form Actions -->
+                <div class="flex items-center justify-end space-x-4 p-6 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
+                    <button type="button" id="cancel-recipe-form" class="btn-secondary">
+                        Cancel
+                    </button>
+                    <button type="submit" form="recipe-form" class="btn-primary">
+                        ${isEdit ? 'Update Recipe' : 'Save Recipe'}
+                    </button>
+                </div>
             </div>
         `;
         
