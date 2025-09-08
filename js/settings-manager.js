@@ -287,6 +287,9 @@ class SettingsManager {
                 case 'demo':
                     await this.loadDemoData();
                     break;
+                case 'memory':
+                    await this.loadMemoryDatabase();
+                    break;
                 case 'local':
                     await this.loadLocalDatabase();
                     break;
@@ -311,6 +314,59 @@ class SettingsManager {
         console.log('Loading demo data...');
         // Demo data is already loaded by default
         return true;
+    }
+
+    async loadMemoryDatabase() {
+        console.log('Loading in-memory database (clean slate)...');
+        
+        try {
+            // Clear all data from localStorage
+            this.clearAllLocalStorageData();
+            
+            // Clear all data from the current app instance
+            if (window.app) {
+                await window.app.clearAllData();
+            }
+            
+            console.log('✅ In-memory database initialized - all data cleared');
+            return true;
+        } catch (error) {
+            console.error('❌ Failed to initialize in-memory database:', error);
+            throw new Error(`Failed to initialize in-memory database: ${error.message}`);
+        }
+    }
+
+    clearAllLocalStorageData() {
+        // Clear all MealPlanner-related data from localStorage
+        const keysToRemove = [];
+        
+        // Find all keys that start with our app prefixes
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && (
+                key.startsWith('mealplanner_') ||
+                key.startsWith('mp_') ||
+                key.startsWith('ingredients_') ||
+                key.startsWith('recipes_') ||
+                key.startsWith('meals_') ||
+                key.startsWith('scheduled_') ||
+                key.startsWith('grocery_') ||
+                key.startsWith('favorites_') ||
+                key === 'selectedRecipes' ||
+                key === 'scheduledMeals' ||
+                key === 'mealPlanData'
+            )) {
+                keysToRemove.push(key);
+            }
+        }
+        
+        // Remove all identified keys
+        keysToRemove.forEach(key => {
+            localStorage.removeItem(key);
+            console.log(`🗑️ Cleared localStorage key: ${key}`);
+        });
+        
+        console.log(`🧹 Cleared ${keysToRemove.length} localStorage keys`);
     }
 
     async loadLocalDatabase() {
