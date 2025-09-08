@@ -6,9 +6,9 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <meta name="cache-bust" content="2025.09.08.1816">
+    <meta name="cache-bust" content="2025.09.08.1832">
     <meta name="build-timestamp" content="1725825300000">
-    <title>MealPlanner v2025.09.08.1816</title>
+    <title>MealPlanner v2025.09.08.1832</title>
     <meta name="description" content="A PWA for meal planning with local SQLite storage">
     
     <!-- PWA Meta Tags -->
@@ -23,7 +23,7 @@
     
     <!-- Styles -->
     <link rel="stylesheet" href="css/tailwind-compiled.css">
-    <link rel="stylesheet" href="./css/styles.css?v=2025.09.08.1816">
+    <link rel="stylesheet" href="./css/styles.css?v=2025.09.08.1832">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="./manifest.json">
@@ -91,7 +91,7 @@
                                 </button>
                                 
                                 <!-- Settings Dropdown Menu -->
-                                <div id="settings-dropdown-menu" class="hidden fixed inset-x-4 top-20 md:fixed md:top-20 md:right-2 md:w-72 md:min-w-0 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50 max-h-[80vh] overflow-y-auto">
+                                <div id="settings-dropdown-menu" class="hidden fixed inset-x-4 top-20 md:absolute md:top-full md:right-0 md:w-80 md:max-w-sm bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50 max-h-[80vh] overflow-y-auto">
                                     <div class="p-4 md:p-6">
                                         <h3 class="text-lg md:text-xl font-semibold text-gray-900 dark:text-white mb-4 md:mb-6">Settings</h3>
                                         
@@ -656,7 +656,7 @@
         
         <!-- Version Footer -->
         <footer class="fixed bottom-2 right-2 text-xs text-gray-400 bg-white/80 backdrop-blur-sm px-2 py-1 rounded shadow-sm">
-            <span id="version-display">v2025.09.08.1816</span>
+            <span id="version-display">v2025.09.08.1832</span>
         </footer>
     </div>
 
@@ -664,24 +664,24 @@
     <div id="modal-container"></div>
 
     <!-- JavaScript -->
-    <script src="./js/itinerary-view.js?v=2025.09.08.1816"></script>
-    <script src="./js/calendar-view.js?v=2025.09.08.1816"></script>
-      <script src="./js/demo-data.js?v=2025.09.08.1816"></script>
-    <script src="./js/barcode-scanner.js?v=2025.09.08.1816"></script>
-    <script src="./js/shared-barcode-scanner.js?v=2025.09.08.1816"></script>
-    <script src="./js/recipe-manager.js?v=2025.09.08.1816"></script>
-        <script src="./js/meal-manager.js?v=2025.09.08.1816"></script>
-        <script src="./js/schedule-manager.js?v=2025.09.08.1816"></script>
-    <script src="./js/ingredients-manager.js?v=2025.09.08.1816"></script>
-    <script src="./js/grocery-list-manager.js?v=2025.09.08.1816"></script>
-    <script src="./js/google-calendar-integration.js?v=2025.09.08.1816"></script>
-    <script src="./js/meal-rotation-engine.js?v=2025.09.08.1816"></script>
-    <script src="./js/settings-manager.js?v=2025.09.08.1816"></script>
-    <script src="./js/performance-manager.js?v=2025.09.08.1816"></script>
-    <script src="./js/advanced-planning.js?v=2025.09.08.1816"></script>
-    <script src="./js/pantry-manager.js?v=2025.09.08.1816"></script>
-    <script src="./js/mobile-navigation.js?v=2025.09.08.1816"></script>
-    <script src="./js/main.js?v=2025.09.08.1816"></script>
+    <script src="./js/itinerary-view.js?v=2025.09.08.1832"></script>
+    <script src="./js/calendar-view.js?v=2025.09.08.1832"></script>
+      <script src="./js/demo-data.js?v=2025.09.08.1832"></script>
+    <script src="./js/barcode-scanner.js?v=2025.09.08.1832"></script>
+    <script src="./js/shared-barcode-scanner.js?v=2025.09.08.1832"></script>
+    <script src="./js/recipe-manager.js?v=2025.09.08.1832"></script>
+        <script src="./js/meal-manager.js?v=2025.09.08.1832"></script>
+        <script src="./js/schedule-manager.js?v=2025.09.08.1832"></script>
+    <script src="./js/ingredients-manager.js?v=2025.09.08.1832"></script>
+    <script src="./js/grocery-list-manager.js?v=2025.09.08.1832"></script>
+    <script src="./js/google-calendar-integration.js?v=2025.09.08.1832"></script>
+    <script src="./js/meal-rotation-engine.js?v=2025.09.08.1832"></script>
+    <script src="./js/settings-manager.js?v=2025.09.08.1832"></script>
+    <script src="./js/performance-manager.js?v=2025.09.08.1832"></script>
+    <script src="./js/advanced-planning.js?v=2025.09.08.1832"></script>
+    <script src="./js/pantry-manager.js?v=2025.09.08.1832"></script>
+    <script src="./js/mobile-navigation.js?v=2025.09.08.1832"></script>
+    <script src="./js/main.js?v=2025.09.08.1832"></script>
     
     <!-- Settings Dropdown Script -->
     <script>
@@ -692,7 +692,33 @@
             if (dropdownToggle && dropdownMenu) {
                 dropdownToggle.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    dropdownMenu.classList.toggle('hidden');
+                    
+                    if (dropdownMenu.classList.contains('hidden')) {
+                        // Show dropdown
+                        dropdownMenu.classList.remove('hidden');
+                        
+                        // Smart positioning for desktop
+                        if (window.innerWidth >= 768) { // md breakpoint
+                            const rect = dropdownToggle.getBoundingClientRect();
+                            const menuWidth = 320; // md:w-80 = 20rem = 320px
+                            const viewportWidth = window.innerWidth;
+                            const spaceOnRight = viewportWidth - rect.right;
+                            
+                            // If not enough space on right, position from left edge of button
+                            if (spaceOnRight < menuWidth + 16) { // 16px margin
+                                dropdownMenu.style.right = 'auto';
+                                dropdownMenu.style.left = '0';
+                                console.log('🎯 Positioned dropdown to left due to space constraints');
+                            } else {
+                                dropdownMenu.style.left = 'auto';
+                                dropdownMenu.style.right = '0';
+                                console.log('🎯 Positioned dropdown to right (normal)');
+                            }
+                        }
+                    } else {
+                        // Hide dropdown
+                        dropdownMenu.classList.add('hidden');
+                    }
                 });
                 
                 // Close dropdown when clicking outside
