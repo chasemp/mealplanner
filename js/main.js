@@ -117,6 +117,11 @@ class MealPlannerApp {
         document.addEventListener('googleCalendarAuthChanged', (e) => {
             this.updateGoogleCalendarUI(e.detail.isAuthenticated);
         });
+
+        // Listen for mobile navigation tab switches
+        document.addEventListener('mobileTabSwitch', (e) => {
+            this.switchTab(e.detail.tabName);
+        });
     }
 
     switchTab(tabName) {
@@ -141,6 +146,11 @@ class MealPlannerApp {
         // Show selected tab
         document.getElementById(`${tabName}-tab`).classList.remove('hidden');
         this.currentTab = tabName;
+
+        // Update mobile navigation if it exists
+        if (window.mobileNavigation) {
+            window.mobileNavigation.onTabChange(tabName);
+        }
 
         console.log(`Switched to ${tabName} tab`);
     }
