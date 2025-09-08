@@ -290,14 +290,262 @@ class ItineraryView {
 
     editMeal(mealId, dateStr) {
         console.log(`✏️ Editing meal ${mealId} on ${dateStr}`);
-        // TODO: Implement meal editing functionality
-        alert('Edit meal functionality coming soon!');
+        
+        // Find the current meal
+        const currentMeal = window.demoData?.scheduledMeals.find(meal => meal.id === mealId);
+        if (!currentMeal) {
+            console.error('Meal not found:', mealId);
+            return;
+        }
+        
+        // For now, show a simple confirmation to delete or keep
+        const currentRecipe = window.demoData?.getRecipes().find(r => r.id === currentMeal.recipe_id);
+        const action = confirm(`Current meal: ${currentRecipe?.title || 'Unknown'}\n\nClick OK to delete this meal, or Cancel to keep it.`);
+        
+        if (action) {
+            this.deleteMeal(mealId);
+        }
+    }
+
+    deleteMeal(mealId) {
+        console.log(`🗑️ Deleting meal ${mealId}`);
+        
+        // Find and remove the meal
+        const mealIndex = window.demoData?.scheduledMeals.findIndex(meal => meal.id === mealId);
+        if (mealIndex === -1) {
+            console.error('Meal not found for deletion:', mealId);
+            return;
+        }
+        
+        const deletedMeal = window.demoData.scheduledMeals[mealIndex];
+        window.demoData.scheduledMeals.splice(mealIndex, 1);
+        
+        // Update the view
+        this.render();
+        
+        // Show success notification
+        this.showNotification(`Deleted meal from ${new Date(deletedMeal.date).toLocaleDateString()}`, 'success');
+        
+        // Dispatch event for other components
+        document.dispatchEvent(new CustomEvent('mealDeleted', {
+            detail: { mealId: mealId, date: deletedMeal.date }
+        }));
     }
 
     addMeal(dateStr) {
         console.log(`➕ Adding meal on ${dateStr}`);
-        // TODO: Implement add meal functionality
-        alert('Add meal functionality coming soon!');
+        this.showMealSelectionModal(dateStr);
+    }
+
+    showMealSelectionModal(dateStr) {
+        // Create modal overlay
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+        modal.id = 'meal-selection-modal';
+        
+        // Get available recipes for this meal type
+        const availableRecipes = this.getAvailableRecipes();
+        
+        modal.innerHTML = `
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto m-4">
+                <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+                            Add ${this.mealType.charAt(0).toUpperCase() + this.mealType.slice(1)} Meal
+                        </h2>
+                        <button id="close-meal-modal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        Select a recipe for ${new Date(dateStr).toLocaleDateString()}
+                    </p>
+                </div>
+                
+                <div class="p-6">
+                    <!-- Search and Filter -->
+                    <div class="mb-4">
+                        <input type="text" id="recipe-search" placeholder="Search recipes..." 
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                    </div>
+                    
+                    <!-- Recipe List -->
+                    <div id="recipe-list" class="space-y-3 max-h-96 overflow-y-auto">
+                        ${this.renderRecipeOptions(availableRecipes)}
+                    </div>
+                </div>
+                
+                <div class="sticky bottom-0 bg-gray-50 dark:bg-gray-700 px-6 py-4 border-t border-gray-200 dark:border-gray-600">
+                    <div class="flex justify-end space-x-3">
+                        <button id="cancel-meal-selection" class="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
+                            Cancel
+                        </button>
+                        <button id="confirm-meal-selection" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50" disabled>
+                            Add Meal
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Set up event listeners
+        this.setupMealSelectionListeners(modal, dateStr);
+    }
+
+    getAvailableRecipes() {
+        // Get recipes from demo data or database
+        if (window.demoData) {
+            return window.demoData.getRecipes().filter(recipe => 
+                recipe.meal_type === this.mealType || recipe.meal_type === 'any'
+            );
+        }
+        return [];
+    }
+
+    renderRecipeOptions(recipes) {
+        if (recipes.length === 0) {
+            return '<p class="text-gray-500 text-center py-8">No recipes available for this meal type.</p>';
+        }
+        
+        return recipes.map(recipe => `
+            <div class="recipe-option border border-gray-200 dark:border-gray-600 rounded-lg p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" 
+                 data-recipe-id="${recipe.id}">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                        <h3 class="font-medium text-gray-900 dark:text-white">${recipe.title}</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">${recipe.description || ''}</p>
+                        <div class="flex items-center mt-2 space-x-4 text-xs text-gray-500">
+                            <span>⏱️ ${recipe.prep_time + recipe.cook_time} min</span>
+                            <span>👥 ${recipe.serving_count || 4} servings</span>
+                            ${recipe.type === 'combo' ? '<span class="px-2 py-1 bg-purple-100 text-purple-800 rounded-full">COMBO</span>' : ''}
+                        </div>
+                        <div class="flex flex-wrap gap-1 mt-2">
+                            ${(recipe.labels || []).slice(0, 3).map(label => 
+                                `<span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">${label}</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <div class="w-4 h-4 border-2 border-gray-300 rounded-full recipe-checkbox"></div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    setupMealSelectionListeners(modal, dateStr) {
+        let selectedRecipeId = null;
+        
+        // Close modal handlers
+        const closeModal = () => modal.remove();
+        modal.querySelector('#close-meal-modal').addEventListener('click', closeModal);
+        modal.querySelector('#cancel-meal-selection').addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+        
+        // Recipe selection
+        const recipeOptions = modal.querySelectorAll('.recipe-option');
+        const confirmButton = modal.querySelector('#confirm-meal-selection');
+        
+        recipeOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                // Clear previous selection
+                recipeOptions.forEach(opt => {
+                    opt.classList.remove('border-blue-500', 'bg-blue-50', 'dark:bg-blue-900');
+                    opt.querySelector('.recipe-checkbox').classList.remove('bg-blue-500', 'border-blue-500');
+                });
+                
+                // Select current option
+                option.classList.add('border-blue-500', 'bg-blue-50', 'dark:bg-blue-900');
+                const checkbox = option.querySelector('.recipe-checkbox');
+                checkbox.classList.add('bg-blue-500', 'border-blue-500');
+                checkbox.innerHTML = '<svg class="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>';
+                
+                selectedRecipeId = parseInt(option.dataset.recipeId);
+                confirmButton.disabled = false;
+            });
+        });
+        
+        // Search functionality
+        const searchInput = modal.querySelector('#recipe-search');
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            recipeOptions.forEach(option => {
+                const title = option.querySelector('h3').textContent.toLowerCase();
+                const description = option.querySelector('p').textContent.toLowerCase();
+                const labels = Array.from(option.querySelectorAll('.bg-blue-100')).map(el => el.textContent.toLowerCase()).join(' ');
+                
+                const matches = title.includes(searchTerm) || description.includes(searchTerm) || labels.includes(searchTerm);
+                option.style.display = matches ? 'block' : 'none';
+            });
+        });
+        
+        // Confirm selection
+        confirmButton.addEventListener('click', () => {
+            if (selectedRecipeId) {
+                this.scheduleMeal(selectedRecipeId, dateStr);
+                closeModal();
+            }
+        });
+    }
+
+    scheduleMeal(recipeId, dateStr) {
+        console.log(`📅 Scheduling meal: Recipe ${recipeId} for ${dateStr} (${this.mealType})`);
+        
+        // Get the recipe details
+        const recipe = window.demoData?.getRecipes().find(r => r.id === recipeId);
+        if (!recipe) {
+            console.error('Recipe not found:', recipeId);
+            return;
+        }
+        
+        // Create new scheduled meal
+        const newMeal = {
+            id: Date.now() + Math.floor(Math.random() * 1000), // Generate unique ID
+            recipe_id: recipeId,
+            meal_type: this.mealType,
+            date: dateStr,
+            notes: recipe.title
+        };
+        
+        // Add to demo data (in a real app, this would save to database)
+        if (window.demoData) {
+            window.demoData.scheduledMeals.push(newMeal);
+        }
+        
+        // Update the view
+        this.render();
+        
+        // Show success notification
+        this.showNotification(`Added ${recipe.title} to ${this.mealType} on ${new Date(dateStr).toLocaleDateString()}`, 'success');
+        
+        // Dispatch event for other components
+        document.dispatchEvent(new CustomEvent('mealScheduled', {
+            detail: { meal: newMeal, recipe: recipe }
+        }));
+    }
+
+    showNotification(message, type = 'info') {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 px-4 py-2 rounded-md shadow-lg z-50 ${
+            type === 'success' ? 'bg-green-500 text-white' : 
+            type === 'error' ? 'bg-red-500 text-white' : 
+            'bg-blue-500 text-white'
+        }`;
+        notification.textContent = message;
+        
+        document.body.appendChild(notification);
+        
+        // Auto-remove after 3 seconds
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
     }
 
     listenForMealMoves() {
