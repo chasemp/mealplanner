@@ -315,7 +315,6 @@ export class IngredientsManager {
                 name: document.getElementById('ingredient-name').value.trim(),
                 category: document.getElementById('ingredient-category').value,
                 default_unit: document.getElementById('ingredient-unit').value,
-                cost_per_unit: document.getElementById('ingredient-cost').value || null,
                 storage_notes: document.getElementById('ingredient-storage').value.trim() || null,
                 nutrition_per_100g: JSON.stringify({
                     calories: document.getElementById('nutrition-calories').value || null,
@@ -335,18 +334,17 @@ export class IngredientsManager {
                 this.db.exec(`
                     UPDATE ingredients 
                     SET name = ?, category = ?, default_unit = ?, 
-                        cost_per_unit = ?, storage_notes = ?, nutrition_per_100g = ?
+                        storage_notes = ?, nutrition_per_100g = ?
                     WHERE id = ?
                 `, [formData.name, formData.category, formData.default_unit,
-                    formData.cost_per_unit, formData.storage_notes, formData.nutrition_per_100g,
-                    ingredientId])
+                    formData.storage_notes, formData.nutrition_per_100g, ingredientId])
             } else {
                 // Add new ingredient
                 this.db.exec(`
-                    INSERT INTO ingredients (name, category, default_unit, cost_per_unit, storage_notes, nutrition_per_100g)
-                    VALUES (?, ?, ?, ?, ?, ?)
+                    INSERT INTO ingredients (name, category, default_unit, storage_notes, nutrition_per_100g)
+                    VALUES (?, ?, ?, ?, ?)
                 `, [formData.name, formData.category, formData.default_unit,
-                    formData.cost_per_unit, formData.storage_notes, formData.nutrition_per_100g])
+                    formData.storage_notes, formData.nutrition_per_100g])
             }
             
             modal.remove()

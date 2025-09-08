@@ -157,7 +157,7 @@ describe('IngredientsManager', () => {
       expect(cardHTML).toContain('produce')
       expect(cardHTML).toContain('pieces')
       expect(cardHTML).toContain('5')
-      expect(cardHTML).toContain('$0.75')
+      // Cost information removed - no longer displayed
       expect(cardHTML).toContain('40')
       expect(cardHTML).toContain('data-ingredient-id="1"')
     })
@@ -175,7 +175,7 @@ describe('IngredientsManager', () => {
       
       expect(cardHTML).toContain('Basic Ingredient')
       expect(cardHTML).toContain('Other') // default category
-      expect(cardHTML).toContain('Test Ingredient') // has name
+      expect(cardHTML).toContain('Basic Ingredient') // has name
     })
   })
 

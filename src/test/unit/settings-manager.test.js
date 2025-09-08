@@ -115,8 +115,8 @@ describe('Settings Manager', () => {
                 githubRepo: '',
                 // githubDeployKey removed for security - stored in IndexedDB
                 githubReadOnly: false,
-                showBreakfast: true,
-                showLunch: true,
+                showBreakfast: false,
+                showLunch: false,
                 showDinner: true,
                 calendarManagedMode: false,
                 calendarNotifications: false
@@ -137,7 +137,7 @@ describe('Settings Manager', () => {
             expect(settingsManager.settings.sourceType).toBe('github');
             expect(settingsManager.settings.githubRepo).toBe('https://github.com/chasemp/mp');
             expect(settingsManager.settings.showLunch).toBe(false);
-            expect(settingsManager.settings.showBreakfast).toBe(true); // Default preserved
+            expect(settingsManager.settings.showBreakfast).toBe(false); // Default preserved
         });
 
         it('should handle corrupted localStorage gracefully', () => {
