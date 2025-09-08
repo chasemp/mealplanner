@@ -385,7 +385,12 @@ describe('Meal Planning Controls', () => {
 
         it('should clear plan when user confirms', () => {
             global.window.confirm.mockReturnValue(true);
-            const clearMealPlanDataSpy = vi.spyOn(app, 'clearMealPlanData');
+            const clearMealPlanDataSpy = vi.spyOn(app, 'clearMealPlanData').mockImplementation(() => {
+                // Mock successful clearing
+                console.log('Mock clearing meal plan data');
+            });
+            const getScheduledMealsSpy = vi.spyOn(app, 'getScheduledMeals').mockReturnValue([]);
+            const switchTabSpy = vi.spyOn(app, 'switchTab').mockImplementation(() => {});
             const showNotificationSpy = vi.spyOn(app, 'showNotification');
             
             app.handleClearPlan('breakfast');
