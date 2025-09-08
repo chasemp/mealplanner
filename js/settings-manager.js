@@ -60,8 +60,8 @@ class SettingsManager {
         if (deployKeyInput) deployKeyInput.placeholder = 'Deploy key stored securely (hidden)';
         if (readOnlyInput) readOnlyInput.checked = this.settings.githubReadOnly;
 
-        // Apply meal time visibility
-        this.applyMealTimeVisibility();
+        // Apply meal time visibility (defer to ensure DOM is ready)
+        setTimeout(() => this.applyMealTimeVisibility(), 100);
 
         // Apply calendar settings
         const managedModeInput = document.getElementById('calendar-managed-mode');
@@ -72,9 +72,12 @@ class SettingsManager {
     }
 
     applyMealTimeVisibility() {
+        console.log('🍽️ Applying meal time visibility:', this.settings);
         const breakfastTab = document.querySelector('[data-tab="breakfast"]');
         const lunchTab = document.querySelector('[data-tab="lunch"]');
         const dinnerTab = document.querySelector('[data-tab="dinner"]');
+        
+        console.log('🔍 Found tabs:', { breakfastTab, lunchTab, dinnerTab });
         
         const breakfastContent = document.getElementById('breakfast-tab');
         const lunchContent = document.getElementById('lunch-tab');
