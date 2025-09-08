@@ -21,7 +21,6 @@ describe('Data Structure Regression Prevention', () => {
                             title: 'Grilled Chicken with Vegetables',
                             description: 'Healthy grilled chicken breast served with roasted vegetables',
                             meal_type: 'dinner',
-                            tags: ['healthy', 'protein', 'chicken'],
                             labels: ['healthy', 'protein', 'chicken']
                         },
                         {
@@ -29,7 +28,6 @@ describe('Data Structure Regression Prevention', () => {
                             title: 'Scrambled Eggs and Toast',
                             description: 'Simple and delicious breakfast with eggs and buttered toast',
                             meal_type: 'breakfast',
-                            tags: ['breakfast', 'quick', 'easy'],
                             labels: ['breakfast', 'quick', 'easy']
                         },
                         {
@@ -37,7 +35,6 @@ describe('Data Structure Regression Prevention', () => {
                             title: 'Greek Salad',
                             description: 'Fresh Mediterranean salad with feta cheese and olives',
                             meal_type: 'lunch',
-                            tags: ['healthy', 'vegetarian', 'mediterranean'],
                             labels: ['healthy', 'vegetarian', 'mediterranean']
                         },
                         {
@@ -45,7 +42,6 @@ describe('Data Structure Regression Prevention', () => {
                             title: 'Beef and Potato Stew',
                             description: 'Hearty comfort food stew with beef and vegetables',
                             meal_type: 'dinner',
-                            tags: ['comfort-food', 'stew', 'hearty', 'beef'],
                             labels: ['comfort-food', 'stew', 'hearty', 'beef'],
                             favorite: true
                         }
@@ -55,24 +51,24 @@ describe('Data Structure Regression Prevention', () => {
     });
 
     describe('Recipe Data Structure Consistency', () => {
-        it('should ensure all recipes have both tags and labels properties', () => {
+        it('should ensure all recipes have labels property', () => {
             const demoData = new DemoDataManager();
             const recipes = demoData.getRecipes();
             
             expect(recipes.length).toBeGreaterThan(0);
             
             recipes.forEach((recipe, index) => {
-                // Critical: Both tags and labels must exist for filtering to work
-                expect(recipe.tags, `Recipe ${index + 1} (${recipe.title}) missing tags property`).toBeDefined();
+                // Critical: Labels must exist for filtering to work
                 expect(recipe.labels, `Recipe ${index + 1} (${recipe.title}) missing labels property`).toBeDefined();
                 
-                // Both should be arrays
-                expect(Array.isArray(recipe.tags), `Recipe ${index + 1} tags should be array`).toBe(true);
+                // Should be array
                 expect(Array.isArray(recipe.labels), `Recipe ${index + 1} labels should be array`).toBe(true);
                 
-                // Both should have content (not empty)
-                expect(recipe.tags.length, `Recipe ${index + 1} should have tags`).toBeGreaterThan(0);
+                // Should have content (not empty)
                 expect(recipe.labels.length, `Recipe ${index + 1} should have labels`).toBeGreaterThan(0);
+                
+                // Should not have tags property (consolidated to labels only)
+                expect(recipe.tags, `Recipe ${index + 1} should not have tags property - use labels instead`).toBeUndefined();
             });
         });
 
@@ -128,17 +124,15 @@ describe('Data Structure Regression Prevention', () => {
             });
         });
 
-        it('should prevent empty or null tag/label arrays', () => {
+        it('should prevent empty or null label arrays', () => {
             const demoData = new DemoDataManager();
             const recipes = demoData.getRecipes();
             
             recipes.forEach((recipe, index) => {
                 // Prevent null/undefined arrays
-                expect(recipe.tags, `Recipe ${index + 1} tags is null/undefined`).not.toBeNull();
                 expect(recipe.labels, `Recipe ${index + 1} labels is null/undefined`).not.toBeNull();
                 
                 // Prevent empty arrays (recipes should be categorized)
-                expect(recipe.tags.length, `Recipe ${index + 1} (${recipe.title}) has empty tags array`).toBeGreaterThan(0);
                 expect(recipe.labels.length, `Recipe ${index + 1} (${recipe.title}) has empty labels array`).toBeGreaterThan(0);
             });
         });
@@ -274,15 +268,10 @@ describe('Data Structure Regression Prevention', () => {
             const recipes = demoData.getRecipes();
             
             recipes.forEach((recipe, index) => {
-                // Prevent performance issues with too many tags
-                expect(recipe.tags.length, `Recipe ${index + 1} has too many tags`).toBeLessThan(20);
+                // Prevent performance issues with too many labels
                 expect(recipe.labels.length, `Recipe ${index + 1} has too many labels`).toBeLessThan(20);
                 
-                // Ensure tags are reasonable length (not essays)
-                recipe.tags.forEach((tag, tagIndex) => {
-                    expect(tag.length, `Recipe ${index + 1} tag ${tagIndex + 1} too long`).toBeLessThan(50);
-                });
-                
+                // Ensure labels are reasonable length (not essays)
                 recipe.labels.forEach((label, labelIndex) => {
                     expect(label.length, `Recipe ${index + 1} label ${labelIndex + 1} too long`).toBeLessThan(50);
                 });
@@ -296,7 +285,6 @@ describe('Data Structure Regression Prevention', () => {
             const uniqueLabels = new Set();
             recipes.forEach(recipe => {
                 (recipe.labels || []).forEach(label => uniqueLabels.add(label));
-                (recipe.tags || []).forEach(tag => uniqueLabels.add(tag));
             });
             
             // Should have enough variety but not overwhelming
