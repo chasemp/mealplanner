@@ -6,9 +6,9 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <meta name="cache-bust" content="2025.09.08.1841">
+    <meta name="cache-bust" content="2025.09.08.1846">
     <meta name="build-timestamp" content="1725825300000">
-    <title>MealPlanner v2025.09.08.1841</title>
+    <title>MealPlanner v2025.09.08.1846</title>
     <meta name="description" content="A PWA for meal planning with local SQLite storage">
     
     <!-- PWA Meta Tags -->
@@ -23,7 +23,7 @@
     
     <!-- Styles -->
     <link rel="stylesheet" href="css/tailwind-compiled.css">
-    <link rel="stylesheet" href="./css/styles.css?v=2025.09.08.1841">
+    <link rel="stylesheet" href="./css/styles.css?v=2025.09.08.1846">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="./manifest.json">
@@ -119,6 +119,7 @@
                                             <h4 class="text-sm md:text-base font-medium text-gray-700 dark:text-gray-300 mb-2 md:mb-3">Database Source</h4>
                                             <select id="source-type-select" class="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                                 <option value="demo" selected>Demo Data</option>
+                                                <option value="memory">In Memory (Clean Slate)</option>
                                                 <option value="local">Local File</option>
                                                 <option value="github">GitHub Repo</option>
                                             </select>
@@ -458,6 +459,7 @@
                                         </label>
                                         <select id="source-type-select" class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
                                             <option value="demo" selected>Demo Data (Browser Storage)</option>
+                                            <option value="memory">In Memory (Clean Slate)</option>
                                             <option value="local">Local Database File</option>
                                             <option value="github">GitHub Repository</option>
                                         </select>
@@ -470,6 +472,21 @@
                                                 <strong>Demo Mode:</strong> Using sample data stored in browser. Perfect for testing and learning.
                                                 Data persists locally but won't sync across devices.
                                             </p>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- In Memory Options -->
+                                    <div id="memory-options" class="source-options hidden">
+                                        <div class="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-md p-4">
+                                            <p class="text-sm text-purple-800 dark:text-purple-200">
+                                                <strong>In Memory Mode:</strong> Starts with completely empty database - no ingredients, recipes, or meals. 
+                                                Perfect for testing workflows from scratch and experimenting with the interface.
+                                            </p>
+                                            <div class="mt-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded p-3">
+                                                <p class="text-xs text-yellow-800 dark:text-yellow-200">
+                                                    ⚠️ <strong>Note:</strong> All data created in this mode will be lost when you switch database sources or refresh the page.
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
                                     
@@ -656,7 +673,7 @@
         
         <!-- Version Footer -->
         <footer class="fixed bottom-2 right-2 text-xs text-gray-400 bg-white/80 backdrop-blur-sm px-2 py-1 rounded shadow-sm">
-            <span id="version-display">v2025.09.08.1841</span>
+            <span id="version-display">v2025.09.08.1846</span>
         </footer>
     </div>
 
@@ -664,24 +681,24 @@
     <div id="modal-container"></div>
 
     <!-- JavaScript -->
-    <script src="./js/itinerary-view.js?v=2025.09.08.1841"></script>
-    <script src="./js/calendar-view.js?v=2025.09.08.1841"></script>
-      <script src="./js/demo-data.js?v=2025.09.08.1841"></script>
-    <script src="./js/barcode-scanner.js?v=2025.09.08.1841"></script>
-    <script src="./js/shared-barcode-scanner.js?v=2025.09.08.1841"></script>
-    <script src="./js/recipe-manager.js?v=2025.09.08.1841"></script>
-        <script src="./js/meal-manager.js?v=2025.09.08.1841"></script>
-        <script src="./js/schedule-manager.js?v=2025.09.08.1841"></script>
-    <script src="./js/ingredients-manager.js?v=2025.09.08.1841"></script>
-    <script src="./js/grocery-list-manager.js?v=2025.09.08.1841"></script>
-    <script src="./js/google-calendar-integration.js?v=2025.09.08.1841"></script>
-    <script src="./js/meal-rotation-engine.js?v=2025.09.08.1841"></script>
-    <script src="./js/settings-manager.js?v=2025.09.08.1841"></script>
-    <script src="./js/performance-manager.js?v=2025.09.08.1841"></script>
-    <script src="./js/advanced-planning.js?v=2025.09.08.1841"></script>
-    <script src="./js/pantry-manager.js?v=2025.09.08.1841"></script>
-    <script src="./js/mobile-navigation.js?v=2025.09.08.1841"></script>
-    <script src="./js/main.js?v=2025.09.08.1841"></script>
+    <script src="./js/itinerary-view.js?v=2025.09.08.1846"></script>
+    <script src="./js/calendar-view.js?v=2025.09.08.1846"></script>
+      <script src="./js/demo-data.js?v=2025.09.08.1846"></script>
+    <script src="./js/barcode-scanner.js?v=2025.09.08.1846"></script>
+    <script src="./js/shared-barcode-scanner.js?v=2025.09.08.1846"></script>
+    <script src="./js/recipe-manager.js?v=2025.09.08.1846"></script>
+        <script src="./js/meal-manager.js?v=2025.09.08.1846"></script>
+        <script src="./js/schedule-manager.js?v=2025.09.08.1846"></script>
+    <script src="./js/ingredients-manager.js?v=2025.09.08.1846"></script>
+    <script src="./js/grocery-list-manager.js?v=2025.09.08.1846"></script>
+    <script src="./js/google-calendar-integration.js?v=2025.09.08.1846"></script>
+    <script src="./js/meal-rotation-engine.js?v=2025.09.08.1846"></script>
+    <script src="./js/settings-manager.js?v=2025.09.08.1846"></script>
+    <script src="./js/performance-manager.js?v=2025.09.08.1846"></script>
+    <script src="./js/advanced-planning.js?v=2025.09.08.1846"></script>
+    <script src="./js/pantry-manager.js?v=2025.09.08.1846"></script>
+    <script src="./js/mobile-navigation.js?v=2025.09.08.1846"></script>
+    <script src="./js/main.js?v=2025.09.08.1846"></script>
     
     <!-- Settings Dropdown Script -->
     <script>

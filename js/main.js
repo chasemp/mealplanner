@@ -2,7 +2,7 @@
 class MealPlannerApp {
     constructor() {
         this.currentTab = 'dinner';
-        this.version = '2025.09.08.1841';
+        this.version = '2025.09.08.1846';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
@@ -1330,6 +1330,58 @@ class MealPlannerApp {
             
         } catch (error) {
             console.error('Error clearing meal plan data:', error);
+            throw error;
+        }
+    }
+
+    async clearAllData() {
+        console.log('🗑️ Clearing ALL application data for in-memory mode...');
+        
+        try {
+            // Clear all manager data
+            if (this.ingredientsManager) {
+                await this.ingredientsManager.clearAllData();
+            }
+            
+            if (this.recipeManager) {
+                await this.recipeManager.clearAllData();
+            }
+            
+            if (this.mealManager) {
+                await this.mealManager.clearAllData();
+            }
+            
+            if (this.scheduleManager) {
+                await this.scheduleManager.clearAllScheduledMeals();
+            }
+            
+            if (this.groceryListManager) {
+                await this.groceryListManager.clearAllData();
+            }
+            
+            // Clear local app state
+            this.selectedRecipes = {
+                breakfast: [],
+                lunch: [],
+                dinner: []
+            };
+            
+            // Clear favorites
+            this.favoriteRecipes = new Set();
+            this.saveFavoriteRecipes();
+            
+            // Clear meal rotation engine
+            if (this.mealRotationEngine) {
+                this.mealRotationEngine.clearAllData();
+            }
+            
+            // Refresh all components to show empty state
+            this.refreshAllComponents();
+            
+            console.log('✅ All application data cleared successfully');
+            
+        } catch (error) {
+            console.error('❌ Error clearing all data:', error);
             throw error;
         }
     }
