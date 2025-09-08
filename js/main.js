@@ -1,8 +1,8 @@
 // MealPlanner Main Application
 class MealPlannerApp {
     constructor() {
-        this.currentTab = 'ingredients';
-        this.version = '2025.09.08.1307';
+        this.currentTab = 'dinner';
+        this.version = '2025.09.08.1327';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
@@ -109,9 +109,16 @@ class MealPlannerApp {
         });
 
         // Theme toggle button
-        document.getElementById('theme-toggle')?.addEventListener('click', () => {
-            this.toggleTheme();
-        });
+        const themeToggle = document.getElementById('theme-toggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                console.log('🎨 Theme toggle clicked');
+                this.toggleTheme();
+            });
+            console.log('✅ Theme toggle event listener attached');
+        } else {
+            console.error('❌ Theme toggle button not found!');
+        }
 
         // Listen for Google Calendar auth changes
         document.addEventListener('googleCalendarAuthChanged', (e) => {
@@ -1601,12 +1608,16 @@ class MealPlannerApp {
         const savedTheme = localStorage.getItem('theme');
         const prefersDark = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)').matches : false;
         
+        console.log('🔍 Theme debug:', { savedTheme, prefersDark });
+        
         if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
             document.documentElement.classList.add('dark');
             this.updateThemeIcons(true);
+            console.log('🌙 Applied dark theme');
         } else {
             document.documentElement.classList.remove('dark');
             this.updateThemeIcons(false);
+            console.log('🌞 Applied light theme');
         }
         
         console.log('✅ Theme system initialized');
