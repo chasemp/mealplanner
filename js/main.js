@@ -194,6 +194,7 @@ class MealPlannerApp {
         // Check if all manager classes are available
         const managersAvailable = {
             RecipeManager: typeof RecipeManager !== 'undefined',
+            MealManager: typeof MealManager !== 'undefined',
             IngredientsManager: typeof IngredientsManager !== 'undefined',
             GroceryListManager: typeof GroceryListManager !== 'undefined',
             SettingsManager: typeof SettingsManager !== 'undefined',
@@ -204,7 +205,7 @@ class MealPlannerApp {
         console.log('📱 Manager availability:', managersAvailable);
         
         // Wait a bit if managers aren't ready
-        if (!managersAvailable.RecipeManager || !managersAvailable.IngredientsManager) {
+        if (!managersAvailable.RecipeManager || !managersAvailable.MealManager || !managersAvailable.IngredientsManager) {
             console.log('📱 Waiting for managers to load...');
             await new Promise(resolve => setTimeout(resolve, 100));
         }
@@ -212,6 +213,7 @@ class MealPlannerApp {
         // Initialize managers
         try {
             this.initializeRecipeManager();
+            this.initializeMealManager();
             this.initializeIngredientsManager();
             this.initializeGroceryListManager();
                     this.initializeSettingsManager();
@@ -233,6 +235,17 @@ class MealPlannerApp {
             this.recipeManager = new RecipeManager(container);
             window.recipeManager = this.recipeManager;
             console.log('✅ Recipe manager initialized');
+        }
+    }
+
+    initializeMealManager() {
+        console.log('🍽️ Initializing meal manager...');
+        
+        const container = document.getElementById('meal-manager-container');
+        if (container) {
+            this.mealManager = new MealManager(container);
+            window.mealManager = this.mealManager;
+            console.log('✅ Meal manager initialized');
         }
     }
 
