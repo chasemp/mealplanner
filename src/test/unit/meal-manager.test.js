@@ -27,6 +27,8 @@ global.localStorage = {
 // Mock window.alert and window.confirm
 global.window.alert = vi.fn();
 global.window.confirm = vi.fn();
+global.alert = vi.fn();
+global.confirm = vi.fn();
 
 // Mock DemoDataManager
 global.window.DemoDataManager = class MockDemoDataManager {
@@ -232,7 +234,7 @@ describe('MealManager', () => {
         });
 
         it('should validate required fields', async () => {
-            const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
+            const alertSpy = vi.spyOn(global, 'alert').mockImplementation(() => {});
             
             mealManager.showMealForm();
             
@@ -365,7 +367,7 @@ describe('MealManager', () => {
         });
 
         it('should delete meal after confirmation', async () => {
-            const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+            const confirmSpy = vi.spyOn(global, 'confirm').mockReturnValue(true);
             
             const deleteBtn = container.querySelector('.delete-meal-btn');
             deleteBtn.click();
@@ -379,7 +381,7 @@ describe('MealManager', () => {
         });
 
         it('should not delete meal if user cancels', async () => {
-            const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+            const confirmSpy = vi.spyOn(global, 'confirm').mockReturnValue(false);
             
             const deleteBtn = container.querySelector('.delete-meal-btn');
             deleteBtn.click();
