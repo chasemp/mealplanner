@@ -15,7 +15,7 @@
     "preview": "vite preview",
     "deploy": "npm run build:fresh && gh-pages -d dist",
     "test": "vitest",
-    "test:core": "vitest src/test/unit/settings-manager.test.js src/test/unit/ingredients-manager.test.js src/test/unit/demo-data.test.js src/test/unit/recipe-manager.test.js src/test/unit/meal-rotation-engine.test.js src/test/unit/meal-engine-initialization.test.js src/test/unit/recipe-filtering.test.js src/test/unit/ui-improvements.test.js",
+    "test:core": "vitest src/test/unit/settings-manager.test.js src/test/unit/ingredients-manager.test.js src/test/unit/demo-data.test.js src/test/unit/recipe-manager.test.js src/test/unit/meal-rotation-engine.test.js src/test/unit/meal-engine-initialization.test.js src/test/unit/recipe-filtering.test.js src/test/unit/ui-improvements.test.js src/test/unit/recipe-dropdown-filtering.test.js src/test/unit/recipe-dropdown-ui.test.js src/test/unit/data-structure-regression.test.js",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "test:fresh": "rm -rf node_modules/.vite && vitest run",

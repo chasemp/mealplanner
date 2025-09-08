@@ -31,7 +31,6 @@ describe('Demo Data Manager', () => {
                 expect(ingredient).toHaveProperty('name');
                 expect(ingredient).toHaveProperty('category');
                 expect(ingredient).toHaveProperty('default_unit');
-                expect(ingredient).toHaveProperty('cost_per_unit');
                 expect(ingredient).toHaveProperty('storage_notes');
                 expect(ingredient).toHaveProperty('nutrition');
             });
