@@ -501,12 +501,15 @@ describe('Add Ingredient Functionality', () => {
     });
 
     describe('Search and Filter', () => {
-        it('should filter ingredients by search term', () => {
+        it('should filter ingredients by search term', async () => {
             const searchInput = container.querySelector('#ingredient-search');
             expect(searchInput).toBeTruthy(); // Ensure element exists
             
             searchInput.value = 'chicken';
             searchInput.dispatchEvent(new Event('input'));
+            
+            // Wait for debounced search to complete (300ms + buffer)
+            await new Promise(resolve => setTimeout(resolve, 350));
             
             expect(ingredientsManager.currentFilter.search).toBe('chicken');
             expect(ingredientsManager.filteredIngredients.length).toBe(1);

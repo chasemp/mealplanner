@@ -2,7 +2,7 @@
 class MealPlannerApp {
     constructor() {
         this.currentTab = 'dinner';
-        this.version = '2025.09.08.1804';
+        this.version = '2025.09.08.1816';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
@@ -26,6 +26,8 @@ class MealPlannerApp {
             lunch: [],
             dinner: []
         };
+        this.favoriteRecipes = this.loadFavoriteRecipes();
+        this.showFavoritesOnly = false;
         this.init();
     }
 
@@ -686,6 +688,11 @@ class MealPlannerApp {
             recipes = demoData.getRecipes().filter(recipe => 
                 recipe.meal_type === mealType || recipe.meal_type === 'dinner'
             );
+            
+            // Apply favorites filter if enabled
+            if (this.showFavoritesOnly) {
+                recipes = recipes.filter(recipe => this.isRecipeFavorite(recipe.id));
+            }
         }
 
         // Render recipe selection cards
@@ -695,7 +702,12 @@ class MealPlannerApp {
             }" data-recipe-id="${recipe.id}">
                 <div class="flex items-start justify-between mb-2">
                     <h4 class="font-medium text-gray-900 dark:text-white text-sm">${recipe.title}</h4>
-                    <div class="flex-shrink-0 ml-2">
+                    <div class="flex items-center gap-2 flex-shrink-0 ml-2">
+                        <button class="favorite-btn text-lg hover:scale-110 transition-transform ${
+                            this.isRecipeFavorite(recipe.id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
+                        }" data-recipe-id="${recipe.id}" title="${this.isRecipeFavorite(recipe.id) ? 'Remove from favorites' : 'Add to favorites'}">
+                            ${this.isRecipeFavorite(recipe.id) ? '❤️' : '🤍'}
+                        </button>
                         <input type="checkbox" class="recipe-checkbox" ${
                             this.selectedRecipes[mealType].includes(recipe.id) ? 'checked' : ''
                         }>
@@ -717,14 +729,26 @@ class MealPlannerApp {
         const gridContainer = document.getElementById(`${mealType}-recipe-grid`);
         const selectAllBtn = document.getElementById('select-all-recipes');
         const clearSelectionBtn = document.getElementById('clear-recipe-selection');
+        const showFavoritesBtn = document.getElementById('show-favorites-only');
 
         // Recipe card click handlers
         if (gridContainer) {
             gridContainer.addEventListener('click', (e) => {
-                const card = e.target.closest('.recipe-selection-card');
-                if (card) {
-                    const recipeId = parseInt(card.dataset.recipeId);
-                    this.toggleRecipeSelection(mealType, recipeId);
+                // Handle favorite button clicks
+                if (e.target.classList.contains('favorite-btn')) {
+                    e.stopPropagation(); // Prevent card selection
+                    const recipeId = parseInt(e.target.dataset.recipeId);
+                    this.toggleFavoriteRecipe(recipeId);
+                    return;
+                }
+                
+                // Handle card selection (but not if clicking on checkbox)
+                if (!e.target.classList.contains('recipe-checkbox')) {
+                    const card = e.target.closest('.recipe-selection-card');
+                    if (card) {
+                        const recipeId = parseInt(card.dataset.recipeId);
+                        this.toggleRecipeSelection(mealType, recipeId);
+                    }
                 }
             });
         }
@@ -740,6 +764,13 @@ class MealPlannerApp {
         if (clearSelectionBtn) {
             clearSelectionBtn.addEventListener('click', () => {
                 this.clearRecipeSelection(mealType);
+            });
+        }
+
+        // Show favorites only button
+        if (showFavoritesBtn) {
+            showFavoritesBtn.addEventListener('click', () => {
+                this.toggleFavoritesFilter(mealType);
             });
         }
     }
@@ -1218,7 +1249,7 @@ class MealPlannerApp {
                 }
                 
                 // Also refresh the current tab display
-                this.renderCurrentTab();
+                this.switchTab(this.currentTab);
                 
                 this.showNotification(`${mealType.charAt(0).toUpperCase() + mealType.slice(1)} meal plan cleared successfully.`, 'success');
             } catch (error) {
@@ -2041,6 +2072,109 @@ class MealPlannerApp {
             { ingredientId: 'ing-7', quantity: 1 }, // Soy Sauce
             { ingredientId: 'ing-11', quantity: 1 } // Curry Powder
         ];
+    }
+
+    // ===== FAVORITES SYSTEM =====
+    
+    loadFavoriteRecipes() {
+        try {
+            const stored = localStorage.getItem('mealplanner_favorite_recipes');
+            return stored ? JSON.parse(stored) : [];
+        } catch (error) {
+            console.error('Error loading favorite recipes:', error);
+            return [];
+        }
+    }
+    
+    saveFavoriteRecipes() {
+        try {
+            localStorage.setItem('mealplanner_favorite_recipes', JSON.stringify(this.favoriteRecipes));
+            console.log(`💾 Saved ${this.favoriteRecipes.length} favorite recipes`);
+        } catch (error) {
+            console.error('Error saving favorite recipes:', error);
+        }
+    }
+    
+    toggleFavoriteRecipe(recipeId) {
+        const index = this.favoriteRecipes.indexOf(recipeId);
+        
+        if (index > -1) {
+            // Remove from favorites
+            this.favoriteRecipes.splice(index, 1);
+            console.log(`💔 Removed recipe ${recipeId} from favorites`);
+            this.showNotification('Recipe removed from favorites', 'success');
+        } else {
+            // Add to favorites
+            this.favoriteRecipes.push(recipeId);
+            console.log(`❤️ Added recipe ${recipeId} to favorites`);
+            this.showNotification('Recipe added to favorites', 'success');
+        }
+        
+        this.saveFavoriteRecipes();
+        
+        // Refresh recipe displays to update favorite icons
+        this.renderRecipeSelection(this.currentTab);
+        
+        // Trigger custom event for other components
+        document.dispatchEvent(new CustomEvent('favoritesChanged', {
+            detail: { recipeId, isFavorite: this.isRecipeFavorite(recipeId) }
+        }));
+    }
+    
+    isRecipeFavorite(recipeId) {
+        return this.favoriteRecipes.includes(recipeId);
+    }
+    
+    getFavoriteRecipes() {
+        if (!window.DemoDataManager) return [];
+        
+        const demoData = new window.DemoDataManager();
+        const allRecipes = demoData.getRecipes();
+        
+        return allRecipes.filter(recipe => this.favoriteRecipes.includes(recipe.id));
+    }
+    
+    clearAllFavorites() {
+        const confirmed = confirm('Are you sure you want to clear all favorite recipes? This action cannot be undone.');
+        
+        if (confirmed) {
+            this.favoriteRecipes = [];
+            this.saveFavoriteRecipes();
+            this.renderRecipeSelection(this.currentTab);
+            this.showNotification('All favorites cleared', 'success');
+            
+            // Trigger custom event
+            document.dispatchEvent(new CustomEvent('allFavoritesCleared'));
+        }
+    }
+    
+    toggleFavoritesFilter(mealType) {
+        this.showFavoritesOnly = !this.showFavoritesOnly;
+        
+        // Update button appearance
+        const showFavoritesBtn = document.getElementById('show-favorites-only');
+        if (showFavoritesBtn) {
+            if (this.showFavoritesOnly) {
+                showFavoritesBtn.classList.add('bg-red-100', 'text-red-700', 'border-red-300');
+                showFavoritesBtn.classList.remove('btn-secondary');
+                showFavoritesBtn.textContent = '❤️ Showing Favorites';
+            } else {
+                showFavoritesBtn.classList.remove('bg-red-100', 'text-red-700', 'border-red-300');
+                showFavoritesBtn.classList.add('btn-secondary');
+                showFavoritesBtn.textContent = '❤️ Favorites';
+            }
+        }
+        
+        // Re-render recipes with filter applied
+        this.renderRecipeSelection(mealType);
+        
+        // Show notification
+        const favoriteCount = this.getFavoriteRecipes().length;
+        if (this.showFavoritesOnly) {
+            this.showNotification(`Showing ${favoriteCount} favorite recipes`, 'info');
+        } else {
+            this.showNotification('Showing all recipes', 'info');
+        }
     }
 }
 

@@ -1,7 +1,7 @@
 // Service Worker for MealPlanner PWA
 // Handles caching, offline functionality, and background sync
 
-const CACHE_VERSION = '2025.09.08.1804'
+const CACHE_VERSION = '2025.09.08.1816'
 const CACHE_NAME = `meal-planner-v${CACHE_VERSION}`
 const STATIC_CACHE = `meal-planner-static-v${CACHE_VERSION}`
 const DYNAMIC_CACHE = `meal-planner-dynamic-v${CACHE_VERSION}`
