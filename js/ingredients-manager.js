@@ -400,13 +400,22 @@ class IngredientsManager {
     }
 
     attachEventListeners() {
-        // Search input
+        // Search input with debouncing
         const searchInput = this.container.querySelector('#ingredient-search');
         if (searchInput) {
+            let searchTimeout;
             searchInput.addEventListener('input', (e) => {
-                this.currentFilter.search = e.target.value;
-                this.applyFilters();
-                this.render();
+                // Clear previous timeout
+                if (searchTimeout) {
+                    clearTimeout(searchTimeout);
+                }
+                
+                // Set new timeout for debounced search
+                searchTimeout = setTimeout(() => {
+                    this.currentFilter.search = e.target.value;
+                    this.applyFilters();
+                    this.render();
+                }, 300); // 300ms delay
             });
         }
 

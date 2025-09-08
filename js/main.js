@@ -1,8 +1,8 @@
 // MealPlanner Main Application
 class MealPlannerApp {
     constructor() {
-        this.currentTab = 'recipes';
-        this.version = '2025.09.08.1223';
+        this.currentTab = 'ingredients';
+        this.version = '2025.09.08.1307';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
@@ -143,8 +143,12 @@ class MealPlannerApp {
             activeTab.classList.remove('border-transparent', 'text-gray-500');
         }
 
-        // Show selected tab
-        document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+        // Show selected tab (handle scheduled tab mapping)
+        const tabId = tabName === 'scheduled' ? 'scheduled-tab' : `${tabName}-tab`;
+        const tabElement = document.getElementById(tabId);
+        if (tabElement) {
+            tabElement.classList.remove('hidden');
+        }
         this.currentTab = tabName;
 
         // Update mobile navigation if it exists
@@ -882,13 +886,20 @@ class MealPlannerApp {
                 // Refresh the views
                 const itineraryView = this.itineraryViews[mealType];
                 if (itineraryView) {
+                    // Update the view's data and re-render
+                    itineraryView.mealPlanData = this.getScheduledMeals();
                     itineraryView.render();
                 }
                 
                 const calendarView = this.calendarViews[mealType];
                 if (calendarView) {
+                    // Update the view's data and re-render
+                    calendarView.mealPlanData = this.getScheduledMeals();
                     calendarView.render();
                 }
+                
+                // Also refresh the current tab display
+                this.renderCurrentTab();
                 
                 this.showNotification(`${mealType.charAt(0).toUpperCase() + mealType.slice(1)} meal plan cleared successfully.`, 'success');
             } catch (error) {

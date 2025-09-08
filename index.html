@@ -18,7 +18,7 @@
     
     <!-- Styles -->
     <link rel="stylesheet" href="css/tailwind-compiled.css">
-    <link rel="stylesheet" href="./css/styles.css?v=2025.09.08.1223">
+    <link rel="stylesheet" href="./css/styles.css?v=2025.09.08.1307">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="./manifest.json">
@@ -76,6 +76,61 @@
                                     <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
                                 </svg>
                             </button>
+                            
+                            <!-- Settings Dropdown -->
+                            <div class="relative">
+                                <button id="settings-dropdown-toggle" class="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 transition-colors" title="Settings">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </button>
+                                
+                                <!-- Settings Dropdown Menu -->
+                                <div id="settings-dropdown-menu" class="hidden absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
+                                    <div class="p-4">
+                                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Settings</h3>
+                                        
+                                        <!-- Meal Time Visibility -->
+                                        <div class="mb-4">
+                                            <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Meal Time Visibility</h4>
+                                            <div class="space-y-2">
+                                                <div class="flex items-center space-x-2">
+                                                    <input type="checkbox" id="show-breakfast" class="text-blue-600">
+                                                    <label for="show-breakfast" class="text-xs text-gray-700 dark:text-gray-300">🍳 Breakfast</label>
+                                                </div>
+                                                <div class="flex items-center space-x-2">
+                                                    <input type="checkbox" id="show-lunch" class="text-blue-600">
+                                                    <label for="show-lunch" class="text-xs text-gray-700 dark:text-gray-300">🥪 Lunch</label>
+                                                </div>
+                                                <div class="flex items-center space-x-2">
+                                                    <input type="checkbox" id="show-dinner" checked class="text-blue-600">
+                                                    <label for="show-dinner" class="text-xs text-gray-700 dark:text-gray-300">🍽️ Dinner</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Database Source -->
+                                        <div class="mb-4">
+                                            <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Database Source</h4>
+                                            <select id="source-type-select" class="w-full text-xs border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                                <option value="demo" selected>Demo Data</option>
+                                                <option value="local">Local File</option>
+                                                <option value="github">GitHub Repo</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <!-- Quick Actions -->
+                                        <div class="flex space-x-2">
+                                            <button id="export-db-btn-dropdown" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs">
+                                                Export
+                                            </button>
+                                            <button id="advanced-settings-btn" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded text-xs">
+                                                Advanced
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -85,29 +140,26 @@
             <nav class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="flex space-x-8">
-                        <button class="nav-tab active py-4 px-1 border-b-2 border-blue-500 text-blue-600 dark:text-blue-400 font-medium text-sm" data-tab="recipes">
-                            Recipes
+                        <button class="nav-tab active py-4 px-1 border-b-2 border-blue-500 text-blue-600 dark:text-blue-400 font-medium text-sm" data-tab="ingredients">
+                            🥕 Ingredients
                         </button>
-                        <button class="nav-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="ingredients">
-                            Ingredients
+                        <button class="nav-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="recipes">
+                            📖 Recipes
                         </button>
                         <button class="nav-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="meals">
                             🍽️ Meals
                         </button>
                         <button class="nav-tab meal-type-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="breakfast">
-                            Breakfast
+                            🍳 Breakfast
                         </button>
                         <button class="nav-tab meal-type-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="lunch">
-                            Lunch
+                            🥪 Lunch
                         </button>
                         <button class="nav-tab meal-type-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="dinner">
-                            Dinner
+                            🍽️ Dinner
                         </button>
-                        <button class="nav-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="grocery">
-                            Grocery List
-                        </button>
-                        <button class="nav-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="settings">
-                            Settings
+                        <button class="nav-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="scheduled">
+                            📅 Scheduled
                         </button>
                     </div>
                 </div>
@@ -300,7 +352,7 @@
                 </div>
 
                 <!-- Grocery List Tab -->
-                <div id="grocery-tab" class="tab-content hidden">
+                <div id="scheduled-tab" class="tab-content hidden">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl font-bold text-gray-900">Grocery List</h2>
                     </div>
@@ -408,19 +460,19 @@
                             
                             <!-- Meal Type Visibility -->
                             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Meal Type Visibility</h3>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Meal Time Visibility</h3>
                                 <div class="space-y-3">
                                     <div class="flex items-center space-x-3">
                                         <input type="checkbox" id="show-breakfast" class="text-blue-600">
-                                        <label for="show-breakfast" class="text-sm text-gray-700 dark:text-gray-300">🍳 Show Breakfast Tab</label>
+                                        <label for="show-breakfast" class="text-sm text-gray-700 dark:text-gray-300">🍳 Show Breakfast Meal Time</label>
                                     </div>
                                     <div class="flex items-center space-x-3">
                                         <input type="checkbox" id="show-lunch" class="text-blue-600">
-                                        <label for="show-lunch" class="text-sm text-gray-700 dark:text-gray-300">🥪 Show Lunch Tab</label>
+                                        <label for="show-lunch" class="text-sm text-gray-700 dark:text-gray-300">🥪 Show Lunch Meal Time</label>
                                     </div>
                                     <div class="flex items-center space-x-3">
                                         <input type="checkbox" id="show-dinner" checked class="text-blue-600">
-                                        <label for="show-dinner" class="text-sm text-gray-700 dark:text-gray-300">🍽️ Show Dinner Tab</label>
+                                        <label for="show-dinner" class="text-sm text-gray-700 dark:text-gray-300">🍽️ Show Dinner Meal Time</label>
                                     </div>
                                 </div>
                             </div>
@@ -525,7 +577,7 @@
         
         <!-- Version Footer -->
         <footer class="fixed bottom-2 right-2 text-xs text-gray-400 bg-white/80 backdrop-blur-sm px-2 py-1 rounded shadow-sm">
-            <span id="version-display">v2025.09.08.1223</span>
+            <span id="version-display">v2025.09.08.1307</span>
         </footer>
     </div>
 
@@ -533,23 +585,50 @@
     <div id="modal-container"></div>
 
     <!-- JavaScript -->
-    <script src="./js/itinerary-view.js?v=2025.09.05.1830"></script>
-    <script src="./js/calendar-view.js?v=2025.09.05.1830"></script>
-      <script src="./js/demo-data.js?v=2025.09.05.2146"></script>
-    <script src="./js/barcode-scanner.js?v=2025.09.05.1830"></script>
-    <script src="./js/shared-barcode-scanner.js?v=2025.09.05.1830"></script>
-    <script src="./js/recipe-manager.js?v=2025.09.05.2151"></script>
-        <script src="./js/meal-manager.js?v=2025.09.08.0848"></script>
-        <script src="./js/schedule-manager.js?v=2025.09.08.0848"></script>
-    <script src="./js/ingredients-manager.js?v=2025.09.05.1830"></script>
-    <script src="./js/grocery-list-manager.js?v=2025.09.05.1830"></script>
-    <script src="./js/google-calendar-integration.js?v=2025.09.05.1830"></script>
-    <script src="./js/meal-rotation-engine.js?v=2025.09.05.1830"></script>
-    <script src="./js/settings-manager.js?v=2025.09.05.1830"></script>
-    <script src="./js/performance-manager.js?v=2025.09.05.1830"></script>
-    <script src="./js/advanced-planning.js?v=2025.09.05.1830"></script>
-    <script src="./js/pantry-manager.js?v=2025.09.05.1830"></script>
-    <script src="./js/mobile-navigation.js?v=2025.09.08.0848"></script>
-    <script src="./js/main.js?v=2025.09.08.1223"></script>
+    <script src="./js/itinerary-view.js?v=2025.09.08.1307"></script>
+    <script src="./js/calendar-view.js?v=2025.09.08.1307"></script>
+      <script src="./js/demo-data.js?v=2025.09.08.1307"></script>
+    <script src="./js/barcode-scanner.js?v=2025.09.08.1307"></script>
+    <script src="./js/shared-barcode-scanner.js?v=2025.09.08.1307"></script>
+    <script src="./js/recipe-manager.js?v=2025.09.08.1307"></script>
+        <script src="./js/meal-manager.js?v=2025.09.08.1307"></script>
+        <script src="./js/schedule-manager.js?v=2025.09.08.1307"></script>
+    <script src="./js/ingredients-manager.js?v=2025.09.08.1307"></script>
+    <script src="./js/grocery-list-manager.js?v=2025.09.08.1307"></script>
+    <script src="./js/google-calendar-integration.js?v=2025.09.08.1307"></script>
+    <script src="./js/meal-rotation-engine.js?v=2025.09.08.1307"></script>
+    <script src="./js/settings-manager.js?v=2025.09.08.1307"></script>
+    <script src="./js/performance-manager.js?v=2025.09.08.1307"></script>
+    <script src="./js/advanced-planning.js?v=2025.09.08.1307"></script>
+    <script src="./js/pantry-manager.js?v=2025.09.08.1307"></script>
+    <script src="./js/mobile-navigation.js?v=2025.09.08.1307"></script>
+    <script src="./js/main.js?v=2025.09.08.1307"></script>
+    
+    <!-- Settings Dropdown Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdownToggle = document.getElementById('settings-dropdown-toggle');
+            const dropdownMenu = document.getElementById('settings-dropdown-menu');
+            
+            if (dropdownToggle && dropdownMenu) {
+                dropdownToggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    dropdownMenu.classList.toggle('hidden');
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!dropdownMenu.contains(e.target) && !dropdownToggle.contains(e.target)) {
+                        dropdownMenu.classList.add('hidden');
+                    }
+                });
+                
+                // Prevent dropdown from closing when clicking inside
+                dropdownMenu.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
+        });
+    </script>
 </body>
 </html>

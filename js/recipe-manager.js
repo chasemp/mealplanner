@@ -552,7 +552,7 @@ class RecipeManager {
                         
                         <div>
                             <label for="recipe-meal-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Meal Type
+                                Recipe Type
                             </label>
                             <select id="recipe-meal-type" name="meal_type"
                                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">

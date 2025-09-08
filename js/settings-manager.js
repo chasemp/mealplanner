@@ -1,5 +1,5 @@
 // Settings Manager for MealPlanner PWA
-// Handles database source configuration, meal type visibility, and GitHub sync
+// Handles database source configuration, meal time visibility, and GitHub sync
 
 class SettingsManager {
     constructor() {
@@ -60,8 +60,8 @@ class SettingsManager {
         if (deployKeyInput) deployKeyInput.placeholder = 'Deploy key stored securely (hidden)';
         if (readOnlyInput) readOnlyInput.checked = this.settings.githubReadOnly;
 
-        // Apply meal type visibility
-        this.applyMealTypeVisibility();
+        // Apply meal time visibility (defer to ensure DOM is ready)
+        setTimeout(() => this.applyMealTimeVisibility(), 100);
 
         // Apply calendar settings
         const managedModeInput = document.getElementById('calendar-managed-mode');
@@ -71,10 +71,13 @@ class SettingsManager {
         if (notificationsInput) notificationsInput.checked = this.settings.calendarNotifications;
     }
 
-    applyMealTypeVisibility() {
+    applyMealTimeVisibility() {
+        console.log('🍽️ Applying meal time visibility:', this.settings);
         const breakfastTab = document.querySelector('[data-tab="breakfast"]');
         const lunchTab = document.querySelector('[data-tab="lunch"]');
         const dinnerTab = document.querySelector('[data-tab="dinner"]');
+        
+        console.log('🔍 Found tabs:', { breakfastTab, lunchTab, dinnerTab });
         
         const breakfastContent = document.getElementById('breakfast-tab');
         const lunchContent = document.getElementById('lunch-tab');
@@ -205,7 +208,7 @@ class SettingsManager {
                 input.addEventListener('change', (e) => {
                     const mealType = inputId.replace('show-', '');
                     this.settings[`show${mealType.charAt(0).toUpperCase() + mealType.slice(1)}`] = e.target.checked;
-                    this.applyMealTypeVisibility();
+                    this.applyMealTimeVisibility();
                     this.saveSettings();
                 });
             }
