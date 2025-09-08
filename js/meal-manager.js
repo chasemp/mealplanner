@@ -372,9 +372,9 @@ class MealManager {
                                       placeholder="Describe this meal...">${isEditing ? meal.description || '' : ''}</textarea>
                         </div>
 
-                        <!-- Meal Types -->
+                        <!-- Meal Times -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Meal Types</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Meal Times</label>
                             <div class="flex flex-wrap gap-3">
                                 ${['breakfast', 'lunch', 'dinner', 'snack'].map(type => `
                                     <label class="flex items-center">
