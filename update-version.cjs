@@ -38,6 +38,12 @@ const files = [
         patterns: [
             { regex: /\/\* MealPlanner Custom Styles v[\d.]+ \*\//g, replacement: `/* MealPlanner Custom Styles v${version} */` }
         ]
+    },
+    {
+        path: 'public/sw.js',
+        patterns: [
+            { regex: /const CACHE_VERSION = '[\d.]+'/g, replacement: `const CACHE_VERSION = '${version}'` }
+        ]
     }
 ];
 

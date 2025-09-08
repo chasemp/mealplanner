@@ -1,9 +1,10 @@
 // Service Worker for MealPlanner PWA
 // Handles caching, offline functionality, and background sync
 
-const CACHE_NAME = 'meal-planner-v1'
-const STATIC_CACHE = 'meal-planner-static-v1'
-const DYNAMIC_CACHE = 'meal-planner-dynamic-v1'
+const CACHE_VERSION = '2025.09.08.1602'
+const CACHE_NAME = `meal-planner-v${CACHE_VERSION}`
+const STATIC_CACHE = `meal-planner-static-v${CACHE_VERSION}`
+const DYNAMIC_CACHE = `meal-planner-dynamic-v${CACHE_VERSION}`
 
 // Files to cache for offline functionality
 const STATIC_ASSETS = [
@@ -127,6 +128,16 @@ self.addEventListener('message', (event) => {
             
         case 'SKIP_WAITING':
             self.skipWaiting()
+            break
+            
+        case 'CLEAR_CACHE':
+            console.log('Service Worker: Cache clear requested')
+            handleCacheClear()
+            break
+            
+        case 'UPDATE_CACHE_VERSION':
+            console.log('Service Worker: Cache version update requested', data.version)
+            handleCacheVersionUpdate(data.version)
             break
             
         default:
@@ -281,4 +292,91 @@ self.addEventListener('notificationclick', (event) => {
     )
 })
 
-console.log('Service Worker: Script loaded')
+// Handle cache clear requests from main thread
+async function handleCacheClear() {
+    try {
+        console.log('Service Worker: Clearing all caches...')
+        
+        const cacheNames = await caches.keys()
+        await Promise.all(
+            cacheNames.map(cacheName => {
+                console.log('Service Worker: Deleting cache', cacheName)
+                return caches.delete(cacheName)
+            })
+        )
+        
+        console.log('Service Worker: All caches cleared')
+        
+        // Notify main thread
+        self.clients.matchAll().then(clients => {
+            clients.forEach(client => {
+                client.postMessage({
+                    type: 'CACHE_CLEARED',
+                    success: true,
+                    timestamp: Date.now()
+                })
+            })
+        })
+        
+    } catch (error) {
+        console.error('Service Worker: Failed to clear caches', error)
+        
+        // Notify main thread of failure
+        self.clients.matchAll().then(clients => {
+            clients.forEach(client => {
+                client.postMessage({
+                    type: 'CACHE_CLEARED',
+                    success: false,
+                    error: error.message,
+                    timestamp: Date.now()
+                })
+            })
+        })
+    }
+}
+
+// Handle cache version updates
+async function handleCacheVersionUpdate(newVersion) {
+    try {
+        console.log('Service Worker: Updating cache version to', newVersion)
+        
+        // Clear old caches
+        await handleCacheClear()
+        
+        // Update cache names with new version
+        const newCacheName = `meal-planner-v${newVersion}`
+        const newStaticCache = `meal-planner-static-v${newVersion}`
+        const newDynamicCache = `meal-planner-dynamic-v${newVersion}`
+        
+        console.log('Service Worker: Cache version updated')
+        
+        // Notify main thread
+        self.clients.matchAll().then(clients => {
+            clients.forEach(client => {
+                client.postMessage({
+                    type: 'CACHE_VERSION_UPDATED',
+                    success: true,
+                    version: newVersion,
+                    timestamp: Date.now()
+                })
+            })
+        })
+        
+    } catch (error) {
+        console.error('Service Worker: Failed to update cache version', error)
+        
+        // Notify main thread of failure
+        self.clients.matchAll().then(clients => {
+            clients.forEach(client => {
+                client.postMessage({
+                    type: 'CACHE_VERSION_UPDATED',
+                    success: false,
+                    error: error.message,
+                    timestamp: Date.now()
+                })
+            })
+        })
+    }
+}
+
+console.log('Service Worker: Script loaded with cache version', CACHE_VERSION)
