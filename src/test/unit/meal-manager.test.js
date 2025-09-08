@@ -24,6 +24,10 @@ global.localStorage = {
     clear() { this.data = {}; }
 };
 
+// Mock window.alert and window.confirm
+global.window.alert = vi.fn();
+global.window.confirm = vi.fn();
+
 // Mock DemoDataManager
 global.window.DemoDataManager = class MockDemoDataManager {
     getRecipes() {
