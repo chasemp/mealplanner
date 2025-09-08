@@ -139,6 +139,12 @@ class MealManager {
                             <p class="text-sm text-gray-500 dark:text-gray-400">${meal.description || 'No description'}</p>
                         </div>
                         <div class="flex space-x-1 ml-2">
+                            <button class="schedule-meal-btn text-gray-400 hover:text-green-600" 
+                                    data-meal-id="${meal.id}" title="Schedule Meal">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </button>
                             <button class="edit-meal-btn text-gray-400 hover:text-blue-600" 
                                     data-meal-id="${meal.id}" title="Edit Meal">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -297,8 +303,14 @@ class MealManager {
             });
         }
 
-        // Edit and delete buttons
+        // Schedule, edit and delete buttons
         this.container.addEventListener('click', (e) => {
+            if (e.target.closest('.schedule-meal-btn')) {
+                const mealId = parseInt(e.target.closest('.schedule-meal-btn').dataset.mealId);
+                const meal = this.meals.find(m => m.id === mealId);
+                if (meal) this.showScheduleModal(meal);
+            }
+
             if (e.target.closest('.edit-meal-btn')) {
                 const mealId = parseInt(e.target.closest('.edit-meal-btn').dataset.mealId);
                 const meal = this.meals.find(m => m.id === mealId);
@@ -634,6 +646,133 @@ class MealManager {
             await this.saveMeals();
             this.render();
             this.showNotification(`Meal "${meal.name}" deleted successfully!`, 'success');
+        }
+    }
+
+    showScheduleModal(meal) {
+        // Create schedule modal
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+        modal.innerHTML = `
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4">
+                <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                        📅 Schedule "${meal.name}"
+                    </h3>
+                    <button id="close-schedule-modal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <form id="schedule-form" class="p-6">
+                    <div class="space-y-4">
+                        <div>
+                            <label for="schedule-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date *</label>
+                            <input type="date" id="schedule-date" required
+                                   min="${new Date().toISOString().split('T')[0]}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        </div>
+                        
+                        <div>
+                            <label for="schedule-meal-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Meal Type *</label>
+                            <select id="schedule-meal-type" required
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                ${meal.mealTypes.map(type => `<option value="${type}">${type.charAt(0).toUpperCase() + type.slice(1)}</option>`).join('')}
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="schedule-servings" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Servings</label>
+                            <input type="number" id="schedule-servings" min="1" max="20" value="${meal.totalServings || 4}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        </div>
+                        
+                        <div>
+                            <label for="schedule-notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Notes (Optional)</label>
+                            <textarea id="schedule-notes" rows="2"
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                      placeholder="Any special notes for this scheduled meal..."></textarea>
+                        </div>
+                    </div>
+                </form>
+                
+                <div class="flex justify-end space-x-3 p-6 border-t border-gray-200 dark:border-gray-700">
+                    <button type="button" id="cancel-schedule-form" class="btn-secondary">Cancel</button>
+                    <button type="submit" form="schedule-form" class="btn-primary">📅 Schedule Meal</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // Set up event listeners
+        const closeModal = () => {
+            modal.remove();
+        };
+
+        modal.querySelector('#close-schedule-modal').addEventListener('click', closeModal);
+        modal.querySelector('#cancel-schedule-form').addEventListener('click', closeModal);
+        
+        // Close on backdrop click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+        // Handle form submission
+        modal.querySelector('#schedule-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const date = modal.querySelector('#schedule-date').value;
+            const mealType = modal.querySelector('#schedule-meal-type').value;
+            const servings = parseInt(modal.querySelector('#schedule-servings').value);
+            const notes = modal.querySelector('#schedule-notes').value;
+
+            if (!date || !mealType) {
+                this.showNotification('Please fill in all required fields', 'error');
+                return;
+            }
+
+            // Schedule the meal using the Schedule Manager
+            if (window.scheduleManager) {
+                try {
+                    // Create a meal object compatible with Schedule Manager
+                    const mealToSchedule = {
+                        id: meal.id,
+                        name: meal.name,
+                        meal_type: mealType,
+                        recipes: meal.recipes,
+                        servings: servings,
+                        total_time: meal.totalTime || this.calculateMealTime(meal.recipes)
+                    };
+
+                    const scheduledMeal = window.scheduleManager.scheduleMeal(mealToSchedule, date, {
+                        servings: servings,
+                        notes: notes
+                    });
+
+                    this.showNotification(`"${meal.name}" scheduled for ${mealType} on ${new Date(date).toLocaleDateString()}`, 'success');
+                    closeModal();
+                    
+                    // Optionally switch to the appropriate meal type tab
+                    this.switchToMealTypeTab(mealType);
+                    
+                } catch (error) {
+                    console.error('Error scheduling meal:', error);
+                    this.showNotification('Failed to schedule meal. Please try again.', 'error');
+                }
+            } else {
+                this.showNotification('Schedule Manager not available. Please refresh the page.', 'error');
+            }
+        });
+    }
+
+    switchToMealTypeTab(mealType) {
+        // Switch to the appropriate meal type tab (breakfast, lunch, dinner)
+        const tabButton = document.querySelector(`[data-tab="${mealType}"]`);
+        if (tabButton) {
+            tabButton.click();
         }
     }
 
