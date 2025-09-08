@@ -61,6 +61,7 @@ class DemoDataManager {
                 id: 1,
                 title: 'Grilled Chicken with Vegetables',
                 description: 'Healthy grilled chicken breast served with roasted vegetables',
+                type: 'basic', // Standard individual recipe
                 image_url: 'https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=400&h=300&fit=crop',
                 servings: 4,
                 meal_type: 'dinner',
@@ -90,6 +91,7 @@ class DemoDataManager {
                 id: 2,
                 title: 'Spaghetti Bolognese',
                 description: 'Classic Italian pasta with rich meat sauce',
+                type: 'basic',
                 image_url: 'https://images.unsplash.com/photo-1551892374-ecf8754cf8b0?w=400&h=300&fit=crop',
                 servings: 6,
                 meal_type: 'dinner',
@@ -120,6 +122,7 @@ class DemoDataManager {
                 id: 3,
                 title: 'Scrambled Eggs with Toast',
                 description: 'Simple and delicious breakfast with eggs and buttered toast',
+                type: 'basic',
                 image_url: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=400&h=300&fit=crop',
                 servings: 2,
                 meal_type: 'breakfast',
@@ -146,6 +149,7 @@ class DemoDataManager {
                 id: 4,
                 title: 'Salmon Teriyaki Bowl',
                 description: 'Grilled salmon with rice and vegetables in teriyaki sauce',
+                type: 'basic',
                 image_url: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&h=300&fit=crop',
                 servings: 4,
                 meal_type: 'dinner',
@@ -173,6 +177,7 @@ class DemoDataManager {
                 id: 5,
                 title: 'Greek Salad',
                 description: 'Fresh Mediterranean salad with vegetables and cheese',
+                type: 'basic',
                 image_url: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400&h=300&fit=crop',
                 servings: 4,
                 meal_type: 'lunch',
@@ -203,6 +208,7 @@ class DemoDataManager {
                 id: 6,
                 title: 'Chicken Stir Fry',
                 description: 'Quick and healthy stir fry with chicken and vegetables',
+                type: 'basic',
                 image_url: 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=400&h=300&fit=crop',
                 servings: 4,
                 meal_type: 'dinner',
@@ -232,6 +238,7 @@ class DemoDataManager {
                 id: 7,
                 title: 'Vegetable Quinoa Bowl',
                 description: 'Nutritious quinoa bowl with roasted vegetables',
+                type: 'basic',
                 image_url: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=300&fit=crop',
                 servings: 4,
                 meal_type: 'lunch',
@@ -261,6 +268,7 @@ class DemoDataManager {
                 id: 8,
                 title: 'Beef and Potato Stew',
                 description: 'Hearty comfort food stew with beef and vegetables',
+                type: 'basic',
                 image_url: 'https://images.unsplash.com/photo-1574484284002-952d92456975?w=400&h=300&fit=crop',
                 servings: 6,
                 meal_type: 'dinner',
@@ -284,6 +292,163 @@ class DemoDataManager {
                     { ingredient_id: 10, quantity: 3, unit: 'pieces' },
                     { ingredient_id: 30, quantity: 0.1, unit: 'containers' },
                     { ingredient_id: 22, quantity: 0.1, unit: 'bottles' }
+                ]
+            },
+            
+            // Individual component recipes for combo recipes
+            {
+                id: 9,
+                title: 'Mashed Potatoes',
+                description: 'Creamy, buttery mashed potatoes',
+                type: 'basic', // New field to distinguish recipe types
+                image_url: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?w=400&h=300&fit=crop',
+                servings: 4,
+                meal_type: 'dinner',
+                prep_time: 10,
+                cook_time: 20,
+                instructions: [
+                    'Peel and cube potatoes',
+                    'Boil in salted water until tender (15-20 minutes)',
+                    'Drain and mash with butter and milk',
+                    'Season with salt and pepper to taste'
+                ],
+                tags: ['side-dish', 'comfort-food', 'vegetarian'],
+                labels: ['side-dish', 'comfort-food', 'vegetarian'],
+                ingredients: [
+                    { ingredient_id: 16, quantity: 2, unit: 'lbs' }, // Potatoes
+                    { ingredient_id: 21, quantity: 0.25, unit: 'lbs' }, // Butter
+                    { ingredient_id: 18, quantity: 0.5, unit: 'gallons' }, // Milk
+                    { ingredient_id: 23, quantity: 0.1, unit: 'containers' }, // Salt
+                    { ingredient_id: 24, quantity: 0.05, unit: 'containers' } // Black Pepper
+                ]
+            },
+            {
+                id: 10,
+                title: 'Fried Chicken',
+                description: 'Crispy, golden fried chicken pieces',
+                type: 'basic',
+                image_url: 'https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?w=400&h=300&fit=crop',
+                servings: 4,
+                meal_type: 'dinner',
+                prep_time: 20,
+                cook_time: 15,
+                instructions: [
+                    'Season chicken with salt and pepper',
+                    'Dredge in flour seasoned with spices',
+                    'Heat oil to 350°F',
+                    'Fry chicken pieces until golden brown and cooked through',
+                    'Drain on paper towels'
+                ],
+                tags: ['comfort-food', 'crispy', 'main-dish'],
+                labels: ['comfort-food', 'crispy', 'main-dish'],
+                ingredients: [
+                    { ingredient_id: 1, quantity: 2, unit: 'lbs' }, // Chicken Breast
+                    { ingredient_id: 23, quantity: 0.1, unit: 'containers' }, // Salt
+                    { ingredient_id: 24, quantity: 0.1, unit: 'containers' }, // Black Pepper
+                    { ingredient_id: 22, quantity: 0.5, unit: 'bottles' } // Olive Oil (for frying)
+                ]
+            },
+            {
+                id: 11,
+                title: 'Green Beans',
+                description: 'Simple sautéed green beans with garlic',
+                type: 'basic',
+                image_url: 'https://images.unsplash.com/photo-1609501676725-7186f734b2b0?w=400&h=300&fit=crop',
+                servings: 4,
+                meal_type: 'dinner',
+                prep_time: 5,
+                cook_time: 10,
+                instructions: [
+                    'Trim ends of green beans',
+                    'Heat olive oil in pan',
+                    'Add minced garlic and sauté briefly',
+                    'Add green beans and cook until tender-crisp',
+                    'Season with salt and pepper'
+                ],
+                tags: ['vegetable', 'healthy', 'side-dish'],
+                labels: ['vegetable', 'healthy', 'side-dish'],
+                ingredients: [
+                    { ingredient_id: 6, quantity: 1, unit: 'lbs' }, // Using Broccoli as green beans substitute
+                    { ingredient_id: 10, quantity: 3, unit: 'pieces' }, // Garlic
+                    { ingredient_id: 22, quantity: 0.1, unit: 'bottles' }, // Olive Oil
+                    { ingredient_id: 23, quantity: 0.05, unit: 'containers' }, // Salt
+                    { ingredient_id: 24, quantity: 0.05, unit: 'containers' } // Black Pepper
+                ]
+            },
+            
+            // COMBO RECIPES - Recipes that contain other recipes
+            {
+                id: 12,
+                title: 'Sunday Dinner Combo',
+                description: 'Classic Sunday dinner with fried chicken, mashed potatoes, and green beans',
+                type: 'combo', // New field indicating this is a combo recipe
+                image_url: 'https://images.unsplash.com/photo-1574484284002-952d92456975?w=400&h=300&fit=crop',
+                servings: 4,
+                meal_type: 'dinner',
+                prep_time: 35, // Sum of component prep times
+                cook_time: 30, // Max of component cook times
+                instructions: [
+                    'This combo recipe combines three dishes:',
+                    '1. Prepare Fried Chicken (Recipe #10)',
+                    '2. Prepare Mashed Potatoes (Recipe #9)', 
+                    '3. Prepare Green Beans (Recipe #11)',
+                    'Coordinate timing so all dishes finish together',
+                    'Serve family-style on large platters'
+                ],
+                tags: ['combo', 'sunday-dinner', 'comfort-food', 'family-meal'],
+                labels: ['combo', 'sunday-dinner', 'comfort-food', 'family-meal'],
+                // For combo recipes, we reference other recipes instead of individual ingredients
+                combo_recipes: [
+                    { recipe_id: 10, servings_multiplier: 1 }, // Fried Chicken
+                    { recipe_id: 9, servings_multiplier: 1 },  // Mashed Potatoes
+                    { recipe_id: 11, servings_multiplier: 1 }  // Green Beans
+                ],
+                // We still include ingredients for grocery list generation (aggregated from component recipes)
+                ingredients: [
+                    // Aggregated from all component recipes
+                    { ingredient_id: 1, quantity: 2, unit: 'lbs' }, // Chicken Breast
+                    { ingredient_id: 16, quantity: 2, unit: 'lbs' }, // Potatoes
+                    { ingredient_id: 6, quantity: 1, unit: 'lbs' }, // Broccoli (green beans substitute)
+                    { ingredient_id: 21, quantity: 0.25, unit: 'lbs' }, // Butter
+                    { ingredient_id: 18, quantity: 0.5, unit: 'gallons' }, // Milk
+                    { ingredient_id: 10, quantity: 3, unit: 'pieces' }, // Garlic
+                    { ingredient_id: 22, quantity: 0.6, unit: 'bottles' }, // Olive Oil
+                    { ingredient_id: 23, quantity: 0.25, unit: 'containers' }, // Salt
+                    { ingredient_id: 24, quantity: 0.2, unit: 'containers' } // Black Pepper
+                ]
+            },
+            {
+                id: 13,
+                title: 'Italian Night Combo',
+                description: 'Pasta with garlic bread and side salad',
+                type: 'combo',
+                image_url: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=400&h=300&fit=crop',
+                servings: 4,
+                meal_type: 'dinner',
+                prep_time: 25,
+                cook_time: 20,
+                instructions: [
+                    'This combo includes:',
+                    '1. Cook pasta with tomato sauce',
+                    '2. Prepare garlic bread',
+                    '3. Make fresh side salad',
+                    'Serve together for complete Italian meal'
+                ],
+                tags: ['combo', 'italian', 'pasta', 'family-meal'],
+                labels: ['combo', 'italian', 'pasta', 'family-meal'],
+                combo_recipes: [
+                    // Note: These would reference actual pasta/bread recipes when implemented
+                    // For now, we'll use existing recipes as placeholders
+                    { recipe_id: 2, servings_multiplier: 1 }, // Using existing recipe as placeholder
+                    { recipe_id: 3, servings_multiplier: 0.5 } // Using existing recipe as placeholder
+                ],
+                ingredients: [
+                    { ingredient_id: 14, quantity: 1, unit: 'lbs' }, // Pasta
+                    { ingredient_id: 12, quantity: 2, unit: 'lbs' }, // Tomatoes
+                    { ingredient_id: 15, quantity: 1, unit: 'loaves' }, // Bread
+                    { ingredient_id: 10, quantity: 4, unit: 'pieces' }, // Garlic
+                    { ingredient_id: 22, quantity: 0.3, unit: 'bottles' }, // Olive Oil
+                    { ingredient_id: 19, quantity: 0.5, unit: 'lbs' } // Cheese
                 ]
             }
         ];
