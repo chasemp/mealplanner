@@ -556,8 +556,8 @@ class AdvancedPlanningManager {
     }
 
     recipeMatchesStyle(recipe, style) {
-        const recipeTags = [...(recipe.tags || []), ...(recipe.labels || [])];
-        return recipeTags.some(tag => tag.toLowerCase().includes(style.toLowerCase()));
+        const recipeLabels = recipe.labels || [];
+        return recipeLabels.some(label => label.toLowerCase().includes(style.toLowerCase()));
     }
 
     // Advanced Plan Generation

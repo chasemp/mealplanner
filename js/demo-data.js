@@ -75,7 +75,6 @@ class DemoDataManager {
                     'Roast vegetables in oven at 400°F for 20 minutes',
                     'Serve hot'
                 ],
-                tags: ['healthy', 'protein', 'low-carb', 'chicken'],
                 labels: ['healthy', 'protein', 'low-carb', 'chicken'],
                 ingredients: [
                     { ingredient_id: 1, quantity: 1.5, unit: 'lbs' },
@@ -105,7 +104,6 @@ class DemoDataManager {
                     'Cook pasta according to package directions',
                     'Serve sauce over pasta with cheese'
                 ],
-                tags: ['italian', 'comfort-food', 'pasta', 'beef'],
                 labels: ['italian', 'comfort-food', 'pasta', 'beef'],
                 ingredients: [
                     { ingredient_id: 2, quantity: 1, unit: 'lbs' },
@@ -135,7 +133,6 @@ class DemoDataManager {
                     'Toast bread slices',
                     'Butter toast and serve with eggs'
                 ],
-                tags: ['breakfast', 'quick', 'easy'],
                 labels: ['breakfast', 'quick', 'easy'],
                 ingredients: [
                     { ingredient_id: 4, quantity: 0.5, unit: 'dozen' },
@@ -163,7 +160,6 @@ class DemoDataManager {
                     'Prepare teriyaki sauce',
                     'Serve salmon over rice with vegetables'
                 ],
-                tags: ['healthy', 'asian', 'fish'],
                 labels: ['healthy', 'asian', 'fish'],
                 ingredients: [
                     { ingredient_id: 3, quantity: 1, unit: 'lbs' },
@@ -191,7 +187,6 @@ class DemoDataManager {
                     'Season with oregano, salt, and pepper',
                     'Top with cheese and serve'
                 ],
-                tags: ['healthy', 'vegetarian', 'mediterranean'],
                 labels: ['healthy', 'vegetarian', 'mediterranean'],
                 ingredients: [
                     { ingredient_id: 11, quantity: 0.5, unit: 'lbs' },
@@ -222,7 +217,6 @@ class DemoDataManager {
                     'Add soy sauce and seasonings',
                     'Serve over rice'
                 ],
-                tags: ['quick', 'healthy', 'asian', 'chicken'],
                 labels: ['quick', 'healthy', 'asian', 'chicken'],
                 ingredients: [
                     { ingredient_id: 1, quantity: 1, unit: 'lbs' },
@@ -252,7 +246,6 @@ class DemoDataManager {
                     'Drizzle with dressing',
                     'Garnish with herbs and serve'
                 ],
-                tags: ['healthy', 'vegetarian', 'quinoa'],
                 labels: ['healthy', 'vegetarian', 'quinoa'],
                 ingredients: [
                     { ingredient_id: 17, quantity: 0.5, unit: 'lbs' },
@@ -282,7 +275,6 @@ class DemoDataManager {
                     'Season with herbs and spices',
                     'Serve hot with bread'
                 ],
-                tags: ['comfort-food', 'stew', 'hearty', 'beef'],
                 labels: ['comfort-food', 'stew', 'hearty', 'beef'],
                 ingredients: [
                     { ingredient_id: 2, quantity: 1.5, unit: 'lbs' },
@@ -312,7 +304,6 @@ class DemoDataManager {
                     'Drain and mash with butter and milk',
                     'Season with salt and pepper to taste'
                 ],
-                tags: ['side-dish', 'comfort-food', 'vegetarian'],
                 labels: ['side-dish', 'comfort-food', 'vegetarian'],
                 ingredients: [
                     { ingredient_id: 16, quantity: 2, unit: 'lbs' }, // Potatoes
@@ -339,7 +330,6 @@ class DemoDataManager {
                     'Fry chicken pieces until golden brown and cooked through',
                     'Drain on paper towels'
                 ],
-                tags: ['comfort-food', 'crispy', 'main-dish'],
                 labels: ['comfort-food', 'crispy', 'main-dish'],
                 ingredients: [
                     { ingredient_id: 1, quantity: 2, unit: 'lbs' }, // Chicken Breast
@@ -365,7 +355,6 @@ class DemoDataManager {
                     'Add green beans and cook until tender-crisp',
                     'Season with salt and pepper'
                 ],
-                tags: ['vegetable', 'healthy', 'side-dish'],
                 labels: ['vegetable', 'healthy', 'side-dish'],
                 ingredients: [
                     { ingredient_id: 6, quantity: 1, unit: 'lbs' }, // Using Broccoli as green beans substitute
@@ -391,7 +380,6 @@ class DemoDataManager {
                     'Spread garlic butter on bread',
                     'Bake at 375°F for 10-15 minutes until golden'
                 ],
-                tags: ['side-dish', 'bread', 'garlic'],
                 labels: ['side-dish', 'bread', 'garlic'],
                 ingredients: [
                     { ingredient_id: 15, quantity: 1, unit: 'loaves' }, // Bread
@@ -416,7 +404,6 @@ class DemoDataManager {
                     'Toss lettuce with dressing',
                     'Top with croutons and extra parmesan'
                 ],
-                tags: ['salad', 'fresh', 'vegetarian'],
                 labels: ['salad', 'fresh', 'vegetarian'],
                 ingredients: [
                     { ingredient_id: 13, quantity: 2, unit: 'heads' }, // Lettuce
@@ -441,7 +428,6 @@ class DemoDataManager {
                     'Combine wet and dry ingredients until just mixed',
                     'Cook on griddle until bubbles form, then flip'
                 ],
-                tags: ['breakfast', 'fluffy', 'sweet'],
                 labels: ['breakfast', 'fluffy', 'sweet'],
                 ingredients: [
                     { ingredient_id: 18, quantity: 1, unit: 'gallons' }, // Milk
@@ -466,7 +452,6 @@ class DemoDataManager {
                     'Cook until desired crispiness',
                     'Drain on paper towels'
                 ],
-                tags: ['breakfast', 'crispy', 'meat'],
                 labels: ['breakfast', 'crispy', 'meat'],
                 ingredients: [
                     { ingredient_id: 2, quantity: 1, unit: 'lbs' } // Beef (using as bacon substitute)
@@ -488,7 +473,6 @@ class DemoDataManager {
                     'Heat oil in large skillet',
                     'Cook until golden brown and crispy on both sides'
                 ],
-                tags: ['breakfast', 'crispy', 'potatoes'],
                 labels: ['breakfast', 'crispy', 'potatoes'],
                 ingredients: [
                     { ingredient_id: 16, quantity: 2, unit: 'lbs' }, // Potatoes
@@ -513,7 +497,6 @@ class DemoDataManager {
                     'Grill over medium-high heat',
                     'Cook until tender and lightly charred'
                 ],
-                tags: ['vegetable', 'healthy', 'grilled'],
                 labels: ['vegetable', 'healthy', 'grilled'],
                 ingredients: [
                     { ingredient_id: 6, quantity: 1, unit: 'lbs' }, // Broccoli
@@ -540,7 +523,6 @@ class DemoDataManager {
                     'Bring to boil, then simmer covered',
                     'Let stand 5 minutes, then fluff with fork'
                 ],
-                tags: ['side-dish', 'rice', 'fluffy'],
                 labels: ['side-dish', 'rice', 'fluffy'],
                 ingredients: [
                     { ingredient_id: 14, quantity: 1, unit: 'lbs' }, // Pasta (using as rice substitute)
@@ -569,7 +551,6 @@ class DemoDataManager {
                     'Coordinate timing so all dishes finish together',
                     'Serve family-style on large platters'
                 ],
-                tags: ['combo', 'sunday-dinner', 'comfort-food', 'family-meal'],
                 labels: ['combo', 'sunday-dinner', 'comfort-food', 'family-meal'],
                 // For combo recipes, we reference other recipes instead of individual ingredients
                 combo_recipes: [
@@ -608,7 +589,6 @@ class DemoDataManager {
                     '3. Prepare Caesar Salad (Recipe #15)',
                     'Serve together for complete Italian meal'
                 ],
-                tags: ['combo', 'italian', 'pasta', 'family-meal'],
                 labels: ['combo', 'italian', 'pasta', 'family-meal'],
                 combo_recipes: [
                     { recipe_id: 2, servings_multiplier: 1 }, // Spaghetti Bolognese
@@ -646,7 +626,6 @@ class DemoDataManager {
                     '3. Prepare golden Hash Browns (Recipe #18)',
                     'Serve hot with maple syrup and butter'
                 ],
-                tags: ['combo', 'breakfast', 'hearty', 'american'],
                 labels: ['combo', 'breakfast', 'hearty', 'american'],
                 combo_recipes: [
                     { recipe_id: 16, servings_multiplier: 1 }, // Pancakes
@@ -682,7 +661,6 @@ class DemoDataManager {
                     '3. Cook Rice Pilaf (Recipe #20)',
                     'Arrange beautifully on plates for elegant presentation'
                 ],
-                tags: ['combo', 'healthy', 'salmon', 'elegant'],
                 labels: ['combo', 'healthy', 'salmon', 'elegant'],
                 combo_recipes: [
                     { recipe_id: 4, servings_multiplier: 1 }, // Salmon Teriyaki Bowl
@@ -719,7 +697,6 @@ class DemoDataManager {
                     '3. Serve with warm Garlic Bread (Recipe #14)',
                     'Perfect for a Mediterranean-inspired dinner'
                 ],
-                tags: ['combo', 'mediterranean', 'greek', 'fresh'],
                 labels: ['combo', 'mediterranean', 'greek', 'fresh'],
                 combo_recipes: [
                     { recipe_id: 5, servings_multiplier: 1 }, // Greek Salad
@@ -758,7 +735,6 @@ class DemoDataManager {
                     '3. Add Grilled Vegetables (Recipe #19)',
                     'A complete plant-based meal with rich flavors'
                 ],
-                tags: ['combo', 'vegetarian', 'quinoa', 'hearty'],
                 labels: ['combo', 'vegetarian', 'quinoa', 'hearty'],
                 combo_recipes: [
                     { recipe_id: 7, servings_multiplier: 1 }, // Vegetable Quinoa Bowl
@@ -797,7 +773,6 @@ class DemoDataManager {
                     '3. Prepare golden Hash Browns (Recipe #18)',
                     'Ideal for leisurely weekend mornings'
                 ],
-                tags: ['combo', 'brunch', 'weekend', 'eggs'],
                 labels: ['combo', 'brunch', 'weekend', 'eggs'],
                 combo_recipes: [
                     { recipe_id: 3, servings_multiplier: 1 }, // Scrambled Eggs with Toast
@@ -834,7 +809,6 @@ class DemoDataManager {
                     '3. Serve with warm Garlic Bread (Recipe #14)',
                     'Perfect for a satisfying yet light midday meal'
                 ],
-                tags: ['combo', 'lunch', 'light', 'salad'],
                 labels: ['combo', 'lunch', 'light', 'salad'],
                 combo_recipes: [
                     { recipe_id: 15, servings_multiplier: 1 }, // Caesar Salad

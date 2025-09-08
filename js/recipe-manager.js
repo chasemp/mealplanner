@@ -223,10 +223,10 @@ class RecipeManager {
                     
                     <div class="flex items-center justify-between">
                         <div class="flex flex-wrap gap-1">
-                            ${recipe.tags.slice(0, 2).map(tag => `
-                                <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">${tag}</span>
+                            ${(recipe.labels || []).slice(0, 2).map(label => `
+                                <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">${label}</span>
                             `).join('')}
-                            ${recipe.tags.length > 2 ? `<span class="text-xs text-gray-500">+${recipe.tags.length - 2} more</span>` : ''}
+                            ${(recipe.labels || []).length > 2 ? `<span class="text-xs text-gray-500">+${(recipe.labels || []).length - 2} more</span>` : ''}
                         </div>
                         <div class="text-xs text-gray-400">
                             ${recipe.type === 'combo' ? 
@@ -266,7 +266,6 @@ class RecipeManager {
             filtered = filtered.filter(recipe => 
                 recipe.title.toLowerCase().includes(term) ||
                 recipe.description.toLowerCase().includes(term) ||
-                (recipe.tags && recipe.tags.some(tag => tag.toLowerCase().includes(term))) ||
                 (recipe.labels && recipe.labels.some(label => label.toLowerCase().includes(term)))
             );
         }
@@ -284,10 +283,7 @@ class RecipeManager {
         // Filter by label
         if (this.selectedLabel !== 'all') {
             filtered = filtered.filter(recipe => {
-                const recipeLabels = [
-                    ...(recipe.labels || []),
-                    ...(recipe.tags || [])
-                ];
+                const recipeLabels = recipe.labels || [];
                 return recipeLabels.some(label => label.toLowerCase() === this.selectedLabel.toLowerCase());
             });
         }
@@ -611,10 +607,10 @@ class RecipeManager {
                         <div class="space-y-3">
                             <!-- Label Input -->
                             <div class="flex gap-2">
-                                <input type="text" id="recipe-labels" name="labels"
+                                <input type="text" id="recipe-tags" name="labels"
                                        class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                                        placeholder="Add labels (e.g., healthy, quick, vegetarian)"
-                                       value="${isEdit && recipe.labels ? recipe.labels.join(', ') : (isEdit && recipe.tags ? recipe.tags.join(', ') : '')}">
+                                       value="${isEdit && recipe.labels ? recipe.labels.join(', ') : ''}"
                                 <button type="button" id="add-label-btn" class="px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm">
                                     Add
                                 </button>
