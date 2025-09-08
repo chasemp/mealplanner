@@ -23,7 +23,8 @@ const files = [
             // Update ALL JavaScript file versions in script tags
             { regex: /\.js\?v=[\d.]+/g, replacement: `.js?v=${version}` },
             { regex: /<span id="version-display">v[\d.]+<\/span>/g, replacement: `<span id="version-display">v${version}</span>` },
-            { regex: /<meta name="cache-bust" content="[\d.]+">/, replacement: `<meta name="cache-bust" content="${version}">` }
+            { regex: /<meta name="cache-bust" content="[\d.]+">/, replacement: `<meta name="cache-bust" content="${version}">` },
+            { regex: /<title>MealPlanner v[\d.]+<\/title>/, replacement: `<title>MealPlanner v${version}</title>` }
         ]
     },
     {
