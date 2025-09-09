@@ -831,8 +831,23 @@ class DemoDataManager {
             }
         ];
 
-        // Scheduled meals that reference the recipes above (including combo recipes)
-        this.scheduledMeals = [
+        // Scheduled meals that reference the recipes above (using modern ScheduleManager schema)
+        this.scheduledMeals = this.generateScheduledMealsWithSchema();
+
+        // Update ingredient usage counts based on recipes
+        this.updateIngredientUsage();
+    }
+
+    // Helper method to get date strings relative to today
+    getDateString(daysFromToday) {
+        const date = new Date();
+        date.setDate(date.getDate() + daysFromToday);
+        return date.toISOString().split('T')[0];
+    }
+
+    // Generate scheduled meals with proper ScheduleManager schema
+    generateScheduledMealsWithSchema() {
+        const scheduledMealsData = [
             // This week - Mix of basic and combo recipes
             { id: 1, recipe_id: 25, meal_type: 'breakfast', date: this.getDateString(0), notes: 'Weekend Brunch Combo' },
             { id: 2, recipe_id: 26, meal_type: 'lunch', date: this.getDateString(0), notes: 'Light Lunch Combo' },
@@ -865,15 +880,28 @@ class DemoDataManager {
             { id: 21, recipe_id: 8, meal_type: 'dinner', date: this.getDateString(6), notes: 'Beef and potato stew' }
         ];
 
-        // Update ingredient usage counts based on recipes
-        this.updateIngredientUsage();
-    }
+        // Convert to modern ScheduleManager schema
+        return scheduledMealsData.map(mealData => {
+            const recipe = this.recipes.find(r => r.id === mealData.recipe_id);
+            if (!recipe) {
+                console.warn(`Recipe ${mealData.recipe_id} not found for scheduled meal ${mealData.id}`);
+                return null;
+            }
 
-    // Helper method to get date strings relative to today
-    getDateString(daysFromToday) {
-        const date = new Date();
-        date.setDate(date.getDate() + daysFromToday);
-        return date.toISOString().split('T')[0];
+            return {
+                id: mealData.id,
+                meal_id: `demo-meal-${mealData.id}`, // Generate meal ID for compatibility
+                meal_name: recipe.title, // Use recipe title as meal name
+                meal_type: mealData.meal_type,
+                date: mealData.date,
+                servings: 4, // Default servings
+                notes: mealData.notes || '',
+                recipes: [recipe], // Single recipe in array format
+                recipe_id: mealData.recipe_id, // Keep for backward compatibility
+                total_time: (recipe.prep_time || 0) + (recipe.cook_time || 0),
+                created_at: new Date().toISOString()
+            };
+        }).filter(meal => meal !== null); // Remove any null entries
     }
 
     // Update ingredient usage statistics based on recipes

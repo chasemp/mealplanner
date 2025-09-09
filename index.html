@@ -6,9 +6,9 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <meta name="cache-bust" content="2025.09.09.1706">
+    <meta name="cache-bust" content="2025.09.09.1715">
     <meta name="build-timestamp" content="1725825300000">
-    <title>MealPlanner v2025.09.09.1706</title>
+    <title>MealPlanner v2025.09.09.1715</title>
     <meta name="description" content="A PWA for meal planning with local SQLite storage">
     
     <!-- PWA Meta Tags -->
@@ -23,7 +23,7 @@
     
     <!-- Styles -->
     <link rel="stylesheet" href="css/tailwind-compiled.css">
-    <link rel="stylesheet" href="./css/styles.css?v=2025.09.09.1706">
+    <link rel="stylesheet" href="./css/styles.css?v=2025.09.09.1715">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="./manifest.json">
@@ -185,10 +185,10 @@
                             🥪 Lunch
                         </button>
                         <button class="nav-tab meal-type-tab active py-4 px-1 border-b-2 border-blue-500 text-blue-600 dark:text-blue-400 font-medium text-sm" data-tab="dinner">
-                            🍽️ Dinner
+                            📋 Plan
                         </button>
                         <button class="nav-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="scheduled">
-                            📅 Scheduled
+                            🍽️ Menu
                         </button>
                     </div>
                 </div>
@@ -295,7 +295,7 @@
                 <!-- Dinner Tab -->
                 <div id="dinner-tab" class="tab-content">
                     <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Dinner Planning</h2>
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Planning</h2>
                         <div class="flex flex-wrap gap-3">
                             <button id="view-toggle-dinner" class="btn-secondary" data-view="calendar">
                                 📅 Calendar View
@@ -384,9 +384,9 @@
                         </div>
                     </div>
                     
-                    <!-- Menu Section -->
+                    <!-- Schedule Section -->
                     <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Menu</h2>
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Schedule</h2>
                     </div>
                     
                     <!-- Itinerary View (default) -->
@@ -690,7 +690,7 @@
         
         <!-- Version Footer -->
         <footer class="fixed bottom-2 right-2 text-xs text-gray-400 bg-white/80 backdrop-blur-sm px-2 py-1 rounded shadow-sm">
-            <span id="version-display">v2025.09.09.1706</span>
+            <span id="version-display">v2025.09.09.1715</span>
         </footer>
     </div>
 
@@ -698,24 +698,24 @@
     <div id="modal-container"></div>
 
     <!-- JavaScript -->
-    <script src="./js/itinerary-view.js?v=2025.09.09.1706"></script>
-    <script src="./js/calendar-view.js?v=2025.09.09.1706"></script>
-      <script src="./js/demo-data.js?v=2025.09.09.1706"></script>
-    <script src="./js/barcode-scanner.js?v=2025.09.09.1706"></script>
-    <script src="./js/shared-barcode-scanner.js?v=2025.09.09.1706"></script>
-    <script src="./js/recipe-manager.js?v=2025.09.09.1706"></script>
-        <script src="./js/meal-manager.js?v=2025.09.09.1706"></script>
-        <script src="./js/schedule-manager.js?v=2025.09.09.1706"></script>
-    <script src="./js/ingredients-manager.js?v=2025.09.09.1706"></script>
-    <script src="./js/grocery-list-manager.js?v=2025.09.09.1706"></script>
-    <script src="./js/google-calendar-integration.js?v=2025.09.09.1706"></script>
-    <script src="./js/meal-rotation-engine.js?v=2025.09.09.1706"></script>
-    <script src="./js/settings-manager.js?v=2025.09.09.1706"></script>
-    <script src="./js/performance-manager.js?v=2025.09.09.1706"></script>
-    <script src="./js/advanced-planning.js?v=2025.09.09.1706"></script>
-    <script src="./js/pantry-manager.js?v=2025.09.09.1706"></script>
-    <script src="./js/mobile-navigation.js?v=2025.09.09.1706"></script>
-    <script src="./js/main.js?v=2025.09.09.1706"></script>
+    <script src="./js/itinerary-view.js?v=2025.09.09.1715"></script>
+    <script src="./js/calendar-view.js?v=2025.09.09.1715"></script>
+      <script src="./js/demo-data.js?v=2025.09.09.1715"></script>
+    <script src="./js/barcode-scanner.js?v=2025.09.09.1715"></script>
+    <script src="./js/shared-barcode-scanner.js?v=2025.09.09.1715"></script>
+    <script src="./js/recipe-manager.js?v=2025.09.09.1715"></script>
+        <script src="./js/meal-manager.js?v=2025.09.09.1715"></script>
+        <script src="./js/schedule-manager.js?v=2025.09.09.1715"></script>
+    <script src="./js/ingredients-manager.js?v=2025.09.09.1715"></script>
+    <script src="./js/grocery-list-manager.js?v=2025.09.09.1715"></script>
+    <script src="./js/google-calendar-integration.js?v=2025.09.09.1715"></script>
+    <script src="./js/meal-rotation-engine.js?v=2025.09.09.1715"></script>
+    <script src="./js/settings-manager.js?v=2025.09.09.1715"></script>
+    <script src="./js/performance-manager.js?v=2025.09.09.1715"></script>
+    <script src="./js/advanced-planning.js?v=2025.09.09.1715"></script>
+    <script src="./js/pantry-manager.js?v=2025.09.09.1715"></script>
+    <script src="./js/mobile-navigation.js?v=2025.09.09.1715"></script>
+    <script src="./js/main.js?v=2025.09.09.1715"></script>
     
     <!-- Settings Dropdown Script -->
     <script>
