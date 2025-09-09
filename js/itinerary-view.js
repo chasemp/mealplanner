@@ -64,6 +64,41 @@ class ItineraryView {
         });
     }
 
+    renderWeekOptions() {
+        const options = [];
+        const today = new Date();
+        
+        // Calculate the start of the current week (Sunday)
+        const currentWeekStart = new Date(today);
+        currentWeekStart.setDate(today.getDate() - today.getDay());
+        
+        // Generate options for different week ranges
+        const weekRanges = [
+            { weeks: 1, label: 'This Week' },
+            { weeks: 2, label: '2 Weeks' },
+            { weeks: 4, label: '4 Weeks' },
+            { weeks: 8, label: '8 Weeks' }
+        ];
+        
+        weekRanges.forEach(range => {
+            const endDate = new Date(currentWeekStart);
+            endDate.setDate(currentWeekStart.getDate() + (range.weeks * 7) - 1);
+            
+            const startStr = currentWeekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const endStr = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            
+            const isSelected = range.weeks === this.weeksToShow;
+            
+            options.push(`
+                <option value="${range.weeks}" ${isSelected ? 'selected' : ''}>
+                    ${range.label} (${startStr} - ${endStr})
+                </option>
+            `);
+        });
+        
+        return options.join('');
+    }
+
     render() {
         // Load current scheduled meals
         this.loadScheduledMeals();
@@ -81,10 +116,7 @@ class ItineraryView {
                     
                     <div class="flex items-center space-x-3">
                         <select id="weeks-select-${this.mealType}" class="text-sm border border-gray-300 rounded px-2 py-1">
-                            <option value="1">1 Week</option>
-                            <option value="2">2 Weeks</option>
-                            <option value="4" selected>4 Weeks</option>
-                            <option value="8">8 Weeks</option>
+                            ${this.renderWeekOptions()}
                         </select>
                     </div>
                 </div>
