@@ -23,15 +23,16 @@ class RecipeManager {
     }
 
     async loadIngredients() {
-        // Load from centralized demo data for consistency
-        if (window.DemoDataManager) {
-            const demoData = new window.DemoDataManager();
-            this.ingredients = demoData.getIngredients();
-            console.log(`✅ Recipe Manager loaded ${this.ingredients.length} consistent ingredients from demo data`);
+        console.log('📱 Recipe Manager loading ingredients from authoritative data source...');
+        
+        // Get data from centralized authority
+        if (window.mealPlannerSettings) {
+            this.ingredients = window.mealPlannerSettings.getAuthoritativeData('ingredients');
+            console.log(`✅ Recipe Manager loaded ${this.ingredients.length} ingredients from authoritative source`);
         } else {
-            // Fallback to empty array if demo data not available
+            // Fallback if settings not available
+            console.warn('⚠️ Settings manager not available, using empty ingredients');
             this.ingredients = [];
-            console.warn('⚠️ Demo data manager not available, using empty ingredients list');
         }
     }
 
@@ -358,17 +359,33 @@ class RecipeManager {
     }
 
     getAllLabels() {
-        // Get all available labels from recipes plus some predefined ones
+        // Get all available labels from current recipes and ingredients
         const recipeLabels = this.getUniqueLabels();
-        const predefinedLabels = [
-            'quick', 'healthy', 'vegetarian', 'vegan', 'gluten-free', 'dairy-free',
-            'comfort-food', 'spicy', 'sweet', 'savory', 'protein-rich', 'low-carb',
-            'kid-friendly', 'party', 'holiday', 'summer', 'winter', 'easy', 'advanced'
-        ];
+        const ingredientLabels = this.getUniqueIngredientLabels();
+        
+        // Only show predefined labels if we're in demo mode
+        let predefinedLabels = [];
+        if (window.mealPlannerSettings && window.mealPlannerSettings.getCurrentDatabaseSource() === 'demo') {
+            predefinedLabels = [
+                'quick', 'healthy', 'vegetarian', 'vegan', 'gluten-free', 'dairy-free',
+                'comfort-food', 'spicy', 'sweet', 'savory', 'protein-rich', 'low-carb',
+                'kid-friendly', 'party', 'holiday', 'summer', 'winter', 'easy', 'advanced'
+            ];
+        }
         
         // Combine and deduplicate
-        const allLabels = [...new Set([...recipeLabels, ...predefinedLabels])];
+        const allLabels = [...new Set([...recipeLabels, ...ingredientLabels, ...predefinedLabels])];
         return allLabels.sort();
+    }
+
+    getUniqueIngredientLabels() {
+        const allLabels = new Set();
+        this.ingredients.forEach(ingredient => {
+            if (ingredient.labels && Array.isArray(ingredient.labels)) {
+                ingredient.labels.forEach(label => allLabels.add(label));
+            }
+        });
+        return Array.from(allLabels);
     }
 
     getIngredientById(id) {

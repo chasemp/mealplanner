@@ -76,11 +76,17 @@ class GroceryListManager {
     }
 
     async loadPantryItems() {
-        this.pantryItems = [
-            { ingredient_id: 5, name: 'Salt', quantity: 1, unit: 'container', notes: 'Full container' },
-            { ingredient_id: 6, name: 'Black Pepper', quantity: 1, unit: 'container', notes: 'Half full' },
-            { ingredient_id: 4, name: 'Olive Oil', quantity: 0.5, unit: 'bottle', notes: 'Nearly empty' }
-        ];
+        console.log('📱 Grocery List Manager loading pantry items from authoritative data source...');
+        
+        // Get pantry data from centralized authority
+        if (window.mealPlannerSettings) {
+            this.pantryItems = window.mealPlannerSettings.getAuthoritativeData('pantryItems');
+            console.log(`✅ Grocery List Manager loaded ${this.pantryItems.length} pantry items from authoritative source`);
+        } else {
+            // Fallback if settings not available
+            console.warn('⚠️ Settings manager not available, using empty pantry items');
+            this.pantryItems = [];
+        }
     }
 
     async loadGroceryLists() {
