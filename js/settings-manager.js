@@ -346,7 +346,10 @@ class SettingsManager {
                 await window.app.clearAllData();
             }
             
-            console.log('✅ In-memory database initialized - all data cleared');
+            // Reload all managers to ensure they start with empty state
+            await this.reloadAllManagers();
+            
+            console.log('✅ In-memory database initialized - all data cleared and managers reloaded');
             return true;
         } catch (error) {
             console.error('❌ Failed to initialize in-memory database:', error);
@@ -412,6 +415,82 @@ class SettingsManager {
     // Method for managers to check if they should load demo data
     shouldLoadDemoData() {
         return this.settings.sourceType === 'demo';
+    }
+
+    // Centralized data loading authority - all managers get data from here
+    getAuthoritativeData(dataType) {
+        const currentSource = this.getCurrentDatabaseSource();
+        console.log(`📊 Loading authoritative ${dataType} data from source: ${currentSource}`);
+        
+        switch (currentSource) {
+            case 'demo':
+                return this.getDemoData(dataType);
+            case 'memory':
+                return this.getMemoryData(dataType);
+            case 'local':
+                return this.getLocalData(dataType);
+            case 'github':
+                return this.getGitHubData(dataType);
+            default:
+                console.warn(`⚠️ Unknown data source: ${currentSource}, falling back to empty data`);
+                return this.getMemoryData(dataType);
+        }
+    }
+    
+    getDemoData(dataType) {
+        if (!window.DemoDataManager) {
+            console.warn('⚠️ DemoDataManager not available, returning empty data');
+            return [];
+        }
+        
+        try {
+            const demoData = new window.DemoDataManager();
+            switch (dataType) {
+                case 'ingredients':
+                    return demoData.getIngredients();
+                case 'recipes':
+                    return demoData.getRecipes();
+                case 'scheduledMeals':
+                    return demoData.getScheduledMeals();
+                case 'meals':
+                    return []; // Meals are user-created, not in demo data
+                default:
+                    console.warn(`⚠️ Unknown data type: ${dataType}`);
+                    return [];
+            }
+        } catch (error) {
+            console.error(`❌ Error loading demo ${dataType}:`, error);
+            return [];
+        }
+    }
+    
+    getMemoryData(dataType) {
+        // In-memory mode always returns empty data - clean slate
+        console.log(`✅ Returning empty ${dataType} for in-memory mode`);
+        return [];
+    }
+    
+    getLocalData(dataType) {
+        // Local file mode - try localStorage first, then empty
+        try {
+            const stored = localStorage.getItem(`mealplanner_${dataType}`);
+            if (stored) {
+                const data = JSON.parse(stored);
+                console.log(`✅ Loaded ${data.length} ${dataType} from localStorage`);
+                return data;
+            }
+        } catch (error) {
+            console.warn(`⚠️ Error loading ${dataType} from localStorage:`, error);
+        }
+        
+        console.log(`✅ No local ${dataType} found, returning empty data`);
+        return [];
+    }
+    
+    getGitHubData(dataType) {
+        // GitHub mode - try localStorage first (synced data), then empty
+        // TODO: Implement GitHub sync logic
+        return this.getLocalData(dataType);
     }
 
     // Method to reload all managers when database source changes

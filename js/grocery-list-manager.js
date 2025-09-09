@@ -29,38 +29,30 @@ class GroceryListManager {
     }
 
     async loadIngredients() {
-        // Check database source setting
-        const shouldLoadDemo = window.mealPlannerSettings?.shouldLoadDemoData() ?? true;
-        const currentSource = window.mealPlannerSettings?.getCurrentDatabaseSource() ?? 'demo';
+        console.log('📱 Grocery List Manager loading ingredients from authoritative data source...');
         
-        console.log(`📊 Grocery List Manager - Database source: ${currentSource}, should load demo: ${shouldLoadDemo}`);
-        
-        // Only load demo data if database source is 'demo'
-        if (shouldLoadDemo && window.DemoDataManager) {
-            const demoData = new window.DemoDataManager();
-            this.ingredients = demoData.getIngredients();
-            console.log(`✅ Grocery List Manager loaded ${this.ingredients.length} consistent ingredients from demo data`);
+        // Get data from centralized authority
+        if (window.mealPlannerSettings) {
+            this.ingredients = window.mealPlannerSettings.getAuthoritativeData('ingredients');
+            console.log(`✅ Grocery List Manager loaded ${this.ingredients.length} ingredients from authoritative source`);
         } else {
-            // Use empty array for in-memory or other sources
+            // Fallback if settings not available
+            console.warn('⚠️ Settings manager not available, using empty ingredients');
             this.ingredients = [];
-            console.log(`✅ Grocery List Manager initialized with empty ingredients (source: ${currentSource})`);
         }
     }
 
     async loadRecipes() {
-        // Check database source setting
-        const shouldLoadDemo = window.mealPlannerSettings?.shouldLoadDemoData() ?? true;
-        const currentSource = window.mealPlannerSettings?.getCurrentDatabaseSource() ?? 'demo';
+        console.log('📱 Grocery List Manager loading recipes from authoritative data source...');
         
-        // Only load demo data if database source is 'demo'
-        if (shouldLoadDemo && window.DemoDataManager) {
-            const demoData = new window.DemoDataManager();
-            this.recipes = demoData.getRecipes();
-            console.log(`✅ Grocery List Manager loaded ${this.recipes.length} consistent recipes from demo data`);
+        // Get data from centralized authority
+        if (window.mealPlannerSettings) {
+            this.recipes = window.mealPlannerSettings.getAuthoritativeData('recipes');
+            console.log(`✅ Grocery List Manager loaded ${this.recipes.length} recipes from authoritative source`);
         } else {
-            // Use empty array for in-memory or other sources
+            // Fallback if settings not available
+            console.warn('⚠️ Settings manager not available, using empty recipes');
             this.recipes = [];
-            console.log(`✅ Grocery List Manager initialized with empty recipes (source: ${currentSource})`);
         }
     }
 
