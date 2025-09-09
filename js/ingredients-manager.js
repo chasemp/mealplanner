@@ -16,30 +16,19 @@ class IngredientsManager {
     }
 
     async loadIngredients() {
-        console.log('📱 Mobile Debug - Loading ingredients...');
-        console.log('📱 window.DemoDataManager available:', !!window.DemoDataManager);
+        console.log('📱 Loading ingredients from authoritative data source...');
         
-        // Check database source setting
-        const shouldLoadDemo = window.mealPlannerSettings?.shouldLoadDemoData() ?? true;
-        const currentSource = window.mealPlannerSettings?.getCurrentDatabaseSource() ?? 'demo';
-        
-        console.log(`📊 Database source: ${currentSource}, should load demo: ${shouldLoadDemo}`);
-        
-        // Only load demo data if database source is 'demo'
-        if (shouldLoadDemo && window.DemoDataManager) {
-            try {
-                const demoData = new window.DemoDataManager();
-                this.ingredients = demoData.getIngredients();
-                console.log(`✅ Loaded ${this.ingredients.length} consistent ingredients from demo data`);
+        // Get data from centralized authority
+        if (window.mealPlannerSettings) {
+            this.ingredients = window.mealPlannerSettings.getAuthoritativeData('ingredients');
+            console.log(`✅ Ingredients Manager loaded ${this.ingredients.length} ingredients from authoritative source`);
+            if (this.ingredients.length > 0) {
                 console.log('📱 First ingredient:', this.ingredients[0]);
-            } catch (error) {
-                console.error('❌ Error creating DemoDataManager:', error);
-                this.ingredients = [];
             }
         } else {
-            // Use empty array for in-memory or other sources
+            // Fallback if settings not available
+            console.warn('⚠️ Settings manager not available, using empty ingredients');
             this.ingredients = [];
-            console.log(`✅ Ingredients Manager initialized with empty data (source: ${currentSource})`);
         }
         
         console.log('📱 Final ingredients count:', this.ingredients.length);

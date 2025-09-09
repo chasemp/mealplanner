@@ -36,41 +36,19 @@ class RecipeManager {
     }
 
     async loadRecipes() {
-        console.log('📱 Loading recipes...');
+        console.log('📱 Loading recipes from authoritative data source...');
         
-        // Check database source setting
-        const shouldLoadDemo = window.mealPlannerSettings?.shouldLoadDemoData() ?? true;
-        const currentSource = window.mealPlannerSettings?.getCurrentDatabaseSource() ?? 'demo';
-        
-        console.log(`📊 Database source: ${currentSource}, should load demo: ${shouldLoadDemo}`);
-        
-        try {
-            // First try to load from localStorage
-            const saved = localStorage.getItem('mealplanner-recipes');
-            if (saved) {
-                this.recipes = JSON.parse(saved);
-                console.log('📱 Loaded recipes from localStorage:', this.recipes.length);
-                return;
-            }
-        } catch (error) {
-            console.warn('⚠️ Error loading from localStorage:', error);
-        }
-        
-        // Only load demo data if database source is 'demo'
-        if (shouldLoadDemo && window.DemoDataManager) {
-            try {
-                const demoData = new window.DemoDataManager();
-                this.recipes = demoData.getRecipes();
-                console.log(`✅ Recipe Manager loaded ${this.recipes.length} consistent recipes from demo data`);
+        // Get data from centralized authority
+        if (window.mealPlannerSettings) {
+            this.recipes = window.mealPlannerSettings.getAuthoritativeData('recipes');
+            console.log(`✅ Recipe Manager loaded ${this.recipes.length} recipes from authoritative source`);
+            if (this.recipes.length > 0) {
                 console.log('📱 First recipe:', this.recipes[0]);
-            } catch (error) {
-                console.error('❌ Error creating DemoDataManager:', error);
-                this.recipes = [];
             }
         } else {
-            // Use empty array for in-memory or other sources
+            // Fallback if settings not available
+            console.warn('⚠️ Settings manager not available, using empty recipes');
             this.recipes = [];
-            console.log(`✅ Recipe Manager initialized with empty data (source: ${currentSource})`);
         }
         
         console.log('📱 Final recipes count:', this.recipes.length);

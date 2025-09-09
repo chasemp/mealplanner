@@ -22,21 +22,16 @@ class MealManager {
     }
 
     async loadRecipes() {
-        // Check database source setting
-        const shouldLoadDemo = window.mealPlannerSettings?.shouldLoadDemoData() ?? true;
-        const currentSource = window.mealPlannerSettings?.getCurrentDatabaseSource() ?? 'demo';
+        console.log('📱 Meal Manager loading recipes from authoritative data source...');
         
-        console.log(`📊 Meal Manager - Database source: ${currentSource}, should load demo: ${shouldLoadDemo}`);
-        
-        // Only load demo data if database source is 'demo'
-        if (shouldLoadDemo && window.DemoDataManager) {
-            const demoData = new window.DemoDataManager();
-            this.recipes = demoData.getRecipes();
-            console.log(`✅ Meal Manager loaded ${this.recipes.length} recipes from demo data`);
+        // Get data from centralized authority
+        if (window.mealPlannerSettings) {
+            this.recipes = window.mealPlannerSettings.getAuthoritativeData('recipes');
+            console.log(`✅ Meal Manager loaded ${this.recipes.length} recipes from authoritative source`);
         } else {
-            // Use empty array for in-memory or other sources
+            // Fallback if settings not available
+            console.warn('⚠️ Settings manager not available, using empty recipes');
             this.recipes = [];
-            console.log(`✅ Meal Manager initialized with empty data (source: ${currentSource})`);
         }
     }
 
