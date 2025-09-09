@@ -178,8 +178,25 @@ class ItineraryView {
     }
 
     getWeekSummary(week) {
-        // Mock data for now
-        const planned = Math.floor(Math.random() * 4) + 3;
+        // Calculate actual meal count for this week
+        const weekStart = new Date(this.startDate);
+        weekStart.setDate(weekStart.getDate() + (week * 7));
+        
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        
+        // Count actual scheduled meals for this week
+        let planned = 0;
+        for (let day = 0; day < 7; day++) {
+            const date = new Date(weekStart);
+            date.setDate(date.getDate() + day);
+            
+            const scheduledMeal = this.getScheduledMealForDate(date);
+            if (scheduledMeal) {
+                planned++;
+            }
+        }
+        
         const total = 7;
         return `${planned}/${total} meals planned`;
     }
