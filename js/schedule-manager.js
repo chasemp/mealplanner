@@ -10,7 +10,8 @@ class ScheduleManager {
      */
     loadScheduledMeals() {
         try {
-            const stored = localStorage.getItem('scheduledMeals');
+            // Use the same storage key as main app for consistency
+            const stored = localStorage.getItem('mealplanner_scheduled_meals');
             if (stored) {
                 this.scheduledMeals = JSON.parse(stored);
             } else {
@@ -31,7 +32,9 @@ class ScheduleManager {
      */
     saveScheduledMeals() {
         try {
-            localStorage.setItem('scheduledMeals', JSON.stringify(this.scheduledMeals));
+            // Use the same storage key as main app for consistency
+            localStorage.setItem('mealplanner_scheduled_meals', JSON.stringify(this.scheduledMeals));
+            console.log(`💾 ScheduleManager saved ${this.scheduledMeals.length} scheduled meals`);
         } catch (error) {
             console.error('Error saving scheduled meals:', error);
         }
