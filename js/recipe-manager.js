@@ -1109,7 +1109,7 @@ class RecipeManager {
                     ingredients.push({
                         ingredient_id: parseInt(ingredientId),
                         name: ingredient.name,
-                        quantity: parseFloat(quantity),
+                        quantity: this.roundQuantity(parseFloat(quantity)),
                         unit: unit || ingredient.default_unit,
                         notes: notes || ''
                     });
@@ -1365,6 +1365,12 @@ class RecipeManager {
         setTimeout(() => {
             notification.remove();
         }, 3000);
+    }
+
+    // Utility function to round quantities to 2 decimal places and remove trailing zeros
+    roundQuantity(quantity) {
+        const rounded = Math.round(quantity * 100) / 100;
+        return parseFloat(rounded.toFixed(2));
     }
 
     async clearAllData() {
