@@ -16,9 +16,18 @@ class ScheduleManager {
                 this.scheduledMeals = JSON.parse(stored);
             } else {
                 this.scheduledMeals = [];
-                // Initialize with demo data if no stored data (but not during tests)
-                if (typeof process === 'undefined' || process.env.NODE_ENV !== 'test') {
+                
+                // Check database source setting
+                const shouldLoadDemo = window.mealPlannerSettings?.shouldLoadDemoData() ?? true;
+                const currentSource = window.mealPlannerSettings?.getCurrentDatabaseSource() ?? 'demo';
+                
+                console.log(`📊 Schedule Manager - Database source: ${currentSource}, should load demo: ${shouldLoadDemo}`);
+                
+                // Only initialize with demo data if database source is 'demo' and not during tests
+                if (shouldLoadDemo && (typeof process === 'undefined' || process.env.NODE_ENV !== 'test')) {
                     this.initializeDemoSchedule();
+                } else {
+                    console.log(`✅ Schedule Manager initialized with empty data (source: ${currentSource})`);
                 }
             }
         } catch (error) {
