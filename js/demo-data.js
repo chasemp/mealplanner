@@ -895,10 +895,11 @@ class DemoDataManager {
             });
         });
 
-        // Calculate averages
+        // Calculate averages with proper rounding
         this.ingredients.forEach(ingredient => {
             if (ingredient.recipe_count > 0) {
-                ingredient.avg_quantity = ingredient.avg_quantity / ingredient.recipe_count;
+                const avgQuantity = ingredient.avg_quantity / ingredient.recipe_count;
+                ingredient.avg_quantity = Math.round(avgQuantity * 100) / 100;
             }
         });
     }
