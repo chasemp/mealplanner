@@ -15,15 +15,22 @@
 - Always commit passing tests before moving to next milestone
 
 ### Playwright Testing - CRITICAL PRACTICES
-- ALWAYS test against local server (`http://localhost:8080`) to avoid GitHub Pages caching issues
-- MANDATORY: Use clean sandbox environments for each test session:
+- **MANDATORY FRESH SESSION**: ALWAYS start with completely fresh Playwright session for every test
+- **NEVER reuse browser sessions** - caching and state pollution make results unreliable
+- **ALWAYS test against local server** (`http://localhost:8080`) to avoid GitHub Pages caching issues
+- **MANDATORY Clean Sandbox Protocol**:
   1. Close existing browser: `mcp_playwright_browser_close`
-  2. Kill Chrome processes: `pkill -f chrome`
-  3. Navigate fresh: `mcp_playwright_browser_navigate` to localhost
-- Verify local server is running: `ps aux | grep "python3 -m http.server"`
-- Start local server if needed: `python3 -m http.server 8080`
-- NEVER test against GitHub Pages during development - caching makes results unreliable
-- Always check console messages for JavaScript errors and version verification
+  2. Kill ALL Chrome processes: `pkill -f chrome`
+  3. Wait for cleanup: `sleep 2`
+  4. Navigate fresh: `mcp_playwright_browser_navigate` to localhost
+  5. Wait for page load before testing
+- **Server Management**:
+  - Verify local server is running: `ps aux | grep "python3 -m http.server"`
+  - Restart server if needed: `pkill -f "python3 -m http.server" && python3 -m http.server 8080 &`
+  - Update cache-busting version: `node update-version.cjs` after code changes
+- **NEVER test against GitHub Pages during development** - caching makes results unreliable
+- **Always verify console messages** for JavaScript errors and version verification
+- **Cache-busting verification**: Check that new versions are being loaded in console logs
 
 ## Development Milestones
 - Each roadmap milestone MUST include:

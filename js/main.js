@@ -2,7 +2,7 @@
 class MealPlannerApp {
     constructor() {
         this.currentTab = 'dinner';
-        this.version = '2025.09.09.0917';
+        this.version = '2025.09.09.1107';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
@@ -689,9 +689,9 @@ class MealPlannerApp {
             recipes = allRecipes.filter(recipe => 
                 recipe.meal_type === mealType || recipe.meal_type === 'dinner'
             );
-            console.log(`🍽️ Dinner tab loaded ${recipes.length} recipes from authoritative source`);
+            console.log(`🍽️ ${mealType} tab loaded ${recipes.length} recipes from authoritative source`);
         } else {
-            console.warn('⚠️ Settings manager not available for dinner tab recipe selection');
+            console.warn(`⚠️ Settings manager not available for ${mealType} tab recipe selection`);
             recipes = [];
         }
         
