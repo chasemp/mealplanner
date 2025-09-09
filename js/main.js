@@ -2,7 +2,7 @@
 class MealPlannerApp {
     constructor() {
         this.currentTab = 'dinner';
-        this.version = '2025.09.09.1441';
+        this.version = '2025.09.09.1447';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
@@ -226,12 +226,13 @@ class MealPlannerApp {
         
         // Initialize managers
         try {
+            // Initialize settings manager FIRST - other managers depend on it
+            this.initializeSettingsManager();
             this.initializeRecipeManager();
             this.initializeMealManager();
             this.initializeScheduleManager();
             this.initializeIngredientsManager();
             this.initializeGroceryListManager();
-                    this.initializeSettingsManager();
         this.initializeGoogleCalendar();
         this.initializePerformanceManager();
         this.initializeAdvancedPlanning();
