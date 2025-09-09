@@ -361,9 +361,13 @@ class GroceryListManager {
             recipe.ingredients.forEach(ingredient => {
                 const key = `${ingredient.ingredient_id}-${ingredient.unit}`;
                 if (!ingredientTotals[key]) {
+                    // Look up ingredient name from ingredients database
+                    const ingredientData = this.ingredients.find(i => i.id === ingredient.ingredient_id);
+                    const ingredientName = ingredientData ? ingredientData.name : ingredient.name || 'Unknown Ingredient';
+                    
                     ingredientTotals[key] = {
                         ingredient_id: ingredient.ingredient_id,
-                        name: ingredient.name,
+                        name: ingredientName,
                         quantity: 0,
                         unit: ingredient.unit,
                         category: this.getIngredientCategory(ingredient.ingredient_id)
