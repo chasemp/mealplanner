@@ -361,6 +361,12 @@ class GroceryListManager {
         `;
     }
 
+    // Utility function to round quantities to 2 decimal places and remove trailing zeros
+    roundQuantity(quantity) {
+        const rounded = Math.round(quantity * 100) / 100;
+        return parseFloat(rounded.toFixed(2));
+    }
+
     generateGroceryItems() {
         const items = [];
         const ingredientTotals = {};
@@ -385,7 +391,9 @@ class GroceryListManager {
                         category: this.getIngredientCategory(ingredient.ingredient_id)
                     };
                 }
-                ingredientTotals[key].quantity += ingredient.quantity;
+                ingredientTotals[key].quantity = this.roundQuantity(
+                    ingredientTotals[key].quantity + ingredient.quantity
+                );
             });
         });
 
@@ -393,7 +401,7 @@ class GroceryListManager {
         Object.values(ingredientTotals).forEach((item, index) => {
             const pantryItem = this.pantryItems.find(p => p.ingredient_id === item.ingredient_id);
             const pantryQuantity = pantryItem ? pantryItem.quantity : 0;
-            const adjustedQuantity = Math.max(0, item.quantity - pantryQuantity);
+            const adjustedQuantity = this.roundQuantity(Math.max(0, item.quantity - pantryQuantity));
 
             items.push({
                 id: index + 1,
