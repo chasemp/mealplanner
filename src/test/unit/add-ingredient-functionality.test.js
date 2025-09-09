@@ -101,6 +101,31 @@ describe('Add Ingredient Functionality', () => {
         // Reset confirm mock
         global.window.confirm.mockReset();
         
+        // Mock SettingsManager to provide demo data via centralized authority
+        global.window.mealPlannerSettings = {
+            getCurrentDatabaseSource() {
+                return 'demo';
+            },
+            shouldLoadDemoData() {
+                return true;
+            },
+            getAuthoritativeData(dataType) {
+                const demoData = new global.window.DemoDataManager();
+                switch (dataType) {
+                    case 'ingredients':
+                        return demoData.getIngredients();
+                    case 'recipes':
+                        return demoData.getRecipes();
+                    default:
+                        return [];
+                }
+            },
+            saveAuthoritativeData(dataType, data) {
+                // Mock save - do nothing in tests
+                console.log(`Mock save: ${dataType} with ${data.length} items`);
+            }
+        };
+        
         // Create IngredientsManager instance
         ingredientsManager = new IngredientsManager(container);
         

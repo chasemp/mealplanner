@@ -31,6 +31,29 @@ describe('ScheduleManager', () => {
         vi.clearAllMocks();
         localStorageMock.getItem.mockReturnValue(null);
         
+        // Mock SettingsManager for centralized data authority
+        global.window = global.window || {};
+        global.window.mealPlannerSettings = {
+            getCurrentDatabaseSource() {
+                return 'demo';
+            },
+            shouldLoadDemoData() {
+                return true;
+            },
+            getAuthoritativeData(dataType) {
+                switch (dataType) {
+                    case 'scheduledMeals':
+                        return [];
+                    default:
+                        return [];
+                }
+            },
+            saveAuthoritativeData(dataType, data) {
+                // Mock save - do nothing in tests
+                console.log(`Mock save: ${dataType} with ${data.length} items`);
+            }
+        };
+        
         // Create fresh instance
         scheduleManager = new ScheduleManager();
         
