@@ -422,7 +422,7 @@ class AdvancedPlanningManager {
             totalCost += mealCost.total;
             costBreakdown.push({
                 meal: meal.recipe_title,
-                date: meal.scheduled_date,
+                date: meal.date,
                 cost: mealCost.total,
                 costPerServing: mealCost.perServing,
                 ingredients: mealCost.ingredients
@@ -634,7 +634,7 @@ class AdvancedPlanningManager {
                     id: meals.length + 1,
                     recipe_id: selectedRecipe.id,
                     recipe_title: selectedRecipe.title,
-                    scheduled_date: currentDate.toISOString().split('T')[0],
+                    date: currentDate.toISOString().split('T')[0],
                     meal_type: 'dinner',
                     serving_count: selectedRecipe.serving_count || 4,
                     seasonalScore: selectedRecipe.seasonalScore || 1.0
