@@ -53,7 +53,13 @@ class MealManager {
 
     async saveMeals() {
         try {
-            localStorage.setItem('mealplanner-meals', JSON.stringify(this.meals));
+            // Save meals using the centralized data authority
+            if (window.mealPlannerSettings) {
+                window.mealPlannerSettings.saveAuthoritativeData('meals', this.meals);
+            } else {
+                console.warn('⚠️ Settings manager not available, falling back to localStorage');
+                localStorage.setItem('mealplanner-meals', JSON.stringify(this.meals));
+            }
             console.log('✅ Meals saved successfully');
         } catch (error) {
             console.error('❌ Failed to save meals:', error);
