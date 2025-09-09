@@ -99,6 +99,31 @@ describe('Combo Recipe Functionality', () => {
             }
         };
 
+        // Mock SettingsManager to provide demo data via centralized authority
+        global.window.mealPlannerSettings = {
+            getCurrentDatabaseSource() {
+                return 'demo';
+            },
+            shouldLoadDemoData() {
+                return true;
+            },
+            getAuthoritativeData(dataType) {
+                const demoData = new global.window.DemoDataManager();
+                switch (dataType) {
+                    case 'ingredients':
+                        return demoData.getIngredients();
+                    case 'recipes':
+                        return demoData.getRecipes();
+                    default:
+                        return [];
+                }
+            },
+            saveAuthoritativeData(dataType, data) {
+                // Mock save - do nothing in tests
+                console.log(`Mock save: ${dataType} with ${data.length} items`);
+            }
+        };
+
         // Import RecipeManager after DOM setup
         await import('../../../js/recipe-manager.js');
         const RecipeManager = global.RecipeManager;

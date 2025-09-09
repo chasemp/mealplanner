@@ -85,6 +85,30 @@ describe('MealManager', () => {
         // Clear localStorage
         localStorage.clear();
         
+        // Mock SettingsManager to provide demo data via centralized authority
+        global.window.mealPlannerSettings = {
+            getCurrentDatabaseSource() {
+                return 'demo';
+            },
+            shouldLoadDemoData() {
+                return true;
+            },
+            getAuthoritativeData(dataType) {
+                const demoData = new global.window.DemoDataManager();
+                switch (dataType) {
+                    case 'recipes':
+                        return demoData.getRecipes();
+                    default:
+                        return [];
+                }
+            },
+            saveAuthoritativeData(dataType, data) {
+                // Mock save - actually save to localStorage for testing
+                localStorage.setItem(`mealplanner_${dataType}`, JSON.stringify(data));
+                console.log(`Mock save: ${dataType} with ${data.length} items`);
+            }
+        };
+        
         // Create MealManager instance
         mealManager = new MealManager(container);
         
@@ -478,7 +502,9 @@ describe('MealManager', () => {
             mealManager.meals.push(testMeal);
             await mealManager.saveMeals();
 
-            const saved = localStorage.getItem('mealplanner-meals');
+            // Check that saveAuthoritativeData was called (mocked)
+            // In demo mode, data is saved to 'mealplanner_meals' key
+            const saved = localStorage.getItem('mealplanner_meals');
             expect(saved).toBeTruthy();
             
             const parsedMeals = JSON.parse(saved);

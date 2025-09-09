@@ -67,6 +67,31 @@ describe('Add Recipe Functionality', () => {
         document.body.innerHTML = '<div id="recipe-manager-container"></div>';
         container = document.getElementById('recipe-manager-container');
         
+        // Mock SettingsManager to provide demo data via centralized authority
+        global.window.mealPlannerSettings = {
+            getCurrentDatabaseSource() {
+                return 'demo';
+            },
+            shouldLoadDemoData() {
+                return true;
+            },
+            getAuthoritativeData(dataType) {
+                const demoData = new global.window.DemoDataManager();
+                switch (dataType) {
+                    case 'ingredients':
+                        return demoData.getIngredients();
+                    case 'recipes':
+                        return demoData.getRecipes();
+                    default:
+                        return [];
+                }
+            },
+            saveAuthoritativeData(dataType, data) {
+                // Mock save - do nothing in tests
+                console.log(`Mock save: ${dataType} with ${data.length} items`);
+            }
+        };
+        
         // Create RecipeManager instance
         recipeManager = new RecipeManager(container);
         
