@@ -9,26 +9,17 @@ class ScheduleManager {
      * Load scheduled meals from storage
      */
     loadScheduledMeals() {
+        console.log('📱 Schedule Manager loading scheduled meals from authoritative data source...');
+        
         try {
-            // Use the same storage key as main app for consistency
-            const stored = localStorage.getItem('mealplanner_scheduled_meals');
-            if (stored) {
-                this.scheduledMeals = JSON.parse(stored);
+            // Get data from centralized authority
+            if (window.mealPlannerSettings) {
+                this.scheduledMeals = window.mealPlannerSettings.getAuthoritativeData('scheduledMeals');
+                console.log(`✅ Schedule Manager loaded ${this.scheduledMeals.length} scheduled meals from authoritative source`);
             } else {
+                // Fallback if settings not available
+                console.warn('⚠️ Settings manager not available, using empty scheduled meals');
                 this.scheduledMeals = [];
-                
-                // Check database source setting
-                const shouldLoadDemo = window.mealPlannerSettings?.shouldLoadDemoData() ?? true;
-                const currentSource = window.mealPlannerSettings?.getCurrentDatabaseSource() ?? 'demo';
-                
-                console.log(`📊 Schedule Manager - Database source: ${currentSource}, should load demo: ${shouldLoadDemo}`);
-                
-                // Only initialize with demo data if database source is 'demo' and not during tests
-                if (shouldLoadDemo && (typeof process === 'undefined' || process.env.NODE_ENV !== 'test')) {
-                    this.initializeDemoSchedule();
-                } else {
-                    console.log(`✅ Schedule Manager initialized with empty data (source: ${currentSource})`);
-                }
             }
         } catch (error) {
             console.error('Error loading scheduled meals:', error);

@@ -86,6 +86,9 @@ class MockSettingsManager {
 class MockRecipeManager {
     constructor() {
         this.recipes = []
+        this.filteredRecipes = []
+        this.currentFilter = { search: '', mealType: '', style: '', label: '' }
+        this.currentSort = 'name'
     }
 
     async loadRecipes() {
@@ -104,6 +107,15 @@ class MockRecipeManager {
         }
     }
 
+    async clearAllData() {
+        console.log('🗑️ Clearing all recipes data...')
+        this.recipes = []
+        this.filteredRecipes = []
+        this.currentFilter = { search: '', mealType: '', style: '', label: '' }
+        this.currentSort = 'name'
+        console.log('✅ All recipes data cleared')
+    }
+
     render() {
         console.log(`🎨 Recipe Manager rendered with ${this.recipes.length} recipes`)
     }
@@ -112,6 +124,8 @@ class MockRecipeManager {
 class MockIngredientsManager {
     constructor() {
         this.ingredients = []
+        this.filteredIngredients = []
+        this.currentFilter = { search: '', category: '', label: '' }
     }
 
     async loadIngredients() {
@@ -130,8 +144,86 @@ class MockIngredientsManager {
         }
     }
 
+    async clearAllData() {
+        console.log('🗑️ Clearing all ingredients data...')
+        this.ingredients = []
+        this.filteredIngredients = []
+        this.currentFilter = { search: '', category: '', label: '' }
+        console.log('✅ All ingredients data cleared')
+    }
+
     render() {
         console.log(`🎨 Ingredients Manager rendered with ${this.ingredients.length} ingredients`)
+    }
+}
+
+// Mock MealPlannerApp with clearAllData functionality
+class MockMealPlannerApp {
+    constructor() {
+        this.selectedRecipes = { breakfast: [], lunch: [], dinner: [] }
+        this.favoriteRecipes = new Set()
+        this.recipeManager = null
+        this.ingredientsManager = null
+        this.mealManager = null
+        this.scheduleManager = null
+        this.groceryListManager = null
+        this.mealRotationEngine = null
+    }
+
+    async clearAllData() {
+        console.log('🗑️ Clearing ALL application data for in-memory mode...')
+        
+        // Clear all manager data
+        if (this.ingredientsManager) {
+            await this.ingredientsManager.clearAllData()
+        }
+        if (this.recipeManager) {
+            await this.recipeManager.clearAllData()
+        }
+        if (this.mealManager) {
+            await this.mealManager.clearAllData()
+        }
+        if (this.scheduleManager) {
+            await this.scheduleManager.clearAllScheduledMeals()
+        }
+        if (this.groceryListManager) {
+            await this.groceryListManager.clearAllData()
+        }
+        if (this.mealRotationEngine) {
+            this.mealRotationEngine.clearAllData()
+        }
+        
+        // Clear local app state
+        this.selectedRecipes = { breakfast: [], lunch: [], dinner: [] }
+        this.favoriteRecipes = new Set()
+        
+        console.log('✅ All application data cleared successfully')
+    }
+
+    renderRecipeSelection(mealType) {
+        // Mock the dinner tab recipe selection logic
+        const shouldLoadDemo = window.mealPlannerSettings?.shouldLoadDemoData() ?? true
+        const currentSource = window.mealPlannerSettings?.getCurrentDatabaseSource() ?? 'demo'
+        
+        console.log(`🍽️ Dinner tab - Database source: ${currentSource}, should load demo: ${shouldLoadDemo}`)
+        
+        let recipes = []
+        if (shouldLoadDemo && window.DemoDataManager) {
+            const demoData = new window.DemoDataManager()
+            recipes = demoData.getRecipes().filter(recipe => 
+                recipe.meal_type === mealType || recipe.meal_type === 'dinner'
+            )
+            console.log(`✅ Dinner tab loaded ${recipes.length} recipes from demo data`)
+        } else {
+            recipes = []
+            console.log(`✅ Dinner tab initialized with empty recipes (source: ${currentSource})`)
+        }
+        
+        return recipes
+    }
+
+    refreshAllComponents() {
+        console.log('🔄 Refreshing all components...')
     }
 }
 
@@ -139,8 +231,8 @@ class MockIngredientsManager {
 class MockDemoDataManager {
     getRecipes() {
         return [
-            { id: 1, title: 'Demo Recipe 1' },
-            { id: 2, title: 'Demo Recipe 2' }
+            { id: 1, title: 'Demo Recipe 1', meal_type: 'dinner' },
+            { id: 2, title: 'Demo Recipe 2', meal_type: 'dinner' }
         ]
     }
 
@@ -152,11 +244,89 @@ class MockDemoDataManager {
     }
 }
 
+// Mock additional managers
+class MockMealManager {
+    constructor() {
+        this.meals = []
+        this.recipes = []
+    }
+
+    async loadRecipes() {
+        const shouldLoadDemo = window.mealPlannerSettings?.shouldLoadDemoData() ?? true
+        const currentSource = window.mealPlannerSettings?.getCurrentDatabaseSource() ?? 'demo'
+        
+        if (shouldLoadDemo && window.DemoDataManager) {
+            const demoData = new window.DemoDataManager()
+            this.recipes = demoData.getRecipes()
+        } else {
+            this.recipes = []
+        }
+    }
+
+    async loadMeals() {
+        // Mock meal loading
+        this.meals = []
+    }
+
+    render() {
+        console.log(`🎨 Meal Manager rendered`)
+    }
+
+    async clearAllData() {
+        console.log('🗑️ Clearing all meals data...')
+        this.meals = []
+        this.recipes = []
+    }
+}
+
+class MockScheduleManager {
+    constructor() {
+        this.scheduledMeals = []
+    }
+
+    loadScheduledMeals() {
+        // Mock scheduled meals loading
+        this.scheduledMeals = []
+    }
+
+    async clearAllScheduledMeals() {
+        console.log('🗑️ Clearing all scheduled meals...')
+        this.scheduledMeals = []
+    }
+}
+
+class MockGroceryListManager {
+    constructor() {
+        this.groceryList = []
+    }
+
+    async loadData() {
+        // Mock grocery list data loading
+        this.groceryList = []
+    }
+
+    render() {
+        console.log(`🎨 Grocery List Manager rendered`)
+    }
+
+    async clearAllData() {
+        console.log('🗑️ Clearing all grocery list data...')
+        this.groceryList = []
+    }
+}
+
+class MockMealRotationEngine {
+    clearAllData() {
+        console.log('🗑️ Clearing all meal rotation engine data...')
+    }
+}
+
 describe('Database Source Switching', () => {
     let dom
     let settingsManager
     let recipeManager
     let ingredientsManager
+    let mealPlannerApp
     let mockConsole
 
     beforeEach(() => {
@@ -192,17 +362,22 @@ describe('Database Source Switching', () => {
         settingsManager = new MockSettingsManager()
         recipeManager = new MockRecipeManager()
         ingredientsManager = new MockIngredientsManager()
+        mealPlannerApp = new MockMealPlannerApp()
+
+        // Connect managers to app
+        mealPlannerApp.recipeManager = recipeManager
+        mealPlannerApp.ingredientsManager = ingredientsManager
+        mealPlannerApp.mealManager = new MockMealManager()
+        mealPlannerApp.scheduleManager = new MockScheduleManager()
+        mealPlannerApp.groceryListManager = new MockGroceryListManager()
+        mealPlannerApp.mealRotationEngine = new MockMealRotationEngine()
 
         // Make settings globally available
         window.mealPlannerSettings = settingsManager
         window.DemoDataManager = MockDemoDataManager
 
         // Mock app with managers
-        window.app = {
-            recipeManager,
-            ingredientsManager,
-            refreshAllComponents: vi.fn()
-        }
+        window.app = mealPlannerApp
     })
 
     afterEach(() => {
@@ -398,6 +573,173 @@ describe('Database Source Switching', () => {
             
             expect(recipeManager.recipes).toHaveLength(0)
             expect(console.log).toHaveBeenCalledWith('✅ Recipe Manager initialized with empty data (source: demo)')
+        })
+    })
+
+    describe('clearAllData Functionality', () => {
+        it('should call clearAllData on all managers when switching to memory', async () => {
+            // Set up spies
+            const recipeClearSpy = vi.spyOn(recipeManager, 'clearAllData')
+            const ingredientsClearSpy = vi.spyOn(ingredientsManager, 'clearAllData')
+            const mealClearSpy = vi.spyOn(mealPlannerApp.mealManager, 'clearAllData')
+            const scheduleClearSpy = vi.spyOn(mealPlannerApp.scheduleManager, 'clearAllScheduledMeals')
+            const groceryClearSpy = vi.spyOn(mealPlannerApp.groceryListManager, 'clearAllData')
+            const rotationClearSpy = vi.spyOn(mealPlannerApp.mealRotationEngine, 'clearAllData')
+            
+            // Switch to memory and trigger clearAllData
+            settingsManager.settings.sourceType = 'memory'
+            await mealPlannerApp.clearAllData()
+            
+            // Verify all clearAllData methods were called
+            expect(recipeClearSpy).toHaveBeenCalled()
+            expect(ingredientsClearSpy).toHaveBeenCalled()
+            expect(mealClearSpy).toHaveBeenCalled()
+            expect(scheduleClearSpy).toHaveBeenCalled()
+            expect(groceryClearSpy).toHaveBeenCalled()
+            expect(rotationClearSpy).toHaveBeenCalled()
+            
+            // Verify console logs
+            expect(console.log).toHaveBeenCalledWith('🗑️ Clearing ALL application data for in-memory mode...')
+            expect(console.log).toHaveBeenCalledWith('✅ All application data cleared successfully')
+        })
+
+        it('should clear app state when switching to memory', async () => {
+            // Set up initial state
+            mealPlannerApp.selectedRecipes.dinner = [1, 2, 3]
+            mealPlannerApp.favoriteRecipes.add(1)
+            mealPlannerApp.favoriteRecipes.add(2)
+            
+            expect(mealPlannerApp.selectedRecipes.dinner).toHaveLength(3)
+            expect(mealPlannerApp.favoriteRecipes.size).toBe(2)
+            
+            // Clear all data
+            await mealPlannerApp.clearAllData()
+            
+            // Verify state is cleared
+            expect(mealPlannerApp.selectedRecipes.dinner).toHaveLength(0)
+            expect(mealPlannerApp.favoriteRecipes.size).toBe(0)
+        })
+
+        it('should clear individual manager data correctly', async () => {
+            // Load demo data first
+            await recipeManager.loadRecipes()
+            await ingredientsManager.loadIngredients()
+            
+            expect(recipeManager.recipes).toHaveLength(2)
+            expect(ingredientsManager.ingredients).toHaveLength(2)
+            
+            // Clear data
+            await recipeManager.clearAllData()
+            await ingredientsManager.clearAllData()
+            
+            // Verify data is cleared
+            expect(recipeManager.recipes).toHaveLength(0)
+            expect(recipeManager.filteredRecipes).toHaveLength(0)
+            expect(recipeManager.currentFilter).toEqual({ search: '', mealType: '', style: '', label: '' })
+            expect(recipeManager.currentSort).toBe('name')
+            
+            expect(ingredientsManager.ingredients).toHaveLength(0)
+            expect(ingredientsManager.filteredIngredients).toHaveLength(0)
+            expect(ingredientsManager.currentFilter).toEqual({ search: '', category: '', label: '' })
+        })
+    })
+
+    describe('Dinner Tab Recipe Selection Consistency', () => {
+        it('should show recipes when database source is demo', () => {
+            settingsManager.settings.sourceType = 'demo'
+            
+            const recipes = mealPlannerApp.renderRecipeSelection('dinner')
+            
+            expect(recipes).toHaveLength(2)
+            expect(console.log).toHaveBeenCalledWith('🍽️ Dinner tab - Database source: demo, should load demo: true')
+            expect(console.log).toHaveBeenCalledWith('✅ Dinner tab loaded 2 recipes from demo data')
+        })
+
+        it('should show empty recipes when database source is memory', () => {
+            settingsManager.settings.sourceType = 'memory'
+            
+            const recipes = mealPlannerApp.renderRecipeSelection('dinner')
+            
+            expect(recipes).toHaveLength(0)
+            expect(console.log).toHaveBeenCalledWith('🍽️ Dinner tab - Database source: memory, should load demo: false')
+            expect(console.log).toHaveBeenCalledWith('✅ Dinner tab initialized with empty recipes (source: memory)')
+        })
+
+        it('should be consistent with recipe manager data loading', async () => {
+            // Test demo mode consistency
+            settingsManager.settings.sourceType = 'demo'
+            
+            await recipeManager.loadRecipes()
+            const dinnerRecipes = mealPlannerApp.renderRecipeSelection('dinner')
+            
+            expect(recipeManager.recipes).toHaveLength(2)
+            expect(dinnerRecipes).toHaveLength(2)
+            
+            // Test memory mode consistency
+            settingsManager.settings.sourceType = 'memory'
+            
+            await recipeManager.loadRecipes()
+            const emptyDinnerRecipes = mealPlannerApp.renderRecipeSelection('dinner')
+            
+            expect(recipeManager.recipes).toHaveLength(0)
+            expect(emptyDinnerRecipes).toHaveLength(0)
+        })
+    })
+
+    describe('Complete In-Memory Database Source Workflow', () => {
+        it('should perform complete demo to memory transition', async () => {
+            // Start with demo data
+            settingsManager.settings.sourceType = 'demo'
+            await recipeManager.loadRecipes()
+            await ingredientsManager.loadIngredients()
+            
+            expect(recipeManager.recipes).toHaveLength(2)
+            expect(ingredientsManager.ingredients).toHaveLength(2)
+            
+            // Switch to memory and clear all data
+            settingsManager.settings.sourceType = 'memory'
+            settingsManager.updateDatabaseSourceIndicator()
+            await mealPlannerApp.clearAllData()
+            await settingsManager.reloadAllManagers()
+            
+            // Verify complete clean state
+            expect(recipeManager.recipes).toHaveLength(0)
+            expect(ingredientsManager.ingredients).toHaveLength(0)
+            expect(mealPlannerApp.selectedRecipes.dinner).toHaveLength(0)
+            expect(mealPlannerApp.favoriteRecipes.size).toBe(0)
+            
+            const indicator = document.getElementById('database-source-indicator')
+            expect(indicator.textContent).toBe('In Memory')
+            
+            // Verify dinner tab shows empty state
+            const dinnerRecipes = mealPlannerApp.renderRecipeSelection('dinner')
+            expect(dinnerRecipes).toHaveLength(0)
+        })
+
+        it('should perform complete memory to demo transition', async () => {
+            // Start with memory (empty)
+            settingsManager.settings.sourceType = 'memory'
+            await recipeManager.loadRecipes()
+            await ingredientsManager.loadIngredients()
+            
+            expect(recipeManager.recipes).toHaveLength(0)
+            expect(ingredientsManager.ingredients).toHaveLength(0)
+            
+            // Switch to demo
+            settingsManager.settings.sourceType = 'demo'
+            settingsManager.updateDatabaseSourceIndicator()
+            await settingsManager.reloadAllManagers()
+            
+            // Verify demo data loaded
+            expect(recipeManager.recipes).toHaveLength(2)
+            expect(ingredientsManager.ingredients).toHaveLength(2)
+            
+            const indicator = document.getElementById('database-source-indicator')
+            expect(indicator.textContent).toBe('Demo Data')
+            
+            // Verify dinner tab shows demo recipes
+            const dinnerRecipes = mealPlannerApp.renderRecipeSelection('dinner')
+            expect(dinnerRecipes).toHaveLength(2)
         })
     })
 

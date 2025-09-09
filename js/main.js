@@ -681,26 +681,18 @@ class MealPlannerApp {
         const gridContainer = document.getElementById(`${mealType}-recipe-grid`);
         if (!gridContainer) return;
 
-        // Get recipes based on database source setting
+        // Get recipes from centralized authoritative data source
         let recipes = [];
         
-        // Check database source setting
-        const shouldLoadDemo = window.mealPlannerSettings?.shouldLoadDemoData() ?? true;
-        const currentSource = window.mealPlannerSettings?.getCurrentDatabaseSource() ?? 'demo';
-        
-        console.log(`🍽️ Dinner tab - Database source: ${currentSource}, should load demo: ${shouldLoadDemo}`);
-        
-        // Only load demo data if database source is 'demo'
-        if (shouldLoadDemo && window.DemoDataManager) {
-            const demoData = new window.DemoDataManager();
-            recipes = demoData.getRecipes().filter(recipe => 
+        if (window.mealPlannerSettings) {
+            const allRecipes = window.mealPlannerSettings.getAuthoritativeData('recipes');
+            recipes = allRecipes.filter(recipe => 
                 recipe.meal_type === mealType || recipe.meal_type === 'dinner'
             );
-            console.log(`✅ Dinner tab loaded ${recipes.length} recipes from demo data`);
+            console.log(`🍽️ Dinner tab loaded ${recipes.length} recipes from authoritative source`);
         } else {
-            // Use empty array for in-memory or other sources
+            console.warn('⚠️ Settings manager not available for dinner tab recipe selection');
             recipes = [];
-            console.log(`✅ Dinner tab initialized with empty recipes (source: ${currentSource})`);
         }
         
         // Apply favorites filter if enabled
@@ -803,17 +795,16 @@ class MealPlannerApp {
     }
 
     selectAllRecipes(mealType) {
-        // Check database source setting
-        const shouldLoadDemo = window.mealPlannerSettings?.shouldLoadDemoData() ?? true;
-        
-        if (shouldLoadDemo && window.DemoDataManager) {
-            const demoData = new window.DemoDataManager();
-            const recipes = demoData.getRecipes().filter(recipe => 
+        // Get recipes from centralized authoritative data source
+        if (window.mealPlannerSettings) {
+            const allRecipes = window.mealPlannerSettings.getAuthoritativeData('recipes');
+            const recipes = allRecipes.filter(recipe => 
                 recipe.meal_type === mealType || recipe.meal_type === 'dinner'
             );
             this.selectedRecipes[mealType] = recipes.map(r => r.id);
+            console.log(`📱 Selected all ${recipes.length} recipes for ${mealType} from authoritative source`);
         } else {
-            // No recipes to select for in-memory mode
+            console.warn('⚠️ Settings manager not available for selectAllRecipes');
             this.selectedRecipes[mealType] = [];
         }
         
