@@ -5,7 +5,12 @@ class ItineraryView {
         this.mealType = mealType;
         this.mealPlanData = mealPlanData;
         this.expandedWeeks = new Set();
-        this.startDate = new Date();
+        
+        // Initialize start date to Sunday of current week (to match renderWeekOptions logic)
+        const today = new Date();
+        this.startDate = new Date(today);
+        this.startDate.setDate(today.getDate() - today.getDay()); // Start of current week (Sunday)
+        
         this.weeksToShow = 4;
         this.currentView = 'itinerary';
         this.scheduledMeals = [];
@@ -157,6 +162,13 @@ class ItineraryView {
     getTotalMeals() {
         // Return actual count of scheduled meals for this meal type within the selected timeframe
         const mealsInRange = this.getScheduledMealsInTimeframe();
+        console.log(`🔢 getTotalMeals() for ${this.mealType}:`, {
+            totalScheduledMeals: this.scheduledMeals.length,
+            mealsInRange: mealsInRange.length,
+            startDate: this.startDate,
+            weeksToShow: this.weeksToShow,
+            mealsInRangeData: mealsInRange
+        });
         return mealsInRange.length;
     }
 
@@ -164,6 +176,11 @@ class ItineraryView {
         // Count unique recipe names in scheduled meals within the selected timeframe
         const mealsInRange = this.getScheduledMealsInTimeframe();
         const uniqueRecipes = new Set(mealsInRange.map(meal => meal.recipe_name || meal.meal_name || meal.name));
+        console.log(`🔢 getUniqueRecipes() for ${this.mealType}:`, {
+            mealsInRange: mealsInRange.length,
+            uniqueRecipes: uniqueRecipes.size,
+            recipeNames: Array.from(uniqueRecipes)
+        });
         return uniqueRecipes.size;
     }
 
@@ -363,6 +380,12 @@ class ItineraryView {
         if (weeksSelect) {
             weeksSelect.addEventListener('change', (e) => {
                 this.weeksToShow = parseInt(e.target.value);
+                
+                // Update start date to match the week range calculation (Sunday start)
+                const today = new Date();
+                this.startDate = new Date(today);
+                this.startDate.setDate(today.getDate() - today.getDay()); // Start of current week (Sunday)
+                
                 this.render();
             });
         }
