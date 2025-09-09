@@ -2,7 +2,7 @@
 class MealPlannerApp {
     constructor() {
         this.currentTab = 'dinner';
-        this.version = '2025.09.08.2111';
+        this.version = '2025.09.09.0917';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
@@ -681,18 +681,31 @@ class MealPlannerApp {
         const gridContainer = document.getElementById(`${mealType}-recipe-grid`);
         if (!gridContainer) return;
 
-        // Get recipes from demo data
+        // Get recipes based on database source setting
         let recipes = [];
-        if (window.DemoDataManager) {
+        
+        // Check database source setting
+        const shouldLoadDemo = window.mealPlannerSettings?.shouldLoadDemoData() ?? true;
+        const currentSource = window.mealPlannerSettings?.getCurrentDatabaseSource() ?? 'demo';
+        
+        console.log(`🍽️ Dinner tab - Database source: ${currentSource}, should load demo: ${shouldLoadDemo}`);
+        
+        // Only load demo data if database source is 'demo'
+        if (shouldLoadDemo && window.DemoDataManager) {
             const demoData = new window.DemoDataManager();
             recipes = demoData.getRecipes().filter(recipe => 
                 recipe.meal_type === mealType || recipe.meal_type === 'dinner'
             );
-            
-            // Apply favorites filter if enabled
-            if (this.showFavoritesOnly) {
-                recipes = recipes.filter(recipe => this.isRecipeFavorite(recipe.id));
-            }
+            console.log(`✅ Dinner tab loaded ${recipes.length} recipes from demo data`);
+        } else {
+            // Use empty array for in-memory or other sources
+            recipes = [];
+            console.log(`✅ Dinner tab initialized with empty recipes (source: ${currentSource})`);
+        }
+        
+        // Apply favorites filter if enabled
+        if (this.showFavoritesOnly) {
+            recipes = recipes.filter(recipe => this.isRecipeFavorite(recipe.id));
         }
 
         // Render recipe selection cards
@@ -790,14 +803,21 @@ class MealPlannerApp {
     }
 
     selectAllRecipes(mealType) {
-        if (window.DemoDataManager) {
+        // Check database source setting
+        const shouldLoadDemo = window.mealPlannerSettings?.shouldLoadDemoData() ?? true;
+        
+        if (shouldLoadDemo && window.DemoDataManager) {
             const demoData = new window.DemoDataManager();
             const recipes = demoData.getRecipes().filter(recipe => 
                 recipe.meal_type === mealType || recipe.meal_type === 'dinner'
             );
             this.selectedRecipes[mealType] = recipes.map(r => r.id);
-            this.renderRecipeSelection(mealType);
+        } else {
+            // No recipes to select for in-memory mode
+            this.selectedRecipes[mealType] = [];
         }
+        
+        this.renderRecipeSelection(mealType);
     }
 
     clearRecipeSelection(mealType) {
