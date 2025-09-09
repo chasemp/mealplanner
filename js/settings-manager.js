@@ -19,6 +19,14 @@ class SettingsManager {
         this.githubApi = null;
         this.loadSettings();
         this.setupEventListeners();
+        
+        // Initialize database source indicator after DOM is ready
+        setTimeout(() => {
+            this.updateDatabaseSourceIndicator();
+        }, 100);
+        
+        // Make settings globally available for managers
+        window.mealPlannerSettings = this;
     }
 
     loadSettings() {
@@ -49,6 +57,9 @@ class SettingsManager {
             sourceSelect.value = this.settings.sourceType;
             this.showSourceOptions(this.settings.sourceType);
         }
+        
+        // Update database source indicator
+        this.updateDatabaseSourceIndicator();
 
         // Apply GitHub settings
         const repoInput = document.getElementById('github-repo-url');
@@ -119,10 +130,14 @@ class SettingsManager {
         // Source type selection
         const sourceSelect = document.getElementById('source-type-select');
         if (sourceSelect) {
-            sourceSelect.addEventListener('change', (e) => {
+            sourceSelect.addEventListener('change', async (e) => {
                 this.settings.sourceType = e.target.value;
                 this.showSourceOptions(e.target.value);
                 this.saveSettings();
+                
+                // Apply the new database source immediately and reload all managers
+                await this.applyDatabaseSource();
+                await this.reloadAllManagers();
             });
         }
 
@@ -385,8 +400,65 @@ class SettingsManager {
 
         const sourceName = sourceNames[this.settings.sourceType] || 'Unknown';
         indicator.textContent = sourceName;
-        
+
         console.log(`📊 Updated database source indicator: ${sourceName}`);
+    }
+
+    // Method for managers to check current database source
+    getCurrentDatabaseSource() {
+        return this.settings.sourceType;
+    }
+
+    // Method for managers to check if they should load demo data
+    shouldLoadDemoData() {
+        return this.settings.sourceType === 'demo';
+    }
+
+    // Method to reload all managers when database source changes
+    async reloadAllManagers() {
+        console.log('🔄 Reloading all managers due to database source change...');
+        
+        try {
+            // Reload all managers that have data
+            if (window.app) {
+                // Reload recipe manager
+                if (window.app.recipeManager) {
+                    await window.app.recipeManager.loadRecipes();
+                    window.app.recipeManager.render();
+                }
+                
+                // Reload ingredients manager
+                if (window.app.ingredientsManager) {
+                    await window.app.ingredientsManager.loadIngredients();
+                    window.app.ingredientsManager.render();
+                }
+                
+                // Reload meal manager
+                if (window.app.mealManager) {
+                    await window.app.mealManager.loadRecipes();
+                    await window.app.mealManager.loadMeals();
+                    window.app.mealManager.render();
+                }
+                
+                // Reload grocery list manager
+                if (window.app.groceryListManager) {
+                    await window.app.groceryListManager.loadData();
+                    window.app.groceryListManager.render();
+                }
+                
+                // Reload schedule manager
+                if (window.app.scheduleManager) {
+                    window.app.scheduleManager.loadScheduledMeals();
+                }
+                
+                // Refresh all meal planning views
+                window.app.refreshAllComponents();
+                
+                console.log('✅ All managers reloaded successfully');
+            }
+        } catch (error) {
+            console.error('❌ Error reloading managers:', error);
+        }
     }
 
     async loadLocalDatabase() {

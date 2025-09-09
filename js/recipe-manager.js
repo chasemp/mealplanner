@@ -38,6 +38,12 @@ class RecipeManager {
     async loadRecipes() {
         console.log('📱 Loading recipes...');
         
+        // Check database source setting
+        const shouldLoadDemo = window.mealPlannerSettings?.shouldLoadDemoData() ?? true;
+        const currentSource = window.mealPlannerSettings?.getCurrentDatabaseSource() ?? 'demo';
+        
+        console.log(`📊 Database source: ${currentSource}, should load demo: ${shouldLoadDemo}`);
+        
         try {
             // First try to load from localStorage
             const saved = localStorage.getItem('mealplanner-recipes');
@@ -50,8 +56,8 @@ class RecipeManager {
             console.warn('⚠️ Error loading from localStorage:', error);
         }
         
-        // Fallback to demo data if no saved recipes
-        if (window.DemoDataManager) {
+        // Only load demo data if database source is 'demo'
+        if (shouldLoadDemo && window.DemoDataManager) {
             try {
                 const demoData = new window.DemoDataManager();
                 this.recipes = demoData.getRecipes();
@@ -62,10 +68,9 @@ class RecipeManager {
                 this.recipes = [];
             }
         } else {
-            // Fallback to empty array if demo data not available
+            // Use empty array for in-memory or other sources
             this.recipes = [];
-            console.warn('⚠️ Demo data manager not available, using empty recipes list');
-            console.log('📱 Available window properties:', Object.keys(window).filter(key => key.includes('Demo') || key.includes('Manager')));
+            console.log(`✅ Recipe Manager initialized with empty data (source: ${currentSource})`);
         }
         
         console.log('📱 Final recipes count:', this.recipes.length);
@@ -1359,6 +1364,27 @@ class RecipeManager {
         setTimeout(() => {
             notification.remove();
         }, 3000);
+    }
+
+    async clearAllData() {
+        console.log('🗑️ Clearing all recipes data...');
+        this.recipes = [];
+        this.filteredRecipes = [];
+        this.currentFilter = {
+            search: '',
+            mealType: '',
+            style: '',
+            label: ''
+        };
+        this.currentSort = 'name';
+        
+        // Clear from localStorage
+        localStorage.removeItem('mealplanner_recipes');
+        
+        // Re-render to show empty state
+        this.render();
+        
+        console.log('✅ All recipes data cleared');
     }
 }
 

@@ -19,8 +19,14 @@ class IngredientsManager {
         console.log('📱 Mobile Debug - Loading ingredients...');
         console.log('📱 window.DemoDataManager available:', !!window.DemoDataManager);
         
-        // Load from centralized demo data for consistency
-        if (window.DemoDataManager) {
+        // Check database source setting
+        const shouldLoadDemo = window.mealPlannerSettings?.shouldLoadDemoData() ?? true;
+        const currentSource = window.mealPlannerSettings?.getCurrentDatabaseSource() ?? 'demo';
+        
+        console.log(`📊 Database source: ${currentSource}, should load demo: ${shouldLoadDemo}`);
+        
+        // Only load demo data if database source is 'demo'
+        if (shouldLoadDemo && window.DemoDataManager) {
             try {
                 const demoData = new window.DemoDataManager();
                 this.ingredients = demoData.getIngredients();
@@ -31,10 +37,9 @@ class IngredientsManager {
                 this.ingredients = [];
             }
         } else {
-            // Fallback to empty array if demo data not available
+            // Use empty array for in-memory or other sources
             this.ingredients = [];
-            console.warn('⚠️ Demo data manager not available, using empty ingredients list');
-            console.log('📱 Available window properties:', Object.keys(window).filter(key => key.includes('Demo') || key.includes('Manager')));
+            console.log(`✅ Ingredients Manager initialized with empty data (source: ${currentSource})`);
         }
         
         console.log('📱 Final ingredients count:', this.ingredients.length);
@@ -824,6 +829,25 @@ class IngredientsManager {
         setTimeout(() => {
             notification.remove();
         }, 3000);
+    }
+
+    async clearAllData() {
+        console.log('🗑️ Clearing all ingredients data...');
+        this.ingredients = [];
+        this.filteredIngredients = [];
+        this.currentFilter = {
+            search: '',
+            category: '',
+            label: ''
+        };
+        
+        // Clear from localStorage
+        localStorage.removeItem('mealplanner_ingredients');
+        
+        // Re-render to show empty state
+        this.render();
+        
+        console.log('✅ All ingredients data cleared');
     }
 }
 

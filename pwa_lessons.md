@@ -528,21 +528,30 @@ npm run test:all:timeout
 
 **The Problem**: Commands like `npm test`, `npm install`, or `npm run dev` can hang for various reasons:
 - Network issues during package downloads
-- Test processes that don't exit properly
+- Test processes that don't exit properly (watch mode)
 - Build processes stuck in infinite loops
 - Development servers that fail to start but don't error
 
 **The Solution**: ALWAYS use timeout commands to prevent blocking operations
 ```bash
 # Essential timeout patterns
-timeout 30s npm test              # Unit/integration tests
+timeout 30s npm run test:run      # Unit/integration tests (exits immediately)
 timeout 60s npm install           # Package installations
 timeout 30s npm run build         # Build processes
 timeout 45s npm run test:e2e      # End-to-end tests
 
+# Watch vs Run modes
+npm test                          # Watch mode - stays running, watches for changes
+npm run test:run                  # Run mode - exits immediately after completion
+
 # If timeout occurs, investigate rather than increase timeout
 # This forces you to fix root causes instead of masking problems
 ```
+
+**Watch Mode vs Run Mode**:
+- **Watch Mode** (`npm test`): Stays running, watches for file changes, great for development
+- **Run Mode** (`npm run test:run`): Exits immediately after tests complete, perfect for CI/CD and quick validation
+- **Default Choice**: Use `npm run test:run` for normal development workflow to avoid hanging processes
 
 **Implementation Strategy**:
 1. **Create `.cursorrules` file** to enforce timeout usage across the project

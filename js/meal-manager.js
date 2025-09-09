@@ -22,14 +22,21 @@ class MealManager {
     }
 
     async loadRecipes() {
-        // Load from centralized demo data for consistency
-        if (window.DemoDataManager) {
+        // Check database source setting
+        const shouldLoadDemo = window.mealPlannerSettings?.shouldLoadDemoData() ?? true;
+        const currentSource = window.mealPlannerSettings?.getCurrentDatabaseSource() ?? 'demo';
+        
+        console.log(`📊 Meal Manager - Database source: ${currentSource}, should load demo: ${shouldLoadDemo}`);
+        
+        // Only load demo data if database source is 'demo'
+        if (shouldLoadDemo && window.DemoDataManager) {
             const demoData = new window.DemoDataManager();
             this.recipes = demoData.getRecipes();
             console.log(`✅ Meal Manager loaded ${this.recipes.length} recipes from demo data`);
         } else {
-            console.warn('⚠️ DemoDataManager not available, using empty recipe list');
+            // Use empty array for in-memory or other sources
             this.recipes = [];
+            console.log(`✅ Meal Manager initialized with empty data (source: ${currentSource})`);
         }
     }
 
@@ -808,6 +815,24 @@ class MealManager {
         setTimeout(() => {
             notification.remove();
         }, 3000);
+    }
+
+    async clearAllData() {
+        console.log('🗑️ Clearing all meals data...');
+        this.meals = [];
+        this.recipes = [];
+        this.filteredMeals = [];
+        this.searchTerm = '';
+        this.selectedMealType = '';
+        this.sortBy = 'name';
+        
+        // Clear from localStorage
+        localStorage.removeItem('mealplanner_meals');
+        
+        // Re-render to show empty state
+        this.render();
+        
+        console.log('✅ All meals data cleared');
     }
 }
 

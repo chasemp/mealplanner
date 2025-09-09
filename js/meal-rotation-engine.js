@@ -662,6 +662,19 @@ class MealRotationEngine {
             lastScheduled: recipe.lastScheduled
         };
     }
+
+    clearAllData() {
+        console.log('🗑️ Clearing all meal rotation engine data...');
+        this.preferences = new Map();
+        this.scheduledMeals = [];
+        this.rotationHistory = [];
+        
+        // Clear from localStorage
+        localStorage.removeItem('mealplanner_rotation_preferences');
+        localStorage.removeItem('mealplanner_rotation_history');
+        
+        console.log('✅ All meal rotation engine data cleared');
+    }
 }
 
 // Export for module systems
