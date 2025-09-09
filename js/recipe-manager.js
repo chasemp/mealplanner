@@ -57,7 +57,13 @@ class RecipeManager {
 
     async saveRecipes() {
         try {
-            localStorage.setItem('mealplanner-recipes', JSON.stringify(this.recipes));
+            // Save recipes using the centralized data authority
+            if (window.mealPlannerSettings) {
+                window.mealPlannerSettings.saveAuthoritativeData('recipes', this.recipes);
+            } else {
+                console.warn('⚠️ Settings manager not available, falling back to localStorage');
+                localStorage.setItem('mealplanner-recipes', JSON.stringify(this.recipes));
+            }
             console.log('✅ Recipes saved successfully');
         } catch (error) {
             console.error('❌ Error saving recipes:', error);

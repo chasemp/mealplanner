@@ -2,7 +2,7 @@
 class MealPlannerApp {
     constructor() {
         this.currentTab = 'dinner';
-        this.version = '2025.09.09.1447';
+        this.version = '2025.09.09.1455';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
@@ -2165,7 +2165,13 @@ class MealPlannerApp {
     
     saveFavoriteRecipes() {
         try {
-            localStorage.setItem('mealplanner_favorite_recipes', JSON.stringify(this.favoriteRecipes));
+            // Save favorite recipes using the centralized data authority
+            if (window.mealPlannerSettings) {
+                window.mealPlannerSettings.saveAuthoritativeData('favoriteRecipes', this.favoriteRecipes);
+            } else {
+                console.warn('⚠️ Settings manager not available, falling back to localStorage');
+                localStorage.setItem('mealplanner_favorite_recipes', JSON.stringify(this.favoriteRecipes));
+            }
             console.log(`💾 Saved ${this.favoriteRecipes.length} favorite recipes`);
         } catch (error) {
             console.error('Error saving favorite recipes:', error);

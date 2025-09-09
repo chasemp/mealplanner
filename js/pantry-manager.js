@@ -523,7 +523,13 @@ class PantryManager {
 
     savePantryItems() {
         try {
-            localStorage.setItem('mealplanner_pantry_items', JSON.stringify(this.pantryItems));
+            // Save pantry items using the centralized data authority
+            if (window.mealPlannerSettings) {
+                window.mealPlannerSettings.saveAuthoritativeData('pantryItems', this.pantryItems);
+            } else {
+                console.warn('⚠️ Settings manager not available, falling back to localStorage');
+                localStorage.setItem('mealplanner_pantry_items', JSON.stringify(this.pantryItems));
+            }
         } catch (error) {
             console.error('Error saving pantry items:', error);
         }

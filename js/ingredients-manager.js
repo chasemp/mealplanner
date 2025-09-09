@@ -741,6 +741,9 @@ class IngredientsManager {
                 this.showNotification(`"${ingredientData.name}" has been added!`, 'success');
             }
 
+            // Save to persistent storage
+            this.saveIngredients();
+            
             // Close modal and refresh view
             document.getElementById('ingredient-form-modal')?.remove();
             this.applyFilters();
@@ -749,6 +752,16 @@ class IngredientsManager {
         } catch (error) {
             console.error('Error saving ingredient:', error);
             this.showNotification('Error saving ingredient. Please try again.', 'error');
+        }
+    }
+
+    saveIngredients() {
+        // Save ingredients using the centralized data authority
+        if (window.mealPlannerSettings) {
+            window.mealPlannerSettings.saveAuthoritativeData('ingredients', this.ingredients);
+        } else {
+            console.warn('⚠️ Settings manager not available, falling back to localStorage');
+            localStorage.setItem('mealplanner_ingredients', JSON.stringify(this.ingredients));
         }
     }
 
@@ -762,8 +775,12 @@ class IngredientsManager {
     async deleteIngredient(ingredientId) {
         const ingredient = this.ingredients.find(ing => ing.id === ingredientId);
         if (ingredient && confirm(`Are you sure you want to delete "${ingredient.name}"?`)) {
-            // In real app, this would delete from database
+            // Remove from ingredients array
             this.ingredients = this.ingredients.filter(ing => ing.id !== ingredientId);
+            
+            // Save to persistent storage
+            this.saveIngredients();
+            
             this.applyFilters();
             this.render();
             this.showNotification(`"${ingredient.name}" has been deleted`, 'success');

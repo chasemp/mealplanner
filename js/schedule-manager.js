@@ -32,8 +32,13 @@ class ScheduleManager {
      */
     saveScheduledMeals() {
         try {
-            // Use the same storage key as main app for consistency
-            localStorage.setItem('mealplanner_scheduled_meals', JSON.stringify(this.scheduledMeals));
+            // Save scheduled meals using the centralized data authority
+            if (window.mealPlannerSettings) {
+                window.mealPlannerSettings.saveAuthoritativeData('scheduledMeals', this.scheduledMeals);
+            } else {
+                console.warn('⚠️ Settings manager not available, falling back to localStorage');
+                localStorage.setItem('mealplanner_scheduled_meals', JSON.stringify(this.scheduledMeals));
+            }
             console.log(`💾 ScheduleManager saved ${this.scheduledMeals.length} scheduled meals`);
         } catch (error) {
             console.error('Error saving scheduled meals:', error);
