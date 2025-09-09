@@ -248,7 +248,11 @@ class GroceryListManager {
             const recipe = this.recipes.find(r => r.id === meal.recipe_id);
             if (!recipe) return '';
 
-            const date = new Date(meal.date || meal.scheduled_date);
+            if (!meal.date) {
+                console.warn(`⚠️ Scheduled meal ${meal.id} missing date property:`, meal);
+                return '';
+            }
+            const date = new Date(meal.date);
             return `
                 <div class="border border-gray-200 rounded-lg p-4">
                     <div class="flex items-center justify-between mb-2">

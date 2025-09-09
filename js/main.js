@@ -2,7 +2,7 @@
 class MealPlannerApp {
     constructor() {
         this.currentTab = 'dinner';
-        this.version = '2025.09.09.1655';
+        this.version = '2025.09.09.1701';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
@@ -1287,7 +1287,7 @@ class MealPlannerApp {
                 recipe_id: meal.recipe_id || meal.id,
                 recipe_name: meal.recipe_name || meal.name || meal.title,
                 meal_type: mealType,
-                scheduled_date: meal.scheduled_date || meal.date,
+                date: meal.date, // Standardized on 'date' property only
                 servings: meal.servings || 4,
                 ingredients: meal.ingredients || [],
                 created_at: new Date().toISOString()
@@ -1459,7 +1459,11 @@ class MealPlannerApp {
                     return meal.id !== mealId;
                 } else {
                     // Fallback: remove by date and meal type
-                    const mealDate = new Date(meal.scheduled_date);
+                    if (!meal.date) {
+                        console.warn(`⚠️ Cannot remove meal ${meal.id} - missing date property:`, meal);
+                        return true; // Keep meal if we can't identify it
+                    }
+                    const mealDate = new Date(meal.date);
                     return !(mealDate.toDateString() === dateStr && meal.meal_type === mealType);
                 }
             });
