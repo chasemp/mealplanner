@@ -38,7 +38,7 @@ class ItineraryView {
                 }
             }
             
-            console.log(`📅 Loaded ${this.scheduledMeals.length} ${this.mealType} meals for itinerary`);
+            console.log(`📅 Loaded ${this.scheduledMeals.length} ${this.mealType} meals for itinerary:`, this.scheduledMeals);
         } catch (error) {
             console.error('Error loading scheduled meals:', error);
             this.scheduledMeals = [];
@@ -189,12 +189,34 @@ class ItineraryView {
         const endDate = new Date(this.startDate);
         endDate.setDate(endDate.getDate() + (this.weeksToShow * 7) - 1);
         
-        return this.scheduledMeals.filter(meal => {
-            if (!meal.date && !meal.scheduled_date) return false;
-            
-            const mealDate = new Date(meal.date || meal.scheduled_date);
-            return mealDate >= this.startDate && mealDate <= endDate;
+        console.log(`🔍 getScheduledMealsInTimeframe() for ${this.mealType}:`, {
+            startDate: this.startDate,
+            endDate: endDate,
+            weeksToShow: this.weeksToShow,
+            totalMeals: this.scheduledMeals.length
         });
+        
+        const filteredMeals = this.scheduledMeals.filter(meal => {
+            if (!meal.date) {
+                console.log(`❌ Meal ${meal.id} has no date property:`, meal);
+                return false;
+            }
+            
+            const mealDate = new Date(meal.date);
+            const inRange = mealDate >= this.startDate && mealDate <= endDate;
+            
+            console.log(`📅 Meal ${meal.id} (${meal.date}):`, {
+                mealDate: mealDate,
+                inRange: inRange,
+                startDate: this.startDate,
+                endDate: endDate
+            });
+            
+            return inRange;
+        });
+        
+        console.log(`✅ Filtered to ${filteredMeals.length} meals in timeframe:`, filteredMeals);
+        return filteredMeals;
     }
 
     getSharedIngredients() {
@@ -213,11 +235,12 @@ class ItineraryView {
         // Find a scheduled meal for the given date
         const dateStr = date.toDateString();
         return this.scheduledMeals.find(meal => {
-            if (meal.scheduled_date) {
-                const mealDate = new Date(meal.scheduled_date);
-                return mealDate.toDateString() === dateStr;
+            if (!meal.date) {
+                console.warn(`⚠️ Scheduled meal ${meal.id} missing date property:`, meal);
+                return false;
             }
-            return false;
+            const mealDate = new Date(meal.date);
+            return mealDate.toDateString() === dateStr;
         }) || null;
     }
 
