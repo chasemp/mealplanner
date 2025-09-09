@@ -110,7 +110,7 @@ describe('ScheduleManager', () => {
             scheduleManager.scheduleMeal(mockMeal, date);
 
             expect(localStorageMock.setItem).toHaveBeenCalledWith(
-                'scheduledMeals',
+                'mealplanner_scheduled_meals',
                 expect.any(String)
             );
         });
@@ -332,7 +332,7 @@ describe('ScheduleManager', () => {
 
             scheduleManager.clearAllScheduledMeals();
             expect(scheduleManager.getAllScheduledMeals()).toHaveLength(0);
-            expect(localStorageMock.setItem).toHaveBeenCalledWith('scheduledMeals', '[]');
+            expect(localStorageMock.setItem).toHaveBeenCalledWith('mealplanner_scheduled_meals', '[]');
         });
     });
 

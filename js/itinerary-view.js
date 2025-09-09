@@ -9,23 +9,27 @@ class ItineraryView {
         this.weeksToShow = 4;
         this.currentView = 'itinerary';
         this.scheduledMeals = [];
+        
+        // Listen for schedule manager events to keep data in sync
+        this.setupScheduleEventListeners();
     }
 
     loadScheduledMeals() {
         try {
-            // Try to get from main app first
-            if (window.app && window.app.getScheduledMeals) {
+            // Use ScheduleManager if available for consistency
+            if (window.scheduleManager) {
+                this.scheduledMeals = window.scheduleManager.getScheduledMealsByType(this.mealType);
+            } else if (window.app && window.app.getScheduledMeals) {
+                // Fallback to main app
                 this.scheduledMeals = window.app.getScheduledMeals().filter(meal => meal.meal_type === this.mealType);
             } else {
-                // Fallback to localStorage
+                // Final fallback to localStorage
                 const stored = localStorage.getItem('mealplanner_scheduled_meals');
                 if (stored) {
                     const allMeals = JSON.parse(stored);
                     this.scheduledMeals = allMeals.filter(meal => meal.meal_type === this.mealType);
-                } else if (window.DemoDataManager) {
-                    // Final fallback to demo data
-                    const demoData = new window.DemoDataManager();
-                    this.scheduledMeals = demoData.getScheduledMeals().filter(meal => meal.meal_type === this.mealType);
+                } else {
+                    this.scheduledMeals = [];
                 }
             }
             
@@ -34,6 +38,30 @@ class ItineraryView {
             console.error('Error loading scheduled meals:', error);
             this.scheduledMeals = [];
         }
+    }
+
+    setupScheduleEventListeners() {
+        // Listen for meal scheduling events to refresh the view
+        document.addEventListener('mealScheduled', (event) => {
+            if (event.detail.scheduledMeal && event.detail.scheduledMeal.meal_type === this.mealType) {
+                console.log(`🔄 Refreshing ${this.mealType} itinerary due to meal scheduled`);
+                this.render();
+            }
+        });
+
+        document.addEventListener('mealUnscheduled', (event) => {
+            if (event.detail.scheduledMeal && event.detail.scheduledMeal.meal_type === this.mealType) {
+                console.log(`🔄 Refreshing ${this.mealType} itinerary due to meal unscheduled`);
+                this.render();
+            }
+        });
+
+        document.addEventListener('mealUpdated', (event) => {
+            if (event.detail.scheduledMeal && event.detail.scheduledMeal.meal_type === this.mealType) {
+                console.log(`🔄 Refreshing ${this.mealType} itinerary due to meal updated`);
+                this.render();
+            }
+        });
     }
 
     render() {

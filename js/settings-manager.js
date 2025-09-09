@@ -283,6 +283,9 @@ class SettingsManager {
 
     async applyDatabaseSource() {
         try {
+            // Update header database source indicator
+            this.updateDatabaseSourceIndicator();
+            
             switch (this.settings.sourceType) {
                 case 'demo':
                     await this.loadDemoData();
@@ -367,6 +370,23 @@ class SettingsManager {
         });
         
         console.log(`🧹 Cleared ${keysToRemove.length} localStorage keys`);
+    }
+
+    updateDatabaseSourceIndicator() {
+        const indicator = document.getElementById('database-source-indicator');
+        if (!indicator) return;
+
+        const sourceNames = {
+            'demo': 'Demo Data',
+            'memory': 'In Memory',
+            'local': 'Local File',
+            'github': 'GitHub Sync'
+        };
+
+        const sourceName = sourceNames[this.settings.sourceType] || 'Unknown';
+        indicator.textContent = sourceName;
+        
+        console.log(`📊 Updated database source indicator: ${sourceName}`);
     }
 
     async loadLocalDatabase() {

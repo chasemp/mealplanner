@@ -2,7 +2,7 @@
 class MealPlannerApp {
     constructor() {
         this.currentTab = 'dinner';
-        this.version = '2025.09.08.1911';
+        this.version = '2025.09.08.2111';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
@@ -1305,17 +1305,30 @@ class MealPlannerApp {
         console.log(`🗑️ Clearing ${mealType} data from storage...`);
         
         try {
-            // Get current scheduled meals from localStorage or demo data
-            let scheduledMeals = this.getScheduledMeals();
-            const originalCount = scheduledMeals.length;
-            
-            // Filter out meals of this type
-            scheduledMeals = scheduledMeals.filter(meal => meal.meal_type !== mealType);
-            
-            // Save the updated meals back to storage
-            this.saveScheduledMeals(scheduledMeals);
-            
-            console.log(`✅ Cleared ${originalCount - scheduledMeals.length} ${mealType} meals from schedule`);
+            // Use ScheduleManager if available for consistency
+            if (window.scheduleManager) {
+                const originalMeals = window.scheduleManager.getScheduledMealsByType(mealType);
+                const originalCount = originalMeals.length;
+                
+                // Remove all meals of this type using ScheduleManager
+                originalMeals.forEach(meal => {
+                    window.scheduleManager.removeScheduledMeal(meal.id);
+                });
+                
+                console.log(`✅ Cleared ${originalCount} ${mealType} meals from schedule via ScheduleManager`);
+            } else {
+                // Fallback to original method
+                let scheduledMeals = this.getScheduledMeals();
+                const originalCount = scheduledMeals.length;
+                
+                // Filter out meals of this type
+                scheduledMeals = scheduledMeals.filter(meal => meal.meal_type !== mealType);
+                
+                // Save the updated meals back to storage
+                this.saveScheduledMeals(scheduledMeals);
+                
+                console.log(`✅ Cleared ${originalCount - scheduledMeals.length} ${mealType} meals from schedule`);
+            }
             
             // Clear any local selection state for this meal type
             if (this.selectedRecipes) {
