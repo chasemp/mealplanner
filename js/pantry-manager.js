@@ -35,10 +35,16 @@ class PantryManager {
     }
 
     loadIngredients() {
-        // Load ingredients from demo data or database
-        if (window.DemoDataManager) {
-            const demoData = new window.DemoDataManager();
-            this.ingredients = demoData.getIngredients();
+        console.log('📱 Pantry Manager loading ingredients from authoritative data source...');
+        
+        // Get data from centralized authority
+        if (window.mealPlannerSettings) {
+            this.ingredients = window.mealPlannerSettings.getAuthoritativeData('ingredients');
+            console.log(`✅ Pantry Manager loaded ${this.ingredients.length} ingredients from authoritative source`);
+        } else {
+            // Fallback if settings not available
+            console.warn('⚠️ Settings manager not available, using empty ingredients');
+            this.ingredients = [];
         }
     }
 

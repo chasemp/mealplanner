@@ -308,6 +308,9 @@ class SettingsManager {
                 case 'memory':
                     await this.loadMemoryDatabase();
                     break;
+                case 'browser':
+                    await this.loadBrowserDatabase();
+                    break;
                 case 'local':
                     await this.loadLocalDatabase();
                     break;
@@ -335,7 +338,7 @@ class SettingsManager {
     }
 
     async loadMemoryDatabase() {
-        console.log('Loading in-memory database (clean slate)...');
+        console.log('Loading clean slate database (resets on refresh)...');
         
         try {
             // Clear all data from localStorage
@@ -349,11 +352,31 @@ class SettingsManager {
             // Reload all managers to ensure they start with empty state
             await this.reloadAllManagers();
             
-            console.log('✅ In-memory database initialized - all data cleared and managers reloaded');
+            console.log('✅ Clean slate database initialized - all data cleared and managers reloaded');
             return true;
         } catch (error) {
-            console.error('❌ Failed to initialize in-memory database:', error);
-            throw new Error(`Failed to initialize in-memory database: ${error.message}`);
+            console.error('❌ Failed to initialize clean slate database:', error);
+            throw new Error(`Failed to initialize clean slate database: ${error.message}`);
+        }
+    }
+
+    async loadBrowserDatabase() {
+        console.log('Loading browser storage database (persists across refreshes)...');
+        
+        try {
+            // Clear all data from the current app instance first
+            if (window.app) {
+                await window.app.clearAllData();
+            }
+            
+            // Reload all managers - they will load from browser storage via getAuthoritativeData
+            await this.reloadAllManagers();
+            
+            console.log('✅ Browser storage database initialized - managers loaded from browser storage');
+            return true;
+        } catch (error) {
+            console.error('❌ Failed to initialize browser storage database:', error);
+            throw new Error(`Failed to initialize browser storage database: ${error.message}`);
         }
     }
 
@@ -396,7 +419,8 @@ class SettingsManager {
 
         const sourceNames = {
             'demo': 'Demo Data',
-            'memory': 'In Memory',
+            'memory': 'Clean Slate',
+            'browser': 'Browser Storage',
             'local': 'Local File',
             'github': 'GitHub Sync'
         };
@@ -426,7 +450,9 @@ class SettingsManager {
             case 'demo':
                 return this.getDemoData(dataType);
             case 'memory':
-                return this.getMemoryData(dataType);
+                return this.getMemoryData(dataType); // Clean slate - always empty
+            case 'browser':
+                return this.getBrowserData(dataType); // Session storage - persists during browser session
             case 'local':
                 return this.getLocalData(dataType);
             case 'github':
@@ -452,6 +478,8 @@ class SettingsManager {
                     return demoData.getRecipes();
                 case 'scheduledMeals':
                     return demoData.getScheduledMeals();
+                case 'pantryItems':
+                    return demoData.getPantryItems ? demoData.getPantryItems() : [];
                 case 'meals':
                     return []; // Meals are user-created, not in demo data
                 default:
@@ -465,9 +493,65 @@ class SettingsManager {
     }
     
     getMemoryData(dataType) {
-        // In-memory mode always returns empty data - clean slate
-        console.log(`✅ Returning empty ${dataType} for in-memory mode`);
+        // Clean slate mode always returns empty data - resets on refresh
+        console.log(`✅ Returning empty ${dataType} for clean slate mode`);
         return [];
+    }
+    
+    getBrowserData(dataType) {
+        // Browser storage mode - uses localStorage with browser_ prefix, persists across refreshes
+        try {
+            const stored = localStorage.getItem(`mealplanner_browser_${dataType}`);
+            if (stored) {
+                const data = JSON.parse(stored);
+                console.log(`✅ Loaded ${data.length} ${dataType} from browser storage`);
+                return data;
+            }
+        } catch (error) {
+            console.warn(`⚠️ Error loading ${dataType} from browser storage:`, error);
+        }
+        
+        console.log(`✅ No browser storage ${dataType} found, returning empty data`);
+        return [];
+    }
+
+    // Centralized save method - routes to correct storage based on current database source
+    saveAuthoritativeData(dataType, data) {
+        const currentSource = this.getCurrentDatabaseSource();
+        console.log(`💾 Saving ${dataType} to ${currentSource} storage...`);
+        
+        try {
+            switch (currentSource) {
+                case 'demo':
+                case 'local':
+                    // Use standard localStorage keys
+                    localStorage.setItem(`mealplanner_${dataType}`, JSON.stringify(data));
+                    console.log(`✅ Saved ${data.length} ${dataType} to localStorage`);
+                    break;
+                    
+                case 'browser':
+                    // Use browser-specific localStorage keys
+                    localStorage.setItem(`mealplanner_browser_${dataType}`, JSON.stringify(data));
+                    console.log(`✅ Saved ${data.length} ${dataType} to browser storage`);
+                    break;
+                    
+                case 'memory':
+                    // Memory mode - don't save anything
+                    console.log(`🗑️ Memory mode - not saving ${dataType} (will reset on refresh)`);
+                    break;
+                    
+                case 'github':
+                    // GitHub mode - save to localStorage for now (TODO: implement GitHub sync)
+                    localStorage.setItem(`mealplanner_${dataType}`, JSON.stringify(data));
+                    console.log(`✅ Saved ${data.length} ${dataType} to localStorage (GitHub mode)`);
+                    break;
+                    
+                default:
+                    console.warn(`⚠️ Unknown storage source: ${currentSource}, not saving`);
+            }
+        } catch (error) {
+            console.error(`❌ Error saving ${dataType} to ${currentSource} storage:`, error);
+        }
     }
     
     getLocalData(dataType) {
