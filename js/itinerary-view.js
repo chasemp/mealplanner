@@ -155,14 +155,29 @@ class ItineraryView {
     }
 
     getTotalMeals() {
-        // Return actual count of scheduled meals for this meal type
-        return this.scheduledMeals.length;
+        // Return actual count of scheduled meals for this meal type within the selected timeframe
+        const mealsInRange = this.getScheduledMealsInTimeframe();
+        return mealsInRange.length;
     }
 
     getUniqueRecipes() {
-        // Count unique recipe names in scheduled meals
-        const uniqueRecipes = new Set(this.scheduledMeals.map(meal => meal.recipe_name || meal.name));
+        // Count unique recipe names in scheduled meals within the selected timeframe
+        const mealsInRange = this.getScheduledMealsInTimeframe();
+        const uniqueRecipes = new Set(mealsInRange.map(meal => meal.recipe_name || meal.meal_name || meal.name));
         return uniqueRecipes.size;
+    }
+
+    getScheduledMealsInTimeframe() {
+        // Filter scheduled meals to only include those within the selected date range
+        const endDate = new Date(this.startDate);
+        endDate.setDate(endDate.getDate() + (this.weeksToShow * 7) - 1);
+        
+        return this.scheduledMeals.filter(meal => {
+            if (!meal.date && !meal.scheduled_date) return false;
+            
+            const mealDate = new Date(meal.date || meal.scheduled_date);
+            return mealDate >= this.startDate && mealDate <= endDate;
+        });
     }
 
     getSharedIngredients() {
@@ -172,7 +187,7 @@ class ItineraryView {
     }
 
     getEstimatedCost() {
-        // Calculate estimated cost based on actual scheduled meals
+        // Calculate estimated cost based on scheduled meals within the selected timeframe
         // For now, use average cost per meal (can be enhanced with real ingredient costs)
         return (this.getTotalMeals() * 8.50).toFixed(2);
     }
