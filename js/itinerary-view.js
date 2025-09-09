@@ -175,7 +175,7 @@ class ItineraryView {
     getUniqueRecipes() {
         // Count unique recipe names in scheduled meals within the selected timeframe
         const mealsInRange = this.getScheduledMealsInTimeframe();
-        const uniqueRecipes = new Set(mealsInRange.map(meal => meal.recipe_name || meal.meal_name || meal.name));
+        const uniqueRecipes = new Set(mealsInRange.map(meal => meal.meal_name || meal.recipe_name || meal.name));
         console.log(`🔢 getUniqueRecipes() for ${this.mealType}:`, {
             mealsInRange: mealsInRange.length,
             uniqueRecipes: uniqueRecipes.size,
@@ -229,6 +229,17 @@ class ItineraryView {
         // Calculate estimated cost based on scheduled meals within the selected timeframe
         // For now, use average cost per meal (can be enhanced with real ingredient costs)
         return (this.getTotalMeals() * 8.50).toFixed(2);
+    }
+
+    getRecipeById(recipeId) {
+        // Look up recipe from available sources
+        if (window.demoData && window.demoData.getRecipes) {
+            const recipes = window.demoData.getRecipes();
+            return recipes.find(recipe => recipe.id === recipeId);
+        } else if (window.recipeManager && window.recipeManager.recipes) {
+            return window.recipeManager.recipes.find(recipe => recipe.id === recipeId);
+        }
+        return null;
     }
 
     getScheduledMealForDate(date) {
@@ -330,7 +341,31 @@ class ItineraryView {
             // Get actual scheduled meal for this date
             const scheduledMeal = this.getScheduledMealForDate(date);
             const hasMeal = scheduledMeal !== null;
-            const mealName = hasMeal ? (scheduledMeal.recipe_name || scheduledMeal.name) : null;
+            
+            // Get meal name and timing from scheduled meal data
+            let mealName = null;
+            let mealTiming = "Ready in 30 min"; // Default fallback
+            if (hasMeal) {
+                // Use meal_name from modern schema, with fallbacks for legacy data
+                mealName = scheduledMeal.meal_name || scheduledMeal.recipe_name || scheduledMeal.name;
+                
+                // Use total_time from modern schema, with fallback to recipe lookup
+                if (scheduledMeal.total_time && scheduledMeal.total_time > 0) {
+                    mealTiming = `Ready in ${scheduledMeal.total_time} min`;
+                } else if (scheduledMeal.recipe_id) {
+                    // Fallback: look up recipe for legacy data
+                    const recipe = this.getRecipeById(scheduledMeal.recipe_id);
+                    if (recipe) {
+                        if (!mealName) mealName = recipe.title;
+                        const totalTime = (recipe.prep_time || 0) + (recipe.cook_time || 0);
+                        if (totalTime > 0) {
+                            mealTiming = `Ready in ${totalTime} min`;
+                        }
+                    } else if (!mealName) {
+                        mealName = `Recipe ${scheduledMeal.recipe_id}`;
+                    }
+                }
+            }
             const dateStr = date.toDateString();
             
             daysHtml += `
@@ -349,7 +384,7 @@ class ItineraryView {
                                         </div>
                                         <div>
                                             <div class="font-medium text-gray-900">${mealName}</div>
-                                            <div class="text-xs text-gray-500">Ready in 30 min</div>
+                                            <div class="text-xs text-gray-500">${mealTiming}</div>
                                         </div>
                                     </div>
                                 ` : `
