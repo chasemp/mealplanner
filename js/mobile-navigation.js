@@ -87,7 +87,7 @@ class MobileNavigation {
         
         tabsHTML += `
             <button class="mobile-nav-tab flex flex-col items-center py-1 px-1 min-w-0 flex-1" data-tab="scheduled">
-                <span class="text-lg mb-1">🍽️</span>
+                <span class="text-lg mb-1">📄</span>
                 <span class="text-xs font-medium">Menu</span>
             </button>`;
         
