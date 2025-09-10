@@ -57,7 +57,7 @@ class MobileNavigation {
         let tabsHTML = `
             <button class="mobile-nav-tab flex flex-col items-center py-1 px-1 min-w-0 flex-1" data-tab="ingredients">
                 <span class="text-lg mb-1">🥕</span>
-                <span class="text-xs font-medium">Ingredients</span>
+                <span class="text-xs font-medium">Items</span>
             </button>
             
             <button class="mobile-nav-tab flex flex-col items-center py-1 px-1 min-w-0 flex-1" data-tab="recipes">

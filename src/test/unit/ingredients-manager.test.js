@@ -1,4 +1,4 @@
-// Unit tests for IngredientsManager class
+// Unit tests for IngredientsManager class (Items Manager)
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { IngredientsManager } from '../../components/ingredients-manager.js'
 
@@ -21,7 +21,7 @@ const createMockDOM = () => {
   `
 }
 
-describe('IngredientsManager', () => {
+describe('IngredientsManager (Items Manager)', () => {
   let ingredientsManager
   let mockDb
 

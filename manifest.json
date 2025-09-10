@@ -1,7 +1,7 @@
 {
   "name": "MealPlanner - Smart Meal Planning & Rotation",
   "short_name": "MealPlanner",
-  "description": "Intelligent meal planning with recipe management, grocery lists, and smart rotation algorithms. Plan meals, manage ingredients, and sync with Google Calendar.",
+  "description": "Intelligent meal planning with recipe management, grocery lists, and smart rotation algorithms. Plan meals, manage items, and sync with Google Calendar.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
