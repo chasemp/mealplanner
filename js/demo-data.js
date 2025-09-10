@@ -1042,6 +1042,10 @@ class DemoDataManager {
     migrateToLabelTypes() {
         console.log('🔄 Migrating demo data to label types schema...');
         
+        // Count combo recipes before migration
+        const comboBefore = this.recipes.filter(r => r.type === 'combo').length;
+        console.log(`📊 Found ${comboBefore} combo recipes before migration`);
+        
         // Ensure labelTypes is available
         if (typeof window !== 'undefined' && window.labelTypes) {
             const labelTypes = window.labelTypes;
@@ -1058,6 +1062,7 @@ class DemoDataManager {
                     // Add combo label if it was a combo recipe
                     if (recipe.type === 'combo') {
                         labels.push('combo');
+                        console.log(`🔄 Adding 'combo' label to recipe: ${recipe.title}`);
                     }
                     
                     // Convert all labels to typed format
@@ -1072,6 +1077,13 @@ class DemoDataManager {
                 
                 return migratedRecipe;
             });
+            
+            // Count combo labels after migration
+            const comboAfter = this.recipes.filter(r => {
+                const labelNames = labelTypes.extractLabelNames(r.labels || []);
+                return labelNames.includes('combo');
+            }).length;
+            console.log(`📊 Found ${comboAfter} recipes with 'combo' label after migration`);
             
             // Migrate meals (if they have labels)
             this.meals = this.meals.map(meal => {

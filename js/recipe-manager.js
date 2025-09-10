@@ -264,9 +264,7 @@ class RecipeManager {
                     
                     <div class="flex items-center justify-between">
                         <div class="flex flex-wrap gap-1">
-                            ${(recipe.labels || []).slice(0, 2).map(label => `
-                                <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">${label}</span>
-                            `).join('')}
+                            ${this.renderLabelChips(recipe.labels || [], 2)}
                             ${(recipe.labels || []).length > 2 ? `<span class="text-xs text-gray-500">+${(recipe.labels || []).length - 2} more</span>` : ''}
                         </div>
                         <div class="text-xs text-gray-400">
@@ -377,6 +375,56 @@ class RecipeManager {
         });
     }
 
+    // Process user-entered labels and convert them to typed format
+    processUserLabels(labelStrings) {
+        if (!Array.isArray(labelStrings)) return [];
+        
+        // Use labelTypes system if available
+        if (window.labelTypes) {
+            return window.labelTypes.convertToTypedLabels(labelStrings);
+        }
+        
+        // Fallback: return as strings (backward compatibility)
+        return labelStrings;
+    }
+
+    // Render label chips with appropriate colors based on type
+    renderLabelChips(labels, maxCount = null) {
+        if (!Array.isArray(labels)) return '';
+        
+        const labelsToShow = maxCount ? labels.slice(0, maxCount) : labels;
+        
+        return labelsToShow.map(label => {
+            const labelName = typeof label === 'string' ? label : (label.name || String(label));
+            const labelType = typeof label === 'object' && label.type ? label.type : this.inferLabelType(labelName);
+            const colorClasses = this.getLabelColorClasses(labelType);
+            
+            return `<span class="px-2 py-1 ${colorClasses} rounded-full text-xs">${labelName}</span>`;
+        }).join('');
+    }
+
+    // Infer label type from label name (uses global labelTypes if available)
+    inferLabelType(labelName) {
+        if (window.labelTypes) {
+            return window.labelTypes.inferLabelType(labelName);
+        }
+        return 'default';
+    }
+
+    // Get color classes for a label type
+    getLabelColorClasses(labelType) {
+        if (window.labelTypes) {
+            return window.labelTypes.getColorClasses(labelType);
+        }
+        // Fallback colors
+        switch (labelType) {
+            case 'recipe_type':
+                return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+            default:
+                return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+        }
+    }
+
     getFavoriteRecipes() {
         return this.recipes.filter(recipe => recipe.favorite === true);
     }
@@ -389,11 +437,18 @@ class RecipeManager {
         // Only show predefined labels if we're in demo mode
         let predefinedLabels = [];
         if (window.mealPlannerSettings && window.mealPlannerSettings.getCurrentDatabaseSource() === 'demo') {
-            predefinedLabels = [
-                'quick', 'healthy', 'vegetarian', 'vegan', 'gluten-free', 'dairy-free',
-                'comfort-food', 'spicy', 'sweet', 'savory', 'protein-rich', 'low-carb',
-                'kid-friendly', 'party', 'holiday', 'summer', 'winter', 'easy', 'advanced'
-            ];
+            // Use the new LabelTypes system for predefined labels
+            if (window.labelTypes) {
+                predefinedLabels = window.labelTypes.getAllPredefinedLabels();
+            } else {
+                // Fallback to hardcoded list if labelTypes not available
+                predefinedLabels = [
+                    'combo', // Include combo for recipe_type
+                    'quick', 'healthy', 'vegetarian', 'vegan', 'gluten-free', 'dairy-free',
+                    'comfort-food', 'spicy', 'sweet', 'savory', 'protein-rich', 'low-carb',
+                    'kid-friendly', 'party', 'holiday', 'summer', 'winter', 'easy', 'advanced'
+                ];
+            }
         }
         
         // Combine and deduplicate
@@ -1172,7 +1227,7 @@ class RecipeManager {
             prep_time: prepTimeInput ? parseInt(prepTimeInput.value) || 0 : 0,
             cook_time: cookTimeInput ? parseInt(cookTimeInput.value) || 0 : 0,
             instructions: instructionsInput ? instructionsInput.value.trim() : '',
-            labels: tagsInput ? tagsInput.value.trim().split(',').map(tag => tag.trim()).filter(tag => tag) : [],
+            labels: this.processUserLabels(tagsInput ? tagsInput.value.trim().split(',').map(tag => tag.trim()).filter(tag => tag) : []),
             difficulty: difficultyInput ? difficultyInput.value || 'easy' : 'easy',
             cuisine: cuisineInput ? cuisineInput.value.trim() : '',
             meal_type: mealTypeInput ? mealTypeInput.value || 'dinner' : 'dinner'
@@ -1299,7 +1354,7 @@ class RecipeManager {
         // Format labels/tags
         const labels = recipe.labels || recipe.tags || [];
         const labelsHtml = labels.length > 0 ? 
-            labels.map(label => `<span class="inline-block bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full text-sm mr-2 mb-2">${label}</span>`).join('') :
+            this.renderLabelChips(labels).replace(/text-xs/g, 'text-sm mr-2 mb-2') :
             '<span class="text-gray-500 dark:text-gray-400">No labels</span>';
 
         modal.innerHTML = `
