@@ -74,6 +74,17 @@ class RecipeManager {
     render() {
         this.container.innerHTML = `
             <div class="recipe-manager">
+                <!-- Header with Add Button -->
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Recipes</h2>
+                    <button id="add-recipe-btn" class="btn-primary flex items-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        <span>Add Recipe</span>
+                    </button>
+                </div>
+
                 <!-- Search and Filter Controls -->
                 <!-- 
                 LAYOUT STRATEGY: 5-column layout matching Meals tab exactly
@@ -189,17 +200,6 @@ class RecipeManager {
                     </div>
                 </div>
                 
-                <!-- Header with Add Button -->
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Recipes</h2>
-                    <button id="add-recipe-btn" class="btn-primary flex items-center space-x-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                        </svg>
-                        <span>Add Recipe</span>
-                    </button>
-                </div>
-
                 <!-- Recipe Results Info Bar -->
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 p-3 mb-6">
                     <div class="flex items-center justify-between">
