@@ -2496,8 +2496,56 @@ class DemoDataManager {
 
     // Migration method for label types (placeholder - implement as needed)
     migrateToLabelTypes() {
-        // Label type migration logic would go here
-        console.log('📱 Label types migration completed');
+        console.log('📱 Starting label types migration...');
+        
+        let migratedCount = 0;
+        
+        // Migrate recipes: convert meal_type field to meal_type label
+        if (this.recipes) {
+            this.recipes.forEach(recipe => {
+                if (recipe.meal_type && typeof recipe.meal_type === 'string') {
+                    // Capitalize first letter for label format
+                    const mealTypeLabel = recipe.meal_type.charAt(0).toUpperCase() + recipe.meal_type.slice(1);
+                    
+                    // Initialize labels array if it doesn't exist
+                    if (!recipe.labels) {
+                        recipe.labels = [];
+                    }
+                    
+                    // Add meal type as label if not already present
+                    if (!recipe.labels.includes(mealTypeLabel)) {
+                        recipe.labels.push(mealTypeLabel);
+                        migratedCount++;
+                    }
+                    
+                    // Remove the old meal_type field
+                    delete recipe.meal_type;
+                }
+            });
+        }
+        
+        // Migrate meals: convert meal_type field to meal_type label (if any meals have this field)
+        if (this.meals) {
+            this.meals.forEach(meal => {
+                if (meal.meal_type && typeof meal.meal_type === 'string') {
+                    // Note: meals don't typically have labels, but if they do in the future
+                    // this migration would handle it
+                    delete meal.meal_type;
+                }
+            });
+        }
+        
+        // Migrate scheduled meals: convert meal_type field (if any)
+        if (this.scheduledMeals) {
+            this.scheduledMeals.forEach(scheduledMeal => {
+                if (scheduledMeal.meal_type && typeof scheduledMeal.meal_type === 'string') {
+                    // Remove meal_type from scheduled meals as it's now determined by recipe labels
+                    delete scheduledMeal.meal_type;
+                }
+            });
+        }
+        
+        console.log(`📱 Label types migration completed: ${migratedCount} recipes migrated`);
     }
 
     // Get all data
