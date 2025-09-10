@@ -14,6 +14,7 @@ class MockRecipeManager {
             label: 'all'
         }
         this.sortBy = 'name'
+        this.sortAscending = true
         this.selectedLabel = 'all'
     }
 
@@ -89,6 +90,15 @@ class MockRecipeManager {
                         <option value="all">All Labels</option>
                         ${this.getAllLabels().map(label => `<option value="${label}">${label}</option>`).join('')}
                     </select>
+                    <select id="recipe-sort">
+                        <option value="name">Name</option>
+                        <option value="date">Date</option>
+                        <option value="prep_time">Prep Time</option>
+                        <option value="serving_count">Servings</option>
+                        <option value="label_type">Label Type</option>
+                    </select>
+                    <button id="sort-direction-btn">${this.sortAscending ? '↑' : '↓'}</button>
+                    <button id="clear-recipe-filters-btn">Clear Filters</button>
                     <button id="add-recipe-btn">Add Recipe</button>
                 </div>
                 <div class="recipe-grid">
@@ -150,18 +160,31 @@ class MockRecipeManager {
 
     sortRecipes(recipes) {
         return recipes.sort((a, b) => {
+            let result = 0
+            
             switch (this.sortBy) {
                 case 'name':
-                    return a.title.localeCompare(b.title)
+                    result = a.title.localeCompare(b.title)
+                    break
                 case 'date':
-                    return new Date(b.updated_at) - new Date(a.updated_at)
+                    result = new Date(b.updated_at) - new Date(a.updated_at)
+                    break
                 case 'prep_time':
-                    return (a.prep_time + a.cook_time) - (b.prep_time + b.cook_time)
+                    result = (a.prep_time + a.cook_time) - (b.prep_time + b.cook_time)
+                    break
                 case 'serving_count':
-                    return (b.serving_count || b.servings || 0) - (a.serving_count || a.servings || 0)
+                    result = (b.serving_count || b.servings || 0) - (a.serving_count || a.servings || 0)
+                    break
+                case 'label_type':
+                    // Simple mock implementation for label type sorting
+                    result = a.title.localeCompare(b.title)
+                    break
                 default:
-                    return 0
+                    result = 0
             }
+            
+            // Apply sort direction (flip result if descending)
+            return this.sortAscending ? result : -result
         })
     }
 
@@ -202,6 +225,40 @@ class MockRecipeManager {
         if (labelSelect) {
             labelSelect.addEventListener('change', (e) => {
                 this.selectedLabel = e.target.value
+                this.render()
+            })
+        }
+
+        // Sort selector
+        const sortSelect = this.container.querySelector('#recipe-sort')
+        if (sortSelect) {
+            sortSelect.addEventListener('change', (e) => {
+                this.sortBy = e.target.value
+                this.render()
+            })
+        }
+
+        // Sort direction button
+        const sortDirectionBtn = this.container.querySelector('#sort-direction-btn')
+        if (sortDirectionBtn) {
+            sortDirectionBtn.addEventListener('click', () => {
+                this.sortAscending = !this.sortAscending
+                this.render()
+            })
+        }
+
+        // Clear filters button
+        const clearFiltersBtn = this.container.querySelector('#clear-recipe-filters-btn')
+        if (clearFiltersBtn) {
+            clearFiltersBtn.addEventListener('click', () => {
+                this.currentFilter = {
+                    search: '',
+                    category: 'all',
+                    label: 'all'
+                }
+                this.sortBy = 'name'
+                this.sortAscending = true
+                this.selectedLabel = 'all'
                 this.render()
             })
         }
@@ -299,6 +356,20 @@ class MockRecipeManager {
         }
         
         return errors
+    }
+
+    clearAllData() {
+        this.recipes = []
+        this.ingredients = []
+        this.currentFilter = {
+            search: '',
+            category: 'all',
+            label: 'all'
+        }
+        this.sortBy = 'name'
+        this.sortAscending = true
+        this.selectedLabel = 'all'
+        this.render()
     }
 }
 
@@ -402,6 +473,123 @@ describe('RecipeManager', () => {
             
             expect(sorted[0].serving_count).toBe(6) // Vegetable Pasta
             expect(sorted[1].serving_count).toBe(4) // Chicken Stir Fry
+        })
+
+        it('should sort recipes by label type', () => {
+            recipeManager.sortBy = 'label_type'
+            const sorted = recipeManager.getFilteredRecipes()
+            
+            // Should sort by label type priority, then by name
+            expect(sorted).toHaveLength(2)
+        })
+    })
+
+    describe('Sort Direction', () => {
+        beforeEach(() => {
+            recipeManager.init()
+        })
+
+        it('should initialize with ascending sort direction', () => {
+            expect(recipeManager.sortAscending).toBe(true)
+        })
+
+        it('should toggle sort direction when button is clicked', () => {
+            recipeManager.render()
+            recipeManager.attachEventListeners() // Ensure event listeners are attached
+            const sortDirectionBtn = recipeManager.container.querySelector('#sort-direction-btn')
+            
+            expect(recipeManager.sortAscending).toBe(true)
+            
+            // Simulate button click
+            sortDirectionBtn.click()
+            
+            expect(recipeManager.sortAscending).toBe(false)
+        })
+
+        it('should render correct arrow icon for sort direction', () => {
+            // Test ascending arrow
+            recipeManager.sortAscending = true
+            recipeManager.render()
+            let sortDirectionBtn = recipeManager.container.querySelector('#sort-direction-btn')
+            expect(sortDirectionBtn.innerHTML).toBe('↑') // Up arrow
+            
+            // Test descending arrow
+            recipeManager.sortAscending = false
+            recipeManager.render()
+            sortDirectionBtn = recipeManager.container.querySelector('#sort-direction-btn')
+            expect(sortDirectionBtn.innerHTML).toBe('↓') // Down arrow
+        })
+
+        it('should apply ascending sort correctly', () => {
+            recipeManager.sortBy = 'name'
+            recipeManager.sortAscending = true
+            const sorted = recipeManager.getFilteredRecipes()
+            
+            expect(sorted[0].title).toBe('Chicken Stir Fry') // A comes before V
+            expect(sorted[1].title).toBe('Vegetable Pasta')
+        })
+
+        it('should apply descending sort correctly', () => {
+            recipeManager.sortBy = 'name'
+            recipeManager.sortAscending = false
+            const sorted = recipeManager.getFilteredRecipes()
+            
+            expect(sorted[0].title).toBe('Vegetable Pasta') // V comes before C when descending
+            expect(sorted[1].title).toBe('Chicken Stir Fry')
+        })
+
+        it('should apply sort direction to prep time sorting', () => {
+            // Add recipes with different prep times for better testing
+            recipeManager.recipes = [
+                { 
+                    id: 1, 
+                    title: 'Quick Recipe', 
+                    prep_time: 5, 
+                    cook_time: 10,
+                    serving_count: 2,
+                    created_at: '2023-01-01'
+                },
+                { 
+                    id: 2, 
+                    title: 'Slow Recipe', 
+                    prep_time: 30, 
+                    cook_time: 60,
+                    serving_count: 4,
+                    created_at: '2023-01-02'
+                }
+            ]
+            
+            // Ascending: shortest time first
+            recipeManager.sortBy = 'prep_time'
+            recipeManager.sortAscending = true
+            let sorted = recipeManager.getFilteredRecipes()
+            expect(sorted[0].title).toBe('Quick Recipe')
+            expect(sorted[1].title).toBe('Slow Recipe')
+            
+            // Descending: longest time first
+            recipeManager.sortAscending = false
+            sorted = recipeManager.getFilteredRecipes()
+            expect(sorted[0].title).toBe('Slow Recipe')
+            expect(sorted[1].title).toBe('Quick Recipe')
+        })
+
+        it('should reset sort direction when clearing filters', () => {
+            recipeManager.sortAscending = false
+            recipeManager.render()
+            recipeManager.attachEventListeners() // Ensure event listeners are attached
+            
+            const clearFiltersBtn = recipeManager.container.querySelector('#clear-recipe-filters-btn')
+            clearFiltersBtn.click()
+            
+            expect(recipeManager.sortAscending).toBe(true)
+        })
+
+        it('should reset sort direction in clearAllData', () => {
+            recipeManager.sortAscending = false
+            
+            recipeManager.clearAllData()
+            
+            expect(recipeManager.sortAscending).toBe(true)
         })
     })
 
