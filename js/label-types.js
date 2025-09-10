@@ -4,12 +4,12 @@ class LabelTypes {
         this.types = {
             'default': {
                 name: 'Default',
-                color: 'bg-green-100 text-green-800 dark:bg-green-200 dark:text-green-900',
+                color: 'bg-green-100 text-green-800 dark:!bg-green-200 dark:!text-green-900',
                 description: 'General recipe labels'
             },
             'recipe_type': {
                 name: 'Recipe Type',
-                color: 'bg-blue-100 text-blue-800 dark:bg-blue-200 dark:text-blue-900',
+                color: 'bg-blue-100 text-blue-800 dark:!bg-blue-200 dark:!text-blue-900',
                 description: 'Type of recipe (combo, etc.)'
             }
         };
