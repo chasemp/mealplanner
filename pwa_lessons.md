@@ -1501,6 +1501,64 @@ bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dar
 - PWA installed on home screen
 - Different screen sizes and orientations
 
+### **Event Listener and DOM Update Timing Issues**
+
+**Problem**: Dynamic DOM updates (innerHTML changes) destroy existing event listeners, causing UI interactions to break intermittently.
+
+**Root Cause**: 
+- Modern PWAs heavily use dynamic content updates for performance
+- `innerHTML` updates replace DOM nodes, removing attached event listeners
+- Timing between DOM updates and event listener reattachment creates race conditions
+- Partial updates can leave some elements without proper event handling
+
+**Common Symptoms**:
+- Buttons stop working after filtering/searching
+- Click handlers work initially but fail after content updates
+- Favorites toggles, form submissions, or modal triggers become unresponsive
+- Intermittent behavior that's hard to reproduce consistently
+
+**Solution Pattern**: Centralized Event Listener Management
+```javascript
+// ❌ Problematic - listeners lost on innerHTML update
+updateContent() {
+    container.innerHTML = generateHTML();
+    // Event listeners on new elements are missing!
+}
+
+// ✅ Proper - systematic reattachment
+updateContent() {
+    container.innerHTML = generateHTML();
+    this.attachEventListeners(); // Reattach all listeners
+}
+
+// Centralized listener management
+attachEventListeners() {
+    this.attachFormListeners();
+    this.attachButtonListeners(); 
+    this.attachCardListeners();
+}
+```
+
+**PWA Best Practices**:
+1. **Centralized Listener Management**: Create dedicated methods for attaching event listeners
+2. **Systematic Reattachment**: Always call listener attachment after innerHTML updates
+3. **Partial Update Strategy**: Update only specific DOM sections to preserve listeners elsewhere
+4. **Event Delegation**: Use event delegation on parent containers when possible
+5. **Debugging Strategy**: Add temporary logging to verify listener reattachment
+
+**Critical Timing Points**:
+- After search/filter operations that update content
+- Following modal open/close cycles
+- During tab switching or navigation changes
+- After dynamic form generation or updates
+- When updating info bars, counters, or status indicators
+
+**Prevention Strategy**: 
+- Always pair `innerHTML` updates with listener reattachment
+- Test all interactive elements after content updates
+- Use browser dev tools to verify event listeners are present
+- Implement consistent update patterns across all managers
+
 ---
 
 *This document captures the lessons learned from building the MealPlanner PWA, emphasizing the importance of the static PWA sweet spot: modular organization without build complexity, enhanced with intelligent development tooling, schema-driven demo data generation, holistic data consistency management, and explicit cross-platform UI styling.*
