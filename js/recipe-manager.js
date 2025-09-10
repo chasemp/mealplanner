@@ -1569,40 +1569,42 @@ class RecipeManager {
             '<span class="text-gray-500 dark:text-gray-400">No labels</span>';
 
         modal.innerHTML = `
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto mx-4 sm:mx-0">
                 <!-- Header -->
-                <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
-                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">${recipe.title}</h2>
-                    <div class="flex items-center space-x-3">
-                        <button id="edit-recipe-detail" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                            </svg>
-                            <span>Edit</span>
-                        </button>
-                        <button id="close-recipe-detail" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
+                <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 py-3 sm:py-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white pr-2">${recipe.title}</h2>
+                        <div class="flex items-center justify-end space-x-2 sm:space-x-3 flex-shrink-0">
+                            <button id="edit-recipe-detail" class="bg-blue-500 hover:bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg flex items-center space-x-1 sm:space-x-2 transition-colors text-sm sm:text-base">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                                <span class="hidden sm:inline">Edit</span>
+                            </button>
+                            <button id="close-recipe-detail" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1">
+                                <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="p-6">
+                <div class="p-4 sm:p-6">
                     <!-- Recipe Image (if available) -->
                     ${recipe.image_url ? `
-                        <div class="mb-6 flex justify-center">
-                            <img src="${recipe.image_url}" alt="${recipe.title}" class="w-3/5 h-40 object-cover rounded-lg">
+                        <div class="mb-4 sm:mb-6 flex justify-center">
+                            <img src="${recipe.image_url}" alt="${recipe.title}" class="w-full sm:w-3/5 h-32 sm:h-40 object-cover rounded-lg">
                         </div>
                     ` : ''}
 
                     <!-- Description and Basic Info -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                        <div class="md:col-span-2">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-4 sm:mb-6">
+                        <div class="lg:col-span-2">
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Description</h3>
-                            <p class="text-gray-700 dark:text-gray-300">${recipe.description || 'No description available'}</p>
+                            <p class="text-gray-700 dark:text-gray-300 text-sm sm:text-base">${recipe.description || 'No description available'}</p>
                         </div>
-                        <div class="space-y-3">
+                        <div class="grid grid-cols-2 sm:grid-cols-1 gap-2 sm:gap-3 lg:space-y-3">
                             <div class="flex items-center text-gray-600 dark:text-gray-400">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -1630,25 +1632,25 @@ class RecipeManager {
                     </div>
 
                     <!-- Ingredients -->
-                    <div class="mb-6">
+                    <div class="mb-4 sm:mb-6">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Ingredients (${recipe.ingredients.length})</h3>
-                        <ul class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                        <ul class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 sm:p-4 text-sm sm:text-base">
                             ${ingredientsList}
                         </ul>
                     </div>
 
                     <!-- Instructions -->
-                    <div class="mb-6">
+                    <div class="mb-4 sm:mb-6">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Instructions</h3>
-                        <ol class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 space-y-2">
+                        <ol class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 sm:p-4 space-y-2 text-sm sm:text-base">
                             ${instructions}
                         </ol>
                     </div>
 
                     <!-- Labels/Tags -->
-                    <div class="mb-6">
+                    <div class="mb-4 sm:mb-6">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Labels</h3>
-                        <div class="flex flex-wrap">
+                        <div class="flex flex-wrap gap-1 sm:gap-2">
                             ${labelsHtml}
                         </div>
                     </div>
