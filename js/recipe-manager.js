@@ -76,27 +76,28 @@ class RecipeManager {
             <div class="recipe-manager">
                 <!-- Search and Filter Controls -->
                 <!-- 
-                LAYOUT STRATEGY:
+                LAYOUT STRATEGY: 5-column layout matching Meals tab exactly
                 - Mobile: All inputs stack vertically (grid-cols-1)
-                - Desktop: 4-column grid with strategic grouping (md:grid-cols-4)
+                - Desktop: 5-column grid with Search+Sort sharing first column (md:grid-cols-5)
                 
                 COLUMN DISTRIBUTION:
-                1. Search + Sort (spans 2 columns, nested grid): Exception to "one per line" rule
-                2. Meal Type (1 column): Gets its own line/column  
-                3. Multi-Label Filter (1 column): Gets its own line/column
-                4. Clear Filters: Below grid, full width
+                1. Search + Sort (stacked vertically in same column): Exception grouping
+                2. Meal Type (1 column): Gets its own column
+                3. Multi-Label Filter (1 column): Gets its own column  
+                4. Clear Filters (1 column): Gets its own column
+                5. [Empty/Future expansion]
                 
                 DESIGN RATIONALE:
-                - Search + Sort grouped together for efficiency (related actions)
-                - Other filters get individual columns for clarity
-                - Matches Meals tab pattern while accommodating Search+Sort grouping
+                - Matches Meals tab 5-column structure exactly
+                - Search + Sort grouped in first column (stacked, not side-by-side)
+                - Each other filter gets individual column for clarity
+                - Consistent with user's "one line per input" request
                 -->
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <!-- Search + Sort Row: These two controls share the top line by design -->
-                        <!-- This is the intentional exception to "one line per input" for better UX -->
-                        <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <!-- Search Input - Column 1 -->
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                        <!-- Column 1: Search + Sort (stacked vertically) -->
+                        <div class="space-y-4">
+                            <!-- Search Input -->
                             <div>
                                 <label for="recipe-search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search Recipes</label>
                                 <div class="relative">
@@ -111,7 +112,7 @@ class RecipeManager {
                                     </div>
                                 </div>
                             </div>
-                            <!-- Sort + Direction - Column 2 (currently sharing line with Search) -->
+                            <!-- Sort + Direction -->
                             <div>
                                 <label for="recipe-sort" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort</label>
                                 <!-- Sort dropdown + Direction button in flex layout -->
@@ -133,7 +134,7 @@ class RecipeManager {
                             </div>
                         </div>
                         
-                        <!-- Meal Type Filter - Column 3 (gets its own line/column) -->
+                        <!-- Column 2: Meal Type Filter -->
                         <div>
                             <label for="recipe-category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Meal Type</label>
                             <select id="recipe-category" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
@@ -145,7 +146,7 @@ class RecipeManager {
                             </select>
                         </div>
                         
-                        <!-- Multi-Label Filter - Column 4 (gets its own line/column) -->
+                        <!-- Column 3: Multi-Label Filter -->
                         <div class="relative">
                             <label for="recipe-labels" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Filter by Labels</label>
                             <!-- Multi-select label input with typeahead and chips -->
@@ -179,7 +180,7 @@ class RecipeManager {
                             </div>
                         </div>
                         
-                        <!-- Clear Filters Button - Positioned below all filter controls -->
+                        <!-- Column 4: Clear Filters Button -->
                         <div class="flex items-end">
                             <button id="clear-recipe-filters-btn" class="w-full px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md text-sm font-medium transition-colors">
                                 Clear Filters
