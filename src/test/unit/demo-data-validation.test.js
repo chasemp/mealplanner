@@ -119,9 +119,8 @@ describe('Demo Data Validation', () => {
                 // Verify recipe exists
                 expect(allRecipeIds).toContain(meal.recipe_id);
                 
-                // Verify meal has valid structure
-                expect(meal.meal_type).toBeDefined();
-                expect(['breakfast', 'lunch', 'dinner', 'snack']).toContain(meal.meal_type);
+                // Verify meal has valid structure (meal_type is now optional via labels)
+                // Note: meal_type is now handled through labels system, not required field
                 expect(meal.date).toBeDefined();
                 expect(typeof meal.date).toBe('string');
             });
@@ -161,7 +160,7 @@ describe('Demo Data Validation', () => {
                 expect(recipe.description).toBeDefined();
                 expect(recipe.type).toBeDefined();
                 expect(['basic', 'combo']).toContain(recipe.type);
-                expect(recipe.meal_type).toBeDefined();
+                // Note: meal_type is now optional and handled via labels system
                 expect(recipe.prep_time).toBeDefined();
                 expect(recipe.cook_time).toBeDefined();
                 expect(recipe.servings).toBeDefined();
@@ -237,7 +236,8 @@ describe('Demo Data Validation', () => {
             const comboRecipes = demoData.recipes.filter(r => r.type === 'combo');
             
             comboRecipes.forEach(combo => {
-                expect(['breakfast', 'lunch', 'dinner']).toContain(combo.meal_type);
+                // Note: meal_type is now handled via labels system, not required field
+                // Check if combo has meal type labels (optional)
                 
                 // Verify combo meal type matches component recipes generally
                 combo.combo_recipes.forEach(ref => {

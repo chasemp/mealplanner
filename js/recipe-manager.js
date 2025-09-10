@@ -103,86 +103,84 @@ class RecipeManager {
                 - Each other filter gets individual column for clarity
                 -->
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-4">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <!-- Column 1: Search + Sort (side-by-side on same line) -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                            <!-- Search Input (left side) -->
-                            <div>
-                                <label for="recipe-search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search Recipes</label>
-                                <div class="relative">
-                                    <input type="text" id="recipe-search" 
-                                           placeholder="Search by name..." 
-                                           value="${this.searchTerm}"
-                                           class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                        </svg>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Sort + Direction (right side) -->
-                            <div>
-                                <label for="recipe-sort" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort</label>
-                                <!-- Sort dropdown + Direction button in flex layout -->
-                                <div class="flex gap-2">
-                                    <select id="recipe-sort" class="w-full md:w-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
-                                        <option value="name" ${this.sortBy === 'name' ? 'selected' : ''}>Name</option>
-                                        <option value="date" ${this.sortBy === 'date' ? 'selected' : ''}>Created</option>
-                                        <option value="prep_time" ${this.sortBy === 'prep_time' ? 'selected' : ''}>Total Time</option>
-                                        <option value="serving_count" ${this.sortBy === 'serving_count' ? 'selected' : ''}>Servings</option>
-                                        <option value="label_type" ${this.sortBy === 'label_type' ? 'selected' : ''}>Label Type</option>
-                                    </select>
-                                    <button id="sort-direction-btn" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white transition-colors" title="${this.sortAscending ? 'Sort Ascending' : 'Sort Descending'}">
-                                        ${this.sortAscending ? 
-                                            '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>' : 
-                                            '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>'
-                                        }
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Column 2: Multi-Label Filter -->
-                        <div class="relative">
-                            <label for="recipe-labels" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Filter by Labels</label>
-                            <!-- Multi-select label input with typeahead and chips -->
+                    <!-- Row 1: Search + Sort (side-by-side on same line) -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <!-- Search Input (left side) -->
+                        <div>
+                            <label for="recipe-search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search Recipes</label>
                             <div class="relative">
-                                <div id="recipe-labels-container" class="w-full min-h-[42px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus-within:ring-2 focus-within:ring-blue-500 dark:bg-gray-700 dark:text-white cursor-text flex flex-wrap gap-1 items-center">
-                                    ${this.selectedLabels.map(label => {
-                                        const labelType = this.inferLabelType(label);
-                                        const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
-                                        return `
-                                        <span class="inline-flex items-center px-2 py-1 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full">
-                                            ${icon}${label}
-                                            <button type="button" class="ml-1 text-blue-600 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-100" onclick="window.recipeManager.removeLabel('${label}')">
-                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                                </svg>
-                                            </button>
-                                        </span>
-                                        `;
-                                    }).join('')}
-                                    <input 
-                                        type="text" 
-                                        id="recipe-labels-input" 
-                                        class="flex-1 min-w-[120px] bg-transparent border-none outline-none text-sm placeholder-gray-500 dark:placeholder-gray-400" 
-                                        placeholder="${this.selectedLabels.length > 0 ? 'Type to add more...' : 'Type to search labels...'}"
-                                        autocomplete="off"
-                                    />
-                                </div>
-                                <div id="recipe-labels-dropdown" class="absolute z-40 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg hidden max-h-48 overflow-y-auto">
-                                    <!-- Dropdown options will be populated by JavaScript -->
+                                <input type="text" id="recipe-search" 
+                                       placeholder="Search by name..." 
+                                       value="${this.searchTerm}"
+                                       class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
                                 </div>
                             </div>
                         </div>
-                        
-                        <!-- Column 3: Clear Filters Button -->
-                        <div class="flex items-end">
-                            <button id="clear-recipe-filters-btn" class="w-full px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md text-sm font-medium transition-colors">
-                                Clear Filters
-                            </button>
+                        <!-- Sort + Direction (right side) -->
+                        <div>
+                            <label for="recipe-sort" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort</label>
+                            <!-- Sort dropdown + Direction button in flex layout -->
+                            <div class="flex gap-2">
+                                <select id="recipe-sort" class="w-full md:w-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                                    <option value="name" ${this.sortBy === 'name' ? 'selected' : ''}>Name</option>
+                                    <option value="date" ${this.sortBy === 'date' ? 'selected' : ''}>Created</option>
+                                    <option value="prep_time" ${this.sortBy === 'prep_time' ? 'selected' : ''}>Total Time</option>
+                                    <option value="serving_count" ${this.sortBy === 'serving_count' ? 'selected' : ''}>Servings</option>
+                                    <option value="label_type" ${this.sortBy === 'label_type' ? 'selected' : ''}>Label Type</option>
+                                </select>
+                                <button id="sort-direction-btn" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white transition-colors" title="${this.sortAscending ? 'Sort Ascending' : 'Sort Descending'}">
+                                    ${this.sortAscending ? 
+                                        '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>' : 
+                                        '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>'
+                                    }
+                                </button>
+                            </div>
                         </div>
+                    </div>
+                    
+                    <!-- Row 2: Multi-Label Filter -->
+                    <div class="mb-4">
+                        <label for="recipe-labels" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Filter by Labels</label>
+                        <!-- Multi-select label input with typeahead and chips -->
+                        <div class="relative">
+                            <div id="recipe-labels-container" class="w-full min-h-[42px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus-within:ring-2 focus-within:ring-blue-500 dark:bg-gray-700 dark:text-white cursor-text flex flex-wrap gap-1 items-center">
+                                ${this.selectedLabels.map(label => {
+                                    const labelType = this.inferLabelType(label);
+                                    const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
+                                    return `
+                                    <span class="inline-flex items-center px-2 py-1 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full">
+                                        ${icon}${label}
+                                        <button type="button" class="ml-1 text-blue-600 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-100" onclick="window.recipeManager.removeLabel('${label}')">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                            </svg>
+                                        </button>
+                                    </span>
+                                    `;
+                                }).join('')}
+                                <input 
+                                    type="text" 
+                                    id="recipe-labels-input" 
+                                    class="flex-1 min-w-[120px] bg-transparent border-none outline-none text-sm placeholder-gray-500 dark:placeholder-gray-400" 
+                                    placeholder="${this.selectedLabels.length > 0 ? 'Type to add more...' : 'Type to search labels...'}"
+                                    autocomplete="off"
+                                />
+                            </div>
+                            <div id="recipe-labels-dropdown" class="absolute z-40 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg hidden max-h-48 overflow-y-auto">
+                                <!-- Dropdown options will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Row 3: Clear Filters Button -->
+                    <div>
+                        <button id="clear-recipe-filters-btn" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md text-sm font-medium transition-colors">
+                            Clear Filters
+                        </button>
                     </div>
                     
                     <!-- Recipe Results Info Bar (enhanced with more emphasis) -->
