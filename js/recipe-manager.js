@@ -75,11 +75,9 @@ class RecipeManager {
             <div class="recipe-manager">
                 <!-- Search and Filter Controls -->
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
-                    <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                         <div>
-                            <label for="recipe-search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Search Recipes
-                            </label>
+                            <label for="recipe-search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search Recipes</label>
                             <div class="relative">
                                 <input type="text" id="recipe-search" 
                                        placeholder="Search by name..." 
@@ -94,11 +92,9 @@ class RecipeManager {
                         </div>
                         
                         <div>
-                            <label for="recipe-category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Recipe Type
-                            </label>
+                            <label for="recipe-category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Meal Type</label>
                             <select id="recipe-category" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
-                                <option value="all" ${this.selectedCategory === 'all' ? 'selected' : ''}>All Meal Types</option>
+                                <option value="all" ${this.selectedCategory === 'all' ? 'selected' : ''}>All Types</option>
                                 <option value="breakfast" ${this.selectedCategory === 'breakfast' ? 'selected' : ''}>Breakfast</option>
                                 <option value="lunch" ${this.selectedCategory === 'lunch' ? 'selected' : ''}>Lunch</option>
                                 <option value="dinner" ${this.selectedCategory === 'dinner' ? 'selected' : ''}>Dinner</option>
@@ -107,9 +103,7 @@ class RecipeManager {
                         </div>
                         
                         <div class="relative">
-                            <label for="recipe-labels" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Filter by Labels
-                            </label>
+                            <label for="recipe-labels" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Filter by Labels</label>
                             <div class="relative">
                                 <div id="recipe-labels-container" class="w-full min-h-[42px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus-within:ring-2 focus-within:ring-blue-500 dark:bg-gray-700 dark:text-white cursor-text flex flex-wrap gap-1 items-center">
                                     ${this.selectedLabels.map(label => `
@@ -137,9 +131,7 @@ class RecipeManager {
                         </div>
                         
                         <div>
-                            <label for="recipe-sort" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Sort By
-                            </label>
+                            <label for="recipe-sort" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort By</label>
                             <select id="recipe-sort" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
                                 <option value="name" ${this.sortBy === 'name' ? 'selected' : ''}>Name</option>
                                 <option value="date" ${this.sortBy === 'date' ? 'selected' : ''}>Date</option>
@@ -149,7 +141,7 @@ class RecipeManager {
                         </div>
                         
                         <div class="flex items-end">
-                            <button id="clear-recipe-filters-btn" class="btn-secondary w-full">
+                            <button id="clear-recipe-filters-btn" class="w-full px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md text-sm font-medium transition-colors">
                                 Clear Filters
                             </button>
                         </div>
