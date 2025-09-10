@@ -165,7 +165,7 @@ class RecipeManager {
                                 <input 
                                     type="text" 
                                     id="recipe-labels-input" 
-                                    class="flex-1 min-w-[120px] bg-transparent border-none outline-none text-sm placeholder-gray-500 dark:placeholder-gray-400" 
+                                    class="flex-1 min-w-[120px] bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-none outline-none text-sm placeholder-gray-500 dark:placeholder-gray-400" 
                                     placeholder="${this.selectedLabels.length > 0 ? 'Type to add more...' : 'Type to search labels...'}"
                                     autocomplete="off"
                                 />
