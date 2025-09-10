@@ -1316,4 +1316,150 @@ node scripts/generate-demo-data.cjs --output js/demo-data.js --validate
 
 ---
 
-*This document captures the lessons learned from building the MealPlanner PWA, emphasizing the importance of the static PWA sweet spot: modular organization without build complexity, enhanced with intelligent development tooling and schema-driven demo data generation.*
+## 📋 **Data Schema Consistency Rules for Complex PWAs**
+
+### **The Critical Need for Holistic Data Management**
+**Problem**: In complex PWAs with multiple data types (ingredients, recipes, meals, scheduled meals), schema changes in one area can break functionality in seemingly unrelated components.
+
+**Root Cause**: Data structures ripple through:
+- Demo data generation and validation
+- Filtering and search logic across multiple managers
+- Label systems shared between data types
+- UI components that display and manipulate data
+- Test expectations and validation rules
+- Referential integrity between related objects
+
+### **The Schema Change Cascade Effect**
+When modifying any data structure, changes must propagate through:
+
+1. **Demo Data Layer**:
+   - `js/demo-data.js` - Static demo data
+   - `scripts/generate-demo-data.cjs` - Dynamic generation
+   - Validation rules and consistency checks
+
+2. **Business Logic Layer**:
+   - Manager classes (`js/recipe-manager.js`, `js/meal-manager.js`)
+   - Filtering, sorting, and search algorithms
+   - Label system consistency across data types
+
+3. **UI Layer**:
+   - Dropdown populations from actual data
+   - Search functionality and result display
+   - Form validation and input handling
+
+4. **Testing Layer**:
+   - Test data expectations and assertions
+   - Minimum quantity requirements (20+ ingredients, 10+ recipes)
+   - Referential integrity validation
+
+### **Critical Implementation Rules**
+
+**Rule 1: Schema Changes Require Holistic Updates**
+```javascript
+// ❌ BAD: Change recipe structure without updating related systems
+const recipe = { 
+    title: 'New Recipe',
+    // Added new field but didn't update:
+    // - Demo data generator
+    // - Filtering logic  
+    // - Test expectations
+    // - UI components
+};
+
+// ✅ GOOD: Update all affected systems simultaneously
+1. Update demo data generator with new field
+2. Update filtering logic to handle new field
+3. Update UI components to display new field
+4. Update tests to expect new field
+5. Validate referential integrity still works
+```
+
+**Rule 2: Shared Label Systems Must Stay Synchronized**
+```javascript
+// Labels must be consistent across recipes and meals
+// Changes to label structure affect both data types
+const sharedLabels = ['comfort-food', 'quick-meal', 'vegetarian'];
+// Both recipes AND meals must use same label vocabulary
+```
+
+**Rule 3: Referential Integrity Is Non-Negotiable**
+```javascript
+// Recipe ingredients must reference valid ingredient IDs
+// Meal recipes must reference valid recipe IDs
+// Scheduled meals must reference valid meal/recipe IDs
+// All quantities must be positive numbers
+// All dates must be valid ISO strings
+```
+
+**Rule 4: Test Requirements Drive Data Structure**
+```javascript
+// Tests assume specific minimums:
+// - At least 20 ingredients for compatibility
+// - At least 10 recipes with diverse labels
+// - All meal types represented (breakfast, lunch, dinner, snack)
+// - Minimum 10 unique labels across all data
+// - No legacy `tags` property (consolidated to `labels`)
+```
+
+### **The Validation-First Workflow**
+
+**Step 1: Identify Impact Scope**
+```bash
+# Use semantic search to find all affected components
+# Look for: filtering logic, demo data, UI components, tests
+```
+
+**Step 2: Update Demo Data Generator First**
+```bash
+# Generator acts as schema validator
+node scripts/generate-demo-data.cjs --validate
+# Must pass before proceeding with other changes
+```
+
+**Step 3: Update All Related Systems**
+- Manager classes and filtering logic
+- UI components and dropdown populations  
+- Test expectations and assertions
+- Label system consistency
+
+**Step 4: Comprehensive Validation**
+```bash
+# Run full validation suite
+npm run demo:generate --validate
+npm run test:run
+# Verify filtering, searching, sorting still work
+```
+
+### **Prevention Strategies**
+
+**Strategy 1: Cursor Rules for Enforcement**
+- Document schema change requirements in `.cursorrules`
+- Require holistic updates for any data structure changes
+- Mandate validation before committing changes
+
+**Strategy 2: Schema-Driven Development**
+- Use demo data generator as living schema documentation
+- Validate all changes against generator requirements
+- Treat generator failures as breaking changes
+
+**Strategy 3: Comprehensive Testing**
+- Test data relationships and referential integrity
+- Validate label consistency across data types
+- Ensure filtering works with actual demo data structure
+
+### **Key Lesson**
+**Data consistency in complex PWAs requires treating schema changes as architectural changes that affect the entire application stack.** The interconnected nature of filtering, labels, demo data, and UI components means that isolated changes inevitably break functionality in unexpected ways.
+
+**Success Pattern**:
+1. **Identify All Affected Systems** using semantic search
+2. **Update Demo Data Generator First** to validate new schema
+3. **Update All Related Components** systematically
+4. **Run Comprehensive Validation** before committing
+5. **Update Tests** to match new expectations
+6. **Verify End-to-End Functionality** works as expected
+
+**Result**: Robust, maintainable PWA where schema changes enhance functionality without breaking existing features.
+
+---
+
+*This document captures the lessons learned from building the MealPlanner PWA, emphasizing the importance of the static PWA sweet spot: modular organization without build complexity, enhanced with intelligent development tooling, schema-driven demo data generation, and holistic data consistency management.*
