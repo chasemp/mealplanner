@@ -119,7 +119,7 @@ class RecipeManager {
                                 <div class="flex gap-2">
                                     <select id="recipe-sort" class="w-full md:w-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
                                         <option value="name" ${this.sortBy === 'name' ? 'selected' : ''}>Name</option>
-                                        <option value="date" ${this.sortBy === 'date' ? 'selected' : ''}>Recipe ID</option>
+                                        <option value="date" ${this.sortBy === 'date' ? 'selected' : ''}>Created</option>
                                         <option value="prep_time" ${this.sortBy === 'prep_time' ? 'selected' : ''}>Total Time</option>
                                         <option value="serving_count" ${this.sortBy === 'serving_count' ? 'selected' : ''}>Servings</option>
                                         <option value="label_type" ${this.sortBy === 'label_type' ? 'selected' : ''}>Label Type</option>
@@ -390,8 +390,8 @@ class RecipeManager {
                     result = a.title.localeCompare(b.title);
                     break;
                 case 'date':
-                    // Sort by recipe ID as proxy for creation order (since no created_at field)
-                    result = (b.id || 0) - (a.id || 0);
+                    // Sort by creation date
+                    result = new Date(b.created_at || 0) - new Date(a.created_at || 0);
                     break;
                 case 'prep_time':
                     // Sort by total time (prep + cook)

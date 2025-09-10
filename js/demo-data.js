@@ -71,6 +71,7 @@ class DemoDataManager {
                 meal_type: 'dinner',
                 prep_time: 15,
                 cook_time: 25,
+                created_at: '2025-06-15T10:30:00Z',
                 instructions: [
                     'Preheat grill to medium-high heat',
                     'Season chicken breasts with salt, pepper, and olive oil',
@@ -100,6 +101,7 @@ class DemoDataManager {
                 meal_type: 'dinner',
                 prep_time: 20,
                 cook_time: 45,
+                created_at: '2025-06-20T14:15:00Z',
                 instructions: [
                     'Heat olive oil in large pan',
                     'Sauté onions and garlic until fragrant',
@@ -130,6 +132,7 @@ class DemoDataManager {
                 meal_type: 'breakfast',
                 prep_time: 5,
                 cook_time: 10,
+                created_at: '2025-07-02T08:30:00Z',
                 instructions: [
                     'Crack eggs into bowl and whisk',
                     'Heat butter in non-stick pan',
@@ -156,6 +159,7 @@ class DemoDataManager {
                 meal_type: 'dinner',
                 prep_time: 20,
                 cook_time: 30,
+                created_at: '2025-07-08T18:45:00Z',
                 instructions: [
                     'Cook rice according to package directions',
                     'Season salmon with salt and pepper',
@@ -183,6 +187,7 @@ class DemoDataManager {
                 meal_type: 'lunch',
                 prep_time: 15,
                 cook_time: 0,
+                created_at: '2025-06-01T01:15:00.000Z',
                 instructions: [
                     'Chop tomatoes, onions, and bell peppers',
                     'Add spinach leaves to large bowl',
@@ -213,6 +218,7 @@ class DemoDataManager {
                 meal_type: 'dinner',
                 prep_time: 15,
                 cook_time: 15,
+                created_at: '2025-06-04T12:00:00.000Z',
                 instructions: [
                     'Cut chicken into bite-sized pieces',
                     'Heat oil in wok or large pan',
@@ -242,6 +248,7 @@ class DemoDataManager {
                 meal_type: 'lunch',
                 prep_time: 20,
                 cook_time: 30,
+                created_at: '2025-06-08T07:15:00.000Z',
                 instructions: [
                     'Cook quinoa according to package directions',
                     'Roast vegetables in oven at 400°F',
@@ -271,6 +278,7 @@ class DemoDataManager {
                 meal_type: 'dinner',
                 prep_time: 25,
                 cook_time: 90,
+                created_at: '2025-06-12T12:15:00.000Z',
                 instructions: [
                     'Brown beef in large pot',
                     'Add onions and garlic, cook until soft',
@@ -302,6 +310,7 @@ class DemoDataManager {
                 meal_type: 'dinner',
                 prep_time: 10,
                 cook_time: 20,
+                created_at: '2025-06-17T20:00:00.000Z',
                 instructions: [
                     'Peel and cube potatoes',
                     'Boil in salted water until tender (15-20 minutes)',
@@ -327,6 +336,7 @@ class DemoDataManager {
                 meal_type: 'dinner',
                 prep_time: 20,
                 cook_time: 15,
+                created_at: '2025-06-21T11:00:00.000Z',
                 instructions: [
                     'Season chicken with salt and pepper',
                     'Dredge in flour seasoned with spices',
@@ -352,6 +362,7 @@ class DemoDataManager {
                 meal_type: 'dinner',
                 prep_time: 5,
                 cook_time: 10,
+                created_at: '2025-06-25T02:45:00.000Z',
                 instructions: [
                     'Trim ends of green beans',
                     'Heat olive oil in pan',
@@ -378,6 +389,7 @@ class DemoDataManager {
                 meal_type: 'dinner',
                 prep_time: 10,
                 cook_time: 15,
+                created_at: '2025-06-28T08:45:00.000Z',
                 instructions: [
                     'Slice bread lengthwise',
                     'Mix butter with minced garlic and herbs',
@@ -402,6 +414,7 @@ class DemoDataManager {
                 meal_type: 'lunch',
                 prep_time: 15,
                 cook_time: 0,
+                created_at: '2025-07-01T21:15:00.000Z',
                 instructions: [
                     'Wash and chop romaine lettuce',
                     'Make caesar dressing with garlic, lemon, and parmesan',
@@ -426,6 +439,7 @@ class DemoDataManager {
                 meal_type: 'breakfast',
                 prep_time: 10,
                 cook_time: 15,
+                created_at: '2025-07-06T14:45:00.000Z',
                 instructions: [
                     'Mix dry ingredients in large bowl',
                     'Whisk together wet ingredients',
@@ -450,6 +464,7 @@ class DemoDataManager {
                 meal_type: 'breakfast',
                 prep_time: 5,
                 cook_time: 10,
+                created_at: '2025-07-10T16:15:00.000Z',
                 instructions: [
                     'Arrange bacon strips in cold pan',
                     'Cook over medium heat, turning occasionally',
@@ -471,6 +486,7 @@ class DemoDataManager {
                 meal_type: 'breakfast',
                 prep_time: 15,
                 cook_time: 20,
+                created_at: '2025-07-14T01:30:00.000Z',
                 instructions: [
                     'Grate potatoes and squeeze out excess moisture',
                     'Season with salt and pepper',
@@ -495,6 +511,7 @@ class DemoDataManager {
                 meal_type: 'dinner',
                 prep_time: 15,
                 cook_time: 20,
+                created_at: '2025-07-18T18:45:00.000Z',
                 instructions: [
                     'Cut vegetables into uniform pieces',
                     'Toss with olive oil and seasonings',
@@ -521,6 +538,7 @@ class DemoDataManager {
                 meal_type: 'dinner',
                 prep_time: 5,
                 cook_time: 25,
+                created_at: '2025-07-22T11:45:00.000Z',
                 instructions: [
                     'Sauté rice in oil until lightly toasted',
                     'Add broth and seasonings',
@@ -586,6 +604,7 @@ class DemoDataManager {
                 meal_type: 'dinner',
                 prep_time: 25,
                 cook_time: 20,
+                created_at: '2025-07-25T10:45:00.000Z',
                 instructions: [
                     'This combo includes:',
                     '1. Prepare Spaghetti Bolognese (Recipe #2)',
@@ -623,6 +642,7 @@ class DemoDataManager {
                 meal_type: 'breakfast',
                 prep_time: 30,
                 cook_time: 25,
+                created_at: '2025-07-29T10:30:00.000Z',
                 instructions: [
                     'This hearty breakfast combo includes:',
                     '1. Make fluffy Pancakes (Recipe #16)',
@@ -658,6 +678,7 @@ class DemoDataManager {
                 meal_type: 'dinner',
                 prep_time: 25,
                 cook_time: 30,
+                created_at: '2025-08-03T16:45:00.000Z',
                 instructions: [
                     'This healthy dinner combo includes:',
                     '1. Prepare Salmon Teriyaki Bowl (Recipe #4)',
@@ -694,6 +715,7 @@ class DemoDataManager {
                 meal_type: 'dinner',
                 prep_time: 30,
                 cook_time: 25,
+                created_at: '2025-08-07T08:30:00.000Z',
                 instructions: [
                     'This Mediterranean combo includes:',
                     '1. Prepare fresh Greek Salad (Recipe #5)',
@@ -732,6 +754,7 @@ class DemoDataManager {
                 meal_type: 'dinner',
                 prep_time: 35,
                 cook_time: 45,
+                created_at: '2025-08-11T12:00:00.000Z',
                 instructions: [
                     'This hearty vegetarian combo includes:',
                     '1. Prepare Vegetable Quinoa Bowl (Recipe #7)',
@@ -770,6 +793,7 @@ class DemoDataManager {
                 meal_type: 'breakfast',
                 prep_time: 25,
                 cook_time: 20,
+                created_at: '2025-08-14T07:45:00.000Z',
                 instructions: [
                     'This perfect brunch combo includes:',
                     '1. Make Scrambled Eggs with Toast (Recipe #3)',
@@ -806,6 +830,7 @@ class DemoDataManager {
                 meal_type: 'lunch',
                 prep_time: 20,
                 cook_time: 15,
+                created_at: '2025-08-18T01:45:00.000Z',
                 instructions: [
                     'This light lunch combo includes:',
                     '1. Prepare fresh Caesar Salad (Recipe #15)',
