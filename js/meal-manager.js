@@ -37,17 +37,15 @@ class MealManager {
     }
 
     async loadMeals() {
-        try {
-            const saved = localStorage.getItem('mealplanner-meals');
-            if (saved) {
-                this.meals = JSON.parse(saved);
-                console.log(`✅ Loaded ${this.meals.length} saved meals`);
-            } else {
-                this.meals = [];
-                console.log('📝 No saved meals found, starting with empty list');
-            }
-        } catch (error) {
-            console.error('❌ Failed to load meals:', error);
+        console.log('📱 Meal Manager loading meals from authoritative data source...');
+        
+        // Get data from centralized authority
+        if (window.mealPlannerSettings) {
+            this.meals = window.mealPlannerSettings.getAuthoritativeData('meals');
+            console.log(`✅ Meal Manager loaded ${this.meals.length} meals from authoritative source`);
+        } else {
+            // Fallback if settings not available
+            console.warn('⚠️ Settings manager not available, using empty meals');
             this.meals = [];
         }
     }

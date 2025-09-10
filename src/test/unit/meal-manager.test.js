@@ -98,6 +98,8 @@ describe('MealManager', () => {
                 switch (dataType) {
                     case 'recipes':
                         return demoData.getRecipes();
+                    case 'meals':
+                        return demoData.getMeals ? demoData.getMeals() : [];
                     default:
                         return [];
                 }
@@ -512,7 +514,7 @@ describe('MealManager', () => {
             expect(parsedMeals[0].name).toBe('Persistent Meal');
         });
 
-        it('should load meals from localStorage on initialization', async () => {
+        it('should load meals from authoritative data source on initialization', async () => {
             const testMeals = [{
                 id: 1,
                 name: 'Loaded Meal',
@@ -520,13 +522,21 @@ describe('MealManager', () => {
                 recipes: [{ recipeId: 1, servings: 4, notes: '' }],
                 totalServings: 4,
                 mealTypes: ['dinner'],
+                labels: ['test'],
                 tags: ['test'],
                 estimatedTime: 45,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
             }];
 
-            localStorage.setItem('mealplanner-meals', JSON.stringify(testMeals));
+            // Mock the settings manager to return test meals
+            const originalGetAuthoritativeData = global.window.mealPlannerSettings.getAuthoritativeData;
+            global.window.mealPlannerSettings.getAuthoritativeData = (dataType) => {
+                if (dataType === 'meals') {
+                    return testMeals;
+                }
+                return originalGetAuthoritativeData(dataType);
+            };
 
             // Create new instance to test loading
             const newContainer = document.createElement('div');
@@ -537,6 +547,9 @@ describe('MealManager', () => {
 
             expect(newMealManager.meals).toHaveLength(1);
             expect(newMealManager.meals[0].name).toBe('Loaded Meal');
+
+            // Restore original mock
+            global.window.mealPlannerSettings.getAuthoritativeData = originalGetAuthoritativeData;
         });
     });
 
