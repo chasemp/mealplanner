@@ -350,7 +350,10 @@ class RecipeManager {
             // Re-attach the favorites button event listener
             const favoritesBtn = rightSide.querySelector('#favorites-filter-btn');
             if (favoritesBtn) {
-                favoritesBtn.addEventListener('click', () => this.toggleFavoritesFilter());
+                favoritesBtn.addEventListener('click', () => {
+                    this.showFavoritesOnly = !this.showFavoritesOnly;
+                    this.updateRecipeDisplay();
+                });
             }
         }
     }
@@ -1720,7 +1723,13 @@ class RecipeManager {
         const recipe = this.recipes.find(r => r.id === recipeId);
         if (recipe) {
             recipe.favorite = !recipe.favorite;
-            this.render();
+            
+            // Save to storage using the centralized data authority
+            this.saveRecipes();
+            
+            // Update display without full re-render to preserve input focus
+            this.updateRecipeDisplay();
+            
             this.showNotification(
                 `"${recipe.title}" ${recipe.favorite ? 'added to' : 'removed from'} favorites`, 
                 'success'

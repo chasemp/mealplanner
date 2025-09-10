@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Favorites Functionality</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-2xl font-bold mb-6">Test Favorites Functionality</h1>
+        
+        <div id="recipe-container" class="bg-white rounded-lg shadow p-6">
+            <!-- Recipe Manager will be rendered here -->
+        </div>
+        
+        <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+            <h2 class="font-semibold mb-2">Test Instructions:</h2>
+            <ol class="list-decimal list-inside space-y-1 text-sm">
+                <li>Click the star icon on any recipe card to add/remove from favorites</li>
+                <li>Watch the favorites count in the info bar update</li>
+                <li>Click the "Favorites" button in the info bar to toggle favorites-only view</li>
+                <li>Verify that filtering works correctly</li>
+                <li>Check that favorites persist when switching between views</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Load the application scripts -->
+    <script src="js/demo-data.js"></script>
+    <script src="js/recipe-manager.js"></script>
+    <script src="js/settings-manager.js"></script>
+    
+    <script>
+        // Initialize the test
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🧪 Initializing favorites functionality test...');
+            
+            // Create a mock settings manager for testing
+            window.mealPlannerSettings = {
+                getCurrentDataSource: () => 'demo',
+                saveAuthoritativeData: (type, data) => {
+                    console.log(`💾 Mock save: ${type}`, data.length, 'items');
+                    localStorage.setItem(`test_${type}`, JSON.stringify(data));
+                }
+            };
+            
+            // Initialize the recipe manager
+            const container = document.getElementById('recipe-container');
+            const recipeManager = new RecipeManager(container);
+            
+            // Load and render
+            recipeManager.loadRecipes().then(() => {
+                recipeManager.render();
+                console.log('✅ Recipe Manager initialized with', recipeManager.recipes.length, 'recipes');
+                console.log('⭐ Current favorites:', recipeManager.getFavoriteRecipes().length);
+            });
+        });
+    </script>
+</body>
+</html>
