@@ -32,7 +32,6 @@ class MockRecipeManager {
                 title: 'Chicken Stir Fry',
                 description: 'Quick and healthy chicken stir fry',
                 instructions: 'Heat oil, cook chicken, add vegetables, stir fry',
-                meal_type: 'dinner',
                 prep_time: 15,
                 cook_time: 20,
                 serving_count: 4,
@@ -41,7 +40,7 @@ class MockRecipeManager {
                     { ingredient_id: 2, quantity: 2, unit: 'cups', name: 'Mixed Vegetables' }
                 ],
                 tags: ['quick', 'healthy'],
-                labels: ['protein-rich', 'low-carb'],
+                labels: ['protein-rich', 'low-carb', 'Dinner'],
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
             },
@@ -50,7 +49,6 @@ class MockRecipeManager {
                 title: 'Vegetable Pasta',
                 description: 'Delicious vegetable pasta',
                 instructions: 'Cook pasta, sauté vegetables, combine',
-                meal_type: 'dinner',
                 prep_time: 10,
                 cook_time: 25,
                 serving_count: 6,
@@ -164,9 +162,13 @@ class MockRecipeManager {
             )
         }
 
-        // Filter by category
-        if (this.currentFilter.category !== 'all') {
-            filtered = filtered.filter(recipe => recipe.meal_type === this.currentFilter.category)
+        // Filter by selected labels (including meal type labels)
+        if (this.selectedLabels && this.selectedLabels.length > 0) {
+            filtered = filtered.filter(recipe => {
+                return this.selectedLabels.every(selectedLabel => 
+                    recipe.labels && recipe.labels.includes(selectedLabel)
+                )
+            })
         }
 
         // Filter by label
@@ -455,12 +457,12 @@ describe('RecipeManager', () => {
             expect(filtered[0].title).toBe('Chicken Stir Fry')
         })
 
-        it('should filter recipes by category', () => {
-            recipeManager.currentFilter.category = 'dinner'
+        it('should filter recipes by meal type label', () => {
+            recipeManager.selectedLabels = ['Dinner']
             const filtered = recipeManager.getFilteredRecipes()
             
-            expect(filtered).toHaveLength(2)
-            expect(filtered.every(r => r.meal_type === 'dinner')).toBe(true)
+            expect(filtered).toHaveLength(1)
+            expect(filtered.every(r => r.labels && r.labels.includes('Dinner'))).toBe(true)
         })
 
         it('should filter recipes by label', () => {
