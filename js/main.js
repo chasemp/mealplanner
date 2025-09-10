@@ -6,7 +6,7 @@ class MealPlannerApp {
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
-        this.ingredientsManager = null;
+        this.itemsManager = null;
         this.groceryListManager = null;
         this.settingsManager = null;
         this.googleCalendarIntegration = null;
@@ -231,7 +231,7 @@ class MealPlannerApp {
             this.initializeRecipeManager();
             this.initializeMealManager();
             this.initializeScheduleManager();
-            this.initializeIngredientsManager();
+            this.initializeItemsManager();
             this.initializeGroceryListManager();
         this.initializeGoogleCalendar();
         this.initializePerformanceManager();
@@ -273,14 +273,14 @@ class MealPlannerApp {
         console.log('✅ Schedule manager initialized');
     }
 
-    initializeIngredientsManager() {
-        console.log('🥕 Initializing ingredients manager...');
+    initializeItemsManager() {
+        console.log('🥕 Initializing items manager...');
         
         const container = document.getElementById('ingredients-manager-container');
         if (container) {
-            this.ingredientsManager = new IngredientsManager(container);
-            window.ingredientsManager = this.ingredientsManager;
-            console.log('✅ Ingredients manager initialized');
+            this.itemsManager = new IngredientsManager(container);
+            window.itemsManager = this.itemsManager;
+            console.log('✅ Items manager initialized');
         }
     }
 
@@ -1663,8 +1663,8 @@ class MealPlannerApp {
         
         try {
             // Clear all manager data
-            if (this.ingredientsManager) {
-                await this.ingredientsManager.clearAllData();
+            if (this.itemsManager) {
+                await this.itemsManager.clearAllData();
             }
             
             if (this.recipeManager) {
@@ -2242,8 +2242,8 @@ class MealPlannerApp {
         if (this.recipeManager) {
             this.recipeManager.render();
         }
-        if (this.ingredientsManager) {
-            this.ingredientsManager.render();
+        if (this.itemsManager) {
+            this.itemsManager.render();
         }
         if (this.groceryListManager) {
             this.groceryListManager.render();

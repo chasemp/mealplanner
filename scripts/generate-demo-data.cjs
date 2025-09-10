@@ -11,7 +11,7 @@
  * Options:
  *   --output <file>     Output file (default: js/demo-data-generated.js)
  *   --recipes <count>   Number of recipes to generate (default: 26)
- *   --ingredients <count> Number of ingredients to generate (default: 30)
+ *   --items <count>       Number of items to generate (default: 30)
  *   --validate          Validate generated data against schema
  *   --help              Show this help
  */
@@ -43,8 +43,9 @@ class DemoDataGenerator {
             grains: ['lbs', 'cups', 'packages', 'bags']
         };
         
-        // Base ingredients that recipes will use
+        // Base ingredients that recipes will use - expanded to include diverse items
         this.baseIngredients = [
+            // Traditional cooking ingredients
             { name: 'Chicken Breast', category: 'meat', labels: ['protein', 'lean', 'versatile'] },
             { name: 'Ground Beef', category: 'meat', labels: ['protein', 'hearty', 'versatile'] },
             { name: 'Salmon Fillet', category: 'meat', labels: ['protein', 'omega-3', 'healthy'] },
@@ -72,7 +73,41 @@ class DemoDataGenerator {
             { name: 'Green Beans', category: 'produce', labels: ['vegetable', 'healthy', 'fiber'] },
             { name: 'Lettuce', category: 'produce', labels: ['leafy-green', 'fresh', 'salad'] },
             { name: 'Bacon', category: 'meat', labels: ['protein', 'breakfast', 'smoky'] },
-            { name: 'Oil', category: 'pantry', labels: ['fat', 'cooking', 'neutral'] }
+            { name: 'Oil', category: 'pantry', labels: ['fat', 'cooking', 'neutral'] },
+            
+            // Prepared and convenience items
+            { name: 'Hamburger Buns', category: 'bakery', labels: ['bread', 'sandwich', 'grilling'] },
+            { name: 'Hot Dog Buns', category: 'bakery', labels: ['bread', 'sandwich', 'grilling'] },
+            { name: 'Tortillas', category: 'bakery', labels: ['wrap', 'mexican', 'versatile'] },
+            { name: 'Pita Bread', category: 'bakery', labels: ['bread', 'mediterranean', 'pocket'] },
+            
+            // Snack foods and chips
+            { name: 'Potato Chips', category: 'pantry', labels: ['snack', 'crispy', 'salty'] },
+            { name: 'Tortilla Chips', category: 'pantry', labels: ['snack', 'mexican', 'crunchy'] },
+            { name: 'Crackers', category: 'pantry', labels: ['snack', 'crispy', 'versatile'] },
+            { name: 'Pretzels', category: 'pantry', labels: ['snack', 'salty', 'crunchy'] },
+            
+            // Condiments and sauces
+            { name: 'Ketchup', category: 'pantry', labels: ['condiment', 'tomato', 'sweet'] },
+            { name: 'Mustard', category: 'pantry', labels: ['condiment', 'tangy', 'spicy'] },
+            { name: 'Mayonnaise', category: 'pantry', labels: ['condiment', 'creamy', 'rich'] },
+            { name: 'Salsa', category: 'pantry', labels: ['sauce', 'mexican', 'spicy'] },
+            { name: 'BBQ Sauce', category: 'pantry', labels: ['sauce', 'smoky', 'sweet'] },
+            
+            // Frozen convenience items
+            { name: 'Frozen Pizza', category: 'frozen', labels: ['convenience', 'quick', 'comfort'] },
+            { name: 'Frozen Vegetables', category: 'frozen', labels: ['vegetable', 'convenient', 'healthy'] },
+            { name: 'Ice Cream', category: 'frozen', labels: ['dessert', 'sweet', 'cold'] },
+            
+            // Beverages
+            { name: 'Orange Juice', category: 'dairy', labels: ['beverage', 'vitamin-c', 'breakfast'] },
+            { name: 'Coffee', category: 'pantry', labels: ['beverage', 'caffeine', 'morning'] },
+            { name: 'Soda', category: 'pantry', labels: ['beverage', 'sweet', 'carbonated'] },
+            
+            // Canned goods
+            { name: 'Canned Beans', category: 'pantry', labels: ['protein', 'fiber', 'convenient'] },
+            { name: 'Canned Tomatoes', category: 'pantry', labels: ['vegetable', 'sauce-base', 'versatile'] },
+            { name: 'Chicken Broth', category: 'pantry', labels: ['liquid', 'flavor-base', 'cooking'] }
         ];
         
         // Recipe templates for generating realistic recipes
@@ -261,6 +296,71 @@ class DemoDataGenerator {
                 servings: [2, 6],
                 base_ingredients: ['vegetable', 'Olive Oil', 'Salt', 'Black Pepper'],
                 labels: ['roasted', 'savory', 'healthy', 'Snack']
+            },
+            
+            // Recipes using new convenience items
+            {
+                title: 'Classic Hamburger',
+                description: 'Juicy hamburger with all the fixings',
+                prep_time: [10],
+                cook_time: [15],
+                servings: [4],
+                base_ingredients: ['Ground Beef', 'Hamburger Buns', 'Cheese', 'Lettuce', 'Tomatoes', 'Ketchup', 'Mustard'],
+                labels: ['grilling', 'comfort', 'american', 'Dinner']
+            },
+            {
+                title: 'Loaded Nachos',
+                description: 'Crispy tortilla chips loaded with cheese and toppings',
+                prep_time: [5],
+                cook_time: [10],
+                servings: [4, 6],
+                base_ingredients: ['Tortilla Chips', 'Cheese', 'Salsa', 'Canned Beans'],
+                labels: ['snack', 'mexican', 'quick', 'Snack']
+            },
+            {
+                title: 'Chicken Wrap',
+                description: 'Grilled chicken wrapped in a soft tortilla',
+                prep_time: [10],
+                cook_time: [15],
+                servings: [2, 4],
+                base_ingredients: ['Chicken Breast', 'Tortillas', 'Lettuce', 'Tomatoes', 'Mayonnaise'],
+                labels: ['wrap', 'protein', 'portable', 'Lunch']
+            },
+            {
+                title: 'Mediterranean Pita',
+                description: 'Fresh pita pocket stuffed with vegetables and cheese',
+                prep_time: [8],
+                cook_time: [0],
+                servings: [2],
+                base_ingredients: ['Pita Bread', 'Lettuce', 'Tomatoes', 'Cheese'],
+                labels: ['mediterranean', 'fresh', 'vegetarian', 'Lunch']
+            },
+            {
+                title: 'Chips and Salsa',
+                description: 'Crispy tortilla chips with fresh salsa',
+                prep_time: [5],
+                cook_time: [0],
+                servings: [4, 6],
+                base_ingredients: ['Tortilla Chips', 'Salsa', 'Tomatoes', 'Onions'],
+                labels: ['snack', 'party', 'quick', 'Snack']
+            },
+            {
+                title: 'Quick Pizza Night',
+                description: 'Easy frozen pizza enhanced with fresh toppings',
+                prep_time: [5],
+                cook_time: [12],
+                servings: [2, 3],
+                base_ingredients: ['Frozen Pizza', 'Cheese', 'Bell Peppers'],
+                labels: ['convenience', 'quick', 'comfort', 'Dinner']
+            },
+            {
+                title: 'Coffee and Toast',
+                description: 'Simple breakfast with fresh coffee and buttered toast',
+                prep_time: [5],
+                cook_time: [5],
+                servings: [1],
+                base_ingredients: ['Coffee', 'Bread', 'Butter'],
+                labels: ['breakfast', 'quick', 'simple', 'Breakfast']
             }
         ];
     }
@@ -1353,7 +1453,7 @@ function parseArgs() {
     const options = {
         output: 'js/demo-data-generated.js',
         recipes: 26,
-        ingredients: 30,
+        items: 30,
         meals: 7,
         scheduledMeals: 7,
         validate: false,
@@ -1368,8 +1468,8 @@ function parseArgs() {
             case '--recipes':
                 options.recipes = parseInt(args[++i]);
                 break;
-            case '--ingredients':
-                options.ingredients = parseInt(args[++i]);
+            case '--items':
+                options.items = parseInt(args[++i]);
                 break;
             case '--meals':
                 options.meals = parseInt(args[++i]);
@@ -1398,13 +1498,13 @@ Usage: node scripts/generate-demo-data.cjs [options]
 Options:
   --output <file>       Output file (default: js/demo-data-generated.js)
   --recipes <count>     Number of recipes to generate (default: 26)
-  --ingredients <count> Number of ingredients to generate (default: 30)
+  --items <count>       Number of items to generate (default: 30)
   --validate            Validate generated data against schema
   --help                Show this help
 
 Examples:
   node scripts/generate-demo-data.cjs
-  node scripts/generate-demo-data.cjs --recipes 50 --ingredients 40
+  node scripts/generate-demo-data.cjs --recipes 50 --items 40
   node scripts/generate-demo-data.cjs --output js/demo-data.js --validate
 `);
 }
@@ -1419,12 +1519,12 @@ function main() {
     }
     
     console.log('🏗️  Generating MealPlanner demo data...');
-    console.log(`📊 Generating ${options.ingredients} ingredients, ${options.recipes} recipes, ${options.meals} meals, ${options.scheduledMeals} scheduled meals`);
+    console.log(`📊 Generating ${options.items} items, ${options.recipes} recipes, ${options.meals} meals, ${options.scheduledMeals} scheduled meals`);
     
     const generator = new DemoDataGenerator();
     
     // Generate data
-    const ingredients = generator.generateIngredients(options.ingredients);
+    const ingredients = generator.generateIngredients(options.items);
     const recipes = generator.generateRecipes(ingredients, options.recipes);
     const meals = generator.generateMeals(recipes, options.meals);
     const scheduledMeals = generator.generateScheduledMeals(meals, recipes, options.scheduledMeals);
@@ -1432,7 +1532,7 @@ function main() {
     // Calculate ingredient usage statistics for test compatibility
     generator.calculateIngredientUsage(ingredients, recipes);
     
-    console.log(`✅ Generated ${ingredients.length} ingredients, ${recipes.length} recipes, ${meals.length} meals, ${scheduledMeals.length} scheduled meals`);
+    console.log(`✅ Generated ${ingredients.length} items, ${recipes.length} recipes, ${meals.length} meals, ${scheduledMeals.length} scheduled meals`);
     
     // Validate if requested
     if (options.validate) {
