@@ -1,4 +1,4 @@
-// Ingredients Management Component
+// Items Management Component
 class IngredientsManager {
     constructor(container) {
         this.container = container;
@@ -9,14 +9,14 @@ class IngredientsManager {
     }
 
     async init() {
-        console.log('🥕 Initializing Ingredients Manager...');
+        console.log('🥕 Initializing Items Manager...');
         await this.loadIngredients();
         this.render();
         this.attachEventListeners();
     }
 
     async loadIngredients() {
-        console.log('📱 Loading ingredients from authoritative data source...');
+        console.log('📱 Loading items from authoritative data source...');
         
         // Get data from centralized authority
         if (window.mealPlannerSettings) {
@@ -76,7 +76,7 @@ class IngredientsManager {
             <div class="space-y-6">
                 <!-- Header with controls -->
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Ingredients</h2>
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Items</h2>
                     <div class="flex flex-wrap gap-3">
                         <button id="scan-barcode-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -88,7 +88,7 @@ class IngredientsManager {
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                             </svg>
-                            <span>Add Ingredient</span>
+                            <span>Add Item</span>
                         </button>
                     </div>
                 </div>
@@ -98,7 +98,7 @@ class IngredientsManager {
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
                             <label for="ingredient-search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Search Ingredients
+                                Search Items
                             </label>
                             <input type="text" id="ingredient-search" 
                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
@@ -144,7 +144,7 @@ class IngredientsManager {
                     </div>
                 </div>
 
-                <!-- Ingredients Stats -->
+                <!-- Items Stats -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
                         <div class="text-2xl font-bold text-green-600">${categories.length}</div>
@@ -156,11 +156,11 @@ class IngredientsManager {
                     </div>
                 </div>
 
-                <!-- Ingredients Grid -->
+                <!-- Items Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     ${this.filteredIngredients.length > 0 ? 
                         this.filteredIngredients.map(ingredient => this.createIngredientCard(ingredient)).join('') :
-                        '<div class="col-span-full text-center py-12"><p class="text-gray-500 dark:text-gray-400">No ingredients found matching your criteria.</p></div>'
+                        '<div class="col-span-full text-center py-12"><p class="text-gray-500 dark:text-gray-400">No items found matching your criteria.</p></div>'
                     }
                 </div>
             </div>
@@ -508,7 +508,7 @@ class IngredientsManager {
                 <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
                     <div class="flex items-center justify-between">
                         <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-                            ${isEdit ? 'Edit Ingredient' : 'Add New Ingredient'}
+                            ${isEdit ? 'Edit Item' : 'Add New Item'}
                         </h2>
                         <button id="close-ingredient-form" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
