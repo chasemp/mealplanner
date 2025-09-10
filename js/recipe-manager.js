@@ -75,7 +75,7 @@ class RecipeManager {
         this.container.innerHTML = `
             <div class="recipe-manager">
                 <!-- Header with Add Button -->
-                <div class="flex justify-between items-center mb-6">
+                <div class="flex justify-between items-center mb-4">
                     <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Recipes</h2>
                     <button id="add-recipe-btn" class="btn-primary flex items-center space-x-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -104,7 +104,7 @@ class RecipeManager {
                 - Each other filter gets individual column for clarity
                 - Exception: Search and Sort on same line for efficiency
                 -->
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-4">
                     <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                         <!-- Column 1: Search + Sort (side-by-side on same line) -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
