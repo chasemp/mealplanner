@@ -29,7 +29,8 @@ class DemoDataGenerator {
         
         this.labelTypes = {
             default: ['healthy', 'quick', 'easy', 'comfort', 'spicy', 'sweet', 'savory', 'fresh', 'hearty'],
-            recipe_type: ['Recipe Combo', 'basic', 'advanced', 'beginner']
+            recipe_type: ['Recipe Combo', 'basic', 'advanced', 'beginner'],
+            meal_type: ['Breakfast', 'Lunch', 'Dinner', 'Snack']
         };
         
         this.units = {
@@ -80,208 +81,205 @@ class DemoDataGenerator {
             {
                 title: 'Mashed Potatoes',
                 description: 'Creamy and buttery mashed potatoes',
-                meal_type: 'dinner',
                 prep_time: [10],
                 cook_time: [20],
                 servings: [4, 6],
                 base_ingredients: ['Potatoes', 'Butter', 'Milk', 'Salt'],
-                labels: ['comfort', 'side-dish']
+                labels: ['comfort', 'side-dish', 'Dinner']
             },
             {
                 title: 'Fried Chicken',
                 description: 'Crispy golden fried chicken',
-                meal_type: 'dinner',
                 prep_time: [15],
                 cook_time: [25],
                 servings: [4, 6],
                 base_ingredients: ['Chicken Breast', 'Flour', 'Eggs', 'Salt'],
-                labels: ['comfort', 'crispy', 'protein']
+                labels: ['comfort', 'crispy', 'protein', 'Dinner']
             },
             {
                 title: 'Green Beans',
                 description: 'Fresh steamed green beans with butter',
-                meal_type: 'dinner',
                 prep_time: [5],
                 cook_time: [10],
                 servings: [4, 6],
                 base_ingredients: ['Green Beans', 'Butter', 'Salt'],
-                labels: ['healthy', 'vegetable', 'side-dish']
+                labels: ['healthy', 'vegetable', 'side-dish', 'Dinner']
             },
             {
                 title: 'Garlic Bread',
                 description: 'Toasted bread with garlic and herbs',
-                meal_type: 'dinner',
                 prep_time: [5],
                 cook_time: [10],
                 servings: [4, 6],
                 base_ingredients: ['Bread', 'Garlic', 'Butter'],
-                labels: ['bread', 'side-dish', 'garlic']
+                labels: ['bread', 'side-dish', 'garlic', 'Dinner']
             },
             {
                 title: 'Caesar Salad',
                 description: 'Classic Caesar salad with croutons',
-                meal_type: 'lunch',
                 prep_time: [10],
                 cook_time: [0],
                 servings: [2, 4],
                 base_ingredients: ['Lettuce', 'Cheese', 'Bread'],
-                labels: ['salad', 'fresh', 'classic']
+                labels: ['salad', 'fresh', 'classic', 'Lunch']
             },
             {
                 title: 'Pancakes',
                 description: 'Fluffy breakfast pancakes',
-                meal_type: 'breakfast',
                 prep_time: [10],
                 cook_time: [15],
                 servings: [4],
                 base_ingredients: ['Flour', 'Eggs', 'Milk', 'Butter'],
-                labels: ['breakfast', 'sweet', 'fluffy']
+                labels: ['sweet', 'fluffy', 'Breakfast']
             },
             {
                 title: 'Bacon',
                 description: 'Crispy breakfast bacon',
-                meal_type: 'breakfast',
                 prep_time: [2],
                 cook_time: [8],
                 servings: [4],
                 base_ingredients: ['Bacon'],
-                labels: ['breakfast', 'protein', 'crispy']
+                labels: ['protein', 'crispy', 'Breakfast']
             },
             {
                 title: 'Hash Browns',
                 description: 'Golden crispy hash browns',
-                meal_type: 'breakfast',
                 prep_time: [10],
                 cook_time: [15],
                 servings: [4],
                 base_ingredients: ['Potatoes', 'Oil', 'Salt'],
-                labels: ['breakfast', 'crispy', 'potato']
+                labels: ['crispy', 'potato', 'Breakfast']
             },
             // Dinner recipes
             {
                 title: 'Grilled {protein} with {vegetable}',
                 description: 'Healthy grilled {protein} served with roasted {vegetable}',
-                meal_type: 'dinner',
                 prep_time: [15, 20, 25],
                 cook_time: [20, 25, 30],
                 servings: [4, 6],
                 base_ingredients: ['protein', 'vegetable', 'Olive Oil', 'Salt', 'Black Pepper'],
-                labels: ['healthy', 'protein', 'grilled']
+                labels: ['healthy', 'protein', 'grilled', 'Dinner']
             },
             {
                 title: '{protein} Stir Fry',
                 description: 'Quick and healthy stir-fried {protein} with mixed vegetables',
-                meal_type: 'dinner',
                 prep_time: [10, 15],
                 cook_time: [15, 20],
                 servings: [4, 6],
                 base_ingredients: ['protein', 'Bell Peppers', 'Onions', 'Garlic', 'Olive Oil'],
-                labels: ['quick', 'healthy', 'asian']
+                labels: ['quick', 'healthy', 'asian', 'Dinner']
             },
             {
                 title: 'Baked {protein} Dinner',
                 description: 'Hearty baked {protein} with seasonal vegetables and herbs',
-                meal_type: 'dinner',
                 prep_time: [20, 25],
                 cook_time: [35, 45],
                 servings: [4, 6],
                 base_ingredients: ['protein', 'vegetable', 'Olive Oil', 'Salt', 'Black Pepper'],
-                labels: ['comfort', 'hearty', 'baked']
+                labels: ['comfort', 'hearty', 'baked', 'Dinner']
             },
             // Breakfast recipes
             {
                 title: 'Scrambled Eggs with {side}',
                 description: 'Simple breakfast with fluffy scrambled eggs and {side}',
-                meal_type: 'breakfast',
                 prep_time: [5, 10],
                 cook_time: [10, 15],
                 servings: [2, 4],
                 base_ingredients: ['Eggs', 'Butter', 'Salt', 'side'],
-                labels: ['breakfast', 'quick', 'protein']
+                labels: ['quick', 'protein', 'Breakfast']
             },
             {
                 title: '{protein} Breakfast Bowl',
                 description: 'Nutritious breakfast bowl with {protein} and fresh ingredients',
-                meal_type: 'breakfast',
                 prep_time: [10, 15],
                 cook_time: [5, 10],
                 servings: [2, 3],
                 base_ingredients: ['protein', 'Eggs', 'vegetable', 'Salt'],
-                labels: ['breakfast', 'healthy', 'bowl']
+                labels: ['healthy', 'bowl', 'Breakfast']
             },
             {
                 title: 'Morning {side} Stack',
                 description: 'Delicious morning stack with {side} and breakfast favorites',
-                meal_type: 'breakfast',
                 prep_time: [15, 20],
                 cook_time: [10, 15],
                 servings: [2, 4],
                 base_ingredients: ['side', 'Eggs', 'Butter'],
-                labels: ['breakfast', 'comfort', 'sweet']
+                labels: ['comfort', 'sweet', 'Breakfast']
             },
             // Lunch recipes
             {
                 title: '{protein} Lunch Salad',
                 description: 'Fresh and satisfying lunch salad with {protein} and crisp vegetables',
-                meal_type: 'lunch',
                 prep_time: [10, 15],
                 cook_time: [5, 10],
                 servings: [2, 4],
                 base_ingredients: ['protein', 'vegetable', 'Olive Oil', 'Salt'],
-                labels: ['lunch', 'healthy', 'fresh', 'salad']
+                labels: ['healthy', 'fresh', 'salad', 'Lunch']
             },
             {
                 title: '{vegetable} Soup with {protein}',
                 description: 'Warming soup featuring {vegetable} and tender {protein}',
-                meal_type: 'lunch',
                 prep_time: [15, 20],
                 cook_time: [25, 35],
                 servings: [4, 6],
                 base_ingredients: ['vegetable', 'protein', 'Onions', 'Garlic', 'Salt'],
-                labels: ['lunch', 'comfort', 'soup', 'warming']
+                labels: ['comfort', 'soup', 'warming', 'Lunch']
             },
             {
                 title: 'Quick {protein} Wrap',
                 description: 'Fast and flavorful wrap with {protein} and fresh vegetables',
-                meal_type: 'lunch',
                 prep_time: [5, 10],
                 cook_time: [5, 10],
                 servings: [2, 3],
                 base_ingredients: ['protein', 'vegetable', 'side'],
-                labels: ['lunch', 'quick', 'portable', 'wrap']
+                labels: ['quick', 'portable', 'wrap', 'Lunch']
             },
             // Snack recipes
             {
                 title: '{vegetable} Chips',
                 description: 'Crispy baked {vegetable} chips seasoned to perfection',
-                meal_type: 'snack',
                 prep_time: [10, 15],
                 cook_time: [20, 30],
                 servings: [2, 4],
                 base_ingredients: ['vegetable', 'Olive Oil', 'Salt'],
-                labels: ['snack', 'healthy', 'crispy', 'baked']
+                labels: ['healthy', 'crispy', 'baked', 'Snack']
             },
             {
                 title: 'Energy {protein} Bites',
                 description: 'Nutritious energy bites with {protein} and natural sweeteners',
-                meal_type: 'snack',
                 prep_time: [15, 20],
                 cook_time: [0, 5],
                 servings: [4, 8],
                 base_ingredients: ['protein', 'side'],
-                labels: ['snack', 'energy', 'healthy', 'no-bake']
+                labels: ['energy', 'healthy', 'no-bake', 'Snack']
             },
             {
                 title: 'Roasted {vegetable} Mix',
                 description: 'Savory roasted {vegetable} mix perfect for snacking',
-                meal_type: 'snack',
                 prep_time: [5, 10],
                 cook_time: [15, 25],
                 servings: [2, 6],
                 base_ingredients: ['vegetable', 'Olive Oil', 'Salt', 'Black Pepper'],
-                labels: ['snack', 'roasted', 'savory', 'healthy']
+                labels: ['roasted', 'savory', 'healthy', 'Snack']
             }
         ];
+    }
+    
+    // Helper function to get meal type from labels
+    getMealTypeFromLabels(labels) {
+        const mealTypeLabels = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
+        for (const label of labels) {
+            if (mealTypeLabels.includes(label)) {
+                return label.toLowerCase();
+            }
+        }
+        return null;
+    }
+    
+    // Helper function to check if recipe has meal type label
+    hasMealType(recipe, mealType) {
+        const capitalizedMealType = mealType.charAt(0).toUpperCase() + mealType.slice(1);
+        return recipe.labels && recipe.labels.includes(capitalizedMealType);
     }
     
     generateIngredients(count = 30) {
@@ -327,10 +325,10 @@ class DemoDataGenerator {
         
         // Ensure we have recipes for all meal types (test requirement)
         const mealTypeTemplates = {
-            breakfast: this.recipeTemplates.filter(t => t.meal_type === 'breakfast'),
-            lunch: this.recipeTemplates.filter(t => t.meal_type === 'lunch'),
-            dinner: this.recipeTemplates.filter(t => t.meal_type === 'dinner'),
-            snack: this.recipeTemplates.filter(t => t.meal_type === 'snack')
+            breakfast: this.recipeTemplates.filter(t => t.labels && t.labels.includes('Breakfast')),
+            lunch: this.recipeTemplates.filter(t => t.labels && t.labels.includes('Lunch')),
+            dinner: this.recipeTemplates.filter(t => t.labels && t.labels.includes('Dinner')),
+            snack: this.recipeTemplates.filter(t => t.labels && t.labels.includes('Snack'))
         };
         
         // Generate specific required recipes first for test compatibility
@@ -356,7 +354,7 @@ class DemoDataGenerator {
         
         // Generate additional recipes per meal type to ensure coverage
         Object.entries(mealTypeTemplates).forEach(([mealType, templates]) => {
-            const existingCount = recipes.filter(r => r.meal_type === mealType).length;
+            const existingCount = recipes.filter(r => this.hasMealType(r, mealType)).length;
             const needed = Math.max(0, 2 - existingCount);
             
             for (let i = 0; i < needed && recipeId <= count; i++) {
@@ -445,10 +443,10 @@ class DemoDataGenerator {
         
         // Group recipes by meal type for better meal composition
         const recipesByMealType = {
-            breakfast: recipes.filter(r => r.meal_type === 'breakfast'),
-            lunch: recipes.filter(r => r.meal_type === 'lunch'),
-            dinner: recipes.filter(r => r.meal_type === 'dinner'),
-            snack: recipes.filter(r => r.meal_type === 'snack')
+            breakfast: recipes.filter(r => this.hasMealType(r, 'breakfast')),
+            lunch: recipes.filter(r => this.hasMealType(r, 'lunch')),
+            dinner: recipes.filter(r => this.hasMealType(r, 'dinner')),
+            snack: recipes.filter(r => this.hasMealType(r, 'snack'))
         };
         
         for (let i = 0; i < count; i++) {
@@ -577,7 +575,6 @@ class DemoDataGenerator {
                     meal_id: meal.id,
                     date: dateString,
                     scheduled_date: dateString, // Keep both for compatibility
-                    meal_type: mealType,
                     servings: meal.totalServings,
                     notes: `Scheduled ${meal.name}`,
                     recipes: validRecipes, // Only include valid recipes
@@ -589,20 +586,19 @@ class DemoDataGenerator {
                 // Select recipe based on target meal type if specified
                 let recipe;
                 if (targetMealType) {
-                    const matchingRecipes = recipes.filter(r => r.meal_type === targetMealType);
+                    const matchingRecipes = recipes.filter(r => this.hasMealType(r, targetMealType));
                     recipe = matchingRecipes.length > 0 ? this.getRandomElement(matchingRecipes) : this.getRandomElement(recipes);
                 } else {
                     recipe = this.getRandomElement(recipes);
                 }
                 
-                const mealType = targetMealType || recipe.meal_type;
+                const mealType = targetMealType || this.getMealTypeFromLabels(recipe.labels);
                 
                 scheduledMeals.push({
                     id: i + 1,
                     recipe_id: recipe.id,
                     date: dateString,
                     scheduled_date: dateString, // Keep both for compatibility
-                    meal_type: mealType,
                     servings: recipe.servings,
                     notes: `Scheduled ${recipe.title}`,
                     recipes: [{ recipeId: recipe.id, servings: recipe.servings }],
@@ -657,7 +653,6 @@ class DemoDataGenerator {
             type: 'basic',
             image_url: this.generateImageUrl(),
             servings: this.getRandomElement(template.servings),
-            meal_type: template.meal_type,
             prep_time: this.getRandomElement(template.prep_time),
             cook_time: this.getRandomElement(template.cook_time),
             created_at: '', // Will be set by caller
@@ -676,56 +671,48 @@ class DemoDataGenerator {
             {
                 name: 'Sunday Dinner Combo',
                 description: 'Classic Sunday dinner with fried chicken and mashed potatoes',
-                meal_type: 'dinner',
                 labels: ['combo', 'sunday-dinner', 'comfort-food'],
                 requiredRecipes: ['Fried Chicken', 'Mashed Potatoes']
             },
             {
                 name: 'Italian Night Combo',
                 description: 'Perfect Italian dinner with pasta and salad',
-                meal_type: 'dinner',
                 labels: ['combo', 'italian', 'complete'],
                 requiredRecipes: ['Pasta', 'Salad']
             },
             {
                 name: 'Full American Breakfast Combo',
                 description: 'Complete American breakfast with pancakes and bacon',
-                meal_type: 'breakfast',
                 labels: ['combo', 'american', 'hearty'],
                 requiredRecipes: ['Pancakes', 'Bacon']
             },
             {
                 name: 'Grilled Salmon Dinner Combo',
                 description: 'Healthy grilled salmon with vegetables',
-                meal_type: 'dinner',
                 labels: ['combo', 'healthy', 'seafood'],
                 requiredRecipes: ['Salmon', 'Vegetables']
             },
             {
                 name: 'Greek Feast Combo',
                 description: 'Mediterranean feast with multiple dishes',
-                meal_type: 'dinner',
                 labels: ['combo', 'greek', 'mediterranean'],
                 requiredRecipes: ['Salad', 'Bread']
             },
             {
                 name: 'Vegetarian Quinoa Feast Combo',
                 description: 'Healthy vegetarian meal with quinoa',
-                meal_type: 'lunch',
                 labels: ['combo', 'vegetarian', 'healthy'],
                 requiredRecipes: ['Quinoa', 'Vegetables']
             },
             {
                 name: 'Weekend Brunch Combo',
                 description: 'Perfect weekend brunch combination',
-                meal_type: 'breakfast',
                 labels: ['combo', 'brunch', 'weekend'],
                 requiredRecipes: ['Hash Browns', 'Eggs']
             },
             {
                 name: 'Light Lunch Combo',
                 description: 'Light and fresh lunch combination',
-                meal_type: 'lunch',
                 labels: ['combo', 'light', 'fresh'],
                 requiredRecipes: ['Salad', 'Bread']
             }
@@ -816,7 +803,6 @@ class DemoDataGenerator {
             type: 'combo',
             image_url: this.generateImageUrl(),
             servings: maxServings,
-            meal_type: template.meal_type,
             prep_time: totalPrepTime,
             cook_time: totalCookTime,
             created_at: '', // Will be set by caller
@@ -881,7 +867,7 @@ class DemoDataGenerator {
         ];
         
         // Customize based on meal type
-        if (template.meal_type === 'breakfast') {
+        if (template.labels && template.labels.includes('Breakfast')) {
             return [
                 'Crack eggs into bowl and whisk',
                 'Heat butter in non-stick pan',
@@ -1065,10 +1051,10 @@ class DemoDataGenerator {
         
         // Test requirement: Must have recipes for each meal type
         const mealTypeCounts = {
-            breakfast: recipes.filter(r => r.meal_type === 'breakfast').length,
-            lunch: recipes.filter(r => r.meal_type === 'lunch').length,
-            dinner: recipes.filter(r => r.meal_type === 'dinner').length,
-            snack: recipes.filter(r => r.meal_type === 'snack').length
+            breakfast: recipes.filter(r => this.hasMealType(r, 'breakfast')).length,
+            lunch: recipes.filter(r => this.hasMealType(r, 'lunch')).length,
+            dinner: recipes.filter(r => this.hasMealType(r, 'dinner')).length,
+            snack: recipes.filter(r => this.hasMealType(r, 'snack')).length
         };
         
         Object.entries(mealTypeCounts).forEach(([type, count]) => {
@@ -1097,8 +1083,8 @@ class DemoDataGenerator {
         // Validate recipes
         recipes.forEach((recipe, index) => {
             // Required fields check
-            if (!recipe.id || !recipe.title || !recipe.meal_type) {
-                errors.push(`Recipe ${index}: Missing required fields (id, title, meal_type)`);
+            if (!recipe.id || !recipe.title) {
+                errors.push(`Recipe ${index}: Missing required fields (id, title)`);
             }
             if (!recipe.description || !recipe.type || !recipe.prep_time || recipe.cook_time === undefined || !recipe.servings) {
                 errors.push(`Recipe ${index}: Missing required fields (description, type, prep_time, cook_time, servings)`);
@@ -1113,8 +1099,9 @@ class DemoDataGenerator {
             }
             
             // Test requirement: Valid meal type
-            if (!this.mealTypes.includes(recipe.meal_type)) {
-                errors.push(`Recipe ${index}: Invalid meal_type ${recipe.meal_type}`);
+            const mealType = this.getMealTypeFromLabels(recipe.labels);
+            if (mealType && !this.mealTypes.includes(mealType)) {
+                errors.push(`Recipe ${index}: Invalid meal_type ${mealType}`);
             }
             
             // Test requirement: Valid type
