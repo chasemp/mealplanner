@@ -9,6 +9,7 @@ class RecipeManager {
         this.selectedCategory = 'all';
         this.selectedType = 'all'; // New filter for recipe type (basic/combo)
         this.selectedLabels = []; // Changed to array for multi-select
+        this.labelSearchTerm = ''; // For typeahead filtering
         this.sortBy = 'name';
         this.showFavoritesOnly = false;
         this.init();
@@ -122,7 +123,7 @@ class RecipeManager {
                                 Filter by Labels
                             </label>
                             <div class="relative">
-                                <div id="recipe-labels-input" class="w-full min-h-[42px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus-within:ring-2 focus-within:ring-blue-500 dark:bg-gray-700 dark:text-white cursor-text flex flex-wrap gap-1 items-center">
+                                <div id="recipe-labels-container" class="w-full min-h-[42px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus-within:ring-2 focus-within:ring-blue-500 dark:bg-gray-700 dark:text-white cursor-text flex flex-wrap gap-1 items-center">
                                     ${this.selectedLabels.map(label => `
                                         <span class="inline-flex items-center px-2 py-1 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full">
                                             ${label}
@@ -133,17 +134,16 @@ class RecipeManager {
                                             </button>
                                         </span>
                                     `).join('')}
-                                    <span class="text-gray-500 dark:text-gray-400 text-sm ${this.selectedLabels.length > 0 ? 'hidden' : ''}">Click to select labels...</span>
+                                    <input 
+                                        type="text" 
+                                        id="recipe-labels-input" 
+                                        class="flex-1 min-w-[120px] bg-transparent border-none outline-none text-sm placeholder-gray-500 dark:placeholder-gray-400" 
+                                        placeholder="${this.selectedLabels.length > 0 ? 'Type to add more...' : 'Type to search labels...'}"
+                                        autocomplete="off"
+                                    />
                                 </div>
                                 <div id="recipe-labels-dropdown" class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg hidden max-h-48 overflow-y-auto">
-                                    ${this.getAllLabels().filter(label => !this.selectedLabels.includes(label)).map(label => `
-                                        <div class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm" onclick="window.recipeManager.addLabel('${label}')">
-                                            ${label}
-                                        </div>
-                                    `).join('')}
-                                    ${this.getAllLabels().filter(label => !this.selectedLabels.includes(label)).length === 0 ? 
-                                        '<div class="px-3 py-2 text-gray-500 dark:text-gray-400 text-sm">No more labels available</div>' : ''
-                                    }
+                                    <!-- Dropdown options will be populated by JavaScript -->
                                 </div>
                             </div>
                         </div>
@@ -452,21 +452,98 @@ class RecipeManager {
             });
         }
 
-        // Multi-select label filter
+        // Multi-select label filter with typeahead
         const labelInput = this.container.querySelector('#recipe-labels-input');
+        const labelContainer = this.container.querySelector('#recipe-labels-container');
         const labelDropdown = this.container.querySelector('#recipe-labels-dropdown');
         
-        if (labelInput && labelDropdown) {
-            // Show dropdown when clicking the input
-            labelInput.addEventListener('click', (e) => {
+        if (labelInput && labelContainer && labelDropdown) {
+            // Show dropdown and focus input when clicking container
+            labelContainer.addEventListener('click', (e) => {
                 e.stopPropagation();
-                labelDropdown.classList.toggle('hidden');
+                labelInput.focus();
+                labelDropdown.classList.remove('hidden');
+                this.updateLabelsDropdown();
+            });
+
+            // Handle typing in the input
+            labelInput.addEventListener('input', (e) => {
+                this.labelSearchTerm = e.target.value;
+                labelDropdown.classList.remove('hidden');
+                this.updateLabelsDropdown();
+            });
+
+            // Handle keyboard navigation
+            labelInput.addEventListener('keydown', (e) => {
+                const dropdown = this.container.querySelector('#recipe-labels-dropdown');
+                const options = dropdown.querySelectorAll('[data-label]');
+                const highlighted = dropdown.querySelector('.bg-gray-50, .dark\\:bg-gray-700');
+                
+                switch (e.key) {
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        if (options.length > 0) {
+                            if (highlighted) {
+                                highlighted.classList.remove('bg-gray-50', 'dark:bg-gray-700');
+                                const next = highlighted.nextElementSibling;
+                                if (next && next.hasAttribute('data-label')) {
+                                    next.classList.add('bg-gray-50', 'dark:bg-gray-700');
+                                } else {
+                                    options[0].classList.add('bg-gray-50', 'dark:bg-gray-700');
+                                }
+                            } else {
+                                options[0].classList.add('bg-gray-50', 'dark:bg-gray-700');
+                            }
+                        }
+                        break;
+                        
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        if (options.length > 0) {
+                            if (highlighted) {
+                                highlighted.classList.remove('bg-gray-50', 'dark:bg-gray-700');
+                                const prev = highlighted.previousElementSibling;
+                                if (prev && prev.hasAttribute('data-label')) {
+                                    prev.classList.add('bg-gray-50', 'dark:bg-gray-700');
+                                } else {
+                                    options[options.length - 1].classList.add('bg-gray-50', 'dark:bg-gray-700');
+                                }
+                            } else {
+                                options[options.length - 1].classList.add('bg-gray-50', 'dark:bg-gray-700');
+                            }
+                        }
+                        break;
+                        
+                    case 'Enter':
+                        e.preventDefault();
+                        if (highlighted) {
+                            const label = highlighted.getAttribute('data-label');
+                            if (label) {
+                                this.addLabel(label);
+                                labelInput.focus(); // Keep focus for more selections
+                            }
+                        }
+                        break;
+                        
+                    case 'Escape':
+                        labelDropdown.classList.add('hidden');
+                        labelInput.blur();
+                        break;
+                }
+            });
+
+            // Handle focus events
+            labelInput.addEventListener('focus', () => {
+                labelDropdown.classList.remove('hidden');
+                this.updateLabelsDropdown();
             });
 
             // Hide dropdown when clicking outside
             document.addEventListener('click', (e) => {
-                if (!labelInput.contains(e.target) && !labelDropdown.contains(e.target)) {
+                if (!labelContainer.contains(e.target) && !labelDropdown.contains(e.target)) {
                     labelDropdown.classList.add('hidden');
+                    labelInput.value = ''; // Clear search when closing
+                    this.labelSearchTerm = '';
                 }
             });
         }
@@ -488,6 +565,7 @@ class RecipeManager {
                 this.selectedCategory = 'all';
                 this.selectedType = 'all'; // Reset recipe type filter
                 this.selectedLabels = []; // Reset multi-select labels
+                this.labelSearchTerm = ''; // Reset label search
                 this.sortBy = 'name';
                 this.showFavoritesOnly = false;
                 this.render();
@@ -1408,6 +1486,7 @@ class RecipeManager {
     addLabel(label) {
         if (!this.selectedLabels.includes(label)) {
             this.selectedLabels.push(label);
+            this.labelSearchTerm = ''; // Clear search after selection
             this.render();
         }
     }
@@ -1419,7 +1498,45 @@ class RecipeManager {
 
     clearAllLabels() {
         this.selectedLabels = [];
+        this.labelSearchTerm = '';
         this.render();
+    }
+
+    // Get filtered labels for dropdown based on search term
+    getFilteredLabelsForDropdown() {
+        const availableLabels = this.getAllLabels().filter(label => !this.selectedLabels.includes(label));
+        
+        if (!this.labelSearchTerm) {
+            return availableLabels;
+        }
+        
+        return availableLabels.filter(label => 
+            label.toLowerCase().includes(this.labelSearchTerm.toLowerCase())
+        );
+    }
+
+    // Update dropdown content based on current search
+    updateLabelsDropdown() {
+        const dropdown = this.container.querySelector('#recipe-labels-dropdown');
+        if (!dropdown) return;
+
+        const filteredLabels = this.getFilteredLabelsForDropdown();
+        
+        if (filteredLabels.length === 0) {
+            dropdown.innerHTML = `
+                <div class="px-3 py-2 text-gray-500 dark:text-gray-400 text-sm">
+                    ${this.labelSearchTerm ? `No labels found matching "${this.labelSearchTerm}"` : 'No more labels available'}
+                </div>
+            `;
+        } else {
+            dropdown.innerHTML = filteredLabels.map((label, index) => `
+                <div class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm ${index === 0 ? 'bg-gray-50 dark:bg-gray-700' : ''}" 
+                     data-label="${label}" 
+                     onclick="window.recipeManager.addLabel('${label}')">
+                    ${label}
+                </div>
+            `).join('');
+        }
     }
 
     async clearAllData() {
@@ -1432,6 +1549,7 @@ class RecipeManager {
         this.selectedCategory = 'all';
         this.selectedType = 'all';
         this.selectedLabels = []; // Reset multi-select labels
+        this.labelSearchTerm = ''; // Reset label search
         this.sortBy = 'name';
         this.showFavoritesOnly = false;
         
