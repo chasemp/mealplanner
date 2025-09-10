@@ -1462,4 +1462,45 @@ npm run test:run
 
 ---
 
-*This document captures the lessons learned from building the MealPlanner PWA, emphasizing the importance of the static PWA sweet spot: modular organization without build complexity, enhanced with intelligent development tooling, schema-driven demo data generation, and holistic data consistency management.*
+## 🎨 **PWA UI/UX Lessons**
+
+### **Browser Input Default Styling Override**
+
+**Problem**: Input fields with `bg-transparent` can show browser default white backgrounds, breaking dark mode consistency across different mobile browsers and PWA installations.
+
+**Root Cause**: 
+- Browser defaults vary significantly across platforms (iOS Safari, Android Chrome, etc.)
+- PWAs inherit these inconsistencies when using transparent/inherit values
+- Mobile browsers often apply different default styling than desktop
+
+**Solution**: Always use explicit background colors for input fields:
+```css
+/* ❌ Problematic - relies on browser defaults */
+bg-transparent
+
+/* ✅ Explicit - consistent across all platforms */
+bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400
+```
+
+**PWA Best Practices**:
+1. **Explicit Over Implicit**: Define all visual states explicitly rather than relying on transparent/inherit
+2. **Cross-Platform Testing**: Test form inputs across iOS Safari, Android Chrome, and PWA installations
+3. **Dark Mode Consistency**: Ensure all interactive elements have proper dark mode styling
+4. **Mobile-First Approach**: Mobile browsers have more styling quirks than desktop
+
+**Critical Areas to Explicitly Style**:
+- Input field backgrounds and text colors
+- Placeholder text colors in both light/dark modes  
+- Focus states and ring colors
+- Select dropdown styling
+- Button states across different touch interfaces
+
+**Testing Strategy**: Always verify UI consistency across:
+- Mobile Safari (iOS)
+- Chrome Mobile (Android) 
+- PWA installed on home screen
+- Different screen sizes and orientations
+
+---
+
+*This document captures the lessons learned from building the MealPlanner PWA, emphasizing the importance of the static PWA sweet spot: modular organization without build complexity, enhanced with intelligent development tooling, schema-driven demo data generation, holistic data consistency management, and explicit cross-platform UI styling.*
