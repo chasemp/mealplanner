@@ -98,6 +98,7 @@ class RecipeManager {
                                     <option value="date" ${this.sortBy === 'date' ? 'selected' : ''}>Date</option>
                                     <option value="prep_time" ${this.sortBy === 'prep_time' ? 'selected' : ''}>Prep Time</option>
                                     <option value="serving_count" ${this.sortBy === 'serving_count' ? 'selected' : ''}>Servings</option>
+                                    <option value="label_type" ${this.sortBy === 'label_type' ? 'selected' : ''}>Label Type</option>
                                 </select>
                             </div>
                         </div>
@@ -338,6 +339,22 @@ class RecipeManager {
                     return (a.prep_time + a.cook_time) - (b.prep_time + b.cook_time);
                 case 'serving_count':
                     return (b.serving_count || b.servings || 0) - (a.serving_count || a.servings || 0);
+                case 'label_type':
+                    // Sort by primary label type, then by name within each type
+                    const aType = this.getPrimaryLabelType(a.labels || []);
+                    const bType = this.getPrimaryLabelType(b.labels || []);
+                    
+                    // First sort by label type priority (recipe_type first, then default)
+                    const typePriority = { 'recipe_type': 0, 'default': 1 };
+                    const aPriority = typePriority[aType] ?? 2;
+                    const bPriority = typePriority[bType] ?? 2;
+                    
+                    if (aPriority !== bPriority) {
+                        return aPriority - bPriority;
+                    }
+                    
+                    // If same type priority, sort by name
+                    return a.title.localeCompare(b.title);
                 default:
                     return 0;
             }
@@ -406,6 +423,26 @@ class RecipeManager {
         if (window.labelTypes) {
             return window.labelTypes.inferLabelType(labelName);
         }
+        return 'default';
+    }
+
+    // Get the primary label type for a recipe (prioritizes recipe_type over default)
+    getPrimaryLabelType(labels) {
+        if (!Array.isArray(labels) || labels.length === 0) {
+            return 'default';
+        }
+
+        // Check if any labels are recipe_type
+        for (const label of labels) {
+            const labelName = typeof label === 'string' ? label : (label.name || String(label));
+            const labelType = typeof label === 'object' && label.type ? label.type : this.inferLabelType(labelName);
+            
+            if (labelType === 'recipe_type') {
+                return 'recipe_type';
+            }
+        }
+
+        // If no recipe_type labels found, return default
         return 'default';
     }
 
