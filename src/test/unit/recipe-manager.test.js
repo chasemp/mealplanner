@@ -117,12 +117,37 @@ class MockRecipeManager {
                     <span>${recipe.prep_time + recipe.cook_time}min</span>
                     <span>${recipe.serving_count} servings</span>
                 </div>
+                <div class="recipe-labels">
+                    ${recipe.favorite ? `
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                            </svg>
+                            Favorite
+                        </span>
+                    ` : ''}
+                    ${this.renderMockLabels(recipe.labels || [], recipe.favorite ? 1 : 2)}
+                    ${(recipe.labels || []).length > (recipe.favorite ? 1 : 2) ? `<span class="text-xs text-gray-500">+${(recipe.labels || []).length - (recipe.favorite ? 1 : 2)} more</span>` : ''}
+                </div>
                 <div class="recipe-actions">
                     <button class="edit-recipe" data-recipe-id="${recipe.id}">Edit</button>
                     <button class="delete-recipe" data-recipe-id="${recipe.id}">Delete</button>
+                    <button class="toggle-favorite" data-recipe-id="${recipe.id}">★</button>
                 </div>
             </div>
         `
+    }
+
+    renderMockLabels(labels, maxCount = null) {
+        if (!Array.isArray(labels)) return '';
+        
+        const labelsToShow = maxCount ? labels.slice(0, maxCount) : labels;
+        
+        return labelsToShow.map(label => `
+            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                ${label}
+            </span>
+        `).join('');
     }
 
     getFilteredRecipes() {
@@ -370,6 +395,14 @@ class MockRecipeManager {
         this.sortAscending = true
         this.selectedLabel = 'all'
         this.render()
+    }
+
+    toggleFavorite(recipeId) {
+        const recipe = this.recipes.find(r => r.id === recipeId);
+        if (recipe) {
+            recipe.favorite = !recipe.favorite;
+            this.render(); // Re-render to update the display
+        }
     }
 }
 
@@ -739,6 +772,133 @@ describe('RecipeManager', () => {
             labelSelect.dispatchEvent(new dom.window.Event('change'))
             
             expect(recipeManager.selectedLabel).toBe('vegetarian')
+        })
+    })
+
+    describe('Favorite Labels', () => {
+        beforeEach(() => {
+            recipeManager.init()
+        })
+
+        it('should display favorite label when recipe is favorited', () => {
+            // Set up a recipe as favorite
+            recipeManager.recipes[0].favorite = true
+            recipeManager.render()
+            
+            const recipeCard = container.querySelector('.recipe-card')
+            const favoriteLabel = recipeCard.querySelector('.bg-yellow-100')
+            
+            expect(favoriteLabel).toBeTruthy()
+            expect(favoriteLabel.textContent.trim()).toBe('Favorite')
+            expect(favoriteLabel.querySelector('svg')).toBeTruthy() // Star icon
+        })
+
+        it('should not display favorite label when recipe is not favorited', () => {
+            // Ensure recipe is not favorite
+            recipeManager.recipes[0].favorite = false
+            recipeManager.render()
+            
+            const recipeCard = container.querySelector('.recipe-card')
+            const favoriteLabel = recipeCard.querySelector('.bg-yellow-100')
+            
+            expect(favoriteLabel).toBeFalsy()
+        })
+
+        it('should toggle favorite label when favorite status changes', () => {
+            const recipeId = recipeManager.recipes[0].id
+            
+            // Initially not favorite
+            recipeManager.recipes[0].favorite = false
+            recipeManager.render()
+            
+            let recipeCard = container.querySelector('.recipe-card')
+            let favoriteLabel = recipeCard.querySelector('.bg-yellow-100')
+            expect(favoriteLabel).toBeFalsy()
+            
+            // Toggle to favorite
+            recipeManager.toggleFavorite(recipeId)
+            
+            recipeCard = container.querySelector('.recipe-card')
+            favoriteLabel = recipeCard.querySelector('.bg-yellow-100')
+            expect(favoriteLabel).toBeTruthy()
+            expect(favoriteLabel.textContent.trim()).toBe('Favorite')
+            
+            // Toggle back to not favorite
+            recipeManager.toggleFavorite(recipeId)
+            
+            recipeCard = container.querySelector('.recipe-card')
+            favoriteLabel = recipeCard.querySelector('.bg-yellow-100')
+            expect(favoriteLabel).toBeFalsy()
+        })
+
+        it('should adjust regular label count when favorite label is present', () => {
+            // Set up a recipe with multiple labels and make it favorite
+            recipeManager.recipes[0].labels = ['healthy', 'quick', 'vegetarian', 'protein']
+            recipeManager.recipes[0].favorite = true
+            recipeManager.render()
+            
+            const recipeCard = container.querySelector('.recipe-card')
+            const favoriteLabel = recipeCard.querySelector('.bg-yellow-100')
+            const regularLabels = recipeCard.querySelectorAll('.inline-flex:not(.bg-yellow-100)')
+            const moreText = recipeCard.querySelector('.text-gray-500')
+            
+            // Should have favorite label
+            expect(favoriteLabel).toBeTruthy()
+            
+            // Should show only 1 regular label (instead of 2) when favorite is present
+            expect(regularLabels.length).toBe(1)
+            
+            // Should show "+3 more" (4 total labels - 1 shown = 3 more)
+            expect(moreText.textContent).toContain('+3 more')
+        })
+
+        it('should show 2 regular labels when no favorite label is present', () => {
+            // Set up a recipe with multiple labels but not favorite
+            recipeManager.recipes[0].labels = ['healthy', 'quick', 'vegetarian', 'protein']
+            recipeManager.recipes[0].favorite = false
+            recipeManager.render()
+            
+            const recipeCard = container.querySelector('.recipe-card')
+            const favoriteLabel = recipeCard.querySelector('.bg-yellow-100')
+            const regularLabels = recipeCard.querySelectorAll('.inline-flex:not(.bg-yellow-100)')
+            const moreText = recipeCard.querySelector('.text-gray-500')
+            
+            // Should not have favorite label
+            expect(favoriteLabel).toBeFalsy()
+            
+            // Should show 2 regular labels when no favorite is present
+            expect(regularLabels.length).toBe(2)
+            
+            // Should show "+2 more" (4 total labels - 2 shown = 2 more)
+            expect(moreText.textContent).toContain('+2 more')
+        })
+
+        it('should have proper dark mode classes for favorite label', () => {
+            recipeManager.recipes[0].favorite = true
+            recipeManager.render()
+            
+            const recipeCard = container.querySelector('.recipe-card')
+            const favoriteLabel = recipeCard.querySelector('.bg-yellow-100')
+            
+            expect(favoriteLabel).toBeTruthy()
+            expect(favoriteLabel.className).toContain('dark:bg-yellow-900')
+            expect(favoriteLabel.className).toContain('dark:text-yellow-200')
+        })
+
+        it('should maintain favorite label during filtering', () => {
+            // Set up a favorite recipe
+            recipeManager.recipes[0].favorite = true
+            recipeManager.recipes[0].title = 'Favorite Test Recipe'
+            
+            // Filter by search term
+            recipeManager.currentFilter.search = 'Favorite'
+            recipeManager.render()
+            
+            const recipeCard = container.querySelector('.recipe-card')
+            const favoriteLabel = recipeCard.querySelector('.bg-yellow-100')
+            
+            expect(favoriteLabel).toBeTruthy()
+            expect(favoriteLabel.textContent.trim()).toBe('Favorite')
         })
     })
 })
