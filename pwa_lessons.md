@@ -1216,4 +1216,104 @@ npm run test:e2e           # E2E tests against auto-reload server
 
 ---
 
-*This document captures the lessons learned from building the MealPlanner PWA, emphasizing the importance of the static PWA sweet spot: modular organization without build complexity, enhanced with intelligent development tooling.*
+## 🏗️ **Demo Data as Schema Validation & Development Tool**
+
+### **The Demo Data Challenge in PWAs**
+**Problem**: As PWA schemas evolve, demo data becomes inconsistent, leading to broken features, failed tests, and poor user experience during demos.
+
+**Traditional Approach**: 
+- Manually maintain demo data in static files
+- Hope it stays consistent with schema changes
+- Debug mysterious issues caused by data mismatches
+- Spend time fixing data instead of building features
+
+### **The Schema-Driven Demo Data Solution**
+**Implementation**: Automated demo data generation that validates and enforces schema consistency.
+
+**Key Benefits**:
+- **Living Schema Documentation**: Generator acts as executable schema specification
+- **Consistency Guarantee**: All demo data follows exact same patterns and structure
+- **Easy Expansion**: Generate 10 recipes or 1000 recipes with same quality
+- **Schema Evolution**: Update generator when schema changes, regenerate all data
+- **Testing Reliability**: Consistent data means predictable test results
+- **Professional Demos**: Realistic, interconnected data showcases features properly
+
+### **Implementation Strategy**
+```javascript
+// scripts/generate-demo-data.cjs
+class DemoDataGenerator {
+    constructor() {
+        // Define schema constraints
+        this.ingredientCategories = ['produce', 'meat', 'dairy', 'pantry'];
+        this.mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
+        this.requiredFields = ['id', 'title', 'created_at', 'meal_type'];
+    }
+    
+    validateData(ingredients, recipes) {
+        // Enforce schema compliance
+        // Validate relationships (recipe ingredients exist)
+        // Check data types and required fields
+        // Return validation errors
+    }
+}
+```
+
+### **Schema Validation Benefits**
+1. **Catch Breaking Changes Early**: Generator fails when schema changes
+2. **Enforce Relationships**: Recipes can only reference existing ingredients
+3. **Validate Data Types**: Ensure dates are valid, numbers are numeric
+4. **Required Field Compliance**: All objects have mandatory properties
+5. **Realistic Constraints**: Quantities, timestamps, and references make sense
+
+### **Development Workflow Integration**
+```bash
+# Generate fresh demo data
+node scripts/generate-demo-data.cjs --validate
+
+# Generate larger dataset for testing
+node scripts/generate-demo-data.cjs --recipes 100 --ingredients 50
+
+# Replace current demo data
+node scripts/generate-demo-data.cjs --output js/demo-data.js --validate
+```
+
+### **PWA-Specific Considerations**
+- **Realistic Timestamps**: Spread over months to test date sorting/filtering
+- **Interconnected Data**: Recipes reference actual ingredients, meals use real recipes
+- **Proper Quantities**: Realistic ingredient amounts for shopping list generation
+- **Image URLs**: Valid placeholder images for visual testing
+- **Label Consistency**: Shared labels between recipes and meals for filtering
+
+### **Schema Evolution Pattern**
+```javascript
+// When adding new field to recipe schema:
+1. Update generator to include new field
+2. Run generator with --validate flag
+3. Fix any validation errors
+4. Regenerate demo data
+5. Update tests to expect new field
+6. Deploy with confidence
+```
+
+### **Testing & Quality Assurance**
+- **Automated Validation**: Generator includes comprehensive validation logic
+- **Relationship Integrity**: All foreign keys reference existing records
+- **Data Realism**: Quantities, dates, and descriptions feel authentic
+- **Edge Case Coverage**: Include boundary conditions and special cases
+- **Performance Testing**: Generate large datasets to test performance
+
+### **Key Lesson**
+**Demo data generators are essential infrastructure for professional PWAs.** They transform demo data from a maintenance burden into a powerful development tool that validates schema compliance, enables rapid iteration, and ensures consistent user experiences.
+
+**Implementation Priorities**:
+1. **Start Simple**: Basic generator with core entities
+2. **Add Validation**: Comprehensive schema checking
+3. **Enhance Realism**: Templates and realistic data patterns
+4. **Integrate Testing**: Use generator for test data creation
+5. **Automate Refresh**: Regular regeneration to catch schema drift
+
+**Result**: Reliable, professional demo experiences that properly showcase PWA capabilities while serving as living documentation of the expected data schema.
+
+---
+
+*This document captures the lessons learned from building the MealPlanner PWA, emphasizing the importance of the static PWA sweet spot: modular organization without build complexity, enhanced with intelligent development tooling and schema-driven demo data generation.*

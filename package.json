@@ -36,7 +36,10 @@
     "restart": "pkill -f vite || true && sleep 2 && npm run dev:fresh",
     "version:update": "node update-version.cjs",
     "version:check": "node -e \"const fs=require('fs'); const content=fs.readFileSync('index.html','utf8'); const versions=[...content.matchAll(/\\.js\\?v=([\\d.]+)/g)].map(m=>m[1]); const unique=[...new Set(versions)]; console.log(unique.length===1 ? '✅ All versions consistent: '+unique[0] : '❌ Version mismatch: '+unique.join(', '));\"",
-    "deploy:bust": "npm run version:update && git add -A && git commit -m 'Cache bust: update version' && git push origin main"
+    "deploy:bust": "npm run version:update && git add -A && git commit -m 'Cache bust: update version' && git push origin main",
+    "demo:generate": "node scripts/generate-demo-data.cjs --validate",
+    "demo:refresh": "node scripts/generate-demo-data.cjs --output js/demo-data.js --validate",
+    "demo:large": "node scripts/generate-demo-data.cjs --recipes 100 --ingredients 50 --validate"
   },
   "keywords": [
     "pwa",
