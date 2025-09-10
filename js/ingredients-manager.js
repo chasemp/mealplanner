@@ -45,7 +45,7 @@ class IngredientsManager {
             const matchesCategory = !this.currentFilter.category || 
                 ingredient.category === this.currentFilter.category;
             const matchesLabel = !this.currentFilter.label || 
-                (ingredient.labels && ingredient.labels.includes(this.currentFilter.label));
+                (ingredient.labels && Array.isArray(ingredient.labels) && ingredient.labels.includes(this.currentFilter.label));
             
             const matches = matchesSearch && matchesCategory && matchesLabel;
             
@@ -322,7 +322,7 @@ class IngredientsManager {
                     `}
                     
                     <!-- Labels Section -->
-                    ${ingredient.labels && ingredient.labels.length > 0 ? `
+                    ${ingredient.labels && Array.isArray(ingredient.labels) && ingredient.labels.length > 0 ? `
                         <div class="pt-2 border-t border-gray-200 dark:border-gray-700">
                             <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Labels:</p>
                             <div class="flex flex-wrap gap-1">
