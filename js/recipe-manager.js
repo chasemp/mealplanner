@@ -416,12 +416,12 @@ class RecipeManager {
         if (window.labelTypes) {
             return window.labelTypes.getColorClasses(labelType);
         }
-        // Fallback colors
+        // Fallback colors with proper dark mode support
         switch (labelType) {
             case 'recipe_type':
-                return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+                return 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100';
             default:
-                return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+                return 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100';
         }
     }
 
