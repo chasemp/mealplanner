@@ -5,19 +5,21 @@ class LabelTypes {
             'default': {
                 name: 'Default',
                 color: 'bg-green-100 text-green-800 dark:!bg-green-200 dark:!text-green-900',
-                description: 'General recipe labels'
+                description: 'General recipe labels',
+                icon: null // No icon for default labels
             },
             'recipe_type': {
                 name: 'Recipe Type',
                 color: 'bg-blue-100 text-blue-800 dark:!bg-blue-200 dark:!text-blue-900',
-                description: 'Type of recipe (combo, etc.)'
+                description: 'Type of recipe (combo, etc.)',
+                icon: '<svg class="w-3 h-3 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>'
             }
         };
         
         // Predefined labels by type
         this.predefinedLabels = {
             'recipe_type': [
-                'combo'  // Only combo recipes get a label, basic recipes don't need one
+                'Recipe Combo'  // Only combo recipes get a label, basic recipes don't need one
             ],
             'default': [
                 'vegetarian', 'vegan', 'gluten-free', 'dairy-free', 'nut-free',
@@ -44,6 +46,11 @@ class LabelTypes {
         return this.getTypeConfig(type).color;
     }
 
+    // Get icon for a label type
+    getIcon(type) {
+        return this.getTypeConfig(type).icon || '';
+    }
+
     // Get predefined labels for a type
     getPredefinedLabels(type) {
         return this.predefinedLabels[type] || [];
@@ -60,6 +67,11 @@ class LabelTypes {
 
     // Determine label type from label name (for existing labels without explicit type)
     inferLabelType(labelName) {
+        // Handle legacy "combo" label - treat as recipe_type
+        if (labelName === 'combo') {
+            return 'recipe_type';
+        }
+        
         for (const [type, labels] of Object.entries(this.predefinedLabels)) {
             if (labels.includes(labelName)) {
                 return type;

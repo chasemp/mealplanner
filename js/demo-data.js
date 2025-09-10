@@ -1059,10 +1059,10 @@ class DemoDataManager {
                     // Convert existing labels to typed labels
                     let labels = recipe.labels || [];
                     
-                    // Add combo label if it was a combo recipe
+                    // Add Recipe Combo label if it was a combo recipe
                     if (recipe.type === 'combo') {
-                        labels.push('combo');
-                        console.log(`🔄 Adding 'combo' label to recipe: ${recipe.title}`);
+                        labels.push('Recipe Combo');
+                        console.log(`🔄 Adding 'Recipe Combo' label to recipe: ${recipe.title}`);
                     }
                     
                     // Convert all labels to typed format
@@ -1081,7 +1081,7 @@ class DemoDataManager {
             // Count combo labels after migration
             const comboAfter = this.recipes.filter(r => {
                 const labelNames = labelTypes.extractLabelNames(r.labels || []);
-                return labelNames.includes('combo');
+                return labelNames.includes('Recipe Combo');
             }).length;
             console.log(`📊 Found ${comboAfter} recipes with 'combo' label after migration`);
             

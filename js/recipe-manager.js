@@ -106,16 +106,20 @@ class RecipeManager {
                             <label for="recipe-labels" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Filter by Labels</label>
                             <div class="relative">
                                 <div id="recipe-labels-container" class="w-full min-h-[42px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus-within:ring-2 focus-within:ring-blue-500 dark:bg-gray-700 dark:text-white cursor-text flex flex-wrap gap-1 items-center">
-                                    ${this.selectedLabels.map(label => `
+                                    ${this.selectedLabels.map(label => {
+                                        const labelType = this.inferLabelType(label);
+                                        const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
+                                        return `
                                         <span class="inline-flex items-center px-2 py-1 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full">
-                                            ${label}
+                                            ${icon}${label}
                                             <button type="button" class="ml-1 text-blue-600 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-100" onclick="window.recipeManager.removeLabel('${label}')">
                                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                                 </svg>
                                             </button>
                                         </span>
-                                    `).join('')}
+                                        `;
+                                    }).join('')}
                                     <input 
                                         type="text" 
                                         id="recipe-labels-input" 
@@ -390,8 +394,9 @@ class RecipeManager {
             const labelName = typeof label === 'string' ? label : (label.name || String(label));
             const labelType = typeof label === 'object' && label.type ? label.type : this.inferLabelType(labelName);
             const colorClasses = this.getLabelColorClasses(labelType);
+            const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
             
-            return `<span class="px-2 py-1 ${colorClasses} rounded-full text-xs">${labelName}</span>`;
+            return `<span class="inline-flex items-center px-2 py-1 ${colorClasses} rounded-full text-xs">${icon}${labelName}</span>`;
         }).join('');
     }
 
@@ -1564,7 +1569,7 @@ class RecipeManager {
             `;
         } else {
             dropdown.innerHTML = filteredLabels.map((label, index) => `
-                <div class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm ${index === 0 ? 'bg-gray-50 dark:bg-gray-700' : ''}" 
+                <div class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm text-gray-900 dark:text-gray-100 ${index === 0 ? 'bg-gray-50 dark:bg-gray-700' : ''}" 
                      data-label="${label}" 
                      onclick="window.recipeManager.addLabel('${label}')">
                     ${label}
