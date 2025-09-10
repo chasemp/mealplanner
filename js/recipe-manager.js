@@ -103,7 +103,7 @@ class RecipeManager {
                 - Each other filter gets individual column for clarity
                 -->
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-4">
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <!-- Column 1: Search + Sort (side-by-side on same line) -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                             <!-- Search Input (left side) -->
@@ -1809,7 +1809,7 @@ class RecipeManager {
                      data-label="${label}" 
                      onclick="window.recipeManager.addLabel('${label}')">
                     <div class="flex items-center space-x-2">
-                        ${icon ? `<span class="flex-shrink-0">${icon}</span>` : ''}
+                        ${icon && labelType !== 'default' ? `<span class="flex-shrink-0">${icon}</span>` : ''}
                         <span class="font-bold flex-1">${label}</span>
                         <span class="inline-flex items-center px-2 py-1 ${colorClasses} rounded-full text-xs flex-shrink-0">
                             ${labelType !== 'default' ? labelType.replace('_', ' ') : 'label'}
