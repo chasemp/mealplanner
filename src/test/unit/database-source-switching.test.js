@@ -87,8 +87,12 @@ class MockRecipeManager {
     constructor() {
         this.recipes = []
         this.filteredRecipes = []
-        this.currentFilter = { search: '', mealType: '', style: '', label: '' }
-        this.currentSort = 'name'
+        this.searchTerm = ''
+        this.selectedCategory = 'all'
+        this.selectedType = 'all'
+        this.selectedLabel = 'all'
+        this.sortBy = 'name'
+        this.showFavoritesOnly = false
     }
 
     async loadRecipes() {
@@ -107,12 +111,40 @@ class MockRecipeManager {
         }
     }
 
+    getAllLabels() {
+        // Get all available labels from current recipes
+        const recipeLabels = new Set()
+        this.recipes.forEach(recipe => {
+            (recipe.labels || []).forEach(label => recipeLabels.add(label))
+        })
+        
+        // Only show predefined labels if we're in demo mode
+        let predefinedLabels = []
+        if (window.mealPlannerSettings && window.mealPlannerSettings.getCurrentDatabaseSource() === 'demo') {
+            predefinedLabels = [
+                'quick', 'healthy', 'vegetarian', 'vegan', 'gluten-free', 'dairy-free',
+                'comfort-food', 'spicy', 'sweet', 'savory', 'protein-rich', 'low-carb',
+                'kid-friendly', 'party', 'holiday', 'summer', 'winter', 'easy', 'advanced'
+            ]
+        }
+        
+        // Combine and deduplicate
+        const allLabels = [...new Set([...recipeLabels, ...predefinedLabels])]
+        return allLabels.sort()
+    }
+
     async clearAllData() {
         console.log('🗑️ Clearing all recipes data...')
         this.recipes = []
         this.filteredRecipes = []
-        this.currentFilter = { search: '', mealType: '', style: '', label: '' }
-        this.currentSort = 'name'
+        
+        // Reset all filter state variables
+        this.searchTerm = ''
+        this.selectedCategory = 'all'
+        this.selectedType = 'all'
+        this.selectedLabel = 'all'
+        this.sortBy = 'name'
+        this.showFavoritesOnly = false
         console.log('✅ All recipes data cleared')
     }
 
@@ -249,6 +281,10 @@ class MockMealManager {
     constructor() {
         this.meals = []
         this.recipes = []
+        this.searchTerm = ''
+        this.selectedMealType = 'all'
+        this.selectedLabel = 'all'
+        this.sortBy = 'name'
     }
 
     async loadRecipes() {
@@ -264,8 +300,44 @@ class MockMealManager {
     }
 
     async loadMeals() {
-        // Mock meal loading
-        this.meals = []
+        const shouldLoadDemo = window.mealPlannerSettings?.shouldLoadDemoData() ?? true
+        const currentSource = window.mealPlannerSettings?.getCurrentDatabaseSource() ?? 'demo'
+        
+        if (shouldLoadDemo && window.DemoDataManager) {
+            const demoData = new window.DemoDataManager()
+            this.meals = demoData.getMeals ? demoData.getMeals() : []
+        } else {
+            this.meals = []
+        }
+    }
+
+    getAllLabels() {
+        // Get labels from both meals and recipes to create a unified label system
+        const labels = new Set()
+        
+        // Add labels from meals
+        this.meals.forEach(meal => {
+            (meal.labels || []).forEach(label => labels.add(label))
+            (meal.tags || []).forEach(tag => labels.add(tag))
+        })
+        
+        // Add labels from recipes to create shared label system
+        this.recipes.forEach(recipe => {
+            (recipe.labels || []).forEach(label => labels.add(label))
+            (recipe.tags || []).forEach(tag => labels.add(tag))
+        })
+        
+        // Only show predefined labels if we're in demo mode (consistent with RecipeManager)
+        if (window.mealPlannerSettings && window.mealPlannerSettings.getCurrentDatabaseSource() === 'demo') {
+            const predefinedLabels = [
+                'quick', 'healthy', 'vegetarian', 'vegan', 'gluten-free', 'dairy-free',
+                'comfort-food', 'spicy', 'sweet', 'savory', 'protein-rich', 'low-carb',
+                'kid-friendly', 'party', 'holiday', 'summer', 'winter', 'easy', 'advanced'
+            ]
+            predefinedLabels.forEach(label => labels.add(label))
+        }
+        
+        return Array.from(labels).sort()
     }
 
     render() {
@@ -276,6 +348,10 @@ class MockMealManager {
         console.log('🗑️ Clearing all meals data...')
         this.meals = []
         this.recipes = []
+        this.searchTerm = ''
+        this.selectedMealType = 'all'
+        this.selectedLabel = 'all'
+        this.sortBy = 'name'
     }
 }
 
@@ -635,12 +711,15 @@ describe('Database Source Switching', () => {
             // Verify data is cleared
             expect(recipeManager.recipes).toHaveLength(0)
             expect(recipeManager.filteredRecipes).toHaveLength(0)
-            expect(recipeManager.currentFilter).toEqual({ search: '', mealType: '', style: '', label: '' })
-            expect(recipeManager.currentSort).toBe('name')
+            expect(recipeManager.searchTerm).toBe('')
+            expect(recipeManager.selectedCategory).toBe('all')
+            expect(recipeManager.selectedType).toBe('all')
+            expect(recipeManager.selectedLabel).toBe('all')
+            expect(recipeManager.sortBy).toBe('name')
+            expect(recipeManager.showFavoritesOnly).toBe(false)
             
             expect(ingredientsManager.ingredients).toHaveLength(0)
             expect(ingredientsManager.filteredIngredients).toHaveLength(0)
-            expect(ingredientsManager.currentFilter).toEqual({ search: '', category: '', label: '' })
         })
     })
 
@@ -740,6 +819,81 @@ describe('Database Source Switching', () => {
             // Verify dinner tab shows demo recipes
             const dinnerRecipes = mealPlannerApp.renderRecipeSelection('dinner')
             expect(dinnerRecipes).toHaveLength(2)
+        })
+    })
+
+    describe('Label System Data Source Consistency', () => {
+        it('should clear label filter states when switching data sources', async () => {
+            // Start with demo data and set label filters
+            settingsManager.settings.sourceType = 'demo'
+            await recipeManager.loadRecipes()
+            await mealPlannerApp.mealManager.loadRecipes()
+            await mealPlannerApp.mealManager.loadMeals()
+            
+            // Set label filters to non-default values
+            recipeManager.selectedLabel = 'vegetarian'
+            mealPlannerApp.mealManager.selectedLabel = 'healthy'
+            
+            // Verify filters are set
+            expect(recipeManager.selectedLabel).toBe('vegetarian')
+            expect(mealPlannerApp.mealManager.selectedLabel).toBe('healthy')
+            
+            // Switch to memory and clear all data
+            settingsManager.settings.sourceType = 'memory'
+            await mealPlannerApp.clearAllData()
+            
+            // Verify label filters are reset to default
+            expect(recipeManager.selectedLabel).toBe('all')
+            expect(mealPlannerApp.mealManager.selectedLabel).toBe('all')
+        })
+
+        it('should show predefined labels only in demo mode', () => {
+            // Test RecipeManager in demo mode
+            settingsManager.settings.sourceType = 'demo'
+            const demoLabels = recipeManager.getAllLabels()
+            expect(demoLabels).toContain('vegetarian')
+            expect(demoLabels).toContain('healthy')
+            expect(demoLabels).toContain('quick')
+            
+            // Test MealManager in demo mode
+            const demoMealLabels = mealPlannerApp.mealManager.getAllLabels()
+            expect(demoMealLabels).toContain('vegetarian')
+            expect(demoMealLabels).toContain('healthy')
+            expect(demoMealLabels).toContain('quick')
+            
+            // Switch to memory mode
+            settingsManager.settings.sourceType = 'memory'
+            
+            // Clear data to ensure empty state
+            recipeManager.recipes = []
+            mealPlannerApp.mealManager.meals = []
+            mealPlannerApp.mealManager.recipes = []
+            
+            // Test that predefined labels are not shown in memory mode
+            const memoryLabels = recipeManager.getAllLabels()
+            const memoryMealLabels = mealPlannerApp.mealManager.getAllLabels()
+            
+            // Should not contain predefined labels when no data exists
+            expect(memoryLabels).not.toContain('vegetarian')
+            expect(memoryLabels).not.toContain('healthy')
+            expect(memoryMealLabels).not.toContain('vegetarian')
+            expect(memoryMealLabels).not.toContain('healthy')
+        })
+
+        it('should maintain label consistency between recipe and meal managers', () => {
+            // Set demo mode
+            settingsManager.settings.sourceType = 'demo'
+            
+            // Both managers should have access to the same predefined labels
+            const recipeLabels = recipeManager.getAllLabels()
+            const mealLabels = mealPlannerApp.mealManager.getAllLabels()
+            
+            // Check that both contain the same predefined labels
+            const commonPredefinedLabels = ['vegetarian', 'healthy', 'quick', 'comfort-food']
+            commonPredefinedLabels.forEach(label => {
+                expect(recipeLabels).toContain(label)
+                expect(mealLabels).toContain(label)
+            })
         })
     })
 

@@ -2,7 +2,7 @@
 class MealPlannerApp {
     constructor() {
         this.currentTab = 'dinner';
-        this.version = '2025.09.09.1717';
+        this.version = '2025.09.09.2100';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
@@ -679,65 +679,351 @@ class MealPlannerApp {
     }
 
     renderRecipeSelection(mealType) {
-        const gridContainer = document.getElementById(`${mealType}-recipe-grid`);
-        if (!gridContainer) return;
+        const browserContainer = document.getElementById(`${mealType}-recipe-browser`);
+        if (!browserContainer) return;
 
         // Get recipes from centralized authoritative data source
         let recipes = [];
         
         if (window.mealPlannerSettings) {
             const allRecipes = window.mealPlannerSettings.getAuthoritativeData('recipes');
-            recipes = allRecipes.filter(recipe => 
-                recipe.meal_type === mealType || recipe.meal_type === 'dinner'
-            );
+            recipes = allRecipes || [];
             console.log(`🍽️ ${mealType} tab loaded ${recipes.length} recipes from authoritative source`);
         } else {
             console.warn(`⚠️ Settings manager not available for ${mealType} tab recipe selection`);
             recipes = [];
         }
-        
-        // Apply favorites filter if enabled
-        if (this.showFavoritesOnly) {
-            recipes = recipes.filter(recipe => this.isRecipeFavorite(recipe.id));
+
+        // Apply all filters and sorting
+        const filteredRecipes = this.getFilteredAndSortedRecipes(recipes, mealType);
+
+        // Update label dropdown options
+        this.updateLabelOptions(recipes);
+
+        // Render recipe browser
+        if (filteredRecipes.length === 0) {
+            browserContainer.innerHTML = '<p class="text-gray-500 text-center py-8">No recipes found matching your criteria.</p>';
+        } else {
+            browserContainer.innerHTML = filteredRecipes.map(recipe => {
+                const isFavorite = this.isRecipeFavorite(recipe.id);
+                const selectedRecipes = this.selectedRecipes[mealType] || [];
+                const isInQueue = selectedRecipes.includes(recipe.id);
+                
+                return `
+                    <div class="recipe-browser-item flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <h4 class="font-medium text-gray-900 dark:text-white text-sm">${recipe.title}</h4>
+                                ${isFavorite ? '<span class="text-red-500 text-xs">❤️</span>' : ''}
+                                ${recipe.type === 'combo' ? '<span class="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">COMBO</span>' : ''}
+                            </div>
+                            <p class="text-xs text-gray-600 dark:text-gray-400 mb-1">${recipe.description || ''}</p>
+                            <div class="flex items-center space-x-3 text-xs text-gray-500">
+                                <span>⏱️ ${(recipe.prep_time || 0) + (recipe.cook_time || 0)} min</span>
+                                <span>👥 ${recipe.serving_count || 4}</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1 mt-1">
+                                ${(recipe.labels || []).slice(0, 2).map(label => 
+                                    `<span class="px-1 py-0.5 bg-blue-100 text-blue-800 rounded text-xs">${label}</span>`
+                                ).join('')}
+                            </div>
+                        </div>
+                        <button class="ml-3 px-3 py-1 text-sm rounded-md transition-colors ${isInQueue ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 text-white'}" 
+                                onclick="window.app.addRecipeToQueue('${mealType}', ${recipe.id})" 
+                                ${isInQueue ? 'disabled' : ''}>
+                            ${isInQueue ? '✓ Added' : '+ Add'}
+                        </button>
+                    </div>
+                `;
+            }).join('');
         }
 
-        // Render recipe selection cards
-        gridContainer.innerHTML = recipes.map(recipe => `
-            <div class="recipe-selection-card border-2 border-gray-200 dark:border-gray-600 rounded-lg p-4 cursor-pointer hover:border-blue-500 transition-colors ${
-                this.selectedRecipes[mealType].includes(recipe.id) ? 'border-blue-500 bg-blue-50 dark:bg-blue-900' : ''
-            }" data-recipe-id="${recipe.id}">
-                <div class="flex items-start justify-between mb-2">
-                    <h4 class="font-medium text-gray-900 dark:text-white text-sm">${recipe.title}</h4>
-                    <div class="flex items-center gap-2 flex-shrink-0 ml-2">
-                        <button class="favorite-btn text-lg hover:scale-110 transition-transform ${
-                            this.isRecipeFavorite(recipe.id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
-                        }" data-recipe-id="${recipe.id}" title="${this.isRecipeFavorite(recipe.id) ? 'Remove from favorites' : 'Add to favorites'}">
-                            ${this.isRecipeFavorite(recipe.id) ? '❤️' : '🤍'}
-                        </button>
-                        <input type="checkbox" class="recipe-checkbox" ${
-                            this.selectedRecipes[mealType].includes(recipe.id) ? 'checked' : ''
-                        }>
-                    </div>
-                </div>
-                <p class="text-xs text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">${recipe.description}</p>
-                <div class="flex items-center justify-between text-xs text-gray-500">
-                    <span>${(recipe.prep_time || 0) + (recipe.cook_time || 0)}min</span>
-                    <span>${recipe.servings || recipe.serving_count || 'N/A'} servings</span>
-                </div>
+        this.renderSelectionQueue(mealType);
+    }
+
+    getFilteredAndSortedRecipes(recipes, mealType) {
+        let filtered = [...recipes];
+
+        // Get filter values
+        const searchTerm = document.getElementById('plan-recipe-search')?.value?.trim().toLowerCase() || '';
+        const selectedCategory = document.getElementById('plan-recipe-category')?.value || 'all';
+        const selectedType = document.getElementById('plan-recipe-type')?.value || 'all';
+        const selectedLabel = document.getElementById('plan-recipe-label')?.value || 'all';
+        const sortBy = document.getElementById('plan-recipe-sort')?.value || 'name';
+
+        // Apply search filter
+        if (searchTerm) {
+            filtered = filtered.filter(recipe =>
+                recipe.title.toLowerCase().includes(searchTerm) ||
+                (recipe.description || '').toLowerCase().includes(searchTerm) ||
+                (recipe.labels || []).some(label => label.toLowerCase().includes(searchTerm))
+            );
+        }
+
+        // Apply category filter
+        if (selectedCategory !== 'all') {
+            filtered = filtered.filter(recipe => recipe.meal_type === selectedCategory);
+        } else {
+            // Default to dinner-compatible recipes for dinner meal type
+            if (mealType === 'dinner') {
+                filtered = filtered.filter(recipe => 
+                    recipe.meal_type === 'dinner' || recipe.meal_type === 'any'
+                );
+            }
+        }
+
+        // Apply type filter
+        if (selectedType !== 'all') {
+            filtered = filtered.filter(recipe => {
+                if (selectedType === 'combo') {
+                    return recipe.type === 'combo';
+                } else if (selectedType === 'single') {
+                    return recipe.type !== 'combo';
+                }
+                return true;
+            });
+        }
+
+        // Apply label filter
+        if (selectedLabel !== 'all') {
+            filtered = filtered.filter(recipe => {
+                const recipeLabels = [
+                    ...(recipe.labels || []),
+                    ...(recipe.tags || [])
+                ];
+                return recipeLabels.some(label => label.toLowerCase() === selectedLabel.toLowerCase());
+            });
+        }
+
+        // Apply favorites filter if enabled
+        if (this.showFavoritesOnly) {
+            filtered = filtered.filter(recipe => this.isRecipeFavorite(recipe.id));
+        }
+
+        // Sort recipes
+        filtered.sort((a, b) => {
+            switch (sortBy) {
+                case 'name':
+                    return a.title.localeCompare(b.title);
+                case 'date':
+                    return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+                case 'prep_time':
+                    return ((a.prep_time || 0) + (a.cook_time || 0)) - ((b.prep_time || 0) + (b.cook_time || 0));
+                case 'serving_count':
+                    return (b.serving_count || 0) - (a.serving_count || 0);
+                default:
+                    return 0;
+            }
+        });
+
+        return filtered;
+    }
+
+    updateLabelOptions(recipes) {
+        const labelSelect = document.getElementById('plan-recipe-label');
+        if (!labelSelect) return;
+
+        // Get all unique labels
+        const labels = new Set();
+        recipes.forEach(recipe => {
+            (recipe.labels || []).forEach(label => labels.add(label));
+            (recipe.tags || []).forEach(tag => labels.add(tag));
+        });
+
+        // Update options
+        const currentValue = labelSelect.value;
+        labelSelect.innerHTML = '<option value="all">All Labels</option>' +
+            Array.from(labels).sort().map(label => 
+                `<option value="${label}" ${currentValue === label ? 'selected' : ''}>${label}</option>`
+            ).join('');
+    }
+
+    clearPlanFilters(mealType) {
+        // Reset all filter controls to default values
+        const searchInput = document.getElementById('plan-recipe-search');
+        const categorySelect = document.getElementById('plan-recipe-category');
+        const typeSelect = document.getElementById('plan-recipe-type');
+        const labelSelect = document.getElementById('plan-recipe-label');
+        const sortSelect = document.getElementById('plan-recipe-sort');
+
+        if (searchInput) searchInput.value = '';
+        if (categorySelect) categorySelect.value = mealType === 'dinner' ? 'dinner' : 'all';
+        if (typeSelect) typeSelect.value = 'all';
+        if (labelSelect) labelSelect.value = 'all';
+        if (sortSelect) sortSelect.value = 'name';
+
+        // Also clear favorites filter
+        this.showFavoritesOnly = false;
+        this.updateFavoritesToggleIcon();
+
+        // Re-render with cleared filters
+        this.renderRecipeSelection(mealType);
+    }
+
+    toggleFavoritesFilter(mealType) {
+        this.showFavoritesOnly = !this.showFavoritesOnly;
+        this.updateFavoritesToggleIcon();
+        this.renderRecipeSelection(mealType);
+    }
+
+    updateFavoritesToggleIcon() {
+        const favoritesBtn = document.getElementById('show-favorites-only');
+        if (favoritesBtn) {
+            const icon = favoritesBtn.querySelector('span');
+            if (icon) {
+                icon.textContent = this.showFavoritesOnly ? '❤️' : '🤍';
+            }
+            favoritesBtn.classList.toggle('text-red-500', this.showFavoritesOnly);
+            favoritesBtn.classList.toggle('text-gray-400', !this.showFavoritesOnly);
+        }
+    }
+
+
+    renderSelectionQueue(mealType) {
+        const queueContainer = document.getElementById('selected-recipes-container');
+        const countElement = document.getElementById('selected-recipe-count');
+        const scheduleCountElement = document.getElementById('schedule-count');
+        const scheduleBtn = document.getElementById('schedule-selected-recipes');
+        const emptyMessage = document.getElementById('empty-selection-message');
+        
+        if (!queueContainer) return;
+        
+        const selectedRecipes = this.selectedRecipes[mealType] || [];
+        
+        // Update counts
+        if (countElement) countElement.textContent = `${selectedRecipes.length} items`;
+        if (scheduleCountElement) scheduleCountElement.textContent = selectedRecipes.length;
+        
+        // Enable/disable schedule button
+        if (scheduleBtn) {
+            scheduleBtn.disabled = selectedRecipes.length === 0;
+        }
+        
+        // Show/hide empty message
+        if (emptyMessage) {
+            emptyMessage.style.display = selectedRecipes.length === 0 ? 'block' : 'none';
+        }
+        
+        if (selectedRecipes.length === 0) {
+            return;
+        }
+        
+        // Get recipe details for selected items
+        let recipes = [];
+        if (window.mealPlannerSettings) {
+            const allRecipes = window.mealPlannerSettings.getAuthoritativeData('recipes');
+            recipes = allRecipes.filter(recipe => selectedRecipes.includes(recipe.id));
+        }
+        
+        // Render selected recipe chips
+        const selectedChips = recipes.map(recipe => `
+            <div class="selected-recipe-chip flex items-center space-x-2 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-3 py-2 rounded-lg text-sm">
+                <span>${recipe.title}</span>
+                <button class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 font-bold" 
+                        onclick="window.app.removeRecipeFromQueue('${mealType}', ${recipe.id})" 
+                        title="Remove from selection">
+                    ✕
+                </button>
             </div>
         `).join('');
+        
+        queueContainer.innerHTML = selectedChips;
+    }
 
-        // Update selected count
-        this.updateSelectedRecipeCount(mealType);
+    addRecipeToQueue(mealType, recipeId) {
+        if (!this.selectedRecipes[mealType]) {
+            this.selectedRecipes[mealType] = [];
+        }
+        
+        if (!this.selectedRecipes[mealType].includes(recipeId)) {
+            this.selectedRecipes[mealType].push(recipeId);
+            this.renderRecipeSelection(mealType);
+            console.log(`Added recipe ${recipeId} to ${mealType} queue`);
+        }
+    }
+
+    removeRecipeFromQueue(mealType, recipeId) {
+        if (this.selectedRecipes[mealType]) {
+            const index = this.selectedRecipes[mealType].indexOf(recipeId);
+            if (index > -1) {
+                this.selectedRecipes[mealType].splice(index, 1);
+                this.renderRecipeSelection(mealType);
+                console.log(`Removed recipe ${recipeId} from ${mealType} queue`);
+            }
+        }
     }
 
     attachRecipeSelectionListeners(mealType) {
-        const gridContainer = document.getElementById(`${mealType}-recipe-grid`);
-        const selectAllBtn = document.getElementById('select-all-recipes');
-        const clearSelectionBtn = document.getElementById('clear-recipe-selection');
-        const showFavoritesBtn = document.getElementById('show-favorites-only');
+        // Search input listener
+        const searchInput = document.getElementById('plan-recipe-search');
+        if (searchInput) {
+            searchInput.addEventListener('input', () => {
+                this.renderRecipeSelection(mealType);
+            });
+        }
 
-        // Recipe card click handlers
+        // Category filter listener
+        const categorySelect = document.getElementById('plan-recipe-category');
+        if (categorySelect) {
+            categorySelect.addEventListener('change', () => {
+                this.renderRecipeSelection(mealType);
+            });
+        }
+
+        // Type filter listener
+        const typeSelect = document.getElementById('plan-recipe-type');
+        if (typeSelect) {
+            typeSelect.addEventListener('change', () => {
+                this.renderRecipeSelection(mealType);
+            });
+        }
+
+        // Label filter listener
+        const labelSelect = document.getElementById('plan-recipe-label');
+        if (labelSelect) {
+            labelSelect.addEventListener('change', () => {
+                this.renderRecipeSelection(mealType);
+            });
+        }
+
+        // Sort selector listener
+        const sortSelect = document.getElementById('plan-recipe-sort');
+        if (sortSelect) {
+            sortSelect.addEventListener('change', () => {
+                this.renderRecipeSelection(mealType);
+            });
+        }
+
+        // Clear filters button
+        const clearFiltersBtn = document.getElementById('clear-plan-filters-btn');
+        if (clearFiltersBtn) {
+            clearFiltersBtn.addEventListener('click', () => {
+                this.clearPlanFilters(mealType);
+            });
+        }
+
+        // Clear selection button
+        const clearSelectionBtn = document.getElementById('clear-recipe-selection');
+        if (clearSelectionBtn) {
+            clearSelectionBtn.addEventListener('click', () => {
+                this.clearRecipeSelection(mealType);
+            });
+        }
+
+        // Favorites toggle button (icon only)
+        const showFavoritesBtn = document.getElementById('show-favorites-only');
+        if (showFavoritesBtn) {
+            showFavoritesBtn.addEventListener('click', () => {
+                this.toggleFavoritesFilter(mealType);
+            });
+        }
+    }
+
+    // Legacy method for backward compatibility
+    attachLegacyRecipeSelectionListeners(mealType) {
+        const gridContainer = document.getElementById(`${mealType}-recipe-grid`);
+        
+        // Recipe card click handlers (legacy grid-based interface)
         if (gridContainer) {
             gridContainer.addEventListener('click', (e) => {
                 // Handle favorite button clicks

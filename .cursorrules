@@ -64,6 +64,15 @@
 - Comprehensive unit and integration tests
 - Mock external dependencies appropriately
 
+## Git Commit Safety
+- **ALWAYS use simple, single-line commit messages** to avoid shell quote issues
+- **NEVER use multi-line commit messages** with complex formatting in terminal commands
+- **Format**: `git commit -m "Simple descriptive message without quotes or special chars"`
+- **Avoid**: Emojis, quotes, backticks, or multi-line strings in commit messages via terminal
+- **If detailed commit needed**: Use `git commit` (opens editor) instead of `git commit -m`
+- **Example Good**: `git commit -m "Fix label system data source consistency"`
+- **Example Bad**: `git commit -m "✨ FIX: Label System \"Data Source\" Consistency..."`
+
 ## UI/UX Patterns
 ### Modal Design - CRITICAL PATTERN
 - ALWAYS use sticky header/footer pattern for forms with action buttons

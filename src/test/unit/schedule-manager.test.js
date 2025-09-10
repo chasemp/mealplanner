@@ -90,7 +90,14 @@ describe('ScheduleManager', () => {
             const storedMeals = [
                 { id: 1, meal_name: 'Test Meal', meal_type: 'dinner', date: '2025-09-08' }
             ];
-            localStorageMock.getItem.mockReturnValue(JSON.stringify(storedMeals));
+            
+            // Mock settings manager to return stored meals
+            const mockSettings = {
+                getAuthoritativeData: vi.fn().mockReturnValue(storedMeals),
+                saveAuthoritativeData: vi.fn(),
+                getCurrentDatabaseSource: vi.fn().mockReturnValue('browser')
+            };
+            global.window = { mealPlannerSettings: mockSettings };
             
             const manager = new ScheduleManager();
             expect(manager.scheduledMeals).toEqual(storedMeals);
@@ -130,11 +137,22 @@ describe('ScheduleManager', () => {
 
         it('should save scheduled meals to localStorage', () => {
             const date = '2025-09-08';
-            scheduleManager.scheduleMeal(mockMeal, date);
+            
+            // Mock settings manager to track saves
+            const mockSettings = {
+                getAuthoritativeData: vi.fn().mockReturnValue([]),
+                saveAuthoritativeData: vi.fn(),
+                getCurrentDatabaseSource: vi.fn().mockReturnValue('browser')
+            };
+            global.window = { mealPlannerSettings: mockSettings };
+            
+            // Create fresh manager with mocked settings
+            const manager = new ScheduleManager();
+            manager.scheduleMeal(mockMeal, date);
 
-            expect(localStorageMock.setItem).toHaveBeenCalledWith(
-                'mealplanner_scheduled_meals',
-                expect.any(String)
+            expect(mockSettings.saveAuthoritativeData).toHaveBeenCalledWith(
+                'scheduledMeals',
+                expect.any(Array)
             );
         });
 
@@ -350,12 +368,22 @@ describe('ScheduleManager', () => {
         });
 
         it('should clear all scheduled meals', () => {
-            scheduleManager.scheduleMeal(mockMeal, '2025-09-08');
-            expect(scheduleManager.getAllScheduledMeals()).toHaveLength(1);
+            // Mock settings manager to track saves
+            const mockSettings = {
+                getAuthoritativeData: vi.fn().mockReturnValue([]),
+                saveAuthoritativeData: vi.fn(),
+                getCurrentDatabaseSource: vi.fn().mockReturnValue('browser')
+            };
+            global.window = { mealPlannerSettings: mockSettings };
+            
+            // Create fresh manager with mocked settings
+            const manager = new ScheduleManager();
+            manager.scheduleMeal(mockMeal, '2025-09-08');
+            expect(manager.getAllScheduledMeals()).toHaveLength(1);
 
-            scheduleManager.clearAllScheduledMeals();
-            expect(scheduleManager.getAllScheduledMeals()).toHaveLength(0);
-            expect(localStorageMock.setItem).toHaveBeenCalledWith('mealplanner_scheduled_meals', '[]');
+            manager.clearAllScheduledMeals();
+            expect(manager.getAllScheduledMeals()).toHaveLength(0);
+            expect(mockSettings.saveAuthoritativeData).toHaveBeenCalledWith('scheduledMeals', []);
         });
     });
 
@@ -375,6 +403,18 @@ describe('ScheduleManager', () => {
             process.env.NODE_ENV = 'development';
             
             try {
+                // Mock settings manager to return demo data
+                const demoMeals = [
+                    { id: 1, meal_name: 'Demo Meal 1', meal_type: 'dinner', date: '2025-09-08' },
+                    { id: 2, meal_name: 'Demo Meal 2', meal_type: 'dinner', date: '2025-09-09' }
+                ];
+                const mockSettings = {
+                    getAuthoritativeData: vi.fn().mockReturnValue(demoMeals),
+                    saveAuthoritativeData: vi.fn(),
+                    getCurrentDatabaseSource: vi.fn().mockReturnValue('demo')
+                };
+                global.window = { mealPlannerSettings: mockSettings };
+                
                 // Create new instance to trigger demo initialization
                 const manager = new ScheduleManager();
                 
