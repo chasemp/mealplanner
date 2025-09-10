@@ -10,6 +10,7 @@ class RecipeManager {
         this.selectedLabels = []; // Changed to array for multi-select
         this.labelSearchTerm = ''; // For typeahead filtering
         this.sortBy = 'name';
+        this.sortAscending = true; // New property for sort direction
         this.showFavoritesOnly = false;
         this.init();
     }
@@ -92,14 +93,22 @@ class RecipeManager {
                                 </div>
                             </div>
                             <div>
-                                <label for="recipe-sort" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort By</label>
-                                <select id="recipe-sort" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
-                                    <option value="name" ${this.sortBy === 'name' ? 'selected' : ''}>Name</option>
-                                    <option value="date" ${this.sortBy === 'date' ? 'selected' : ''}>Date</option>
-                                    <option value="prep_time" ${this.sortBy === 'prep_time' ? 'selected' : ''}>Prep Time</option>
-                                    <option value="serving_count" ${this.sortBy === 'serving_count' ? 'selected' : ''}>Servings</option>
-                                    <option value="label_type" ${this.sortBy === 'label_type' ? 'selected' : ''}>Label Type</option>
-                                </select>
+                                <label for="recipe-sort" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort</label>
+                                <div class="flex gap-2">
+                                    <select id="recipe-sort" class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                                        <option value="name" ${this.sortBy === 'name' ? 'selected' : ''}>Name</option>
+                                        <option value="date" ${this.sortBy === 'date' ? 'selected' : ''}>Date</option>
+                                        <option value="prep_time" ${this.sortBy === 'prep_time' ? 'selected' : ''}>Prep Time</option>
+                                        <option value="serving_count" ${this.sortBy === 'serving_count' ? 'selected' : ''}>Servings</option>
+                                        <option value="label_type" ${this.sortBy === 'label_type' ? 'selected' : ''}>Label Type</option>
+                                    </select>
+                                    <button id="sort-direction-btn" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white transition-colors" title="${this.sortAscending ? 'Sort Ascending' : 'Sort Descending'}">
+                                        ${this.sortAscending ? 
+                                            '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>' : 
+                                            '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>'
+                                        }
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         
@@ -330,15 +339,21 @@ class RecipeManager {
 
         // Sort recipes
         filtered.sort((a, b) => {
+            let result = 0;
+            
             switch (this.sortBy) {
                 case 'name':
-                    return a.title.localeCompare(b.title);
+                    result = a.title.localeCompare(b.title);
+                    break;
                 case 'date':
-                    return new Date(b.created_at) - new Date(a.created_at);
+                    result = new Date(b.created_at) - new Date(a.created_at);
+                    break;
                 case 'prep_time':
-                    return (a.prep_time + a.cook_time) - (b.prep_time + b.cook_time);
+                    result = (a.prep_time + a.cook_time) - (b.prep_time + b.cook_time);
+                    break;
                 case 'serving_count':
-                    return (b.serving_count || b.servings || 0) - (a.serving_count || a.servings || 0);
+                    result = (b.serving_count || b.servings || 0) - (a.serving_count || a.servings || 0);
+                    break;
                 case 'label_type':
                     // Sort by primary label type, then by name within each type
                     const aType = this.getPrimaryLabelType(a.labels || []);
@@ -350,14 +365,18 @@ class RecipeManager {
                     const bPriority = typePriority[bType] ?? 2;
                     
                     if (aPriority !== bPriority) {
-                        return aPriority - bPriority;
+                        result = aPriority - bPriority;
+                    } else {
+                        // If same type priority, sort by name
+                        result = a.title.localeCompare(b.title);
                     }
-                    
-                    // If same type priority, sort by name
-                    return a.title.localeCompare(b.title);
+                    break;
                 default:
-                    return 0;
+                    result = 0;
             }
+            
+            // Apply sort direction (flip result if descending)
+            return this.sortAscending ? result : -result;
         });
 
         return filtered;
@@ -635,6 +654,15 @@ class RecipeManager {
             });
         }
 
+        // Sort direction button
+        const sortDirectionBtn = this.container.querySelector('#sort-direction-btn');
+        if (sortDirectionBtn) {
+            sortDirectionBtn.addEventListener('click', () => {
+                this.sortAscending = !this.sortAscending;
+                this.render();
+            });
+        }
+
         // Clear filters button
         const clearFiltersBtn = this.container.querySelector('#clear-recipe-filters-btn');
         if (clearFiltersBtn) {
@@ -644,6 +672,7 @@ class RecipeManager {
                 this.selectedLabels = []; // Reset multi-select labels
                 this.labelSearchTerm = ''; // Reset label search
                 this.sortBy = 'name';
+                this.sortAscending = true; // Reset sort direction
                 this.showFavoritesOnly = false;
                 this.render();
             });
@@ -1627,6 +1656,7 @@ class RecipeManager {
         this.selectedLabels = []; // Reset multi-select labels
         this.labelSearchTerm = ''; // Reset label search
         this.sortBy = 'name';
+        this.sortAscending = true; // Reset sort direction
         this.showFavoritesOnly = false;
         
         // Clear from localStorage
