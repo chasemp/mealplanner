@@ -6,7 +6,6 @@ class RecipeManager {
         this.ingredients = [];
         this.currentRecipe = null;
         this.searchTerm = '';
-        this.selectedCategory = 'all';
         this.selectedLabels = []; // Changed to array for multi-select
         this.labelSearchTerm = ''; // For typeahead filtering
         this.sortBy = 'name';
@@ -93,19 +92,18 @@ class RecipeManager {
                 
                 COLUMN DISTRIBUTION:
                 1. Search + Sort (side-by-side on same line): Exception grouping
-                2. Meal Type (1 column): Gets its own column
-                3. Multi-Label Filter (1 column): Gets its own column  
-                4. Clear Filters (1 column): Gets its own column
-                5. [Empty/Future expansion]
+                2. Multi-Label Filter (1 column): Gets its own column  
+                3. Clear Filters (1 column): Gets its own column
+                4. [Empty/Future expansion]
                 
                 DESIGN RATIONALE:
-                - Matches Meals tab 5-column structure with exception
+                - Compact 4-column layout after removing meal type dropdown
                 - Search + Sort share first column (side-by-side on same line)
+                - Multi-label filter handles meal types as orange labels
                 - Each other filter gets individual column for clarity
-                - Exception: Search and Sort on same line for efficiency
                 -->
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-4">
-                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <!-- Column 1: Search + Sort (side-by-side on same line) -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                             <!-- Search Input (left side) -->
@@ -145,19 +143,7 @@ class RecipeManager {
                             </div>
                         </div>
                         
-                        <!-- Column 2: Meal Type Filter -->
-                        <div>
-                            <label for="recipe-category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Meal Type</label>
-                            <select id="recipe-category" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
-                                <option value="all" ${this.selectedCategory === 'all' ? 'selected' : ''}>All Types</option>
-                                <option value="breakfast" ${this.selectedCategory === 'breakfast' ? 'selected' : ''}>Breakfast</option>
-                                <option value="lunch" ${this.selectedCategory === 'lunch' ? 'selected' : ''}>Lunch</option>
-                                <option value="dinner" ${this.selectedCategory === 'dinner' ? 'selected' : ''}>Dinner</option>
-                                <option value="snack" ${this.selectedCategory === 'snack' ? 'selected' : ''}>Snack</option>
-                            </select>
-                        </div>
-                        
-                        <!-- Column 3: Multi-Label Filter -->
+                        <!-- Column 2: Multi-Label Filter -->
                         <div class="relative">
                             <label for="recipe-labels" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Filter by Labels</label>
                             <!-- Multi-select label input with typeahead and chips -->
@@ -191,7 +177,7 @@ class RecipeManager {
                             </div>
                         </div>
                         
-                        <!-- Column 4: Clear Filters Button -->
+                        <!-- Column 3: Clear Filters Button -->
                         <div class="flex items-end">
                             <button id="clear-recipe-filters-btn" class="w-full px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md text-sm font-medium transition-colors">
                                 Clear Filters
@@ -495,7 +481,7 @@ class RecipeManager {
                 </svg>
                 <h3 class="text-lg font-medium text-gray-900 mb-2">No recipes found</h3>
                 <p class="text-gray-500 text-center mb-4">
-                    ${this.searchTerm || this.selectedCategory !== 'all' 
+                    ${this.searchTerm || this.selectedLabels.length > 0
                         ? 'Try adjusting your search or filters' 
                         : 'Get started by adding your first recipe'}
                 </p>
@@ -517,10 +503,7 @@ class RecipeManager {
             );
         }
 
-        // Filter by category
-        if (this.selectedCategory !== 'all') {
-            filtered = filtered.filter(recipe => recipe.meal_type === this.selectedCategory);
-        }
+        // Note: Meal type filtering is now handled through the multi-label system
 
 
         // Filter by labels (AND logic - recipe must have ALL selected labels)
@@ -695,7 +678,6 @@ class RecipeManager {
 
     hasActiveFilters() {
         return this.searchTerm !== '' || 
-               this.selectedCategory !== 'all' || 
                this.selectedLabels.length > 0 ||
                this.showFavoritesOnly;
     }
@@ -756,14 +738,7 @@ class RecipeManager {
             });
         }
 
-        // Category filter
-        const categorySelect = this.container.querySelector('#recipe-category');
-        if (categorySelect) {
-            categorySelect.addEventListener('change', (e) => {
-                this.selectedCategory = e.target.value;
-                this.updateRecipeDisplay();
-            });
-        }
+        // Note: Meal type filtering is now handled through the multi-label system
 
 
         // Multi-select label filter with typeahead
@@ -886,7 +861,6 @@ class RecipeManager {
         if (clearFiltersBtn) {
             clearFiltersBtn.addEventListener('click', () => {
                 this.searchTerm = '';
-                this.selectedCategory = 'all';
                 this.selectedLabels = []; // Reset multi-select labels
                 this.labelSearchTerm = ''; // Reset label search
                 this.sortBy = 'name';
@@ -1825,13 +1799,25 @@ class RecipeManager {
                 </div>
             `;
         } else {
-            dropdown.innerHTML = filteredLabels.map((label, index) => `
+            dropdown.innerHTML = filteredLabels.map((label, index) => {
+                const labelType = this.inferLabelType(label);
+                const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
+                const colorClasses = this.getLabelColorClasses(labelType);
+                
+                return `
                 <div class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm text-gray-900 dark:text-gray-100 ${index === 0 ? 'bg-gray-50 dark:bg-gray-700' : ''}" 
                      data-label="${label}" 
                      onclick="window.recipeManager.addLabel('${label}')">
-                    <span class="font-bold">${label}</span>
+                    <div class="flex items-center space-x-2">
+                        ${icon ? `<span class="flex-shrink-0">${icon}</span>` : ''}
+                        <span class="font-bold flex-1">${label}</span>
+                        <span class="inline-flex items-center px-2 py-1 ${colorClasses} rounded-full text-xs flex-shrink-0">
+                            ${labelType !== 'default' ? labelType.replace('_', ' ') : 'label'}
+                        </span>
+                    </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
     }
 
@@ -1842,7 +1828,6 @@ class RecipeManager {
         
         // Reset all filter state variables
         this.searchTerm = '';
-        this.selectedCategory = 'all';
         this.selectedLabels = []; // Reset multi-select labels
         this.labelSearchTerm = ''; // Reset label search
         this.sortBy = 'name';
