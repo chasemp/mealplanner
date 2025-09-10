@@ -8,7 +8,7 @@ class RecipeManager {
         this.searchTerm = '';
         this.selectedCategory = 'all';
         this.selectedType = 'all'; // New filter for recipe type (basic/combo)
-        this.selectedLabel = 'all';
+        this.selectedLabels = []; // Changed to array for multi-select
         this.sortBy = 'name';
         this.showFavoritesOnly = false;
         this.init();
@@ -117,16 +117,35 @@ class RecipeManager {
                             </select>
                         </div>
                         
-                        <div>
-                            <label for="recipe-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Filter by Label
+                        <div class="relative">
+                            <label for="recipe-labels" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Filter by Labels
                             </label>
-                            <select id="recipe-label" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
-                                <option value="all" ${this.selectedLabel === 'all' ? 'selected' : ''}>All Labels</option>
-                                ${this.getAllLabels().map(label => `
-                                    <option value="${label}" ${this.selectedLabel === label ? 'selected' : ''}>${label}</option>
-                                `).join('')}
-                            </select>
+                            <div class="relative">
+                                <div id="recipe-labels-input" class="w-full min-h-[42px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus-within:ring-2 focus-within:ring-blue-500 dark:bg-gray-700 dark:text-white cursor-text flex flex-wrap gap-1 items-center">
+                                    ${this.selectedLabels.map(label => `
+                                        <span class="inline-flex items-center px-2 py-1 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full">
+                                            ${label}
+                                            <button type="button" class="ml-1 text-blue-600 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-100" onclick="window.recipeManager.removeLabel('${label}')">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                </svg>
+                                            </button>
+                                        </span>
+                                    `).join('')}
+                                    <span class="text-gray-500 dark:text-gray-400 text-sm ${this.selectedLabels.length > 0 ? 'hidden' : ''}">Click to select labels...</span>
+                                </div>
+                                <div id="recipe-labels-dropdown" class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg hidden max-h-48 overflow-y-auto">
+                                    ${this.getAllLabels().filter(label => !this.selectedLabels.includes(label)).map(label => `
+                                        <div class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm" onclick="window.recipeManager.addLabel('${label}')">
+                                            ${label}
+                                        </div>
+                                    `).join('')}
+                                    ${this.getAllLabels().filter(label => !this.selectedLabels.includes(label)).length === 0 ? 
+                                        '<div class="px-3 py-2 text-gray-500 dark:text-gray-400 text-sm">No more labels available</div>' : ''
+                                    }
+                                </div>
+                            </div>
                         </div>
                         
                         <div>
@@ -314,11 +333,13 @@ class RecipeManager {
             filtered = filtered.filter(recipe => (recipe.type || 'basic') === this.selectedType);
         }
 
-        // Filter by label
-        if (this.selectedLabel !== 'all') {
+        // Filter by labels (AND logic - recipe must have ALL selected labels)
+        if (this.selectedLabels.length > 0) {
             filtered = filtered.filter(recipe => {
-                const recipeLabels = recipe.labels || [];
-                return recipeLabels.some(label => label.toLowerCase() === this.selectedLabel.toLowerCase());
+                const recipeLabels = (recipe.labels || []).map(label => label.toLowerCase());
+                return this.selectedLabels.every(selectedLabel => 
+                    recipeLabels.includes(selectedLabel.toLowerCase())
+                );
             });
         }
 
@@ -431,12 +452,22 @@ class RecipeManager {
             });
         }
 
-        // Label filter
-        const labelSelect = this.container.querySelector('#recipe-label');
-        if (labelSelect) {
-            labelSelect.addEventListener('change', (e) => {
-                this.selectedLabel = e.target.value;
-                this.render();
+        // Multi-select label filter
+        const labelInput = this.container.querySelector('#recipe-labels-input');
+        const labelDropdown = this.container.querySelector('#recipe-labels-dropdown');
+        
+        if (labelInput && labelDropdown) {
+            // Show dropdown when clicking the input
+            labelInput.addEventListener('click', (e) => {
+                e.stopPropagation();
+                labelDropdown.classList.toggle('hidden');
+            });
+
+            // Hide dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!labelInput.contains(e.target) && !labelDropdown.contains(e.target)) {
+                    labelDropdown.classList.add('hidden');
+                }
             });
         }
 
@@ -456,7 +487,7 @@ class RecipeManager {
                 this.searchTerm = '';
                 this.selectedCategory = 'all';
                 this.selectedType = 'all'; // Reset recipe type filter
-                this.selectedLabel = 'all';
+                this.selectedLabels = []; // Reset multi-select labels
                 this.sortBy = 'name';
                 this.showFavoritesOnly = false;
                 this.render();
@@ -1373,6 +1404,24 @@ class RecipeManager {
         return parseFloat(rounded.toFixed(2));
     }
 
+    // Multi-select label methods
+    addLabel(label) {
+        if (!this.selectedLabels.includes(label)) {
+            this.selectedLabels.push(label);
+            this.render();
+        }
+    }
+
+    removeLabel(label) {
+        this.selectedLabels = this.selectedLabels.filter(l => l !== label);
+        this.render();
+    }
+
+    clearAllLabels() {
+        this.selectedLabels = [];
+        this.render();
+    }
+
     async clearAllData() {
         console.log('🗑️ Clearing all recipes data...');
         this.recipes = [];
@@ -1382,7 +1431,7 @@ class RecipeManager {
         this.searchTerm = '';
         this.selectedCategory = 'all';
         this.selectedType = 'all';
-        this.selectedLabel = 'all';
+        this.selectedLabels = []; // Reset multi-select labels
         this.sortBy = 'name';
         this.showFavoritesOnly = false;
         
