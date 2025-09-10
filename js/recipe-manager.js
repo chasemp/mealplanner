@@ -199,11 +199,12 @@ class RecipeManager {
                         </div>
                     </div>
                     
-                    <!-- Recipe Results Info Bar (moved above Clear Filters) -->
+                    <!-- Recipe Results Info Bar (enhanced with more emphasis) -->
                     <div class="border-t border-gray-200 dark:border-gray-600 pt-4 mt-4">
-                        <div class="flex items-center justify-between">
-                            <!-- Left side: Results summary -->
-                            <div class="flex items-center space-x-6 text-sm text-gray-600 dark:text-gray-400">
+                        <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
+                            <div class="flex items-center justify-between">
+                                <!-- Left side: Results summary -->
+                                <div class="flex items-center space-x-6 text-sm font-medium text-gray-700 dark:text-gray-300">
                                 <div class="flex items-center space-x-2">
                                     <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
@@ -252,6 +253,7 @@ class RecipeManager {
                         </div>
                     </div>
                 </div>
+            </div>
 
                 <!-- Recipe Grid -->
                 <div id="recipes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -273,7 +275,7 @@ class RecipeManager {
         // Update only the recipe cards, info bar, and empty state without re-rendering entire component
         const recipeGrid = this.container.querySelector('#recipes-grid');
         const emptyState = this.container.querySelector('#empty-state');
-        const infoBar = this.container.querySelector('.border-t.border-gray-200 .flex.items-center.justify-between');
+        const infoBar = this.container.querySelector('.bg-gray-50.dark\\:bg-gray-700\\/50 .flex.items-center.justify-between');
         
         if (recipeGrid && emptyState) {
             const filteredRecipes = this.getFilteredRecipes();
