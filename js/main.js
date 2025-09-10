@@ -208,7 +208,7 @@ class MealPlannerApp {
         const managersAvailable = {
             RecipeManager: typeof RecipeManager !== 'undefined',
             MealManager: typeof MealManager !== 'undefined',
-            IngredientsManager: typeof IngredientsManager !== 'undefined',
+            ItemsManager: typeof ItemsManager !== 'undefined' || typeof IngredientsManager !== 'undefined',
             GroceryListManager: typeof GroceryListManager !== 'undefined',
             SettingsManager: typeof SettingsManager !== 'undefined',
             GoogleCalendarIntegration: typeof GoogleCalendarIntegration !== 'undefined',
@@ -219,7 +219,7 @@ class MealPlannerApp {
         console.log('📱 Manager availability:', managersAvailable);
         
         // Wait a bit if managers aren't ready
-        if (!managersAvailable.RecipeManager || !managersAvailable.MealManager || !managersAvailable.IngredientsManager || !managersAvailable.ScheduleManager) {
+        if (!managersAvailable.RecipeManager || !managersAvailable.MealManager || !managersAvailable.ItemsManager || !managersAvailable.ScheduleManager) {
             console.log('📱 Waiting for managers to load...');
             await new Promise(resolve => setTimeout(resolve, 100));
         }
@@ -278,7 +278,7 @@ class MealPlannerApp {
         
         const container = document.getElementById('ingredients-manager-container');
         if (container) {
-            this.itemsManager = new IngredientsManager(container);
+            this.itemsManager = new (typeof ItemsManager !== 'undefined' ? ItemsManager : IngredientsManager)(container);
             window.itemsManager = this.itemsManager;
             console.log('✅ Items manager initialized');
         }

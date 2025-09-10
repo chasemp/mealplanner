@@ -1,5 +1,5 @@
-// Ingredients Management Component with Barcode Scanning
-export class IngredientsManager {
+// Items Management Component with Barcode Scanning
+export class ItemsManager {
     constructor(database) {
         this.db = database
         this.ingredients = []
@@ -575,3 +575,6 @@ export class IngredientsManager {
         alert('Bulk import feature coming soon!')
     }
 }
+
+// Export with backward compatibility
+export { ItemsManager as IngredientsManager };
