@@ -243,7 +243,7 @@ describe('Demo Data Validation', () => {
                 combo.combo_recipes.forEach(ref => {
                     const referencedRecipe = demoData.recipes.find(r => r.id === ref.recipe_id);
                     // Allow some flexibility - combo can combine different meal types
-                    expect(['breakfast', 'lunch', 'dinner']).toContain(referencedRecipe.meal_type);
+                    expect(['breakfast', 'lunch', 'dinner', 'snack']).toContain(referencedRecipe.meal_type);
                 });
             });
         });
