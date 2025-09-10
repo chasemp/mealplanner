@@ -419,9 +419,9 @@ class RecipeManager {
         // Fallback colors with high contrast dark mode support
         switch (labelType) {
             case 'recipe_type':
-                return 'bg-blue-100 text-blue-800 dark:bg-blue-200 dark:text-blue-900';
+                return 'bg-blue-100 text-blue-800 dark:!bg-blue-200 dark:!text-blue-900';
             default:
-                return 'bg-green-100 text-green-800 dark:bg-green-200 dark:text-green-900';
+                return 'bg-green-100 text-green-800 dark:!bg-green-200 dark:!text-green-900';
         }
     }
 
