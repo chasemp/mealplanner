@@ -914,38 +914,38 @@ class RecipeManager {
         modal.id = modalId;
         modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
         modal.innerHTML = `
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
-                <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col mx-4 sm:mx-0">
+                <div class="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+                    <h2 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
                         ${isEdit ? 'Edit Recipe' : 'Add New Recipe'}
                     </h2>
-                    <button id="close-recipe-form" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <button id="close-recipe-form" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1">
+                        <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </button>
                 </div>
                 
                 <div class="overflow-y-auto flex-1">
-                    <form id="recipe-form" class="p-6 space-y-6">
+                    <form id="recipe-form" class="p-4 sm:p-6 space-y-4 sm:space-y-6">
                     <!-- Basic Information -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="md:col-span-2">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                        <div class="sm:col-span-2">
                             <label for="recipe-title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Recipe Title *
                             </label>
                             <input type="text" id="recipe-title" name="title" required
-                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm sm:text-base"
                                    placeholder="Enter recipe title"
                                    value="${isEdit ? recipe.title : ''}">
                         </div>
                         
-                        <div class="md:col-span-2">
+                        <div class="sm:col-span-2">
                             <label for="recipe-description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Description
                             </label>
                             <textarea id="recipe-description" name="description" rows="2"
-                                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm sm:text-base"
                                       placeholder="Brief description of the recipe">${isEdit ? recipe.description : ''}</textarea>
                         </div>
                         
@@ -954,7 +954,7 @@ class RecipeManager {
                                 Servings *
                             </label>
                             <input type="number" id="recipe-servings" name="serving_count" required min="1" max="20"
-                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm sm:text-base"
                                    value="${isEdit ? recipe.serving_count : '4'}">
                         </div>
                         
@@ -963,7 +963,7 @@ class RecipeManager {
                                 Prep Time (minutes)
                             </label>
                             <input type="number" id="recipe-prep-time" name="prep_time" min="0" max="480"
-                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm sm:text-base"
                                    value="${isEdit ? recipe.prep_time : '15'}">
                         </div>
                         
@@ -972,27 +972,28 @@ class RecipeManager {
                                 Cook Time (minutes)
                             </label>
                             <input type="number" id="recipe-cook-time" name="cook_time" min="0" max="480"
-                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm sm:text-base"
                                    value="${isEdit ? recipe.cook_time : '30'}">
                         </div>
                     </div>
                     
                     <!-- Ingredients Section -->
                     <div>
-                        <div class="flex items-center justify-between mb-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
                             <h3 class="text-lg font-medium text-gray-900 dark:text-white">Ingredients</h3>
                             <div class="flex gap-2">
-                                <button type="button" id="scan-ingredient-barcode" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded text-sm transition-colors flex items-center">
+                                <button type="button" id="scan-ingredient-barcode" class="bg-blue-500 hover:bg-blue-600 text-white px-2 sm:px-3 py-1.5 rounded text-xs sm:text-sm transition-colors flex items-center">
                                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h2M4 4h5m3 0h6m-9 4h2m3 0h2M9 20h2m3 0h2"></path>
                                     </svg>
-                                    Scan
+                                    <span class="hidden sm:inline">Scan</span>
                                 </button>
-                                <button type="button" id="add-ingredient-row" class="btn-secondary text-sm">
+                                <button type="button" id="add-ingredient-row" class="btn-secondary text-xs sm:text-sm">
                                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                     </svg>
-                                    Add Ingredient
+                                    <span class="hidden sm:inline">Add Ingredient</span>
+                                    <span class="sm:hidden">Add</span>
                                 </button>
                             </div>
                         </div>
@@ -1007,8 +1008,8 @@ class RecipeManager {
                         <label for="recipe-instructions" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Instructions *
                         </label>
-                        <textarea id="recipe-instructions" name="instructions" required rows="8"
-                                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                        <textarea id="recipe-instructions" name="instructions" required rows="6" 
+                                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm sm:text-base"
                                   placeholder="Enter step-by-step cooking instructions...">${isEdit ? recipe.instructions : ''}</textarea>
                         <p class="text-xs text-gray-500 mt-1">Tip: Number your steps (1., 2., 3.) for better readability</p>
                     </div>
@@ -1022,10 +1023,10 @@ class RecipeManager {
                             <!-- Label Input -->
                             <div class="flex gap-2">
                                 <input type="text" id="recipe-tags" name="labels"
-                                       class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                       class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm sm:text-base"
                                        placeholder="Add labels (e.g., healthy, quick, vegetarian)"
                                        value="${isEdit && recipe.labels ? recipe.labels.join(', ') : ''}"
-                                <button type="button" id="add-label-btn" class="px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm">
+                                <button type="button" id="add-label-btn" class="px-2 sm:px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs sm:text-sm">
                                     Add
                                 </button>
                             </div>
@@ -1055,11 +1056,11 @@ class RecipeManager {
                 </div>
                 
                 <!-- Form Actions -->
-                <div class="flex items-center justify-end space-x-4 p-6 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
-                    <button type="button" id="cancel-recipe-form" class="btn-secondary">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-end space-y-2 sm:space-y-0 sm:space-x-4 p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
+                    <button type="button" id="cancel-recipe-form" class="btn-secondary w-full sm:w-auto order-2 sm:order-1">
                         Cancel
                     </button>
-                    <button type="submit" form="recipe-form" class="btn-primary">
+                    <button type="submit" form="recipe-form" class="btn-primary w-full sm:w-auto order-1 sm:order-2">
                         ${isEdit ? 'Update Recipe' : 'Save Recipe'}
                     </button>
                 </div>
