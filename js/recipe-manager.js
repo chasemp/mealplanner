@@ -279,6 +279,9 @@ class RecipeManager {
             const filteredRecipes = this.getFilteredRecipes();
             recipeGrid.innerHTML = this.renderRecipeCards();
             
+            // Re-attach event listeners to the new recipe cards
+            this.attachRecipeCardListeners();
+            
             // Update empty state visibility
             if (filteredRecipes.length > 0) {
                 emptyState.classList.add('hidden');
@@ -356,6 +359,47 @@ class RecipeManager {
                 });
             }
         }
+    }
+
+    attachRecipeCardListeners() {
+        // Attach event listeners specifically for recipe cards
+        // Toggle favorite buttons
+        this.container.querySelectorAll('.toggle-favorite').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const recipeId = parseInt(btn.dataset.recipeId);
+                this.toggleFavorite(recipeId);
+            });
+        });
+
+        // Edit recipe buttons
+        this.container.querySelectorAll('.edit-recipe').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const recipeId = parseInt(btn.dataset.recipeId);
+                this.editRecipe(recipeId);
+            });
+        });
+
+        // Delete recipe buttons
+        this.container.querySelectorAll('.delete-recipe').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const recipeId = parseInt(btn.dataset.recipeId);
+                this.deleteRecipe(recipeId);
+            });
+        });
+
+        // Recipe card click (for viewing details)
+        this.container.querySelectorAll('.recipe-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                // Don't trigger if clicking on action buttons
+                if (!e.target.closest('.toggle-favorite, .edit-recipe, .delete-recipe')) {
+                    const recipeId = parseInt(card.dataset.recipeId);
+                    this.showRecipeDetail(recipeId);
+                }
+            });
+        });
     }
 
     renderRecipeCards() {
@@ -851,14 +895,8 @@ class RecipeManager {
             });
         }
 
-        // Toggle favorite buttons
-        this.container.querySelectorAll('.toggle-favorite').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const recipeId = parseInt(btn.dataset.recipeId);
-                this.toggleFavorite(recipeId);
-            });
-        });
+        // Attach recipe card listeners (favorites, edit, delete, click)
+        this.attachRecipeCardListeners();
 
         // Add recipe button
         const addBtn = this.container.querySelector('#add-recipe-btn, #add-first-recipe');
@@ -867,34 +905,6 @@ class RecipeManager {
                 this.showRecipeForm();
             });
         }
-
-        // Recipe card clicks
-        this.container.querySelectorAll('.recipe-card').forEach(card => {
-            card.addEventListener('click', (e) => {
-                if (!e.target.closest('.edit-recipe, .delete-recipe')) {
-                    const recipeId = parseInt(card.dataset.recipeId);
-                    this.showRecipeDetail(recipeId);
-                }
-            });
-        });
-
-        // Edit recipe buttons
-        this.container.querySelectorAll('.edit-recipe').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const recipeId = parseInt(btn.dataset.recipeId);
-                this.editRecipe(recipeId);
-            });
-        });
-
-        // Delete recipe buttons
-        this.container.querySelectorAll('.delete-recipe').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const recipeId = parseInt(btn.dataset.recipeId);
-                this.deleteRecipe(recipeId);
-            });
-        });
     }
 
     showRecipeForm(recipe = null) {
