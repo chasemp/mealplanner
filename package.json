@@ -9,6 +9,8 @@
     "dev": "vite",
     "dev:fresh": "rm -rf node_modules/.vite && npm run dev",
     "dev:helper": "node scripts/dev-helper.js",
+    "dev:server": "python3 scripts/dev-server.py",
+    "serve": "python3 -m http.server 8080",
     "build:css": "tailwindcss -i css/tailwind.css -o css/tailwind-compiled.css --minify",
     "build": "npm run build:css && vite build",
     "build:fresh": "rm -rf dist node_modules/.vite && npm run build:css && vite build",
