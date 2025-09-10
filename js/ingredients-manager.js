@@ -1,5 +1,5 @@
 // Items Management Component
-class IngredientsManager {
+class ItemsManager {
     constructor(container) {
         this.container = container;
         this.ingredients = [];
@@ -857,12 +857,16 @@ class IngredientsManager {
     }
 }
 
-// Make IngredientsManager globally available for testing
+// Make ItemsManager globally available for testing
 if (typeof window !== 'undefined') {
-    window.IngredientsManager = IngredientsManager;
+    window.ItemsManager = ItemsManager;
+    // Keep old reference for backward compatibility during transition
+    window.IngredientsManager = ItemsManager;
 }
 if (typeof global !== 'undefined') {
-    global.IngredientsManager = IngredientsManager;
+    global.ItemsManager = ItemsManager;
+    // Keep old reference for backward compatibility during transition
+    global.IngredientsManager = ItemsManager;
 }
 
 // Global registry for ingredients manager
