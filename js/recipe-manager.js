@@ -199,14 +199,14 @@ class RecipeManager {
                                     <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
                                     </svg>
-                                    <span><strong>${this.getUniqueLabels().length}</strong> labels</span>
+                                    <span><strong>${this.getFilteredLabels().length}</strong> labels</span>
                                 </div>
-                                ${this.getComboRecipes().length > 0 ? `
+                                ${this.getFilteredComboRecipes().length > 0 ? `
                                     <div class="flex items-center space-x-1">
                                         <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                                         </svg>
-                                        <span><strong>${this.getComboRecipes().length}</strong> combos</span>
+                                        <span><strong>${this.getFilteredComboRecipes().length}</strong> combos</span>
                                     </div>
                                 ` : ''}
                             </div>
@@ -225,7 +225,7 @@ class RecipeManager {
                                     <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
                                     </svg>
-                                    ${this.showFavoritesOnly ? `${this.getFavoriteRecipes().length} Favorites` : `${this.getFavoriteRecipes().length} Favorites`}
+                                    ${this.showFavoritesOnly ? `Showing ${this.getFilteredRecipes().length}` : `${this.getFavoriteRecipes().length} Favorites`}
                                 </button>
                             </div>
                         </div>
@@ -291,14 +291,14 @@ class RecipeManager {
                     <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
                     </svg>
-                    <span><strong>${this.getUniqueLabels().length}</strong> labels</span>
+                    <span><strong>${this.getFilteredLabels().length}</strong> labels</span>
                 </div>
-                ${this.getComboRecipes().length > 0 ? `
+                ${this.getFilteredComboRecipes().length > 0 ? `
                     <div class="flex items-center space-x-2">
                         <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                         </svg>
-                        <span><strong>${this.getComboRecipes().length}</strong> combos</span>
+                        <span><strong>${this.getFilteredComboRecipes().length}</strong> combos</span>
                     </div>
                 ` : ''}
             `;
@@ -320,7 +320,7 @@ class RecipeManager {
                     <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
                     </svg>
-                    ${this.showFavoritesOnly ? `${this.getFavoriteRecipes().length} Favorites` : `${this.getFavoriteRecipes().length} Favorites`}
+                    ${this.showFavoritesOnly ? `Showing ${this.getFilteredRecipes().length}` : `${this.getFavoriteRecipes().length} Favorites`}
                 </button>
             `;
             
@@ -571,6 +571,23 @@ class RecipeManager {
         return Array.from(labels);
     }
 
+    getFilteredLabels() {
+        // Get labels only from currently filtered recipes
+        const labels = new Set();
+        const filteredRecipes = this.getFilteredRecipes();
+        filteredRecipes.forEach(recipe => {
+            if (recipe.labels && Array.isArray(recipe.labels)) {
+                const labelNames = this.extractLabelNames(recipe.labels);
+                labelNames.forEach(label => labels.add(label));
+            }
+            // Also include tags as labels for backward compatibility
+            if (recipe.tags && Array.isArray(recipe.tags)) {
+                recipe.tags.forEach(tag => labels.add(tag));
+            }
+        });
+        return Array.from(labels);
+    }
+
     // Extract label names from typed labels (handles both old and new format)
     extractLabelNames(labels) {
         if (!Array.isArray(labels)) return [];
@@ -659,6 +676,10 @@ class RecipeManager {
 
     getComboRecipes() {
         return this.recipes.filter(recipe => recipe.type === 'combo');
+    }
+
+    getFilteredComboRecipes() {
+        return this.getFilteredRecipes().filter(recipe => recipe.type === 'combo');
     }
 
     hasActiveFilters() {
