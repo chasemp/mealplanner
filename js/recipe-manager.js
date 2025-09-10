@@ -200,36 +200,68 @@ class RecipeManager {
                     </button>
                 </div>
 
-                <!-- Recipe Stats -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div class="bg-white rounded-lg shadow p-4">
-                        <div class="text-2xl font-bold text-blue-600">${this.getFilteredRecipes().length}</div>
-                        <div class="text-sm text-gray-600">Total Recipes</div>
-                    </div>
-                    <div class="bg-white rounded-lg shadow p-4">
-                        <div class="text-2xl font-bold text-green-600">${this.getUniqueLabels().length}</div>
-                        <div class="text-sm text-gray-600">Labels</div>
-                    </div>
-                    <div class="bg-white rounded-lg shadow p-4 cursor-pointer hover:bg-gray-50 transition-colors ${this.showFavoritesOnly ? 'ring-2 ring-yellow-400 bg-yellow-50' : ''}" id="favorites-filter-btn">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <div class="text-2xl font-bold text-purple-600">${this.getFavoriteRecipes().length}</div>
-                                <div class="text-sm text-gray-600">Favorites ${this.showFavoritesOnly ? '(Active)' : ''}</div>
+                <!-- Recipe Results Info Bar -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 p-3 mb-6">
+                    <div class="flex items-center justify-between">
+                        <!-- Left side: Results summary -->
+                        <div class="flex items-center space-x-6 text-sm text-gray-600 dark:text-gray-400">
+                            <div class="flex items-center space-x-2">
+                                <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                </svg>
+                                <span><strong>${this.getFilteredRecipes().length}</strong> recipes</span>
                             </div>
-                            <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                            </svg>
+                            <div class="flex items-center space-x-2">
+                                <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                                </svg>
+                                <span><strong>${this.getUniqueLabels().length}</strong> labels</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                </svg>
+                                <span><strong>${this.getFavoriteRecipes().length}</strong> favorites</span>
+                            </div>
+                            ${this.getComboRecipes().length > 0 ? `
+                                <div class="flex items-center space-x-2">
+                                    <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                    </svg>
+                                    <span><strong>${this.getComboRecipes().length}</strong> combos</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        <!-- Right side: Quick actions -->
+                        <div class="flex items-center space-x-3">
+                            ${this.hasActiveFilters() ? `
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                                    </svg>
+                                    Filtered
+                                </span>
+                            ` : ''}
+                            <button id="favorites-filter-btn" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-colors ${this.showFavoritesOnly ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-yellow-50 hover:text-yellow-700'}" title="${this.showFavoritesOnly ? 'Show all recipes' : 'Show only favorites'}">
+                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                </svg>
+                                ${this.showFavoritesOnly ? 'Favorites Only' : 'Favorites'}
+                            </button>
                         </div>
                     </div>
                 </div>
 
                 <!-- Recipe Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div id="recipes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     ${this.renderRecipeCards()}
                 </div>
 
                 <!-- Empty State -->
-                ${this.getFilteredRecipes().length === 0 ? this.renderEmptyState() : ''}
+                <div id="empty-state" class="${this.getFilteredRecipes().length === 0 ? '' : 'hidden'}">
+                    ${this.getFilteredRecipes().length === 0 ? this.renderEmptyState() : ''}
+                </div>
             </div>
         `;
         
@@ -238,9 +270,10 @@ class RecipeManager {
     }
 
     updateRecipeDisplay() {
-        // Update only the recipe cards and empty state without re-rendering entire component
+        // Update only the recipe cards, info bar, and empty state without re-rendering entire component
         const recipeGrid = this.container.querySelector('#recipes-grid');
         const emptyState = this.container.querySelector('#empty-state');
+        const infoBar = this.container.querySelector('.bg-white.dark\\:bg-gray-800 .flex.items-center.justify-between');
         
         if (recipeGrid && emptyState) {
             const filteredRecipes = this.getFilteredRecipes();
@@ -251,6 +284,73 @@ class RecipeManager {
                 emptyState.classList.add('hidden');
             } else {
                 emptyState.classList.remove('hidden');
+            }
+            
+            // Update info bar content
+            if (infoBar) {
+                this.updateInfoBar(infoBar);
+            }
+        }
+    }
+
+    updateInfoBar(infoBar) {
+        // Update the left side stats
+        const leftSide = infoBar.querySelector('.flex.items-center.space-x-6');
+        if (leftSide) {
+            leftSide.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                    </svg>
+                    <span><strong>${this.getFilteredRecipes().length}</strong> recipes</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                    </svg>
+                    <span><strong>${this.getUniqueLabels().length}</strong> labels</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                    </svg>
+                    <span><strong>${this.getFavoriteRecipes().length}</strong> favorites</span>
+                </div>
+                ${this.getComboRecipes().length > 0 ? `
+                    <div class="flex items-center space-x-2">
+                        <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                        </svg>
+                        <span><strong>${this.getComboRecipes().length}</strong> combos</span>
+                    </div>
+                ` : ''}
+            `;
+        }
+
+        // Update the right side actions
+        const rightSide = infoBar.querySelector('.flex.items-center.space-x-3');
+        if (rightSide) {
+            rightSide.innerHTML = `
+                ${this.hasActiveFilters() ? `
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                        </svg>
+                        Filtered
+                    </span>
+                ` : ''}
+                <button id="favorites-filter-btn" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-colors ${this.showFavoritesOnly ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-yellow-50 hover:text-yellow-700'}" title="${this.showFavoritesOnly ? 'Show all recipes' : 'Show only favorites'}">
+                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                    </svg>
+                    ${this.showFavoritesOnly ? 'Favorites Only' : 'Favorites'}
+                </button>
+            `;
+            
+            // Re-attach the favorites button event listener
+            const favoritesBtn = rightSide.querySelector('#favorites-filter-btn');
+            if (favoritesBtn) {
+                favoritesBtn.addEventListener('click', () => this.toggleFavoritesFilter());
             }
         }
     }
@@ -530,6 +630,17 @@ class RecipeManager {
 
     getFavoriteRecipes() {
         return this.recipes.filter(recipe => recipe.favorite === true);
+    }
+
+    getComboRecipes() {
+        return this.recipes.filter(recipe => recipe.type === 'combo');
+    }
+
+    hasActiveFilters() {
+        return this.searchTerm !== '' || 
+               this.selectedCategory !== 'all' || 
+               this.selectedLabels.length > 0 ||
+               this.showFavoritesOnly;
     }
 
     getAllLabels() {
