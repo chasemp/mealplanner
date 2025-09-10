@@ -305,7 +305,7 @@ class RecipeManager {
             filtered = filtered.filter(recipe => 
                 recipe.title.toLowerCase().includes(term) ||
                 recipe.description.toLowerCase().includes(term) ||
-                (recipe.labels && recipe.labels.some(label => label.toLowerCase().includes(term)))
+                (recipe.labels && this.extractLabelNames(recipe.labels).some(label => label.toLowerCase().includes(term)))
             );
         }
 
