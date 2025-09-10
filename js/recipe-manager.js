@@ -662,9 +662,22 @@ class RecipeManager {
     }
 
     hasActiveFilters() {
-        return this.searchTerm !== '' || 
-               this.selectedLabels.length > 0 ||
-               this.showFavoritesOnly;
+        const hasSearch = this.searchTerm !== '';
+        const hasLabels = this.selectedLabels.length > 0;
+        const hasFavorites = this.showFavoritesOnly;
+        const result = hasSearch || hasLabels || hasFavorites;
+        
+        console.log('🔍 hasActiveFilters check:', {
+            searchTerm: this.searchTerm,
+            selectedLabels: this.selectedLabels,
+            showFavoritesOnly: this.showFavoritesOnly,
+            hasSearch,
+            hasLabels,
+            hasFavorites,
+            result
+        });
+        
+        return result;
     }
 
     getAllLabels() {
