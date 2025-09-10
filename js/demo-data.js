@@ -1,9 +1,9 @@
 // Demo Data for MealPlanner
-// Generated on 2025-09-10T13:32:52.699Z
+// Generated on 2025-09-10T14:45:08.993Z
 // This file contains realistic demo data that validates the expected schema
 // 
 // Data Summary:
-// - 28 ingredients across 6 categories
+// - 30 ingredients across 6 categories
 // - 20 recipes (12 basic, 8 combo)
 // - 7 meals combining multiple recipes
 // - 7 scheduled meals for planning
@@ -21,7 +21,7 @@ class DemoDataManager {
     }
 
     initializeRawData() {
-        // Comprehensive ingredient list (28 items)
+        // Comprehensive ingredient list (30 items)
         this.ingredients = [
         {
                 "id": 1,
@@ -30,82 +30,82 @@ class DemoDataManager {
                 "default_unit": "lbs",
                 "storage_notes": "Freeze if not using within 2 days",
                 "nutrition": {
-                        "protein": 17,
-                        "carbs": 11,
-                        "fat": 5,
-                        "calories": 228
+                        "protein": 13,
+                        "carbs": 50,
+                        "fat": 4,
+                        "calories": 154
                 },
                 "labels": [
                         "protein",
                         "lean",
                         "versatile"
                 ],
-                "recipe_count": 14,
-                "total_quantity": 27,
-                "avg_quantity": 1.9285714285714286
+                "recipe_count": 10,
+                "total_quantity": 16.25,
+                "avg_quantity": 1.625
         },
         {
                 "id": 2,
                 "name": "Ground Beef",
                 "category": "meat",
-                "default_unit": "lbs",
+                "default_unit": "packages",
                 "storage_notes": "Freeze if not using within 2 days",
                 "nutrition": {
-                        "protein": 15,
-                        "carbs": 37,
-                        "fat": 14,
-                        "calories": 50
+                        "protein": 9,
+                        "carbs": 9,
+                        "fat": 5,
+                        "calories": 208
                 },
                 "labels": [
                         "protein",
                         "hearty",
                         "versatile"
                 ],
-                "recipe_count": 9,
-                "total_quantity": 11.5,
-                "avg_quantity": 1.2777777777777777
+                "recipe_count": 5,
+                "total_quantity": 5,
+                "avg_quantity": 1
         },
         {
                 "id": 3,
                 "name": "Salmon Fillet",
                 "category": "meat",
-                "default_unit": "packages",
-                "storage_notes": "Freeze if not using within 2 days",
+                "default_unit": "pieces",
+                "storage_notes": "Refrigerate",
                 "nutrition": {
-                        "protein": 18,
-                        "carbs": 9,
-                        "fat": 5,
-                        "calories": 165
+                        "protein": 4,
+                        "carbs": 21,
+                        "fat": 13,
+                        "calories": 245
                 },
                 "labels": [
                         "protein",
                         "omega-3",
                         "healthy"
                 ],
-                "recipe_count": 4,
-                "total_quantity": 7,
-                "avg_quantity": 1.75
+                "recipe_count": 7,
+                "total_quantity": 8,
+                "avg_quantity": 1.1428571428571428
         },
         {
                 "id": 4,
                 "name": "Eggs",
                 "category": "dairy",
                 "default_unit": "blocks",
-                "storage_notes": "Refrigerate",
+                "storage_notes": "Keep cold",
                 "nutrition": {
-                        "protein": 10,
-                        "carbs": 43,
-                        "fat": 11,
-                        "calories": 77
+                        "protein": 3,
+                        "carbs": 14,
+                        "fat": 12,
+                        "calories": 163
                 },
                 "labels": [
                         "protein",
                         "breakfast",
                         "versatile"
                 ],
-                "recipe_count": 10,
-                "total_quantity": 6.75,
-                "avg_quantity": 0.675
+                "recipe_count": 5,
+                "total_quantity": 3,
+                "avg_quantity": 0.6
         },
         {
                 "id": 5,
@@ -114,9 +114,9 @@ class DemoDataManager {
                 "default_unit": "gallons",
                 "storage_notes": "Refrigerate",
                 "nutrition": {
-                        "protein": 8,
-                        "carbs": 17,
-                        "fat": 7,
+                        "protein": 4,
+                        "carbs": 54,
+                        "fat": 12,
                         "calories": 228
                 },
                 "labels": [
@@ -124,21 +124,21 @@ class DemoDataManager {
                         "breakfast",
                         "baking"
                 ],
-                "recipe_count": 7,
-                "total_quantity": 5.25,
+                "recipe_count": 6,
+                "total_quantity": 4.5,
                 "avg_quantity": 0.75
         },
         {
                 "id": 6,
                 "name": "Broccoli",
                 "category": "produce",
-                "default_unit": "lbs",
-                "storage_notes": "Keep fresh",
+                "default_unit": "pieces",
+                "storage_notes": "Refrigerate",
                 "nutrition": {
-                        "protein": 7,
-                        "carbs": 25,
-                        "fat": 14,
-                        "calories": 101
+                        "protein": 17,
+                        "carbs": 13,
+                        "fat": 3,
+                        "calories": 72
                 },
                 "labels": [
                         "vegetable",
@@ -146,20 +146,20 @@ class DemoDataManager {
                         "fiber"
                 ],
                 "recipe_count": 9,
-                "total_quantity": 16.75,
-                "avg_quantity": 1.8611111111111112
+                "total_quantity": 13,
+                "avg_quantity": 1.4444444444444444
         },
         {
                 "id": 7,
                 "name": "Carrots",
                 "category": "produce",
-                "default_unit": "bunches",
-                "storage_notes": "Refrigerate",
+                "default_unit": "heads",
+                "storage_notes": "Store in cool, dry place",
                 "nutrition": {
-                        "protein": 2,
-                        "carbs": 14,
-                        "fat": 3,
-                        "calories": 206
+                        "protein": 20,
+                        "carbs": 45,
+                        "fat": 14,
+                        "calories": 146
                 },
                 "labels": [
                         "vegetable",
@@ -174,232 +174,232 @@ class DemoDataManager {
                 "id": 8,
                 "name": "Bell Peppers",
                 "category": "produce",
-                "default_unit": "lbs",
-                "storage_notes": "Refrigerate",
+                "default_unit": "bunches",
+                "storage_notes": "Store in cool, dry place",
                 "nutrition": {
-                        "protein": 2,
-                        "carbs": 24,
-                        "fat": 7,
-                        "calories": 200
+                        "protein": 3,
+                        "carbs": 17,
+                        "fat": 2,
+                        "calories": 82
                 },
                 "labels": [
                         "vegetable",
                         "colorful",
                         "vitamin-c"
                 ],
-                "recipe_count": 7,
-                "total_quantity": 9.25,
-                "avg_quantity": 1.3214285714285714
+                "recipe_count": 6,
+                "total_quantity": 9.5,
+                "avg_quantity": 1.5833333333333333
         },
         {
                 "id": 9,
                 "name": "Onions",
                 "category": "produce",
                 "default_unit": "lbs",
-                "storage_notes": "Store in cool, dry place",
+                "storage_notes": "Keep fresh",
                 "nutrition": {
-                        "protein": 14,
-                        "carbs": 20,
-                        "fat": 2,
-                        "calories": 188
+                        "protein": 15,
+                        "carbs": 23,
+                        "fat": 3,
+                        "calories": 140
                 },
                 "labels": [
                         "vegetable",
                         "aromatic",
                         "base"
                 ],
-                "recipe_count": 8,
-                "total_quantity": 14,
-                "avg_quantity": 1.75
+                "recipe_count": 2,
+                "total_quantity": 2,
+                "avg_quantity": 1
         },
         {
                 "id": 10,
                 "name": "Garlic",
                 "category": "produce",
-                "default_unit": "bunches",
-                "storage_notes": "Keep fresh",
+                "default_unit": "lbs",
+                "storage_notes": "Store in cool, dry place",
                 "nutrition": {
-                        "protein": 15,
-                        "carbs": 43,
-                        "fat": 3,
-                        "calories": 202
+                        "protein": 19,
+                        "carbs": 25,
+                        "fat": 10,
+                        "calories": 219
                 },
                 "labels": [
                         "aromatic",
                         "flavor",
                         "healthy"
                 ],
-                "recipe_count": 7,
-                "total_quantity": 10.5,
+                "recipe_count": 4,
+                "total_quantity": 6,
                 "avg_quantity": 1.5
         },
         {
                 "id": 11,
                 "name": "Tomatoes",
                 "category": "produce",
-                "default_unit": "pieces",
-                "storage_notes": "Refrigerate",
+                "default_unit": "lbs",
+                "storage_notes": "Keep fresh",
                 "nutrition": {
-                        "protein": 10,
-                        "carbs": 12,
-                        "fat": 3,
-                        "calories": 157
+                        "protein": 16,
+                        "carbs": 38,
+                        "fat": 9,
+                        "calories": 101
                 },
                 "labels": [
                         "vegetable",
                         "fresh",
                         "versatile"
                 ],
-                "recipe_count": 2,
-                "total_quantity": 1.5,
-                "avg_quantity": 0.75
+                "recipe_count": 7,
+                "total_quantity": 7.25,
+                "avg_quantity": 1.0357142857142858
         },
         {
                 "id": 12,
                 "name": "Spinach",
                 "category": "produce",
-                "default_unit": "pieces",
+                "default_unit": "bunches",
                 "storage_notes": "Refrigerate",
                 "nutrition": {
-                        "protein": 3,
-                        "carbs": 6,
-                        "fat": 4,
-                        "calories": 149
+                        "protein": 19,
+                        "carbs": 39,
+                        "fat": 10,
+                        "calories": 192
                 },
                 "labels": [
                         "leafy-green",
                         "iron",
                         "healthy"
                 ],
-                "recipe_count": 0,
-                "total_quantity": 0,
-                "avg_quantity": 0
+                "recipe_count": 2,
+                "total_quantity": 1.5,
+                "avg_quantity": 0.75
         },
         {
                 "id": 13,
                 "name": "Rice",
                 "category": "grains",
-                "default_unit": "lbs",
-                "storage_notes": "Store in cool, dry place",
+                "default_unit": "cups",
+                "storage_notes": "Keep sealed",
                 "nutrition": {
-                        "protein": 18,
-                        "carbs": 21,
-                        "fat": 15,
-                        "calories": 162
+                        "protein": 17,
+                        "carbs": 30,
+                        "fat": 1,
+                        "calories": 106
                 },
                 "labels": [
                         "grain",
                         "staple",
                         "filling"
                 ],
-                "recipe_count": 4,
-                "total_quantity": 4.5,
-                "avg_quantity": 1.125
+                "recipe_count": 0,
+                "total_quantity": 0,
+                "avg_quantity": 0
         },
         {
                 "id": 14,
                 "name": "Pasta",
                 "category": "grains",
-                "default_unit": "lbs",
+                "default_unit": "packages",
                 "storage_notes": "Store in cool, dry place",
                 "nutrition": {
-                        "protein": 14,
-                        "carbs": 32,
+                        "protein": 2,
+                        "carbs": 9,
                         "fat": 1,
-                        "calories": 229
+                        "calories": 154
                 },
                 "labels": [
                         "grain",
                         "italian",
                         "comfort"
                 ],
-                "recipe_count": 0,
-                "total_quantity": 0,
-                "avg_quantity": 0
+                "recipe_count": 3,
+                "total_quantity": 2.25,
+                "avg_quantity": 0.75
         },
         {
                 "id": 15,
                 "name": "Quinoa",
                 "category": "grains",
-                "default_unit": "cups",
-                "storage_notes": "Keep sealed",
+                "default_unit": "packages",
+                "storage_notes": "Store in cool, dry place",
                 "nutrition": {
-                        "protein": 12,
-                        "carbs": 33,
-                        "fat": 10,
-                        "calories": 226
+                        "protein": 15,
+                        "carbs": 43,
+                        "fat": 8,
+                        "calories": 152
                 },
                 "labels": [
                         "grain",
                         "protein",
                         "healthy"
                 ],
-                "recipe_count": 5,
-                "total_quantity": 2.5,
-                "avg_quantity": 0.5
+                "recipe_count": 3,
+                "total_quantity": 2,
+                "avg_quantity": 0.6666666666666666
         },
         {
                 "id": 16,
                 "name": "Oats",
                 "category": "grains",
-                "default_unit": "cups",
+                "default_unit": "lbs",
                 "storage_notes": "Keep sealed",
                 "nutrition": {
-                        "protein": 12,
-                        "carbs": 5,
-                        "fat": 3,
-                        "calories": 147
+                        "protein": 17,
+                        "carbs": 7,
+                        "fat": 4,
+                        "calories": 192
                 },
                 "labels": [
                         "grain",
                         "breakfast",
                         "fiber"
                 ],
-                "recipe_count": 3,
-                "total_quantity": 2,
-                "avg_quantity": 0.6666666666666666
+                "recipe_count": 5,
+                "total_quantity": 3,
+                "avg_quantity": 0.6
         },
         {
                 "id": 17,
                 "name": "Bread",
                 "category": "bakery",
                 "default_unit": "packages",
-                "storage_notes": "Store at room temperature",
+                "storage_notes": "Refrigerate after 3 days",
                 "nutrition": {
-                        "protein": 13,
-                        "carbs": 5,
-                        "fat": 12,
-                        "calories": 202
+                        "protein": 2,
+                        "carbs": 13,
+                        "fat": 5,
+                        "calories": 90
                 },
                 "labels": [
                         "grain",
                         "breakfast",
                         "sandwich"
                 ],
-                "recipe_count": 11,
-                "total_quantity": 27,
-                "avg_quantity": 2.4545454545454546
+                "recipe_count": 10,
+                "total_quantity": 16.5,
+                "avg_quantity": 1.65
         },
         {
                 "id": 18,
                 "name": "Olive Oil",
                 "category": "pantry",
-                "default_unit": "boxes",
+                "default_unit": "bottles",
                 "storage_notes": "Store in cool, dry place",
                 "nutrition": {
-                        "protein": 12,
-                        "carbs": 13,
-                        "fat": 11,
-                        "calories": 84
+                        "protein": 14,
+                        "carbs": 45,
+                        "fat": 6,
+                        "calories": 55
                 },
                 "labels": [
                         "fat",
                         "healthy",
                         "cooking"
                 ],
-                "recipe_count": 5,
+                "recipe_count": 6,
                 "total_quantity": 2,
-                "avg_quantity": 0.4
+                "avg_quantity": 0.3333333333333333
         },
         {
                 "id": 19,
@@ -408,31 +408,31 @@ class DemoDataManager {
                 "default_unit": "boxes",
                 "storage_notes": "Keep sealed",
                 "nutrition": {
-                        "protein": 2,
-                        "carbs": 29,
-                        "fat": 1,
-                        "calories": 248
+                        "protein": 13,
+                        "carbs": 30,
+                        "fat": 15,
+                        "calories": 57
                 },
                 "labels": [
                         "seasoning",
                         "essential",
                         "flavor"
                 ],
-                "recipe_count": 15,
-                "total_quantity": 6.25,
-                "avg_quantity": 0.4166666666666667
+                "recipe_count": 17,
+                "total_quantity": 12,
+                "avg_quantity": 0.7058823529411765
         },
         {
                 "id": 20,
                 "name": "Black Pepper",
                 "category": "pantry",
                 "default_unit": "packages",
-                "storage_notes": "Store in cool, dry place",
+                "storage_notes": "Keep sealed",
                 "nutrition": {
-                        "protein": 2,
-                        "carbs": 43,
-                        "fat": 14,
-                        "calories": 214
+                        "protein": 12,
+                        "carbs": 22,
+                        "fat": 12,
+                        "calories": 71
                 },
                 "labels": [
                         "seasoning",
@@ -447,55 +447,55 @@ class DemoDataManager {
                 "id": 21,
                 "name": "Butter",
                 "category": "dairy",
-                "default_unit": "gallons",
-                "storage_notes": "Keep cold",
+                "default_unit": "packages",
+                "storage_notes": "Refrigerate",
                 "nutrition": {
-                        "protein": 6,
-                        "carbs": 51,
-                        "fat": 3,
-                        "calories": 99
+                        "protein": 4,
+                        "carbs": 36,
+                        "fat": 13,
+                        "calories": 244
                 },
                 "labels": [
                         "fat",
                         "flavor",
                         "baking"
                 ],
-                "recipe_count": 13,
-                "total_quantity": 12.5,
-                "avg_quantity": 0.9615384615384616
+                "recipe_count": 12,
+                "total_quantity": 7,
+                "avg_quantity": 0.5833333333333334
         },
         {
                 "id": 22,
                 "name": "Cheese",
                 "category": "dairy",
-                "default_unit": "blocks",
+                "default_unit": "gallons",
                 "storage_notes": "Refrigerate",
                 "nutrition": {
-                        "protein": 10,
-                        "carbs": 26,
-                        "fat": 8,
-                        "calories": 126
+                        "protein": 3,
+                        "carbs": 14,
+                        "fat": 10,
+                        "calories": 217
                 },
                 "labels": [
                         "protein",
                         "calcium",
                         "flavor"
                 ],
-                "recipe_count": 7,
-                "total_quantity": 3.5,
-                "avg_quantity": 0.5
+                "recipe_count": 6,
+                "total_quantity": 5.75,
+                "avg_quantity": 0.9583333333333334
         },
         {
                 "id": 23,
                 "name": "Potatoes",
                 "category": "produce",
-                "default_unit": "bunches",
-                "storage_notes": "Keep fresh",
+                "default_unit": "lbs",
+                "storage_notes": "Store in cool, dry place",
                 "nutrition": {
-                        "protein": 4,
-                        "carbs": 19,
-                        "fat": 4,
-                        "calories": 135
+                        "protein": 19,
+                        "carbs": 9,
+                        "fat": 14,
+                        "calories": 224
                 },
                 "labels": [
                         "vegetable",
@@ -503,50 +503,50 @@ class DemoDataManager {
                         "versatile"
                 ],
                 "recipe_count": 12,
-                "total_quantity": 10,
-                "avg_quantity": 0.8333333333333334
+                "total_quantity": 19,
+                "avg_quantity": 1.5833333333333333
         },
         {
                 "id": 24,
                 "name": "Flour",
                 "category": "grains",
-                "default_unit": "lbs",
-                "storage_notes": "Keep sealed",
+                "default_unit": "packages",
+                "storage_notes": "Store in cool, dry place",
                 "nutrition": {
-                        "protein": 2,
-                        "carbs": 31,
-                        "fat": 5,
-                        "calories": 184
+                        "protein": 6,
+                        "carbs": 38,
+                        "fat": 2,
+                        "calories": 63
                 },
                 "labels": [
                         "baking",
                         "staple",
                         "wheat"
                 ],
-                "recipe_count": 10,
-                "total_quantity": 7.5,
-                "avg_quantity": 0.75
+                "recipe_count": 5,
+                "total_quantity": 3.25,
+                "avg_quantity": 0.65
         },
         {
                 "id": 25,
                 "name": "Green Beans",
                 "category": "produce",
-                "default_unit": "heads",
+                "default_unit": "bunches",
                 "storage_notes": "Refrigerate",
                 "nutrition": {
-                        "protein": 4,
-                        "carbs": 50,
-                        "fat": 1,
-                        "calories": 66
+                        "protein": 16,
+                        "carbs": 32,
+                        "fat": 14,
+                        "calories": 60
                 },
                 "labels": [
                         "vegetable",
                         "healthy",
                         "fiber"
                 ],
-                "recipe_count": 3,
-                "total_quantity": 4,
-                "avg_quantity": 1.3333333333333333
+                "recipe_count": 6,
+                "total_quantity": 4.5,
+                "avg_quantity": 0.75
         },
         {
                 "id": 26,
@@ -555,61 +555,95 @@ class DemoDataManager {
                 "default_unit": "pieces",
                 "storage_notes": "Keep fresh",
                 "nutrition": {
-                        "protein": 12,
-                        "carbs": 32,
-                        "fat": 6,
-                        "calories": 218
+                        "protein": 18,
+                        "carbs": 31,
+                        "fat": 9,
+                        "calories": 185
                 },
                 "labels": [
                         "leafy-green",
                         "fresh",
                         "salad"
                 ],
-                "recipe_count": 7,
-                "total_quantity": 7,
-                "avg_quantity": 1
+                "recipe_count": 8,
+                "total_quantity": 8.5,
+                "avg_quantity": 1.0625
         },
         {
                 "id": 27,
                 "name": "Bacon",
                 "category": "meat",
                 "default_unit": "lbs",
-                "storage_notes": "Freeze if not using within 2 days",
+                "storage_notes": "Refrigerate",
                 "nutrition": {
-                        "protein": 14,
-                        "carbs": 21,
-                        "fat": 1,
-                        "calories": 233
+                        "protein": 19,
+                        "carbs": 27,
+                        "fat": 5,
+                        "calories": 178
                 },
                 "labels": [
                         "protein",
                         "breakfast",
                         "smoky"
                 ],
-                "recipe_count": 6,
-                "total_quantity": 7,
-                "avg_quantity": 1.1666666666666667
+                "recipe_count": 2,
+                "total_quantity": 3,
+                "avg_quantity": 1.5
         },
         {
                 "id": 28,
                 "name": "Oil",
                 "category": "pantry",
-                "default_unit": "packages",
-                "storage_notes": "Store in cool, dry place",
+                "default_unit": "boxes",
+                "storage_notes": "Keep sealed",
                 "nutrition": {
-                        "protein": 13,
-                        "carbs": 48,
-                        "fat": 4,
-                        "calories": 139
+                        "protein": 10,
+                        "carbs": 6,
+                        "fat": 6,
+                        "calories": 62
                 },
                 "labels": [
                         "fat",
                         "cooking",
                         "neutral"
                 ],
-                "recipe_count": 7,
+                "recipe_count": 6,
+                "total_quantity": 2.25,
+                "avg_quantity": 0.375
+        },
+        {
+                "id": 29,
+                "name": "Turkey",
+                "category": "meat",
+                "default_unit": "packages",
+                "storage_notes": "Freeze if not using within 2 days",
+                "nutrition": {
+                        "protein": 1,
+                        "carbs": 13,
+                        "fat": 14,
+                        "calories": 172
+                },
+                "labels": "hearty",
+                "recipe_count": 3,
                 "total_quantity": 3,
-                "avg_quantity": 0.42857142857142855
+                "avg_quantity": 1
+        },
+        {
+                "id": 30,
+                "name": "Cucumber",
+                "category": "produce",
+                "default_unit": "lbs",
+                "storage_notes": "Refrigerate",
+                "nutrition": {
+                        "protein": 2,
+                        "carbs": 39,
+                        "fat": 1,
+                        "calories": 175
+                },
+                "labels": "healthy",
+                "recipe_count": 6,
+                "total_quantity": 11.75,
+                "avg_quantity": 1.9583333333333333
         }
 ];
 
@@ -620,12 +654,11 @@ class DemoDataManager {
                 "title": "Mashed Potatoes",
                 "description": "Creamy and buttery mashed potatoes",
                 "type": "basic",
-                "image_url": "https://images.unsplash.com/photo-1551892374-ecf8754cf8b0?w=400&h=300&fit=crop",
-                "servings": 6,
-                "meal_type": "dinner",
+                "image_url": "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=400&h=300&fit=crop",
+                "servings": 4,
                 "prep_time": 10,
                 "cook_time": 20,
-                "created_at": "2025-06-01T12:30:00.000Z",
+                "created_at": "2025-06-01T21:45:00.000Z",
                 "instructions": [
                         "Preheat oven to 400°F if baking",
                         "Prepare all ingredients",
@@ -635,45 +668,40 @@ class DemoDataManager {
                 "labels": [
                         "comfort",
                         "side-dish",
-                        "savory",
-                        "healthy",
-                        "comfort"
+                        "Dinner",
+                        "easy",
+                        "savory"
                 ],
                 "ingredients": [
                         {
                                 "ingredient_id": 23,
-                                "quantity": 0.5,
-                                "unit": "bunches"
+                                "quantity": 2,
+                                "unit": "lbs"
                         },
                         {
                                 "ingredient_id": 21,
-                                "quantity": 0.5,
-                                "unit": "gallons"
+                                "quantity": 0.75,
+                                "unit": "packages"
                         },
                         {
                                 "ingredient_id": 5,
-                                "quantity": 0.5,
+                                "quantity": 0.75,
                                 "unit": "gallons"
                         },
                         {
                                 "ingredient_id": 19,
-                                "quantity": 0.25,
+                                "quantity": 0.5,
                                 "unit": "boxes"
                         },
                         {
-                                "ingredient_id": 15,
-                                "quantity": 0.5,
-                                "unit": "cups"
+                                "ingredient_id": 25,
+                                "quantity": 0.75,
+                                "unit": "bunches"
                         },
                         {
-                                "ingredient_id": 8,
-                                "quantity": 1.25,
-                                "unit": "lbs"
-                        },
-                        {
-                                "ingredient_id": 28,
-                                "quantity": 0.5,
-                                "unit": "packages"
+                                "ingredient_id": 3,
+                                "quantity": 1,
+                                "unit": "pieces"
                         }
                 ]
         },
@@ -683,11 +711,10 @@ class DemoDataManager {
                 "description": "Crispy golden fried chicken",
                 "type": "basic",
                 "image_url": "https://images.unsplash.com/photo-1551892374-ecf8754cf8b0?w=400&h=300&fit=crop",
-                "servings": 6,
-                "meal_type": "dinner",
+                "servings": 4,
                 "prep_time": 15,
                 "cook_time": 25,
-                "created_at": "2025-06-06T20:00:00.000Z",
+                "created_at": "2025-06-06T15:15:00.000Z",
                 "instructions": [
                         "Preheat oven to 400°F if baking",
                         "Prepare all ingredients",
@@ -698,44 +725,40 @@ class DemoDataManager {
                         "comfort",
                         "crispy",
                         "protein",
+                        "Dinner",
                         "sweet",
-                        "quick"
+                        "healthy"
                 ],
                 "ingredients": [
                         {
                                 "ingredient_id": 1,
-                                "quantity": 1.25,
+                                "quantity": 1.5,
                                 "unit": "lbs"
                         },
                         {
                                 "ingredient_id": 24,
-                                "quantity": 1,
-                                "unit": "lbs"
+                                "quantity": 0.75,
+                                "unit": "packages"
                         },
                         {
                                 "ingredient_id": 4,
-                                "quantity": 1,
+                                "quantity": 0.5,
                                 "unit": "blocks"
                         },
                         {
                                 "ingredient_id": 19,
-                                "quantity": 0.25,
+                                "quantity": 0.5,
                                 "unit": "boxes"
                         },
                         {
-                                "ingredient_id": 25,
-                                "quantity": 1.25,
-                                "unit": "heads"
+                                "ingredient_id": 28,
+                                "quantity": 0.5,
+                                "unit": "boxes"
                         },
                         {
-                                "ingredient_id": 26,
-                                "quantity": 1,
-                                "unit": "pieces"
-                        },
-                        {
-                                "ingredient_id": 10,
-                                "quantity": 1.5,
-                                "unit": "bunches"
+                                "ingredient_id": 16,
+                                "quantity": 0.5,
+                                "unit": "lbs"
                         }
                 ]
         },
@@ -745,11 +768,68 @@ class DemoDataManager {
                 "description": "Fresh steamed green beans with butter",
                 "type": "basic",
                 "image_url": "https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=400&h=300&fit=crop",
-                "servings": 6,
-                "meal_type": "dinner",
+                "servings": 4,
                 "prep_time": 5,
                 "cook_time": 10,
-                "created_at": "2025-06-12T00:15:00.000Z",
+                "created_at": "2025-06-11T12:30:00.000Z",
+                "instructions": [
+                        "Preheat oven to 400°F if baking",
+                        "Prepare all ingredients",
+                        "Heat oil in large pan over medium heat",
+                        "Cook according to recipe requirements",
+                        "Season with salt and pepper to taste"
+                ],
+                "labels": [
+                        "healthy",
+                        "vegetable",
+                        "side-dish",
+                        "Dinner",
+                        "savory",
+                        "sweet"
+                ],
+                "ingredients": [
+                        {
+                                "ingredient_id": 25,
+                                "quantity": 0.75,
+                                "unit": "bunches"
+                        },
+                        {
+                                "ingredient_id": 21,
+                                "quantity": 0.5,
+                                "unit": "packages"
+                        },
+                        {
+                                "ingredient_id": 19,
+                                "quantity": 0.5,
+                                "unit": "boxes"
+                        },
+                        {
+                                "ingredient_id": 11,
+                                "quantity": 1.75,
+                                "unit": "lbs"
+                        },
+                        {
+                                "ingredient_id": 15,
+                                "quantity": 0.5,
+                                "unit": "packages"
+                        },
+                        {
+                                "ingredient_id": 23,
+                                "quantity": 1.75,
+                                "unit": "lbs"
+                        }
+                ]
+        },
+        {
+                "id": 4,
+                "title": "Garlic Bread",
+                "description": "Toasted bread with garlic and herbs",
+                "type": "basic",
+                "image_url": "https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=400&h=300&fit=crop",
+                "servings": 6,
+                "prep_time": 5,
+                "cook_time": 10,
+                "created_at": "2025-06-17T01:15:00.000Z",
                 "instructions": [
                         "Preheat oven to 400°F if baking",
                         "Prepare all ingredients",
@@ -759,109 +839,37 @@ class DemoDataManager {
                         "Serve hot and enjoy"
                 ],
                 "labels": [
-                        "healthy",
-                        "vegetable",
-                        "side-dish",
-                        "sweet",
-                        "quick"
-                ],
-                "ingredients": [
-                        {
-                                "ingredient_id": 25,
-                                "quantity": 1.5,
-                                "unit": "heads"
-                        },
-                        {
-                                "ingredient_id": 21,
-                                "quantity": 0.25,
-                                "unit": "gallons"
-                        },
-                        {
-                                "ingredient_id": 19,
-                                "quantity": 0.25,
-                                "unit": "boxes"
-                        },
-                        {
-                                "ingredient_id": 16,
-                                "quantity": 0.5,
-                                "unit": "cups"
-                        },
-                        {
-                                "ingredient_id": 8,
-                                "quantity": 1.25,
-                                "unit": "lbs"
-                        },
-                        {
-                                "ingredient_id": 17,
-                                "quantity": 1.25,
-                                "unit": "packages"
-                        },
-                        {
-                                "ingredient_id": 4,
-                                "quantity": 0.5,
-                                "unit": "blocks"
-                        }
-                ]
-        },
-        {
-                "id": 4,
-                "title": "Garlic Bread",
-                "description": "Toasted bread with garlic and herbs",
-                "type": "basic",
-                "image_url": "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&h=300&fit=crop",
-                "servings": 6,
-                "meal_type": "dinner",
-                "prep_time": 5,
-                "cook_time": 10,
-                "created_at": "2025-06-16T23:00:00.000Z",
-                "instructions": [
-                        "Preheat oven to 400°F if baking",
-                        "Prepare all ingredients",
-                        "Heat oil in large pan over medium heat",
-                        "Cook according to recipe requirements",
-                        "Season with salt and pepper to taste"
-                ],
-                "labels": [
                         "bread",
                         "side-dish",
                         "garlic",
-                        "hearty",
-                        "sweet"
+                        "Dinner",
+                        "quick",
+                        "healthy"
                 ],
                 "ingredients": [
                         {
                                 "ingredient_id": 17,
-                                "quantity": 1.75,
+                                "quantity": 1.25,
                                 "unit": "packages"
                         },
                         {
                                 "ingredient_id": 10,
-                                "quantity": 1.75,
-                                "unit": "bunches"
+                                "quantity": 1.5,
+                                "unit": "lbs"
                         },
                         {
                                 "ingredient_id": 21,
-                                "quantity": 1,
-                                "unit": "gallons"
+                                "quantity": 0.25,
+                                "unit": "packages"
                         },
                         {
-                                "ingredient_id": 6,
-                                "quantity": 1,
+                                "ingredient_id": 30,
+                                "quantity": 2,
                                 "unit": "lbs"
                         },
                         {
-                                "ingredient_id": 23,
-                                "quantity": 0.5,
-                                "unit": "bunches"
-                        },
-                        {
-                                "ingredient_id": 1,
-                                "quantity": 1.75,
-                                "unit": "lbs"
-                        },
-                        {
-                                "ingredient_id": 2,
-                                "quantity": 1.5,
+                                "ingredient_id": 11,
+                                "quantity": 0.75,
                                 "unit": "lbs"
                         }
                 ]
@@ -872,61 +880,53 @@ class DemoDataManager {
                 "description": "Classic Caesar salad with croutons",
                 "type": "basic",
                 "image_url": "https://images.unsplash.com/photo-1551892374-ecf8754cf8b0?w=400&h=300&fit=crop",
-                "servings": 2,
-                "meal_type": "lunch",
+                "servings": 4,
                 "prep_time": 10,
                 "cook_time": 0,
-                "created_at": "2025-06-21T04:00:00.000Z",
+                "created_at": "2025-06-21T01:30:00.000Z",
                 "instructions": [
                         "Preheat oven to 400°F if baking",
                         "Prepare all ingredients",
                         "Heat oil in large pan over medium heat",
-                        "Cook according to recipe requirements",
-                        "Season with salt and pepper to taste",
-                        "Serve hot and enjoy"
+                        "Cook according to recipe requirements"
                 ],
                 "labels": [
                         "salad",
                         "fresh",
                         "classic",
-                        "easy",
-                        "sweet"
+                        "Lunch",
+                        "hearty"
                 ],
                 "ingredients": [
                         {
                                 "ingredient_id": 26,
-                                "quantity": 1,
+                                "quantity": 0.5,
                                 "unit": "pieces"
                         },
                         {
                                 "ingredient_id": 22,
-                                "quantity": 0.5,
-                                "unit": "blocks"
+                                "quantity": 0.75,
+                                "unit": "gallons"
                         },
                         {
                                 "ingredient_id": 17,
-                                "quantity": 1.75,
+                                "quantity": 1,
                                 "unit": "packages"
                         },
                         {
-                                "ingredient_id": 9,
-                                "quantity": 2,
-                                "unit": "lbs"
-                        },
-                        {
-                                "ingredient_id": 24,
-                                "quantity": 0.5,
-                                "unit": "lbs"
+                                "ingredient_id": 2,
+                                "quantity": 1,
+                                "unit": "packages"
                         },
                         {
                                 "ingredient_id": 6,
-                                "quantity": 2,
-                                "unit": "lbs"
+                                "quantity": 1.25,
+                                "unit": "pieces"
                         },
                         {
-                                "ingredient_id": 1,
-                                "quantity": 1.5,
-                                "unit": "lbs"
+                                "ingredient_id": 19,
+                                "quantity": 0.5,
+                                "unit": "boxes"
                         }
                 ]
         },
@@ -935,12 +935,11 @@ class DemoDataManager {
                 "title": "Pancakes",
                 "description": "Fluffy breakfast pancakes",
                 "type": "basic",
-                "image_url": "https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=400&h=300&fit=crop",
+                "image_url": "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=400&h=300&fit=crop",
                 "servings": 4,
-                "meal_type": "breakfast",
                 "prep_time": 10,
                 "cook_time": 15,
-                "created_at": "2025-06-26T10:00:00.000Z",
+                "created_at": "2025-06-27T02:00:00.000Z",
                 "instructions": [
                         "Crack eggs into bowl and whisk",
                         "Heat butter in non-stick pan",
@@ -949,18 +948,17 @@ class DemoDataManager {
                         "Serve immediately"
                 ],
                 "labels": [
-                        "breakfast",
                         "sweet",
                         "fluffy",
-                        "quick",
-                        "healthy",
-                        "savory"
+                        "Breakfast",
+                        "savory",
+                        "healthy"
                 ],
                 "ingredients": [
                         {
                                 "ingredient_id": 24,
-                                "quantity": 0.75,
-                                "unit": "lbs"
+                                "quantity": 0.5,
+                                "unit": "packages"
                         },
                         {
                                 "ingredient_id": 4,
@@ -969,33 +967,33 @@ class DemoDataManager {
                         },
                         {
                                 "ingredient_id": 5,
-                                "quantity": 1,
+                                "quantity": 0.75,
                                 "unit": "gallons"
                         },
                         {
                                 "ingredient_id": 21,
-                                "quantity": 0.5,
-                                "unit": "gallons"
+                                "quantity": 0.75,
+                                "unit": "packages"
                         },
                         {
                                 "ingredient_id": 1,
-                                "quantity": 2,
+                                "quantity": 1.75,
                                 "unit": "lbs"
-                        },
-                        {
-                                "ingredient_id": 18,
-                                "quantity": 0.5,
-                                "unit": "boxes"
                         },
                         {
                                 "ingredient_id": 8,
                                 "quantity": 1,
+                                "unit": "bunches"
+                        },
+                        {
+                                "ingredient_id": 23,
+                                "quantity": 1.25,
                                 "unit": "lbs"
                         },
                         {
-                                "ingredient_id": 13,
-                                "quantity": 1,
-                                "unit": "lbs"
+                                "ingredient_id": 18,
+                                "quantity": 0.25,
+                                "unit": "bottles"
                         }
                 ]
         },
@@ -1004,12 +1002,11 @@ class DemoDataManager {
                 "title": "Bacon",
                 "description": "Crispy breakfast bacon",
                 "type": "basic",
-                "image_url": "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400&h=300&fit=crop",
+                "image_url": "https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=400&h=300&fit=crop",
                 "servings": 4,
-                "meal_type": "breakfast",
                 "prep_time": 2,
                 "cook_time": 8,
-                "created_at": "2025-07-01T17:45:00.000Z",
+                "created_at": "2025-07-01T06:30:00.000Z",
                 "instructions": [
                         "Crack eggs into bowl and whisk",
                         "Heat butter in non-stick pan",
@@ -1018,27 +1015,25 @@ class DemoDataManager {
                         "Serve immediately"
                 ],
                 "labels": [
-                        "breakfast",
                         "protein",
                         "crispy",
-                        "spicy",
-                        "quick",
+                        "Breakfast",
                         "fresh"
                 ],
                 "ingredients": [
                         {
                                 "ingredient_id": 27,
+                                "quantity": 1.5,
+                                "unit": "lbs"
+                        },
+                        {
+                                "ingredient_id": 9,
                                 "quantity": 1,
                                 "unit": "lbs"
                         },
                         {
-                                "ingredient_id": 13,
-                                "quantity": 0.75,
-                                "unit": "lbs"
-                        },
-                        {
                                 "ingredient_id": 19,
-                                "quantity": 0.25,
+                                "quantity": 0.5,
                                 "unit": "boxes"
                         }
                 ]
@@ -1048,12 +1043,11 @@ class DemoDataManager {
                 "title": "Hash Browns",
                 "description": "Golden crispy hash browns",
                 "type": "basic",
-                "image_url": "https://images.unsplash.com/photo-1551892374-ecf8754cf8b0?w=400&h=300&fit=crop",
+                "image_url": "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=400&h=300&fit=crop",
                 "servings": 4,
-                "meal_type": "breakfast",
                 "prep_time": 10,
                 "cook_time": 15,
-                "created_at": "2025-07-07T11:00:00.000Z",
+                "created_at": "2025-07-06T15:15:00.000Z",
                 "instructions": [
                         "Crack eggs into bowl and whisk",
                         "Heat butter in non-stick pan",
@@ -1062,22 +1056,23 @@ class DemoDataManager {
                         "Serve immediately"
                 ],
                 "labels": [
-                        "breakfast",
                         "crispy",
                         "potato",
-                        "hearty",
-                        "healthy"
+                        "Breakfast",
+                        "easy",
+                        "spicy",
+                        "savory"
                 ],
                 "ingredients": [
                         {
                                 "ingredient_id": 23,
-                                "quantity": 0.75,
-                                "unit": "bunches"
+                                "quantity": 0.5,
+                                "unit": "lbs"
                         },
                         {
                                 "ingredient_id": 28,
                                 "quantity": 0.25,
-                                "unit": "packages"
+                                "unit": "boxes"
                         },
                         {
                                 "ingredient_id": 19,
@@ -1085,81 +1080,78 @@ class DemoDataManager {
                                 "unit": "boxes"
                         },
                         {
-                                "ingredient_id": 2,
-                                "quantity": 1,
-                                "unit": "lbs"
+                                "ingredient_id": 8,
+                                "quantity": 2,
+                                "unit": "bunches"
                         },
                         {
-                                "ingredient_id": 27,
-                                "quantity": 1.25,
-                                "unit": "lbs"
+                                "ingredient_id": 14,
+                                "quantity": 0.75,
+                                "unit": "packages"
+                        },
+                        {
+                                "ingredient_id": 26,
+                                "quantity": 1.5,
+                                "unit": "pieces"
                         }
                 ]
         },
         {
                 "id": 9,
-                "title": "Broccoli Soup with Chicken Breast",
-                "description": "Warming soup featuring broccoli and tender chicken breast",
+                "title": "Quick Chicken Breast Wrap",
+                "description": "Fast and flavorful wrap with chicken breast and fresh vegetables",
                 "type": "basic",
                 "image_url": "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&h=300&fit=crop",
-                "servings": 4,
-                "meal_type": "lunch",
-                "prep_time": 20,
-                "cook_time": 35,
-                "created_at": "2025-07-12T12:00:00.000Z",
+                "servings": 3,
+                "prep_time": 10,
+                "cook_time": 10,
+                "created_at": "2025-07-11T16:45:00.000Z",
                 "instructions": [
                         "Preheat oven to 400°F if baking",
                         "Prepare all ingredients",
                         "Heat oil in large pan over medium heat",
-                        "Cook according to recipe requirements"
+                        "Cook according to recipe requirements",
+                        "Season with salt and pepper to taste"
                 ],
                 "labels": [
-                        "lunch",
-                        "comfort",
-                        "soup",
-                        "warming",
-                        "fresh"
+                        "quick",
+                        "portable",
+                        "wrap",
+                        "Lunch",
+                        "sweet",
+                        "savory",
+                        "spicy"
                 ],
                 "ingredients": [
-                        {
-                                "ingredient_id": 6,
-                                "quantity": 1.75,
-                                "unit": "lbs"
-                        },
                         {
                                 "ingredient_id": 1,
                                 "quantity": 1.5,
                                 "unit": "lbs"
                         },
                         {
-                                "ingredient_id": 9,
-                                "quantity": 2,
-                                "unit": "lbs"
+                                "ingredient_id": 6,
+                                "quantity": 0.75,
+                                "unit": "pieces"
                         },
                         {
-                                "ingredient_id": 10,
-                                "quantity": 0.5,
+                                "ingredient_id": 17,
+                                "quantity": 2,
+                                "unit": "packages"
+                        },
+                        {
+                                "ingredient_id": 8,
+                                "quantity": 1.5,
                                 "unit": "bunches"
                         },
                         {
-                                "ingredient_id": 19,
-                                "quantity": 0.5,
-                                "unit": "boxes"
-                        },
-                        {
-                                "ingredient_id": 2,
+                                "ingredient_id": 3,
                                 "quantity": 1.5,
-                                "unit": "lbs"
+                                "unit": "pieces"
                         },
                         {
-                                "ingredient_id": 18,
-                                "quantity": 0.25,
-                                "unit": "boxes"
-                        },
-                        {
-                                "ingredient_id": 5,
-                                "quantity": 0.25,
-                                "unit": "gallons"
+                                "ingredient_id": 25,
+                                "quantity": 0.75,
+                                "unit": "bunches"
                         }
                 ]
         },
@@ -1169,25 +1161,22 @@ class DemoDataManager {
                 "description": "Nutritious energy bites with chicken breast and natural sweeteners",
                 "type": "basic",
                 "image_url": "https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=400&h=300&fit=crop",
-                "servings": 8,
-                "meal_type": "snack",
-                "prep_time": 15,
-                "cook_time": 5,
-                "created_at": "2025-07-16T09:15:00.000Z",
+                "servings": 4,
+                "prep_time": 20,
+                "cook_time": 0,
+                "created_at": "2025-07-17T05:30:00.000Z",
                 "instructions": [
                         "Preheat oven to 400°F if baking",
                         "Prepare all ingredients",
                         "Heat oil in large pan over medium heat",
-                        "Cook according to recipe requirements",
-                        "Season with salt and pepper to taste",
-                        "Serve hot and enjoy"
+                        "Cook according to recipe requirements"
                 ],
                 "labels": [
-                        "snack",
                         "energy",
                         "healthy",
                         "no-bake",
-                        "sweet"
+                        "Snack",
+                        "hearty"
                 ],
                 "ingredients": [
                         {
@@ -1197,23 +1186,28 @@ class DemoDataManager {
                         },
                         {
                                 "ingredient_id": 17,
-                                "quantity": 2,
+                                "quantity": 1.5,
                                 "unit": "packages"
                         },
                         {
-                                "ingredient_id": 16,
-                                "quantity": 0.75,
-                                "unit": "cups"
+                                "ingredient_id": 23,
+                                "quantity": 1.75,
+                                "unit": "lbs"
                         },
                         {
-                                "ingredient_id": 22,
+                                "ingredient_id": 29,
+                                "quantity": 1,
+                                "unit": "packages"
+                        },
+                        {
+                                "ingredient_id": 19,
                                 "quantity": 0.5,
-                                "unit": "blocks"
+                                "unit": "boxes"
                         },
                         {
-                                "ingredient_id": 11,
-                                "quantity": 0.75,
-                                "unit": "pieces"
+                                "ingredient_id": 30,
+                                "quantity": 1.25,
+                                "unit": "lbs"
                         }
                 ]
         },
@@ -1222,12 +1216,75 @@ class DemoDataManager {
                 "title": "Broccoli Chips",
                 "description": "Crispy baked broccoli chips seasoned to perfection",
                 "type": "basic",
-                "image_url": "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=400&h=300&fit=crop",
+                "image_url": "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=400&h=300&fit=crop",
                 "servings": 4,
-                "meal_type": "snack",
-                "prep_time": 15,
+                "prep_time": 10,
                 "cook_time": 30,
-                "created_at": "2025-07-22T08:30:00.000Z",
+                "created_at": "2025-07-22T06:00:00.000Z",
+                "instructions": [
+                        "Preheat oven to 400°F if baking",
+                        "Prepare all ingredients",
+                        "Heat oil in large pan over medium heat",
+                        "Cook according to recipe requirements",
+                        "Season with salt and pepper to taste",
+                        "Serve hot and enjoy"
+                ],
+                "labels": [
+                        "healthy",
+                        "crispy",
+                        "baked",
+                        "Snack",
+                        "healthy",
+                        "spicy"
+                ],
+                "ingredients": [
+                        {
+                                "ingredient_id": 6,
+                                "quantity": 1,
+                                "unit": "pieces"
+                        },
+                        {
+                                "ingredient_id": 18,
+                                "quantity": 0.25,
+                                "unit": "bottles"
+                        },
+                        {
+                                "ingredient_id": 19,
+                                "quantity": 0.25,
+                                "unit": "boxes"
+                        },
+                        {
+                                "ingredient_id": 12,
+                                "quantity": 0.75,
+                                "unit": "bunches"
+                        },
+                        {
+                                "ingredient_id": 22,
+                                "quantity": 1,
+                                "unit": "gallons"
+                        },
+                        {
+                                "ingredient_id": 16,
+                                "quantity": 0.75,
+                                "unit": "lbs"
+                        },
+                        {
+                                "ingredient_id": 3,
+                                "quantity": 1.25,
+                                "unit": "pieces"
+                        }
+                ]
+        },
+        {
+                "id": 12,
+                "title": "Chicken Breast Lunch Salad",
+                "description": "Fresh and satisfying lunch salad with chicken breast and crisp vegetables",
+                "type": "basic",
+                "image_url": "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=400&h=300&fit=crop",
+                "servings": 2,
+                "prep_time": 10,
+                "cook_time": 5,
+                "created_at": "2025-07-27T14:45:00.000Z",
                 "instructions": [
                         "Preheat oven to 400°F if baking",
                         "Prepare all ingredients",
@@ -1235,105 +1292,54 @@ class DemoDataManager {
                         "Cook according to recipe requirements"
                 ],
                 "labels": [
-                        "snack",
                         "healthy",
-                        "crispy",
-                        "baked",
-                        "quick"
-                ],
-                "ingredients": [
-                        {
-                                "ingredient_id": 6,
-                                "quantity": 1,
-                                "unit": "lbs"
-                        },
-                        {
-                                "ingredient_id": 18,
-                                "quantity": 0.25,
-                                "unit": "boxes"
-                        },
-                        {
-                                "ingredient_id": 19,
-                                "quantity": 0.5,
-                                "unit": "boxes"
-                        },
-                        {
-                                "ingredient_id": 24,
-                                "quantity": 0.75,
-                                "unit": "lbs"
-                        },
-                        {
-                                "ingredient_id": 15,
-                                "quantity": 0.5,
-                                "unit": "cups"
-                        },
-                        {
-                                "ingredient_id": 21,
-                                "quantity": 0.75,
-                                "unit": "gallons"
-                        }
-                ]
-        },
-        {
-                "id": 12,
-                "title": "Scrambled Eggs with Bread",
-                "description": "Simple breakfast with fluffy scrambled eggs and bread",
-                "type": "basic",
-                "image_url": "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=400&h=300&fit=crop",
-                "servings": 4,
-                "meal_type": "breakfast",
-                "prep_time": 10,
-                "cook_time": 15,
-                "created_at": "2025-07-27T15:00:00.000Z",
-                "instructions": [
-                        "Crack eggs into bowl and whisk",
-                        "Heat butter in non-stick pan",
-                        "Pour in eggs and gently scramble",
-                        "Cook until just set",
-                        "Serve immediately"
-                ],
-                "labels": [
-                        "breakfast",
-                        "quick",
-                        "protein",
+                        "fresh",
+                        "salad",
+                        "Lunch",
+                        "healthy",
                         "spicy",
                         "sweet"
                 ],
                 "ingredients": [
                         {
-                                "ingredient_id": 4,
-                                "quantity": 0.5,
-                                "unit": "blocks"
-                        },
-                        {
-                                "ingredient_id": 21,
-                                "quantity": 1,
-                                "unit": "gallons"
-                        },
-                        {
-                                "ingredient_id": 19,
-                                "quantity": 0.25,
-                                "unit": "boxes"
-                        },
-                        {
-                                "ingredient_id": 17,
+                                "ingredient_id": 1,
                                 "quantity": 1.5,
-                                "unit": "packages"
-                        },
-                        {
-                                "ingredient_id": 23,
-                                "quantity": 0.75,
-                                "unit": "bunches"
-                        },
-                        {
-                                "ingredient_id": 9,
-                                "quantity": 0.5,
                                 "unit": "lbs"
                         },
                         {
-                                "ingredient_id": 3,
-                                "quantity": 1.75,
+                                "ingredient_id": 6,
+                                "quantity": 2,
+                                "unit": "pieces"
+                        },
+                        {
+                                "ingredient_id": 18,
+                                "quantity": 0.5,
+                                "unit": "bottles"
+                        },
+                        {
+                                "ingredient_id": 19,
+                                "quantity": 0.5,
+                                "unit": "boxes"
+                        },
+                        {
+                                "ingredient_id": 15,
+                                "quantity": 0.75,
                                 "unit": "packages"
+                        },
+                        {
+                                "ingredient_id": 21,
+                                "quantity": 0.5,
+                                "unit": "packages"
+                        },
+                        {
+                                "ingredient_id": 26,
+                                "quantity": 0.75,
+                                "unit": "pieces"
+                        },
+                        {
+                                "ingredient_id": 11,
+                                "quantity": 1.25,
+                                "unit": "lbs"
                         }
                 ]
         },
@@ -1342,12 +1348,11 @@ class DemoDataManager {
                 "title": "Sunday Dinner Combo",
                 "description": "Classic Sunday dinner with fried chicken and mashed potatoes",
                 "type": "combo",
-                "image_url": "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&h=300&fit=crop",
-                "servings": 6,
-                "meal_type": "dinner",
-                "prep_time": 35,
+                "image_url": "https://images.unsplash.com/photo-1551892374-ecf8754cf8b0?w=400&h=300&fit=crop",
+                "servings": 4,
+                "prep_time": 25,
                 "cook_time": 25,
-                "created_at": "2025-08-01T09:30:00.000Z",
+                "created_at": "2025-08-01T04:00:00.000Z",
                 "instructions": [
                         "Prepare all component recipes according to their individual instructions",
                         "Coordinate cooking times to serve everything together",
@@ -1366,26 +1371,22 @@ class DemoDataManager {
                         {
                                 "recipe_id": 1,
                                 "servings_multiplier": 1
-                        },
-                        {
-                                "recipe_id": 8,
-                                "servings_multiplier": 1
                         }
                 ],
                 "ingredients": [
                         {
                                 "ingredient_id": 1,
-                                "quantity": 1.25,
+                                "quantity": 1.5,
                                 "unit": "lbs"
                         },
                         {
                                 "ingredient_id": 24,
-                                "quantity": 1,
-                                "unit": "lbs"
+                                "quantity": 0.75,
+                                "unit": "packages"
                         },
                         {
                                 "ingredient_id": 4,
-                                "quantity": 1,
+                                "quantity": 0.5,
                                 "unit": "blocks"
                         },
                         {
@@ -1394,59 +1395,39 @@ class DemoDataManager {
                                 "unit": "boxes"
                         },
                         {
-                                "ingredient_id": 25,
-                                "quantity": 1.25,
-                                "unit": "heads"
-                        },
-                        {
-                                "ingredient_id": 26,
-                                "quantity": 1,
-                                "unit": "pieces"
-                        },
-                        {
-                                "ingredient_id": 10,
-                                "quantity": 1.5,
-                                "unit": "bunches"
-                        },
-                        {
-                                "ingredient_id": 23,
-                                "quantity": 1.25,
-                                "unit": "bunches"
-                        },
-                        {
-                                "ingredient_id": 21,
+                                "ingredient_id": 28,
                                 "quantity": 0.5,
-                                "unit": "gallons"
+                                "unit": "boxes"
                         },
                         {
-                                "ingredient_id": 5,
+                                "ingredient_id": 16,
                                 "quantity": 0.5,
-                                "unit": "gallons"
-                        },
-                        {
-                                "ingredient_id": 15,
-                                "quantity": 0.5,
-                                "unit": "cups"
-                        },
-                        {
-                                "ingredient_id": 8,
-                                "quantity": 1.25,
                                 "unit": "lbs"
                         },
                         {
-                                "ingredient_id": 28,
+                                "ingredient_id": 23,
+                                "quantity": 2,
+                                "unit": "lbs"
+                        },
+                        {
+                                "ingredient_id": 21,
                                 "quantity": 0.75,
                                 "unit": "packages"
                         },
                         {
-                                "ingredient_id": 2,
-                                "quantity": 1,
-                                "unit": "lbs"
+                                "ingredient_id": 5,
+                                "quantity": 0.75,
+                                "unit": "gallons"
                         },
                         {
-                                "ingredient_id": 27,
-                                "quantity": 1.25,
-                                "unit": "lbs"
+                                "ingredient_id": 25,
+                                "quantity": 0.75,
+                                "unit": "bunches"
+                        },
+                        {
+                                "ingredient_id": 3,
+                                "quantity": 1,
+                                "unit": "pieces"
                         }
                 ]
         },
@@ -1455,12 +1436,11 @@ class DemoDataManager {
                 "title": "Italian Night Combo",
                 "description": "Perfect Italian dinner with pasta and salad",
                 "type": "combo",
-                "image_url": "https://images.unsplash.com/photo-1551892374-ecf8754cf8b0?w=400&h=300&fit=crop",
+                "image_url": "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&h=300&fit=crop",
                 "servings": 4,
-                "meal_type": "dinner",
                 "prep_time": 20,
                 "cook_time": 15,
-                "created_at": "2025-08-06T18:15:00.000Z",
+                "created_at": "2025-08-07T00:45:00.000Z",
                 "instructions": [
                         "Prepare all component recipes according to their individual instructions",
                         "Coordinate cooking times to serve everything together",
@@ -1484,63 +1464,53 @@ class DemoDataManager {
                 "ingredients": [
                         {
                                 "ingredient_id": 23,
-                                "quantity": 0.75,
-                                "unit": "bunches"
+                                "quantity": 0.5,
+                                "unit": "lbs"
                         },
                         {
                                 "ingredient_id": 28,
                                 "quantity": 0.25,
-                                "unit": "packages"
-                        },
-                        {
-                                "ingredient_id": 19,
-                                "quantity": 0.5,
                                 "unit": "boxes"
                         },
                         {
-                                "ingredient_id": 2,
+                                "ingredient_id": 19,
                                 "quantity": 1,
-                                "unit": "lbs"
+                                "unit": "boxes"
                         },
                         {
-                                "ingredient_id": 27,
-                                "quantity": 1.25,
-                                "unit": "lbs"
+                                "ingredient_id": 8,
+                                "quantity": 2,
+                                "unit": "bunches"
+                        },
+                        {
+                                "ingredient_id": 14,
+                                "quantity": 0.75,
+                                "unit": "packages"
                         },
                         {
                                 "ingredient_id": 26,
-                                "quantity": 1,
+                                "quantity": 2,
                                 "unit": "pieces"
                         },
                         {
                                 "ingredient_id": 22,
-                                "quantity": 0.5,
-                                "unit": "blocks"
+                                "quantity": 0.75,
+                                "unit": "gallons"
                         },
                         {
                                 "ingredient_id": 17,
-                                "quantity": 1.75,
+                                "quantity": 1,
                                 "unit": "packages"
                         },
                         {
-                                "ingredient_id": 9,
-                                "quantity": 2,
-                                "unit": "lbs"
-                        },
-                        {
-                                "ingredient_id": 24,
-                                "quantity": 0.5,
-                                "unit": "lbs"
+                                "ingredient_id": 2,
+                                "quantity": 1,
+                                "unit": "packages"
                         },
                         {
                                 "ingredient_id": 6,
-                                "quantity": 2,
-                                "unit": "lbs"
-                        },
-                        {
-                                "ingredient_id": 1,
-                                "quantity": 1.5,
-                                "unit": "lbs"
+                                "quantity": 1.25,
+                                "unit": "pieces"
                         }
                 ]
         },
@@ -1550,11 +1520,10 @@ class DemoDataManager {
                 "description": "Complete American breakfast with pancakes and bacon",
                 "type": "combo",
                 "image_url": "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400&h=300&fit=crop",
-                "servings": 6,
-                "meal_type": "breakfast",
-                "prep_time": 22,
-                "cook_time": 20,
-                "created_at": "2025-08-10T16:45:00.000Z",
+                "servings": 4,
+                "prep_time": 12,
+                "cook_time": 15,
+                "created_at": "2025-08-11T07:30:00.000Z",
                 "instructions": [
                         "Prepare all component recipes according to their individual instructions",
                         "Coordinate cooking times to serve everything together",
@@ -1573,17 +1542,13 @@ class DemoDataManager {
                         {
                                 "recipe_id": 7,
                                 "servings_multiplier": 1
-                        },
-                        {
-                                "recipe_id": 1,
-                                "servings_multiplier": 1
                         }
                 ],
                 "ingredients": [
                         {
                                 "ingredient_id": 24,
-                                "quantity": 0.75,
-                                "unit": "lbs"
+                                "quantity": 0.5,
+                                "unit": "packages"
                         },
                         {
                                 "ingredient_id": 4,
@@ -1592,36 +1557,41 @@ class DemoDataManager {
                         },
                         {
                                 "ingredient_id": 5,
-                                "quantity": 1.5,
+                                "quantity": 0.75,
                                 "unit": "gallons"
                         },
                         {
                                 "ingredient_id": 21,
-                                "quantity": 1,
-                                "unit": "gallons"
+                                "quantity": 0.75,
+                                "unit": "packages"
                         },
                         {
                                 "ingredient_id": 1,
-                                "quantity": 2,
-                                "unit": "lbs"
-                        },
-                        {
-                                "ingredient_id": 18,
-                                "quantity": 0.5,
-                                "unit": "boxes"
-                        },
-                        {
-                                "ingredient_id": 8,
-                                "quantity": 2.25,
-                                "unit": "lbs"
-                        },
-                        {
-                                "ingredient_id": 13,
                                 "quantity": 1.75,
                                 "unit": "lbs"
                         },
                         {
+                                "ingredient_id": 8,
+                                "quantity": 1,
+                                "unit": "bunches"
+                        },
+                        {
+                                "ingredient_id": 23,
+                                "quantity": 1.25,
+                                "unit": "lbs"
+                        },
+                        {
+                                "ingredient_id": 18,
+                                "quantity": 0.25,
+                                "unit": "bottles"
+                        },
+                        {
                                 "ingredient_id": 27,
+                                "quantity": 1.5,
+                                "unit": "lbs"
+                        },
+                        {
+                                "ingredient_id": 9,
                                 "quantity": 1,
                                 "unit": "lbs"
                         },
@@ -1629,21 +1599,6 @@ class DemoDataManager {
                                 "ingredient_id": 19,
                                 "quantity": 0.5,
                                 "unit": "boxes"
-                        },
-                        {
-                                "ingredient_id": 23,
-                                "quantity": 0.5,
-                                "unit": "bunches"
-                        },
-                        {
-                                "ingredient_id": 15,
-                                "quantity": 0.5,
-                                "unit": "cups"
-                        },
-                        {
-                                "ingredient_id": 28,
-                                "quantity": 0.5,
-                                "unit": "packages"
                         }
                 ]
         },
@@ -1652,12 +1607,11 @@ class DemoDataManager {
                 "title": "Grilled Salmon Dinner Combo",
                 "description": "Healthy grilled salmon with vegetables",
                 "type": "combo",
-                "image_url": "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=400&h=300&fit=crop",
-                "servings": 6,
-                "meal_type": "dinner",
-                "prep_time": 15,
-                "cook_time": 20,
-                "created_at": "2025-08-16T22:15:00.000Z",
+                "image_url": "https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=400&h=300&fit=crop",
+                "servings": 4,
+                "prep_time": 35,
+                "cook_time": 25,
+                "created_at": "2025-08-15T22:30:00.000Z",
                 "instructions": [
                         "Prepare all component recipes according to their individual instructions",
                         "Coordinate cooking times to serve everything together",
@@ -1670,74 +1624,98 @@ class DemoDataManager {
                 ],
                 "combo_recipes": [
                         {
-                                "recipe_id": 4,
+                                "recipe_id": 1,
                                 "servings_multiplier": 1
                         },
                         {
-                                "recipe_id": 1,
+                                "recipe_id": 5,
+                                "servings_multiplier": 1
+                        },
+                        {
+                                "recipe_id": 2,
                                 "servings_multiplier": 1
                         }
                 ],
                 "ingredients": [
                         {
-                                "ingredient_id": 17,
-                                "quantity": 1.75,
-                                "unit": "packages"
-                        },
-                        {
-                                "ingredient_id": 10,
-                                "quantity": 1.75,
-                                "unit": "bunches"
+                                "ingredient_id": 23,
+                                "quantity": 2,
+                                "unit": "lbs"
                         },
                         {
                                 "ingredient_id": 21,
-                                "quantity": 1.5,
-                                "unit": "gallons"
-                        },
-                        {
-                                "ingredient_id": 6,
-                                "quantity": 1,
-                                "unit": "lbs"
-                        },
-                        {
-                                "ingredient_id": 23,
-                                "quantity": 1,
-                                "unit": "bunches"
-                        },
-                        {
-                                "ingredient_id": 1,
-                                "quantity": 1.75,
-                                "unit": "lbs"
-                        },
-                        {
-                                "ingredient_id": 2,
-                                "quantity": 1.5,
-                                "unit": "lbs"
+                                "quantity": 0.75,
+                                "unit": "packages"
                         },
                         {
                                 "ingredient_id": 5,
-                                "quantity": 0.5,
+                                "quantity": 0.75,
                                 "unit": "gallons"
                         },
                         {
                                 "ingredient_id": 19,
-                                "quantity": 0.25,
+                                "quantity": 1.5,
                                 "unit": "boxes"
                         },
                         {
-                                "ingredient_id": 15,
-                                "quantity": 0.5,
-                                "unit": "cups"
+                                "ingredient_id": 25,
+                                "quantity": 0.75,
+                                "unit": "bunches"
                         },
                         {
-                                "ingredient_id": 8,
+                                "ingredient_id": 3,
+                                "quantity": 1,
+                                "unit": "pieces"
+                        },
+                        {
+                                "ingredient_id": 26,
+                                "quantity": 0.5,
+                                "unit": "pieces"
+                        },
+                        {
+                                "ingredient_id": 22,
+                                "quantity": 0.75,
+                                "unit": "gallons"
+                        },
+                        {
+                                "ingredient_id": 17,
+                                "quantity": 1,
+                                "unit": "packages"
+                        },
+                        {
+                                "ingredient_id": 2,
+                                "quantity": 1,
+                                "unit": "packages"
+                        },
+                        {
+                                "ingredient_id": 6,
                                 "quantity": 1.25,
+                                "unit": "pieces"
+                        },
+                        {
+                                "ingredient_id": 1,
+                                "quantity": 1.5,
                                 "unit": "lbs"
+                        },
+                        {
+                                "ingredient_id": 24,
+                                "quantity": 0.75,
+                                "unit": "packages"
+                        },
+                        {
+                                "ingredient_id": 4,
+                                "quantity": 0.5,
+                                "unit": "blocks"
                         },
                         {
                                 "ingredient_id": 28,
                                 "quantity": 0.5,
-                                "unit": "packages"
+                                "unit": "boxes"
+                        },
+                        {
+                                "ingredient_id": 16,
+                                "quantity": 0.5,
+                                "unit": "lbs"
                         }
                 ]
         },
@@ -1746,12 +1724,11 @@ class DemoDataManager {
                 "title": "Greek Feast Combo",
                 "description": "Mediterranean feast with multiple dishes",
                 "type": "combo",
-                "image_url": "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=400&h=300&fit=crop",
+                "image_url": "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=400&h=300&fit=crop",
                 "servings": 6,
-                "meal_type": "dinner",
                 "prep_time": 25,
-                "cook_time": 15,
-                "created_at": "2025-08-20T23:30:00.000Z",
+                "cook_time": 30,
+                "created_at": "2025-08-21T09:15:00.000Z",
                 "instructions": [
                         "Prepare all component recipes according to their individual instructions",
                         "Coordinate cooking times to serve everything together",
@@ -1772,90 +1749,80 @@ class DemoDataManager {
                                 "servings_multiplier": 1
                         },
                         {
-                                "recipe_id": 6,
+                                "recipe_id": 11,
                                 "servings_multiplier": 1
                         }
                 ],
                 "ingredients": [
                         {
                                 "ingredient_id": 26,
-                                "quantity": 1,
+                                "quantity": 0.5,
                                 "unit": "pieces"
                         },
                         {
                                 "ingredient_id": 22,
-                                "quantity": 0.5,
-                                "unit": "blocks"
+                                "quantity": 1.75,
+                                "unit": "gallons"
                         },
                         {
                                 "ingredient_id": 17,
-                                "quantity": 3.5,
+                                "quantity": 2.25,
                                 "unit": "packages"
                         },
                         {
-                                "ingredient_id": 9,
+                                "ingredient_id": 2,
+                                "quantity": 1,
+                                "unit": "packages"
+                        },
+                        {
+                                "ingredient_id": 6,
+                                "quantity": 2.25,
+                                "unit": "pieces"
+                        },
+                        {
+                                "ingredient_id": 19,
+                                "quantity": 0.75,
+                                "unit": "boxes"
+                        },
+                        {
+                                "ingredient_id": 10,
+                                "quantity": 1.5,
+                                "unit": "lbs"
+                        },
+                        {
+                                "ingredient_id": 21,
+                                "quantity": 0.25,
+                                "unit": "packages"
+                        },
+                        {
+                                "ingredient_id": 30,
                                 "quantity": 2,
                                 "unit": "lbs"
                         },
                         {
-                                "ingredient_id": 24,
-                                "quantity": 1.25,
-                                "unit": "lbs"
-                        },
-                        {
-                                "ingredient_id": 6,
-                                "quantity": 3,
-                                "unit": "lbs"
-                        },
-                        {
-                                "ingredient_id": 1,
-                                "quantity": 5.25,
-                                "unit": "lbs"
-                        },
-                        {
-                                "ingredient_id": 10,
-                                "quantity": 1.75,
-                                "unit": "bunches"
-                        },
-                        {
-                                "ingredient_id": 21,
-                                "quantity": 1.5,
-                                "unit": "gallons"
-                        },
-                        {
-                                "ingredient_id": 23,
-                                "quantity": 0.5,
-                                "unit": "bunches"
-                        },
-                        {
-                                "ingredient_id": 2,
-                                "quantity": 1.5,
-                                "unit": "lbs"
-                        },
-                        {
-                                "ingredient_id": 4,
+                                "ingredient_id": 11,
                                 "quantity": 0.75,
-                                "unit": "blocks"
-                        },
-                        {
-                                "ingredient_id": 5,
-                                "quantity": 1,
-                                "unit": "gallons"
+                                "unit": "lbs"
                         },
                         {
                                 "ingredient_id": 18,
-                                "quantity": 0.5,
-                                "unit": "boxes"
+                                "quantity": 0.25,
+                                "unit": "bottles"
                         },
                         {
-                                "ingredient_id": 8,
-                                "quantity": 1,
+                                "ingredient_id": 12,
+                                "quantity": 0.75,
+                                "unit": "bunches"
+                        },
+                        {
+                                "ingredient_id": 16,
+                                "quantity": 0.75,
                                 "unit": "lbs"
                         },
                         {
-                                "ingredient_id": 13,
-                                "quantity": 1,
-                                "unit": "lbs"
+                                "ingredient_id": 3,
+                                "quantity": 1.25,
+                                "unit": "pieces"
                         }
                 ]
         },
@@ -1864,12 +1831,11 @@ class DemoDataManager {
                 "title": "Vegetarian Quinoa Feast Combo",
                 "description": "Healthy vegetarian meal with quinoa",
                 "type": "combo",
-                "image_url": "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400&h=300&fit=crop",
-                "servings": 4,
-                "meal_type": "lunch",
-                "prep_time": 20,
-                "cook_time": 15,
-                "created_at": "2025-08-26T05:45:00.000Z",
+                "image_url": "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&h=300&fit=crop",
+                "servings": 6,
+                "prep_time": 15,
+                "cook_time": 20,
+                "created_at": "2025-08-25T20:45:00.000Z",
                 "instructions": [
                         "Prepare all component recipes according to their individual instructions",
                         "Coordinate cooking times to serve everything together",
@@ -1882,74 +1848,64 @@ class DemoDataManager {
                 ],
                 "combo_recipes": [
                         {
-                                "recipe_id": 5,
+                                "recipe_id": 1,
                                 "servings_multiplier": 1
                         },
                         {
-                                "recipe_id": 12,
+                                "recipe_id": 4,
                                 "servings_multiplier": 1
                         }
                 ],
                 "ingredients": [
                         {
-                                "ingredient_id": 26,
-                                "quantity": 1,
-                                "unit": "pieces"
-                        },
-                        {
-                                "ingredient_id": 22,
-                                "quantity": 0.5,
-                                "unit": "blocks"
-                        },
-                        {
-                                "ingredient_id": 17,
-                                "quantity": 3.25,
-                                "unit": "packages"
-                        },
-                        {
-                                "ingredient_id": 9,
-                                "quantity": 2.5,
-                                "unit": "lbs"
-                        },
-                        {
-                                "ingredient_id": 24,
-                                "quantity": 0.5,
-                                "unit": "lbs"
-                        },
-                        {
-                                "ingredient_id": 6,
+                                "ingredient_id": 23,
                                 "quantity": 2,
                                 "unit": "lbs"
                         },
                         {
-                                "ingredient_id": 1,
-                                "quantity": 1.5,
-                                "unit": "lbs"
-                        },
-                        {
-                                "ingredient_id": 4,
-                                "quantity": 0.5,
-                                "unit": "blocks"
-                        },
-                        {
                                 "ingredient_id": 21,
                                 "quantity": 1,
+                                "unit": "packages"
+                        },
+                        {
+                                "ingredient_id": 5,
+                                "quantity": 0.75,
                                 "unit": "gallons"
                         },
                         {
                                 "ingredient_id": 19,
-                                "quantity": 0.25,
+                                "quantity": 0.5,
                                 "unit": "boxes"
                         },
                         {
-                                "ingredient_id": 23,
+                                "ingredient_id": 25,
                                 "quantity": 0.75,
                                 "unit": "bunches"
                         },
                         {
                                 "ingredient_id": 3,
-                                "quantity": 1.75,
+                                "quantity": 1,
+                                "unit": "pieces"
+                        },
+                        {
+                                "ingredient_id": 17,
+                                "quantity": 1.25,
                                 "unit": "packages"
+                        },
+                        {
+                                "ingredient_id": 10,
+                                "quantity": 1.5,
+                                "unit": "lbs"
+                        },
+                        {
+                                "ingredient_id": 30,
+                                "quantity": 2,
+                                "unit": "lbs"
+                        },
+                        {
+                                "ingredient_id": 11,
+                                "quantity": 0.75,
+                                "unit": "lbs"
                         }
                 ]
         },
@@ -1959,11 +1915,10 @@ class DemoDataManager {
                 "description": "Perfect weekend brunch combination",
                 "type": "combo",
                 "image_url": "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400&h=300&fit=crop",
-                "servings": 8,
-                "meal_type": "breakfast",
-                "prep_time": 35,
+                "servings": 4,
+                "prep_time": 40,
                 "cook_time": 15,
-                "created_at": "2025-08-31T16:15:00.000Z",
+                "created_at": "2025-09-01T10:00:00.000Z",
                 "instructions": [
                         "Prepare all component recipes according to their individual instructions",
                         "Coordinate cooking times to serve everything together",
@@ -1991,73 +1946,78 @@ class DemoDataManager {
                 "ingredients": [
                         {
                                 "ingredient_id": 23,
-                                "quantity": 1.5,
-                                "unit": "bunches"
+                                "quantity": 2.25,
+                                "unit": "lbs"
                         },
                         {
                                 "ingredient_id": 28,
                                 "quantity": 0.25,
-                                "unit": "packages"
-                        },
-                        {
-                                "ingredient_id": 19,
-                                "quantity": 0.75,
                                 "unit": "boxes"
                         },
                         {
-                                "ingredient_id": 2,
-                                "quantity": 1,
-                                "unit": "lbs"
+                                "ingredient_id": 19,
+                                "quantity": 1.5,
+                                "unit": "boxes"
                         },
                         {
-                                "ingredient_id": 27,
-                                "quantity": 1.25,
-                                "unit": "lbs"
+                                "ingredient_id": 8,
+                                "quantity": 2,
+                                "unit": "bunches"
                         },
                         {
-                                "ingredient_id": 4,
-                                "quantity": 0.5,
-                                "unit": "blocks"
-                        },
-                        {
-                                "ingredient_id": 21,
-                                "quantity": 1,
-                                "unit": "gallons"
-                        },
-                        {
-                                "ingredient_id": 17,
-                                "quantity": 3.5,
+                                "ingredient_id": 14,
+                                "quantity": 0.75,
                                 "unit": "packages"
                         },
                         {
-                                "ingredient_id": 9,
-                                "quantity": 0.5,
-                                "unit": "lbs"
-                        },
-                        {
-                                "ingredient_id": 3,
-                                "quantity": 1.75,
-                                "unit": "packages"
+                                "ingredient_id": 26,
+                                "quantity": 2.25,
+                                "unit": "pieces"
                         },
                         {
                                 "ingredient_id": 1,
+                                "quantity": 2.75,
+                                "unit": "lbs"
+                        },
+                        {
+                                "ingredient_id": 6,
+                                "quantity": 2,
+                                "unit": "pieces"
+                        },
+                        {
+                                "ingredient_id": 18,
+                                "quantity": 0.5,
+                                "unit": "bottles"
+                        },
+                        {
+                                "ingredient_id": 15,
+                                "quantity": 0.75,
+                                "unit": "packages"
+                        },
+                        {
+                                "ingredient_id": 21,
+                                "quantity": 0.5,
+                                "unit": "packages"
+                        },
+                        {
+                                "ingredient_id": 11,
                                 "quantity": 1.25,
                                 "unit": "lbs"
                         },
                         {
-                                "ingredient_id": 16,
-                                "quantity": 0.75,
-                                "unit": "cups"
+                                "ingredient_id": 17,
+                                "quantity": 1.5,
+                                "unit": "packages"
                         },
                         {
-                                "ingredient_id": 22,
-                                "quantity": 0.5,
-                                "unit": "blocks"
+                                "ingredient_id": 29,
+                                "quantity": 1,
+                                "unit": "packages"
                         },
                         {
-                                "ingredient_id": 11,
-                                "quantity": 0.75,
-                                "unit": "pieces"
+                                "ingredient_id": 30,
+                                "quantity": 1.25,
+                                "unit": "lbs"
                         }
                 ]
         },
@@ -2068,10 +2028,9 @@ class DemoDataManager {
                 "type": "combo",
                 "image_url": "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=400&h=300&fit=crop",
                 "servings": 6,
-                "meal_type": "lunch",
-                "prep_time": 25,
-                "cook_time": 15,
-                "created_at": "2025-09-06T06:00:00.000Z",
+                "prep_time": 35,
+                "cook_time": 10,
+                "created_at": "2025-09-05T23:45:00.000Z",
                 "instructions": [
                         "Prepare all component recipes according to their individual instructions",
                         "Coordinate cooking times to serve everything together",
@@ -2092,79 +2051,74 @@ class DemoDataManager {
                                 "servings_multiplier": 1
                         },
                         {
-                                "recipe_id": 12,
+                                "recipe_id": 10,
                                 "servings_multiplier": 1
                         }
                 ],
                 "ingredients": [
                         {
                                 "ingredient_id": 26,
-                                "quantity": 1,
+                                "quantity": 0.5,
                                 "unit": "pieces"
                         },
                         {
                                 "ingredient_id": 22,
-                                "quantity": 0.5,
-                                "unit": "blocks"
-                        },
-                        {
-                                "ingredient_id": 17,
-                                "quantity": 5,
-                                "unit": "packages"
-                        },
-                        {
-                                "ingredient_id": 9,
-                                "quantity": 2.5,
-                                "unit": "lbs"
-                        },
-                        {
-                                "ingredient_id": 24,
-                                "quantity": 0.5,
-                                "unit": "lbs"
-                        },
-                        {
-                                "ingredient_id": 6,
-                                "quantity": 3,
-                                "unit": "lbs"
-                        },
-                        {
-                                "ingredient_id": 1,
-                                "quantity": 3.25,
-                                "unit": "lbs"
-                        },
-                        {
-                                "ingredient_id": 10,
-                                "quantity": 1.75,
-                                "unit": "bunches"
-                        },
-                        {
-                                "ingredient_id": 21,
-                                "quantity": 2,
+                                "quantity": 0.75,
                                 "unit": "gallons"
                         },
                         {
-                                "ingredient_id": 23,
-                                "quantity": 1.25,
-                                "unit": "bunches"
+                                "ingredient_id": 17,
+                                "quantity": 3.75,
+                                "unit": "packages"
                         },
                         {
                                 "ingredient_id": 2,
+                                "quantity": 1,
+                                "unit": "packages"
+                        },
+                        {
+                                "ingredient_id": 6,
+                                "quantity": 1.25,
+                                "unit": "pieces"
+                        },
+                        {
+                                "ingredient_id": 19,
+                                "quantity": 1,
+                                "unit": "boxes"
+                        },
+                        {
+                                "ingredient_id": 10,
                                 "quantity": 1.5,
                                 "unit": "lbs"
                         },
                         {
-                                "ingredient_id": 4,
-                                "quantity": 0.5,
-                                "unit": "blocks"
-                        },
-                        {
-                                "ingredient_id": 19,
+                                "ingredient_id": 21,
                                 "quantity": 0.25,
-                                "unit": "boxes"
+                                "unit": "packages"
                         },
                         {
-                                "ingredient_id": 3,
+                                "ingredient_id": 30,
+                                "quantity": 3.25,
+                                "unit": "lbs"
+                        },
+                        {
+                                "ingredient_id": 11,
+                                "quantity": 0.75,
+                                "unit": "lbs"
+                        },
+                        {
+                                "ingredient_id": 1,
+                                "quantity": 1.25,
+                                "unit": "lbs"
+                        },
+                        {
+                                "ingredient_id": 23,
                                 "quantity": 1.75,
+                                "unit": "lbs"
+                        },
+                        {
+                                "ingredient_id": 29,
+                                "quantity": 1,
                                 "unit": "packages"
                         }
                 ]
@@ -2175,76 +2129,45 @@ class DemoDataManager {
         this.meals = [
         {
                 "id": 1,
-                "name": "Healthy Lunch Combo",
-                "description": "Perfect healthy lunch combination",
+                "name": "Italian Family Dinner",
+                "description": "A hearty family dinner with italian favorites",
                 "recipes": [
                         {
-                                "recipeId": 20,
+                                "recipeId": 1,
                                 "servings": 4
+                        },
+                        {
+                                "recipeId": 2,
+                                "servings": 2
                         }
                 ],
                 "totalServings": 4,
                 "mealTypes": [
-                        "lunch"
+                        "dinner"
                 ],
                 "labels": [
-                        "midday",
-                        "satisfying",
-                        "healthy"
+                        "family",
+                        "hearty",
+                        "italian"
                 ],
                 "tags": [
-                        "healthy"
+                        "weekend"
                 ],
-                "estimatedTime": 40,
-                "createdAt": "2025-09-09T13:32:52.698Z",
-                "updatedAt": "2025-09-04T13:32:52.698Z"
+                "estimatedTime": 70,
+                "createdAt": "2025-08-26T14:45:08.992Z",
+                "updatedAt": "2025-09-09T14:45:08.992Z"
         },
         {
                 "id": 2,
-                "name": "Asian Lunch Combo",
-                "description": "Perfect asian lunch combination",
+                "name": "Italian Family Dinner",
+                "description": "A hearty family dinner with italian favorites",
                 "recipes": [
                         {
-                                "recipeId": 5,
+                                "recipeId": 4,
                                 "servings": 2
                         },
                         {
-                                "recipeId": 9,
-                                "servings": 2
-                        },
-                        {
-                                "recipeId": 18,
-                                "servings": 3
-                        }
-                ],
-                "totalServings": 3,
-                "mealTypes": [
-                        "lunch"
-                ],
-                "labels": [
-                        "midday",
-                        "satisfying",
-                        "asian"
-                ],
-                "tags": [
-                        "special-occasion",
-                        "weeknight"
-                ],
-                "estimatedTime": 100,
-                "createdAt": "2025-08-12T13:32:52.698Z",
-                "updatedAt": "2025-09-09T13:32:52.698Z"
-        },
-        {
-                "id": 3,
-                "name": "American Night",
-                "description": "Classic american meal with all the fixings",
-                "recipes": [
-                        {
-                                "recipeId": 13,
-                                "servings": 2
-                        },
-                        {
-                                "recipeId": 14,
+                                "recipeId": 2,
                                 "servings": 2
                         }
                 ],
@@ -2253,16 +2176,56 @@ class DemoDataManager {
                         "dinner"
                 ],
                 "labels": [
-                        "classic",
-                        "complete",
-                        "american"
+                        "family",
+                        "hearty",
+                        "italian"
                 ],
                 "tags": [
-                        "weeknight"
+                        "weeknight",
+                        "comfort"
                 ],
-                "estimatedTime": 95,
-                "createdAt": "2025-09-06T13:32:52.698Z",
-                "updatedAt": "2025-09-07T13:32:52.698Z"
+                "estimatedTime": 55,
+                "createdAt": "2025-08-30T14:45:08.992Z",
+                "updatedAt": "2025-09-06T14:45:08.992Z"
+        },
+        {
+                "id": 3,
+                "name": "Italian Family Dinner",
+                "description": "A hearty family dinner with italian favorites",
+                "recipes": [
+                        {
+                                "recipeId": 1,
+                                "servings": 4
+                        },
+                        {
+                                "recipeId": 2,
+                                "servings": 3
+                        },
+                        {
+                                "recipeId": 4,
+                                "servings": 4
+                        },
+                        {
+                                "recipeId": 3,
+                                "servings": 3
+                        }
+                ],
+                "totalServings": 4,
+                "mealTypes": [
+                        "dinner"
+                ],
+                "labels": [
+                        "family",
+                        "hearty",
+                        "italian"
+                ],
+                "tags": [
+                        "special-occasion",
+                        "weekend"
+                ],
+                "estimatedTime": 100,
+                "createdAt": "2025-08-31T14:45:08.992Z",
+                "updatedAt": "2025-09-09T14:45:08.992Z"
         },
         {
                 "id": 4,
@@ -2270,19 +2233,15 @@ class DemoDataManager {
                 "description": "Classic italian meal with all the fixings",
                 "recipes": [
                         {
-                                "recipeId": 14,
-                                "servings": 3
+                                "recipeId": 4,
+                                "servings": 4
                         },
                         {
-                                "recipeId": 17,
-                                "servings": 3
-                        },
-                        {
-                                "recipeId": 16,
+                                "recipeId": 1,
                                 "servings": 2
                         }
                 ],
-                "totalServings": 3,
+                "totalServings": 4,
                 "mealTypes": [
                         "dinner"
                 ],
@@ -2292,280 +2251,245 @@ class DemoDataManager {
                         "italian"
                 ],
                 "tags": [
-                        "weeknight",
-                        "healthy"
+                        "weekend",
+                        "special-occasion"
                 ],
-                "estimatedTime": 110,
-                "createdAt": "2025-09-03T13:32:52.698Z",
-                "updatedAt": "2025-09-07T13:32:52.698Z"
+                "estimatedTime": 45,
+                "createdAt": "2025-08-22T14:45:08.992Z",
+                "updatedAt": "2025-09-10T14:45:08.992Z"
         },
         {
                 "id": 5,
-                "name": "Healthy Lunch Combo",
-                "description": "Perfect healthy lunch combination",
+                "name": "Comfort Food Lunch Combo",
+                "description": "Perfect comfort food lunch combination",
                 "recipes": [
-                        {
-                                "recipeId": 20,
-                                "servings": 4
-                        },
                         {
                                 "recipeId": 9,
                                 "servings": 3
                         },
                         {
-                                "recipeId": 5,
-                                "servings": 2
-                        }
-                ],
-                "totalServings": 4,
-                "mealTypes": [
-                        "lunch"
-                ],
-                "labels": [
-                        "midday",
-                        "satisfying",
-                        "healthy"
-                ],
-                "tags": [
-                        "weeknight"
-                ],
-                "estimatedTime": 105,
-                "createdAt": "2025-08-19T13:32:52.698Z",
-                "updatedAt": "2025-09-06T13:32:52.698Z"
-        },
-        {
-                "id": 6,
-                "name": "Mexican Lunch Combo",
-                "description": "Perfect mexican lunch combination",
-                "recipes": [
-                        {
-                                "recipeId": 20,
-                                "servings": 2
+                                "recipeId": 12,
+                                "servings": 3
                         },
                         {
                                 "recipeId": 5,
-                                "servings": 4
-                        },
-                        {
-                                "recipeId": 18,
                                 "servings": 3
                         }
                 ],
-                "totalServings": 4,
+                "totalServings": 3,
                 "mealTypes": [
                         "lunch"
                 ],
                 "labels": [
                         "midday",
                         "satisfying",
-                        "mexican"
-                ],
-                "tags": [
-                        "weekend",
-                        "family-friendly"
-                ],
-                "estimatedTime": 85,
-                "createdAt": "2025-09-10T13:32:52.698Z",
-                "updatedAt": "2025-09-09T13:32:52.698Z"
-        },
-        {
-                "id": 7,
-                "name": "Mediterranean Lunch Combo",
-                "description": "Perfect mediterranean lunch combination",
-                "recipes": [
-                        {
-                                "recipeId": 5,
-                                "servings": 2
-                        },
-                        {
-                                "recipeId": 20,
-                                "servings": 2
-                        },
-                        {
-                                "recipeId": 18,
-                                "servings": 2
-                        }
-                ],
-                "totalServings": 2,
-                "mealTypes": [
-                        "lunch"
-                ],
-                "labels": [
-                        "midday",
-                        "satisfying",
-                        "mediterranean"
+                        "comfort-food"
                 ],
                 "tags": [
                         "comfort"
                 ],
-                "estimatedTime": 85,
-                "createdAt": "2025-08-24T13:32:52.698Z",
-                "updatedAt": "2025-09-06T13:32:52.698Z"
+                "estimatedTime": 45,
+                "createdAt": "2025-08-30T14:45:08.992Z",
+                "updatedAt": "2025-09-07T14:45:08.992Z"
+        },
+        {
+                "id": 6,
+                "name": "Quick Mexican Breakfast",
+                "description": "Fast and delicious mexican breakfast",
+                "recipes": [
+                        {
+                                "recipeId": 6,
+                                "servings": 4
+                        }
+                ],
+                "totalServings": 4,
+                "mealTypes": [
+                        "breakfast"
+                ],
+                "labels": [
+                        "quick",
+                        "morning",
+                        "mexican"
+                ],
+                "tags": [
+                        "comfort",
+                        "weekend"
+                ],
+                "estimatedTime": 25,
+                "createdAt": "2025-09-02T14:45:08.992Z",
+                "updatedAt": "2025-09-06T14:45:08.992Z"
+        },
+        {
+                "id": 7,
+                "name": "Quick Mexican Breakfast",
+                "description": "Fast and delicious mexican breakfast",
+                "recipes": [
+                        {
+                                "recipeId": 8,
+                                "servings": 2
+                        },
+                        {
+                                "recipeId": 6,
+                                "servings": 3
+                        }
+                ],
+                "totalServings": 3,
+                "mealTypes": [
+                        "breakfast"
+                ],
+                "labels": [
+                        "quick",
+                        "morning",
+                        "mexican"
+                ],
+                "tags": [
+                        "weekend"
+                ],
+                "estimatedTime": 50,
+                "createdAt": "2025-09-07T14:45:08.992Z",
+                "updatedAt": "2025-09-10T14:45:08.992Z"
         }
 ];
 
         // Scheduled meals for planning (7 items)
         this.scheduledMeals = [
         {
-                "id": 7,
+                "id": 2,
                 "meal_id": 5,
                 "date": "2025-09-13",
                 "scheduled_date": "2025-09-13",
-                "meal_type": "lunch",
-                "servings": 4,
-                "notes": "Scheduled Healthy Lunch Combo",
-                "recipes": [
-                        {
-                                "recipeId": 20,
-                                "servings": 4
-                        },
-                        {
-                                "recipeId": 9,
-                                "servings": 3
-                        },
-                        {
-                                "recipeId": 5,
-                                "servings": 2
-                        }
-                ],
-                "recipe_id": 20,
-                "total_time": 105,
-                "created_at": "2025-09-10T13:32:52.698Z"
-        },
-        {
-                "id": 2,
-                "meal_id": 2,
-                "date": "2025-09-17",
-                "scheduled_date": "2025-09-17",
-                "meal_type": "lunch",
                 "servings": 3,
-                "notes": "Scheduled Asian Lunch Combo",
+                "notes": "Scheduled Comfort Food Lunch Combo",
                 "recipes": [
                         {
-                                "recipeId": 5,
-                                "servings": 2
-                        },
-                        {
                                 "recipeId": 9,
-                                "servings": 2
+                                "servings": 3
                         },
                         {
-                                "recipeId": 18,
+                                "recipeId": 12,
+                                "servings": 3
+                        },
+                        {
+                                "recipeId": 5,
                                 "servings": 3
                         }
                 ],
-                "recipe_id": 5,
-                "total_time": 100,
-                "created_at": "2025-09-10T13:32:52.698Z"
-        },
-        {
-                "id": 5,
-                "recipe_id": 10,
-                "date": "2025-09-20",
-                "scheduled_date": "2025-09-20",
-                "meal_type": "snack",
-                "servings": 8,
-                "notes": "Scheduled Energy Chicken Breast Bites",
-                "recipes": [
-                        {
-                                "recipeId": 10,
-                                "servings": 8
-                        }
-                ],
-                "total_time": 20,
-                "created_at": "2025-09-10T13:32:52.698Z"
+                "recipe_id": 9,
+                "total_time": 45,
+                "created_at": "2025-09-10T14:45:08.992Z"
         },
         {
                 "id": 6,
                 "meal_id": 4,
-                "date": "2025-09-22",
-                "scheduled_date": "2025-09-22",
-                "meal_type": "dinner",
-                "servings": 3,
+                "date": "2025-09-14",
+                "scheduled_date": "2025-09-14",
+                "servings": 4,
                 "notes": "Scheduled Italian Night",
                 "recipes": [
                         {
-                                "recipeId": 14,
-                                "servings": 3
+                                "recipeId": 4,
+                                "servings": 4
                         },
                         {
-                                "recipeId": 17,
-                                "servings": 3
-                        },
-                        {
-                                "recipeId": 16,
+                                "recipeId": 1,
                                 "servings": 2
                         }
                 ],
-                "recipe_id": 14,
-                "total_time": 110,
-                "created_at": "2025-09-10T13:32:52.698Z"
+                "recipe_id": 4,
+                "total_time": 45,
+                "created_at": "2025-09-10T14:45:08.992Z"
         },
         {
-                "id": 3,
-                "meal_id": 3,
-                "date": "2025-09-27",
-                "scheduled_date": "2025-09-27",
-                "meal_type": "dinner",
+                "id": 5,
+                "meal_id": 2,
+                "date": "2025-09-18",
+                "scheduled_date": "2025-09-18",
                 "servings": 2,
-                "notes": "Scheduled American Night",
+                "notes": "Scheduled Italian Family Dinner",
                 "recipes": [
                         {
-                                "recipeId": 13,
+                                "recipeId": 4,
                                 "servings": 2
                         },
                         {
-                                "recipeId": 14,
+                                "recipeId": 2,
                                 "servings": 2
                         }
                 ],
-                "recipe_id": 13,
-                "total_time": 95,
-                "created_at": "2025-09-10T13:32:52.698Z"
+                "recipe_id": 4,
+                "total_time": 55,
+                "created_at": "2025-09-10T14:45:08.992Z"
         },
         {
-                "id": 4,
-                "meal_id": 3,
-                "date": "2025-09-29",
-                "scheduled_date": "2025-09-29",
-                "meal_type": "snack",
-                "servings": 2,
-                "notes": "Scheduled American Night",
+                "id": 7,
+                "recipe_id": 5,
+                "date": "2025-09-23",
+                "scheduled_date": "2025-09-23",
+                "servings": 4,
+                "notes": "Scheduled Caesar Salad",
                 "recipes": [
                         {
-                                "recipeId": 13,
-                                "servings": 2
-                        },
-                        {
-                                "recipeId": 14,
-                                "servings": 2
+                                "recipeId": 5,
+                                "servings": 4
                         }
                 ],
-                "recipe_id": 13,
-                "total_time": 95,
-                "created_at": "2025-09-10T13:32:52.698Z"
+                "total_time": 10,
+                "created_at": "2025-09-10T14:45:08.992Z"
         },
         {
                 "id": 1,
-                "meal_id": 3,
-                "date": "2025-09-30",
-                "scheduled_date": "2025-09-30",
-                "meal_type": "breakfast",
-                "servings": 2,
-                "notes": "Scheduled American Night",
+                "meal_id": 6,
+                "date": "2025-09-24",
+                "scheduled_date": "2025-09-24",
+                "servings": 4,
+                "notes": "Scheduled Quick Mexican Breakfast",
                 "recipes": [
                         {
-                                "recipeId": 13,
-                                "servings": 2
+                                "recipeId": 6,
+                                "servings": 4
+                        }
+                ],
+                "recipe_id": 6,
+                "total_time": 25,
+                "created_at": "2025-09-10T14:45:08.992Z"
+        },
+        {
+                "id": 4,
+                "meal_id": 6,
+                "date": "2025-09-25",
+                "scheduled_date": "2025-09-25",
+                "servings": 4,
+                "notes": "Scheduled Quick Mexican Breakfast",
+                "recipes": [
+                        {
+                                "recipeId": 6,
+                                "servings": 4
+                        }
+                ],
+                "recipe_id": 6,
+                "total_time": 25,
+                "created_at": "2025-09-10T14:45:08.992Z"
+        },
+        {
+                "id": 3,
+                "meal_id": 4,
+                "date": "2025-09-27",
+                "scheduled_date": "2025-09-27",
+                "servings": 4,
+                "notes": "Scheduled Italian Night",
+                "recipes": [
+                        {
+                                "recipeId": 4,
+                                "servings": 4
                         },
                         {
-                                "recipeId": 14,
+                                "recipeId": 1,
                                 "servings": 2
                         }
                 ],
-                "recipe_id": 13,
-                "total_time": 95,
-                "created_at": "2025-09-10T13:32:52.698Z"
+                "recipe_id": 4,
+                "total_time": 45,
+                "created_at": "2025-09-10T14:45:08.992Z"
         }
 ];
     }
