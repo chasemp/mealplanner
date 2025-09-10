@@ -6,7 +6,6 @@ class RecipeManager {
         this.ingredients = [];
         this.currentRecipe = null;
         this.searchTerm = '';
-        this.selectedCategory = 'all';
         this.selectedLabels = []; // Changed to array for multi-select
         this.labelSearchTerm = ''; // For typeahead filtering
         this.sortBy = 'name';
@@ -74,97 +73,8 @@ class RecipeManager {
     render() {
         this.container.innerHTML = `
             <div class="recipe-manager">
-                <!-- Search and Filter Controls -->
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label for="recipe-search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search Recipes</label>
-                                <div class="relative">
-                                    <input type="text" id="recipe-search" 
-                                           placeholder="Search by name..." 
-                                           value="${this.searchTerm}"
-                                           class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                        </svg>
-                                    </div>
-                                </div>
-                            </div>
-                            <div>
-                                <label for="recipe-sort" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort</label>
-                                <div class="flex gap-2">
-                                    <select id="recipe-sort" class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
-                                        <option value="name" ${this.sortBy === 'name' ? 'selected' : ''}>Name</option>
-                                        <option value="date" ${this.sortBy === 'date' ? 'selected' : ''}>Date</option>
-                                        <option value="prep_time" ${this.sortBy === 'prep_time' ? 'selected' : ''}>Prep Time</option>
-                                        <option value="serving_count" ${this.sortBy === 'serving_count' ? 'selected' : ''}>Servings</option>
-                                        <option value="label_type" ${this.sortBy === 'label_type' ? 'selected' : ''}>Label Type</option>
-                                    </select>
-                                    <button id="sort-direction-btn" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white transition-colors" title="${this.sortAscending ? 'Sort Ascending' : 'Sort Descending'}">
-                                        ${this.sortAscending ? 
-                                            '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>' : 
-                                            '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>'
-                                        }
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <label for="recipe-category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Meal Type</label>
-                            <select id="recipe-category" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
-                                <option value="all" ${this.selectedCategory === 'all' ? 'selected' : ''}>All Types</option>
-                                <option value="breakfast" ${this.selectedCategory === 'breakfast' ? 'selected' : ''}>Breakfast</option>
-                                <option value="lunch" ${this.selectedCategory === 'lunch' ? 'selected' : ''}>Lunch</option>
-                                <option value="dinner" ${this.selectedCategory === 'dinner' ? 'selected' : ''}>Dinner</option>
-                                <option value="snack" ${this.selectedCategory === 'snack' ? 'selected' : ''}>Snack</option>
-                            </select>
-                        </div>
-                        
-                        <div class="relative">
-                            <label for="recipe-labels" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Filter by Labels</label>
-                            <div class="relative">
-                                <div id="recipe-labels-container" class="w-full min-h-[42px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus-within:ring-2 focus-within:ring-blue-500 dark:bg-gray-700 dark:text-white cursor-text flex flex-wrap gap-1 items-center">
-                                    ${this.selectedLabels.map(label => {
-                                        const labelType = this.inferLabelType(label);
-                                        const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
-                                        return `
-                                        <span class="inline-flex items-center px-2 py-1 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full">
-                                            ${icon}${label}
-                                            <button type="button" class="ml-1 text-blue-600 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-100" onclick="window.recipeManager.removeLabel('${label}')">
-                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                                </svg>
-                                            </button>
-                                        </span>
-                                        `;
-                                    }).join('')}
-                                    <input 
-                                        type="text" 
-                                        id="recipe-labels-input" 
-                                        class="flex-1 min-w-[120px] bg-transparent border-none outline-none text-sm placeholder-gray-500 dark:placeholder-gray-400" 
-                                        placeholder="${this.selectedLabels.length > 0 ? 'Type to add more...' : 'Type to search labels...'}"
-                                        autocomplete="off"
-                                    />
-                                </div>
-                                <div id="recipe-labels-dropdown" class="absolute z-40 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg hidden max-h-48 overflow-y-auto">
-                                    <!-- Dropdown options will be populated by JavaScript -->
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-end">
-                            <button id="clear-recipe-filters-btn" class="w-full px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md text-sm font-medium transition-colors">
-                                Clear Filters
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
                 <!-- Header with Add Button -->
-                <div class="flex justify-between items-center mb-6">
+                <div class="flex justify-between items-center mb-4">
                     <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Recipes</h2>
                     <button id="add-recipe-btn" class="btn-primary flex items-center space-x-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -174,41 +84,296 @@ class RecipeManager {
                     </button>
                 </div>
 
-                <!-- Recipe Stats -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div class="bg-white rounded-lg shadow p-4">
-                        <div class="text-2xl font-bold text-blue-600">${this.getFilteredRecipes().length}</div>
-                        <div class="text-sm text-gray-600">Total Recipes</div>
-                    </div>
-                    <div class="bg-white rounded-lg shadow p-4">
-                        <div class="text-2xl font-bold text-green-600">${this.getUniqueLabels().length}</div>
-                        <div class="text-sm text-gray-600">Labels</div>
-                    </div>
-                    <div class="bg-white rounded-lg shadow p-4 cursor-pointer hover:bg-gray-50 transition-colors ${this.showFavoritesOnly ? 'ring-2 ring-yellow-400 bg-yellow-50' : ''}" id="favorites-filter-btn">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <div class="text-2xl font-bold text-purple-600">${this.getFavoriteRecipes().length}</div>
-                                <div class="text-sm text-gray-600">Favorites ${this.showFavoritesOnly ? '(Active)' : ''}</div>
+                <!-- Search and Filter Controls -->
+                <!-- 
+                LAYOUT STRATEGY: 5-column layout matching Meals tab exactly
+                - Mobile: All inputs stack vertically (grid-cols-1)
+                - Desktop: 5-column grid with Search+Sort sharing first column (md:grid-cols-5)
+                
+                COLUMN DISTRIBUTION:
+                1. Search + Sort (side-by-side on same line): Exception grouping
+                2. Multi-Label Filter (1 column): Gets its own column  
+                3. Clear Filters (1 column): Gets its own column
+                4. [Empty/Future expansion]
+                
+                DESIGN RATIONALE:
+                - Compact 4-column layout after removing meal type dropdown
+                - Search + Sort share first column (side-by-side on same line)
+                - Multi-label filter handles meal types as orange labels
+                - Each other filter gets individual column for clarity
+                -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-4">
+                    <!-- Row 1: Search + Sort (side-by-side on same line) -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <!-- Search Input (left side) -->
+                        <div>
+                            <label for="recipe-search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search Recipes</label>
+                            <div class="relative">
+                                <input type="text" id="recipe-search" 
+                                       placeholder="Search by name..." 
+                                       value="${this.searchTerm}"
+                                       class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                </div>
                             </div>
-                            <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                            </svg>
+                        </div>
+                        <!-- Sort + Direction (right side) -->
+                        <div>
+                            <label for="recipe-sort" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort</label>
+                            <!-- Sort dropdown + Direction button in flex layout -->
+                            <div class="flex gap-2">
+                                <select id="recipe-sort" class="w-full md:w-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                                    <option value="name" ${this.sortBy === 'name' ? 'selected' : ''}>Name</option>
+                                    <option value="date" ${this.sortBy === 'date' ? 'selected' : ''}>Created</option>
+                                    <option value="prep_time" ${this.sortBy === 'prep_time' ? 'selected' : ''}>Total Time</option>
+                                    <option value="serving_count" ${this.sortBy === 'serving_count' ? 'selected' : ''}>Servings</option>
+                                    <option value="label_type" ${this.sortBy === 'label_type' ? 'selected' : ''}>Label Type</option>
+                                </select>
+                                <button id="sort-direction-btn" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white transition-colors" title="${this.sortAscending ? 'Sort Ascending' : 'Sort Descending'}">
+                                    ${this.sortAscending ? 
+                                        '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>' : 
+                                        '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>'
+                                    }
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Row 2: Multi-Label Filter -->
+                    <div class="mb-4">
+                        <label for="recipe-labels" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Filter by Labels</label>
+                        <!-- Multi-select label input with typeahead and chips -->
+                        <div class="relative">
+                            <div id="recipe-labels-container" class="w-full min-h-[42px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus-within:ring-2 focus-within:ring-blue-500 dark:bg-gray-700 dark:text-white cursor-text flex flex-wrap gap-1 items-center">
+                                ${this.selectedLabels.map(label => {
+                                    const labelType = this.inferLabelType(label);
+                                    const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
+                                    return `
+                                    <span class="inline-flex items-center px-2 py-1 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full">
+                                        ${icon}${label}
+                                        <button type="button" class="ml-1 text-blue-600 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-100" onclick="window.recipeManager.removeLabel('${label}')">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                            </svg>
+                                        </button>
+                                    </span>
+                                    `;
+                                }).join('')}
+                                <input 
+                                    type="text" 
+                                    id="recipe-labels-input" 
+                                    class="flex-1 min-w-[120px] bg-transparent border-none outline-none text-sm placeholder-gray-500 dark:placeholder-gray-400" 
+                                    placeholder="${this.selectedLabels.length > 0 ? 'Type to add more...' : 'Type to search labels...'}"
+                                    autocomplete="off"
+                                />
+                            </div>
+                            <div id="recipe-labels-dropdown" class="absolute z-40 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg hidden max-h-48 overflow-y-auto">
+                                <!-- Dropdown options will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Row 3: Clear Filters Button -->
+                    <div>
+                        <button id="clear-recipe-filters-btn" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md text-sm font-medium transition-colors">
+                            Clear Filters
+                        </button>
+                    </div>
+                    
+                    <!-- Recipe Results Info Bar (enhanced with more emphasis) -->
+                    <div class="border-t border-gray-200 dark:border-gray-600 pt-4 mt-4">
+                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
+                            <div class="flex items-center justify-between">
+                                <!-- Left side: Results summary -->
+                                <div class="flex items-center space-x-4 text-sm font-bold text-gray-800 dark:text-white" style="text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);">
+                                <div class="flex items-center space-x-1">
+                                    <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                    </svg>
+                                    <span><strong>${this.getFilteredRecipes().length}</strong> recipes</span>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                                    </svg>
+                                    <span><strong>${this.getUniqueLabels().length}</strong> labels</span>
+                                </div>
+                                ${this.getComboRecipes().length > 0 ? `
+                                    <div class="flex items-center space-x-1">
+                                        <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                        </svg>
+                                        <span><strong>${this.getComboRecipes().length}</strong> combos</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+
+                            <!-- Right side: Filter indicators and actions -->
+                            <div class="flex items-center space-x-3">
+                                ${this.hasActiveFilters() ? `
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                                        </svg>
+                                        Filtered
+                                    </span>
+                                ` : ''}
+                                <button id="favorites-filter-btn" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-colors ${this.showFavoritesOnly ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-yellow-50 hover:text-yellow-700'}" title="${this.showFavoritesOnly ? 'Show all recipes' : `Filter to ${this.getFavoriteRecipes().length} favorites`}">
+                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                    </svg>
+                                    ${this.showFavoritesOnly ? `${this.getFavoriteRecipes().length} Favorites` : `${this.getFavoriteRecipes().length} Favorites`}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
                 <!-- Recipe Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div id="recipes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     ${this.renderRecipeCards()}
                 </div>
 
                 <!-- Empty State -->
-                ${this.getFilteredRecipes().length === 0 ? this.renderEmptyState() : ''}
+                <div id="empty-state" class="${this.getFilteredRecipes().length === 0 ? '' : 'hidden'}">
+                    ${this.getFilteredRecipes().length === 0 ? this.renderEmptyState() : ''}
+                </div>
             </div>
         `;
         
         // Re-attach event listeners after rendering
         this.attachEventListeners();
+    }
+
+    updateRecipeDisplay() {
+        // Update only the recipe cards, info bar, and empty state without re-rendering entire component
+        const recipeGrid = this.container.querySelector('#recipes-grid');
+        const emptyState = this.container.querySelector('#empty-state');
+        const infoBar = this.container.querySelector('.bg-gray-50.dark\\:bg-gray-700 .flex.items-center.justify-between');
+        
+        if (recipeGrid && emptyState) {
+            const filteredRecipes = this.getFilteredRecipes();
+            recipeGrid.innerHTML = this.renderRecipeCards();
+            
+            // Re-attach event listeners to the new recipe cards
+            this.attachRecipeCardListeners();
+            
+            // Update empty state visibility
+            if (filteredRecipes.length > 0) {
+                emptyState.classList.add('hidden');
+            } else {
+                emptyState.classList.remove('hidden');
+            }
+            
+            // Update info bar content
+            if (infoBar) {
+                this.updateInfoBar(infoBar);
+            }
+        }
+    }
+
+    updateInfoBar(infoBar) {
+        // Update the left side stats
+        const leftSide = infoBar.querySelector('.flex.items-center.space-x-6');
+        if (leftSide) {
+            leftSide.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                    </svg>
+                    <span><strong>${this.getFilteredRecipes().length}</strong> recipes</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                    </svg>
+                    <span><strong>${this.getUniqueLabels().length}</strong> labels</span>
+                </div>
+                ${this.getComboRecipes().length > 0 ? `
+                    <div class="flex items-center space-x-2">
+                        <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                        </svg>
+                        <span><strong>${this.getComboRecipes().length}</strong> combos</span>
+                    </div>
+                ` : ''}
+            `;
+        }
+
+        // Update the right side actions
+        const rightSide = infoBar.querySelector('.flex.items-center.space-x-3');
+        if (rightSide) {
+            rightSide.innerHTML = `
+                ${this.hasActiveFilters() ? `
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                        </svg>
+                        Filtered
+                    </span>
+                ` : ''}
+                <button id="favorites-filter-btn" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-colors ${this.showFavoritesOnly ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-yellow-50 hover:text-yellow-700'}" title="${this.showFavoritesOnly ? 'Show all recipes' : `Filter to ${this.getFavoriteRecipes().length} favorites`}">
+                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                    </svg>
+                    ${this.showFavoritesOnly ? `${this.getFavoriteRecipes().length} Favorites` : `${this.getFavoriteRecipes().length} Favorites`}
+                </button>
+            `;
+            
+            // Re-attach the favorites button event listener
+            const favoritesBtn = rightSide.querySelector('#favorites-filter-btn');
+            if (favoritesBtn) {
+                favoritesBtn.addEventListener('click', () => {
+                    this.showFavoritesOnly = !this.showFavoritesOnly;
+                    this.updateRecipeDisplay();
+                });
+            }
+        }
+    }
+
+    attachRecipeCardListeners() {
+        // Attach event listeners specifically for recipe cards
+        // Toggle favorite buttons
+        this.container.querySelectorAll('.toggle-favorite').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const recipeId = parseInt(btn.dataset.recipeId);
+                this.toggleFavorite(recipeId);
+            });
+        });
+
+        // Edit recipe buttons
+        this.container.querySelectorAll('.edit-recipe').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const recipeId = parseInt(btn.dataset.recipeId);
+                this.editRecipe(recipeId);
+            });
+        });
+
+        // Delete recipe buttons
+        this.container.querySelectorAll('.delete-recipe').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const recipeId = parseInt(btn.dataset.recipeId);
+                this.deleteRecipe(recipeId);
+            });
+        });
+
+        // Recipe card click (for viewing details)
+        this.container.querySelectorAll('.recipe-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                // Don't trigger if clicking on action buttons
+                if (!e.target.closest('.toggle-favorite, .edit-recipe, .delete-recipe')) {
+                    const recipeId = parseInt(card.dataset.recipeId);
+                    this.showRecipeDetail(recipeId);
+                }
+            });
+        });
     }
 
     renderRecipeCards() {
@@ -266,13 +431,20 @@ class RecipeManager {
                                 ${recipe.serving_count || recipe.servings || 'N/A'} servings
                             </span>
                         </div>
-                        <span class="px-2 py-1 bg-gray-100 rounded-full text-xs capitalize">${recipe.meal_type}</span>
                     </div>
                     
                     <div class="flex items-center justify-between">
                         <div class="flex flex-wrap gap-1">
-                            ${this.renderLabelChips(recipe.labels || [], 2)}
-                            ${(recipe.labels || []).length > 2 ? `<span class="text-xs text-gray-500">+${(recipe.labels || []).length - 2} more</span>` : ''}
+                            ${recipe.favorite ? `
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                    </svg>
+                                    Favorite
+                                </span>
+                            ` : ''}
+                            ${this.renderLabelChips(recipe.labels || [], recipe.favorite ? 1 : 2)}
+                            ${(recipe.labels || []).length > (recipe.favorite ? 1 : 2) ? `<span class="text-xs text-gray-500">+${(recipe.labels || []).length - (recipe.favorite ? 1 : 2)} more</span>` : ''}
                         </div>
                         <div class="text-xs text-gray-400">
                             ${recipe.type === 'combo' ? 
@@ -294,7 +466,7 @@ class RecipeManager {
                 </svg>
                 <h3 class="text-lg font-medium text-gray-900 mb-2">No recipes found</h3>
                 <p class="text-gray-500 text-center mb-4">
-                    ${this.searchTerm || this.selectedCategory !== 'all' 
+                    ${this.searchTerm || this.selectedLabels.length > 0
                         ? 'Try adjusting your search or filters' 
                         : 'Get started by adding your first recipe'}
                 </p>
@@ -316,10 +488,7 @@ class RecipeManager {
             );
         }
 
-        // Filter by category
-        if (this.selectedCategory !== 'all') {
-            filtered = filtered.filter(recipe => recipe.meal_type === this.selectedCategory);
-        }
+        // Note: Meal type filtering is now handled through the multi-label system
 
 
         // Filter by labels (AND logic - recipe must have ALL selected labels)
@@ -346,13 +515,18 @@ class RecipeManager {
                     result = a.title.localeCompare(b.title);
                     break;
                 case 'date':
-                    result = new Date(b.created_at) - new Date(a.created_at);
+                    // Sort by creation date
+                    result = new Date(b.created_at || 0) - new Date(a.created_at || 0);
                     break;
                 case 'prep_time':
-                    result = (a.prep_time + a.cook_time) - (b.prep_time + b.cook_time);
+                    // Sort by total time (prep + cook)
+                    const aTotalTime = (a.prep_time || 0) + (a.cook_time || 0);
+                    const bTotalTime = (b.prep_time || 0) + (b.cook_time || 0);
+                    result = aTotalTime - bTotalTime;
                     break;
                 case 'serving_count':
-                    result = (b.serving_count || b.servings || 0) - (a.serving_count || a.servings || 0);
+                    // Use 'servings' field from actual data structure
+                    result = (b.servings || 0) - (a.servings || 0);
                     break;
                 case 'label_type':
                     // Sort by primary label type, then by name within each type
@@ -483,6 +657,16 @@ class RecipeManager {
         return this.recipes.filter(recipe => recipe.favorite === true);
     }
 
+    getComboRecipes() {
+        return this.recipes.filter(recipe => recipe.type === 'combo');
+    }
+
+    hasActiveFilters() {
+        return this.searchTerm !== '' || 
+               this.selectedLabels.length > 0 ||
+               this.showFavoritesOnly;
+    }
+
     getAllLabels() {
         // Get all available labels from current recipes and ingredients
         const recipeLabels = this.getUniqueLabels();
@@ -535,18 +719,11 @@ class RecipeManager {
         if (searchInput) {
             searchInput.addEventListener('input', (e) => {
                 this.searchTerm = e.target.value;
-                this.render();
+                this.updateRecipeDisplay();
             });
         }
 
-        // Category filter
-        const categorySelect = this.container.querySelector('#recipe-category');
-        if (categorySelect) {
-            categorySelect.addEventListener('change', (e) => {
-                this.selectedCategory = e.target.value;
-                this.render();
-            });
-        }
+        // Note: Meal type filtering is now handled through the multi-label system
 
 
         // Multi-select label filter with typeahead
@@ -650,7 +827,7 @@ class RecipeManager {
         if (sortSelect) {
             sortSelect.addEventListener('change', (e) => {
                 this.sortBy = e.target.value;
-                this.render();
+                this.updateRecipeDisplay();
             });
         }
 
@@ -659,6 +836,7 @@ class RecipeManager {
         if (sortDirectionBtn) {
             sortDirectionBtn.addEventListener('click', () => {
                 this.sortAscending = !this.sortAscending;
+                // Need to re-render for sort direction button to update its icon
                 this.render();
             });
         }
@@ -668,7 +846,6 @@ class RecipeManager {
         if (clearFiltersBtn) {
             clearFiltersBtn.addEventListener('click', () => {
                 this.searchTerm = '';
-                this.selectedCategory = 'all';
                 this.selectedLabels = []; // Reset multi-select labels
                 this.labelSearchTerm = ''; // Reset label search
                 this.sortBy = 'name';
@@ -683,18 +860,12 @@ class RecipeManager {
         if (favoritesFilterBtn) {
             favoritesFilterBtn.addEventListener('click', () => {
                 this.showFavoritesOnly = !this.showFavoritesOnly;
-                this.render();
+                this.updateRecipeDisplay();
             });
         }
 
-        // Toggle favorite buttons
-        this.container.querySelectorAll('.toggle-favorite').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const recipeId = parseInt(btn.dataset.recipeId);
-                this.toggleFavorite(recipeId);
-            });
-        });
+        // Attach recipe card listeners (favorites, edit, delete, click)
+        this.attachRecipeCardListeners();
 
         // Add recipe button
         const addBtn = this.container.querySelector('#add-recipe-btn, #add-first-recipe');
@@ -703,34 +874,6 @@ class RecipeManager {
                 this.showRecipeForm();
             });
         }
-
-        // Recipe card clicks
-        this.container.querySelectorAll('.recipe-card').forEach(card => {
-            card.addEventListener('click', (e) => {
-                if (!e.target.closest('.edit-recipe, .delete-recipe')) {
-                    const recipeId = parseInt(card.dataset.recipeId);
-                    this.showRecipeDetail(recipeId);
-                }
-            });
-        });
-
-        // Edit recipe buttons
-        this.container.querySelectorAll('.edit-recipe').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const recipeId = parseInt(btn.dataset.recipeId);
-                this.editRecipe(recipeId);
-            });
-        });
-
-        // Delete recipe buttons
-        this.container.querySelectorAll('.delete-recipe').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const recipeId = parseInt(btn.dataset.recipeId);
-                this.deleteRecipe(recipeId);
-            });
-        });
     }
 
     showRecipeForm(recipe = null) {
@@ -792,20 +935,6 @@ class RecipeManager {
                             <input type="number" id="recipe-servings" name="serving_count" required min="1" max="20"
                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                                    value="${isEdit ? recipe.serving_count : '4'}">
-                        </div>
-                        
-                        <div>
-                            <label for="recipe-meal-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Recipe Type
-                            </label>
-                            <select id="recipe-meal-type" name="meal_type"
-                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
-                                <option value="breakfast" ${isEdit && recipe.meal_type === 'breakfast' ? 'selected' : ''}>Breakfast</option>
-                                <option value="lunch" ${isEdit && recipe.meal_type === 'lunch' ? 'selected' : ''}>Lunch</option>
-                                <option value="dinner" ${isEdit && recipe.meal_type === 'dinner' ? 'selected' : 'selected'}>Dinner</option>
-                                <option value="snack" ${isEdit && recipe.meal_type === 'snack' ? 'selected' : ''}>Snack</option>
-                                <option value="dessert" ${isEdit && recipe.meal_type === 'dessert' ? 'selected' : ''}>Dessert</option>
-                            </select>
                         </div>
                         
                         <div>
@@ -1158,7 +1287,6 @@ class RecipeManager {
                 title: formData.get('title').trim(),
                 description: formData.get('description').trim(),
                 serving_count: parseInt(formData.get('serving_count')),
-                meal_type: formData.get('meal_type'),
                 prep_time: parseInt(formData.get('prep_time')) || 0,
                 cook_time: parseInt(formData.get('cook_time')) || 0,
                 instructions: formData.get('instructions').trim(),
@@ -1281,7 +1409,6 @@ class RecipeManager {
         const tagsInput = form.querySelector('input[name="tags"]');
         const difficultyInput = form.querySelector('select[name="difficulty"]');
         const cuisineInput = form.querySelector('input[name="cuisine"]');
-        const mealTypeInput = form.querySelector('select[name="meal_type"]');
         
         // Get basic recipe data
         const recipeData = {
@@ -1294,7 +1421,6 @@ class RecipeManager {
             labels: this.processUserLabels(tagsInput ? tagsInput.value.trim().split(',').map(tag => tag.trim()).filter(tag => tag) : []),
             difficulty: difficultyInput ? difficultyInput.value || 'easy' : 'easy',
             cuisine: cuisineInput ? cuisineInput.value.trim() : '',
-            meal_type: mealTypeInput ? mealTypeInput.value || 'dinner' : 'dinner'
         };
 
         // Validate required fields
@@ -1478,7 +1604,6 @@ class RecipeManager {
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.99 1.99 0 013 12V7a4 4 0 014-4z"></path>
                                 </svg>
-                                <span>Type: ${recipe.meal_type || 'N/A'}</span>
                             </div>
                         </div>
                     </div>
@@ -1559,7 +1684,13 @@ class RecipeManager {
         const recipe = this.recipes.find(r => r.id === recipeId);
         if (recipe) {
             recipe.favorite = !recipe.favorite;
-            this.render();
+            
+            // Save to storage using the centralized data authority
+            this.saveRecipes();
+            
+            // Update display without full re-render to preserve input focus
+            this.updateRecipeDisplay();
+            
             this.showNotification(
                 `"${recipe.title}" ${recipe.favorite ? 'added to' : 'removed from'} favorites`, 
                 'success'
@@ -1635,13 +1766,25 @@ class RecipeManager {
                 </div>
             `;
         } else {
-            dropdown.innerHTML = filteredLabels.map((label, index) => `
+            dropdown.innerHTML = filteredLabels.map((label, index) => {
+                const labelType = this.inferLabelType(label);
+                const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
+                const colorClasses = this.getLabelColorClasses(labelType);
+                
+                return `
                 <div class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm text-gray-900 dark:text-gray-100 ${index === 0 ? 'bg-gray-50 dark:bg-gray-700' : ''}" 
                      data-label="${label}" 
                      onclick="window.recipeManager.addLabel('${label}')">
-                    ${label}
+                    <div class="flex items-center space-x-2">
+                        ${icon && labelType !== 'default' ? `<span class="flex-shrink-0">${icon}</span>` : ''}
+                        <span class="font-bold flex-1">${label}</span>
+                        <span class="inline-flex items-center px-2 py-1 ${colorClasses} rounded-full text-xs flex-shrink-0">
+                            ${labelType !== 'default' ? labelType.replace('_', ' ') : 'label'}
+                        </span>
+                    </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
     }
 
@@ -1652,7 +1795,6 @@ class RecipeManager {
         
         // Reset all filter state variables
         this.searchTerm = '';
-        this.selectedCategory = 'all';
         this.selectedLabels = []; // Reset multi-select labels
         this.labelSearchTerm = ''; // Reset label search
         this.sortBy = 'name';

@@ -1,90 +1,54 @@
 # MealPlanner Development Rules
 
-## NPM Command Safety
-- ALWAYS use timeout with npm commands to prevent blocking operations
-- Default timeout: 30 seconds for most npm commands
-- Extended timeout: 60 seconds for npm install/update operations
-- Use format: `timeout 30s npm run test:run` or `timeout 60s npm install`
-- If timeout occurs, investigate the issue and use alternative approaches
+## Data Schema Consistency - CRITICAL
+When modifying data structures (ingredients, recipes, meals, scheduled meals), you MUST:
 
-## Testing Workflow
-- Run tests with timeout: `timeout 30s npm run test:run` (exits immediately)
-- For watch mode development: `npm test` (stays running, watches for changes)
-- For E2E tests, use: `timeout 60s npm run test:e2e`
-- If tests hang, kill processes and investigate root cause
-- Always commit passing tests before moving to next milestone
+1. **Update ALL related components**:
+   - Demo data generation (`js/demo-data.js` and `scripts/generate-demo-data.cjs`)
+   - Filtering logic in managers (`js/recipe-manager.js`, `js/meal-manager.js`, etc.)
+   - Label systems and dropdown populations
+   - Search and sort functionality
+   - UI display components
 
-### Playwright Testing - CRITICAL PRACTICES
-- **MANDATORY FRESH SESSION**: ALWAYS start with completely fresh Playwright session for every test
-- **NEVER reuse browser sessions** - caching and state pollution make results unreliable
-- **ALWAYS test against local server** (`http://localhost:8080`) to avoid GitHub Pages caching issues
-- **MANDATORY Clean Sandbox Protocol**:
-  1. Close existing browser: `mcp_playwright_browser_close`
-  2. Kill ALL Chrome processes: `pkill -f chrome`
-  3. Wait for cleanup: `sleep 2`
-  4. Navigate fresh: `mcp_playwright_browser_navigate` to localhost
-  5. Wait for page load before testing
-- **Server Management**:
-  - Verify local server is running: `ps aux | grep "python3 -m http.server"`
-  - Restart server if needed: `pkill -f "python3 -m http.server" && python3 -m http.server 8080 &`
-  - Update cache-busting version: `node update-version.cjs` after code changes
-- **NEVER test against GitHub Pages during development** - caching makes results unreliable
-- **Always verify console messages** for JavaScript errors and version verification
-- **Cache-busting verification**: Check that new versions are being loaded in console logs
+2. **Validate against test requirements**:
+   - At least 20 ingredients for test compatibility
+   - At least 10 basic recipes with diverse labels
+   - All meal types (breakfast, lunch, dinner, snack) represented
+   - Minimum 10 unique labels across all recipes
+   - No `tags` property (consolidated to `labels`)
+   - All required fields present and valid
 
-## Development Milestones
-- Each roadmap milestone MUST include:
-  1. Implementation of feature
-  2. Comprehensive behavior tests
-  3. All tests passing (timeout 30s npm test)
-  4. Version update (node update-version.cjs)
-  5. Commit and push to remote
-  6. Verification on live site
+3. **Ensure referential integrity**:
+   - Recipe ingredients reference valid ingredient IDs
+   - Meal recipes reference valid recipe IDs  
+   - Scheduled meals reference valid meal/recipe IDs
+   - All quantities are positive numbers
+   - All dates are valid ISO strings
 
-## Cache Management
-- Use cache-busting version system for all assets
-- Update versions after each milestone
-- Test both local and remote deployment consistency
+4. **Update validation and tests**:
+   - Run `scripts/generate-demo-data.cjs --validate` after schema changes
+   - Update test expectations in `src/test/unit/demo-data-validation.test.js`
+   - Verify filtering still works with new data structure
+   - Test label consistency across all data types
 
-## PWA Best Practices
-- Maintain static site compatibility
-- Ensure offline functionality
-- Test installation and service worker behavior
-- Secure credential storage for OAuth tokens
+5. **Label system consistency**:
+   - Labels must be shared across recipes and meals
+   - Label types (ingredient_type, meal_type, recipe_combo) must be handled consistently
+   - Dropdown filters must populate from actual data labels
+   - Search functionality must work with new label structure
 
-## Error Handling
-- Graceful degradation for missing features
-- Comprehensive error logging
-- User-friendly error messages
-- Fallback mechanisms for API failures
+## Schema Change Workflow
+1. Identify all affected components using semantic search
+2. Update demo data generator first to validate new schema
+3. Update all managers and UI components
+4. Run comprehensive validation
+5. Update tests to match new expectations
+6. Verify filtering, searching, and sorting still work
 
-## Code Quality
-- Use semantic search for exploration
-- Parallel tool calls for efficiency
-- Comprehensive unit and integration tests
-- Mock external dependencies appropriately
+## Testing Requirements
+- Demo data must pass all validation rules
+- All data types must be interconnected and valid
+- Tests assume specific minimum quantities and structures
+- Changes must not break existing test assumptions without updating tests
 
-## Git Commit Safety
-- **ALWAYS use simple, single-line commit messages** to avoid shell quote issues
-- **NEVER use multi-line commit messages** with complex formatting in terminal commands
-- **Format**: `git commit -m "Simple descriptive message without quotes or special chars"`
-- **Avoid**: Emojis, quotes, backticks, or multi-line strings in commit messages via terminal
-- **If detailed commit needed**: Use `git commit` (opens editor) instead of `git commit -m`
-- **Example Good**: `git commit -m "Fix label system data source consistency"`
-- **Example Bad**: `git commit -m "✨ FIX: Label System \"Data Source\" Consistency..."`
-
-## UI/UX Patterns
-### Modal Design - CRITICAL PATTERN
-- ALWAYS use sticky header/footer pattern for forms with action buttons
-- Modal structure: `flex flex-col` + `max-h-[90vh]`
-- Header: `flex-shrink-0` (never shrinks)
-- Content: `overflow-y-auto flex-1` (scrollable)
-- Footer: `flex-shrink-0` (always visible)
-- Buttons outside form: use `form="form-id"` attribute
-- Applied to: ALL modals with forms (recipe, meal, ingredient, etc.)
-
-### Dropdown Positioning
-- Use parent-relative positioning (`absolute` within `relative` container)
-- Implement JavaScript viewport-aware positioning
-- Check available space and adjust left/right positioning dynamically
-- Avoid fixed viewport positioning that can cause overflow
+This rule prevents the data inconsistency bugs we've encountered and ensures holistic updates across the entire application when data structures change.
