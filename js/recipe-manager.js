@@ -7,7 +7,6 @@ class RecipeManager {
         this.currentRecipe = null;
         this.searchTerm = '';
         this.selectedCategory = 'all';
-        this.selectedType = 'all'; // New filter for recipe type (basic/combo)
         this.selectedLabels = []; // Changed to array for multi-select
         this.labelSearchTerm = ''; // For typeahead filtering
         this.sortBy = 'name';
@@ -104,17 +103,6 @@ class RecipeManager {
                                 <option value="lunch" ${this.selectedCategory === 'lunch' ? 'selected' : ''}>Lunch</option>
                                 <option value="dinner" ${this.selectedCategory === 'dinner' ? 'selected' : ''}>Dinner</option>
                                 <option value="snack" ${this.selectedCategory === 'snack' ? 'selected' : ''}>Snack</option>
-                            </select>
-                        </div>
-                        
-                        <div>
-                            <label for="recipe-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Recipe Style
-                            </label>
-                            <select id="recipe-type" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
-                                <option value="all" ${this.selectedType === 'all' ? 'selected' : ''}>All Types</option>
-                                <option value="basic" ${this.selectedType === 'basic' ? 'selected' : ''}>Basic Recipes</option>
-                                <option value="combo" ${this.selectedType === 'combo' ? 'selected' : ''}>Combo Recipes</option>
                             </select>
                         </div>
                         
@@ -328,15 +316,11 @@ class RecipeManager {
             filtered = filtered.filter(recipe => recipe.meal_type === this.selectedCategory);
         }
 
-        // Filter by recipe type (basic/combo)
-        if (this.selectedType !== 'all') {
-            filtered = filtered.filter(recipe => (recipe.type || 'basic') === this.selectedType);
-        }
 
         // Filter by labels (AND logic - recipe must have ALL selected labels)
         if (this.selectedLabels.length > 0) {
             filtered = filtered.filter(recipe => {
-                const recipeLabels = (recipe.labels || []).map(label => label.toLowerCase());
+                const recipeLabels = this.extractLabelNames(recipe.labels || []).map(label => label.toLowerCase());
                 return this.selectedLabels.every(selectedLabel => 
                     recipeLabels.includes(selectedLabel.toLowerCase())
                 );
@@ -371,7 +355,8 @@ class RecipeManager {
         const labels = new Set();
         this.recipes.forEach(recipe => {
             if (recipe.labels && Array.isArray(recipe.labels)) {
-                recipe.labels.forEach(label => labels.add(label));
+                const labelNames = this.extractLabelNames(recipe.labels);
+                labelNames.forEach(label => labels.add(label));
             }
             // Also include tags as labels for backward compatibility
             if (recipe.tags && Array.isArray(recipe.tags)) {
@@ -379,6 +364,17 @@ class RecipeManager {
             }
         });
         return Array.from(labels);
+    }
+
+    // Extract label names from typed labels (handles both old and new format)
+    extractLabelNames(labels) {
+        if (!Array.isArray(labels)) return [];
+        
+        return labels.map(label => {
+            if (typeof label === 'string') return label;
+            if (label && typeof label === 'object' && label.name) return label.name;
+            return String(label);
+        });
     }
 
     getFavoriteRecipes() {
@@ -443,14 +439,6 @@ class RecipeManager {
             });
         }
 
-        // Recipe type filter
-        const typeSelect = this.container.querySelector('#recipe-type');
-        if (typeSelect) {
-            typeSelect.addEventListener('change', (e) => {
-                this.selectedType = e.target.value;
-                this.render();
-            });
-        }
 
         // Multi-select label filter with typeahead
         const labelInput = this.container.querySelector('#recipe-labels-input');
@@ -563,7 +551,6 @@ class RecipeManager {
             clearFiltersBtn.addEventListener('click', () => {
                 this.searchTerm = '';
                 this.selectedCategory = 'all';
-                this.selectedType = 'all'; // Reset recipe type filter
                 this.selectedLabels = []; // Reset multi-select labels
                 this.labelSearchTerm = ''; // Reset label search
                 this.sortBy = 'name';
@@ -1547,7 +1534,6 @@ class RecipeManager {
         // Reset all filter state variables
         this.searchTerm = '';
         this.selectedCategory = 'all';
-        this.selectedType = 'all';
         this.selectedLabels = []; // Reset multi-select labels
         this.labelSearchTerm = ''; // Reset label search
         this.sortBy = 'name';

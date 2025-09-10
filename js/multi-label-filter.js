@@ -19,16 +19,20 @@ class MultiLabelFilter {
         return `
             <div class="relative">
                 <div id="${this.containerId}" class="w-full min-h-[42px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus-within:ring-2 focus-within:ring-blue-500 dark:bg-gray-700 dark:text-white cursor-text flex flex-wrap gap-1 items-center">
-                    ${this.selectedLabels.map(label => `
-                        <span class="inline-flex items-center px-2 py-1 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full">
+                    ${this.selectedLabels.map(label => {
+                        const labelType = this.getLabelType(label);
+                        const colorClasses = this.getLabelColorClasses(labelType);
+                        return `
+                        <span class="inline-flex items-center px-2 py-1 text-xs ${colorClasses} rounded-full">
                             ${label}
-                            <button type="button" class="ml-1 text-blue-600 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-100" onclick="window.multiLabelFilter_${this.containerId}.removeLabel('${label}')">
+                            <button type="button" class="ml-1 hover:opacity-75" onclick="window.multiLabelFilter_${this.containerId}.removeLabel('${label}')">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                 </svg>
                             </button>
                         </span>
-                    `).join('')}
+                        `;
+                    }).join('')}
                     <input 
                         type="text" 
                         id="${this.inputId}" 
@@ -178,6 +182,28 @@ class MultiLabelFilter {
     setSelectedLabels(labels) {
         this.selectedLabels = [...labels];
         this.onSelectionChange(this.selectedLabels);
+    }
+
+    // Get label type (uses global labelTypes if available)
+    getLabelType(labelName) {
+        if (typeof window !== 'undefined' && window.labelTypes) {
+            return window.labelTypes.inferLabelType(labelName);
+        }
+        return 'default';
+    }
+
+    // Get color classes for a label type
+    getLabelColorClasses(labelType) {
+        if (typeof window !== 'undefined' && window.labelTypes) {
+            return window.labelTypes.getColorClasses(labelType);
+        }
+        // Fallback colors
+        switch (labelType) {
+            case 'recipe_type':
+                return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+            default:
+                return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+        }
     }
 
     // Get filtered labels for dropdown based on search term

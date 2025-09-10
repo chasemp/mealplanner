@@ -10,6 +10,11 @@ class DemoDataManager {
     }
 
     initializeData() {
+        this.initializeRawData();
+        this.migrateToLabelTypes();
+    }
+
+    initializeRawData() {
         // Comprehensive ingredient list
         this.ingredients = [
             // Proteins
@@ -61,7 +66,6 @@ class DemoDataManager {
                 id: 1,
                 title: 'Grilled Chicken with Vegetables',
                 description: 'Healthy grilled chicken breast served with roasted vegetables',
-                type: 'basic', // Standard individual recipe
                 image_url: 'https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=400&h=300&fit=crop',
                 servings: 4,
                 meal_type: 'dinner',
@@ -1032,6 +1036,61 @@ class DemoDataManager {
                 ingredient.avg_quantity = Math.round(avgQuantity * 100) / 100;
             }
         });
+    }
+
+    // Migrate existing data to new label types schema
+    migrateToLabelTypes() {
+        console.log('🔄 Migrating demo data to label types schema...');
+        
+        // Ensure labelTypes is available
+        if (typeof window !== 'undefined' && window.labelTypes) {
+            const labelTypes = window.labelTypes;
+            
+            // Migrate recipes
+            this.recipes = this.recipes.map(recipe => {
+                const migratedRecipe = { ...recipe };
+                
+                // Remove the old 'type' field and convert to labels
+                if (recipe.type) {
+                    // Convert existing labels to typed labels
+                    let labels = recipe.labels || [];
+                    
+                    // Add combo label if it was a combo recipe
+                    if (recipe.type === 'combo') {
+                        labels.push('combo');
+                    }
+                    
+                    // Convert all labels to typed format
+                    migratedRecipe.labels = labelTypes.convertToTypedLabels(labels);
+                    
+                    // Remove the old type field
+                    delete migratedRecipe.type;
+                } else {
+                    // Convert existing labels to typed format
+                    migratedRecipe.labels = labelTypes.convertToTypedLabels(recipe.labels || []);
+                }
+                
+                return migratedRecipe;
+            });
+            
+            // Migrate meals (if they have labels)
+            this.meals = this.meals.map(meal => {
+                const migratedMeal = { ...meal };
+                if (meal.labels) {
+                    migratedMeal.labels = labelTypes.convertToTypedLabels(meal.labels);
+                }
+                if (meal.tags) {
+                    // Convert tags to default type labels
+                    const tagLabels = labelTypes.convertToTypedLabels(meal.tags);
+                    migratedMeal.labels = [...(migratedMeal.labels || []), ...tagLabels];
+                }
+                return migratedMeal;
+            });
+            
+            console.log('✅ Demo data migration complete');
+        } else {
+            console.warn('⚠️ labelTypes not available, skipping migration');
+        }
     }
 
     // Get all data
