@@ -1829,7 +1829,7 @@ class RecipeManager {
                 <div class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm text-gray-900 dark:text-gray-100 ${index === 0 ? 'bg-gray-50 dark:bg-gray-700' : ''}" 
                      data-label="${label}" 
                      onclick="window.recipeManager.addLabel('${label}')">
-                    ${label}
+                    <span class="font-bold">${label}</span>
                 </div>
             `).join('');
         }
