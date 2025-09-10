@@ -253,7 +253,7 @@ class RecipeManager {
         // Update only the recipe cards, info bar, and empty state without re-rendering entire component
         const recipeGrid = this.container.querySelector('#recipes-grid');
         const emptyState = this.container.querySelector('#empty-state');
-        const infoBar = this.container.querySelector('.bg-gray-50.dark\\:bg-gray-700 .flex.items-center.justify-between');
+        const infoBar = this.container.querySelector('.bg-gray-50.dark\\:bg-gray-700');
         
         if (recipeGrid && emptyState) {
             const filteredRecipes = this.getFilteredRecipes();
@@ -271,14 +271,24 @@ class RecipeManager {
             
             // Update info bar content
             if (infoBar) {
+                console.log('🔄 Updating info bar with filtered counts:', {
+                    recipes: this.getFilteredRecipes().length,
+                    labels: this.getFilteredLabels().length,
+                    combos: this.getFilteredComboRecipes().length,
+                    hasFilters: this.hasActiveFilters()
+                });
                 this.updateInfoBar(infoBar);
+            } else {
+                console.warn('⚠️ Info bar not found for update');
             }
         }
     }
 
     updateInfoBar(infoBar) {
+        console.log('📊 updateInfoBar called');
         // Update the left side stats
         const leftSide = infoBar.querySelector('.flex.items-center.space-x-6');
+        console.log('📊 Left side found:', !!leftSide);
         if (leftSide) {
             leftSide.innerHTML = `
                 <div class="flex items-center space-x-2">
@@ -1745,7 +1755,7 @@ class RecipeManager {
         if (!this.selectedLabels.includes(label)) {
             this.selectedLabels.push(label);
             this.labelSearchTerm = ''; // Clear search after selection
-            this.render();
+            this.render(); // Need full render to update label chips
         }
     }
 
