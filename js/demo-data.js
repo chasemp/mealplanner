@@ -831,6 +831,108 @@ class DemoDataManager {
             }
         ];
 
+        // Demo meals that combine multiple recipes into planned meals
+        this.meals = [
+            {
+                id: 1,
+                name: 'Sunday Family Dinner',
+                description: 'A hearty family dinner with comfort food favorites',
+                recipes: [
+                    { recipeId: 10, servings: 4 }, // Fried Chicken
+                    { recipeId: 9, servings: 4 },  // Mashed Potatoes
+                    { recipeId: 11, servings: 4 }  // Green Beans
+                ],
+                totalServings: 4,
+                mealTypes: ['dinner'],
+                labels: ['family', 'comfort-food', 'sunday-dinner', 'hearty'],
+                tags: ['special-occasion', 'traditional'],
+                estimatedTime: 90,
+                createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days ago
+                updatedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+            },
+            {
+                id: 2,
+                name: 'Italian Night',
+                description: 'Classic Italian pasta dinner with all the fixings',
+                recipes: [
+                    { recipeId: 2, servings: 4 }, // Spaghetti Bolognese
+                    { recipeId: 14, servings: 4 }, // Garlic Bread
+                    { recipeId: 15, servings: 4 } // Caesar Salad
+                ],
+                totalServings: 4,
+                mealTypes: ['dinner'],
+                labels: ['italian', 'pasta', 'family-meal', 'comfort-food'],
+                tags: ['date-night', 'crowd-pleaser'],
+                estimatedTime: 75,
+                createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days ago
+                updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
+            },
+            {
+                id: 3,
+                name: 'Healthy Breakfast Spread',
+                description: 'Nutritious breakfast options for a great start to the day',
+                recipes: [
+                    { recipeId: 16, servings: 2 }, // Pancakes
+                    { recipeId: 3, servings: 4 }   // Scrambled Eggs with Toast
+                ],
+                totalServings: 4,
+                mealTypes: ['breakfast'],
+                labels: ['healthy', 'breakfast', 'nutritious', 'energizing'],
+                tags: ['weekend', 'family-friendly'],
+                estimatedTime: 45,
+                createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
+                updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
+            },
+            {
+                id: 4,
+                name: 'Mediterranean Lunch',
+                description: 'Fresh and light Mediterranean-inspired lunch',
+                recipes: [
+                    { recipeId: 5, servings: 4 }, // Greek Salad
+                    { recipeId: 14, servings: 2 } // Garlic Bread (smaller portion)
+                ],
+                totalServings: 4,
+                mealTypes: ['lunch'],
+                labels: ['mediterranean', 'healthy', 'fresh', 'light'],
+                tags: ['summer', 'refreshing', 'vegetarian-friendly'],
+                estimatedTime: 30,
+                createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
+                updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+            },
+            {
+                id: 5,
+                name: 'Quick Weeknight Dinner',
+                description: 'Fast and easy dinner for busy weeknights',
+                recipes: [
+                    { recipeId: 6, servings: 4 }, // Chicken Stir Fry
+                    { recipeId: 20, servings: 4 } // Rice Pilaf
+                ],
+                totalServings: 4,
+                mealTypes: ['dinner'],
+                labels: ['quick', 'easy', 'weeknight', 'stir-fry'],
+                tags: ['under-30-min', 'one-pan'],
+                estimatedTime: 25,
+                createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
+                updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
+            },
+            {
+                id: 6,
+                name: 'Vegetarian Power Bowl',
+                description: 'Nutritious vegetarian meal with quinoa and fresh vegetables',
+                recipes: [
+                    { recipeId: 7, servings: 4 }, // Vegetable Quinoa Bowl
+                    { recipeId: 19, servings: 4 } // Grilled Vegetables
+                ],
+                totalServings: 4,
+                mealTypes: ['lunch', 'dinner'],
+                labels: ['vegetarian', 'healthy', 'quinoa', 'plant-based'],
+                tags: ['protein-rich', 'gluten-free', 'superfood'],
+                estimatedTime: 40,
+                createdAt: new Date().toISOString(), // Today
+                updatedAt: new Date().toISOString()
+            }
+        ];
+
         // Scheduled meals that reference the recipes above (using modern ScheduleManager schema)
         this.scheduledMeals = this.generateScheduledMealsWithSchema();
 
@@ -937,6 +1039,7 @@ class DemoDataManager {
         return {
             ingredients: this.ingredients,
             recipes: this.recipes,
+            meals: this.meals,
             scheduledMeals: this.scheduledMeals
         };
     }
@@ -949,6 +1052,11 @@ class DemoDataManager {
     // Get recipes
     getRecipes() {
         return this.recipes;
+    }
+
+    // Get meals
+    getMeals() {
+        return this.meals;
     }
 
     // Get scheduled meals

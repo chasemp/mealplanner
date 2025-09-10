@@ -1377,13 +1377,14 @@ class RecipeManager {
         console.log('🗑️ Clearing all recipes data...');
         this.recipes = [];
         this.filteredRecipes = [];
-        this.currentFilter = {
-            search: '',
-            mealType: '',
-            style: '',
-            label: ''
-        };
-        this.currentSort = 'name';
+        
+        // Reset all filter state variables
+        this.searchTerm = '';
+        this.selectedCategory = 'all';
+        this.selectedType = 'all';
+        this.selectedLabel = 'all';
+        this.sortBy = 'name';
+        this.showFavoritesOnly = false;
         
         // Clear from localStorage
         localStorage.removeItem('mealplanner_recipes');

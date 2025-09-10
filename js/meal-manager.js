@@ -9,6 +9,7 @@ class MealManager {
         this.currentMeal = null;
         this.searchTerm = '';
         this.selectedMealType = 'all';
+        this.selectedLabel = 'all';
         this.sortBy = 'name';
         this.init();
     }
@@ -84,33 +85,50 @@ class MealManager {
 
                 <!-- Filters -->
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                         <div>
                             <label for="meal-search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search Meals</label>
-                            <input type="text" id="meal-search" placeholder="Search by name..." 
-                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                            <div class="relative">
+                                <input type="text" id="meal-search" placeholder="Search by name..." 
+                                       value="${this.searchTerm}"
+                                       class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                </div>
+                            </div>
                         </div>
                         <div>
                             <label for="meal-type-filter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Meal Type</label>
                             <select id="meal-type-filter" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
-                                <option value="all">All Types</option>
-                                <option value="breakfast">Breakfast</option>
-                                <option value="lunch">Lunch</option>
-                                <option value="dinner">Dinner</option>
-                                <option value="snack">Snack</option>
+                                <option value="all" ${this.selectedMealType === 'all' ? 'selected' : ''}>All Types</option>
+                                <option value="breakfast" ${this.selectedMealType === 'breakfast' ? 'selected' : ''}>Breakfast</option>
+                                <option value="lunch" ${this.selectedMealType === 'lunch' ? 'selected' : ''}>Lunch</option>
+                                <option value="dinner" ${this.selectedMealType === 'dinner' ? 'selected' : ''}>Dinner</option>
+                                <option value="snack" ${this.selectedMealType === 'snack' ? 'selected' : ''}>Snack</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="meal-label-filter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Filter by Label</label>
+                            <select id="meal-label-filter" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                                <option value="all" ${this.selectedLabel === 'all' ? 'selected' : ''}>All Labels</option>
+                                ${this.getAllLabels().map(label => `
+                                    <option value="${label}" ${this.selectedLabel === label ? 'selected' : ''}>${label}</option>
+                                `).join('')}
                             </select>
                         </div>
                         <div>
                             <label for="meal-sort" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort By</label>
                             <select id="meal-sort" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
-                                <option value="name">Name</option>
-                                <option value="created">Date Created</option>
-                                <option value="servings">Servings</option>
-                                <option value="time">Total Time</option>
+                                <option value="name" ${this.sortBy === 'name' ? 'selected' : ''}>Name</option>
+                                <option value="created" ${this.sortBy === 'created' ? 'selected' : ''}>Date Created</option>
+                                <option value="servings" ${this.sortBy === 'servings' ? 'selected' : ''}>Servings</option>
+                                <option value="time" ${this.sortBy === 'time' ? 'selected' : ''}>Total Time</option>
                             </select>
                         </div>
                         <div class="flex items-end">
-                            <button id="clear-meal-filters-btn" class="btn-secondary w-full">
+                            <button id="clear-meal-filters-btn" class="w-full px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md text-sm font-medium transition-colors">
                                 Clear Filters
                             </button>
                         </div>
@@ -182,6 +200,22 @@ class MealManager {
                         `).join('')}
                     </div>
 
+                    <!-- Labels and Tags -->
+                    ${(meal.labels && meal.labels.length > 0) || (meal.tags && meal.tags.length > 0) ? `
+                        <div class="flex flex-wrap gap-1 mb-3">
+                            ${(meal.labels || []).map(label => `
+                                <span class="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full">
+                                    🏷️ ${label}
+                                </span>
+                            `).join('')}
+                            ${(meal.tags || []).map(tag => `
+                                <span class="inline-block px-2 py-1 text-xs bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200 rounded-full">
+                                    #${tag}
+                                </span>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+
                     <!-- Recipes -->
                     <div class="mb-3">
                         <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -228,15 +262,27 @@ class MealManager {
             filtered = filtered.filter(meal => 
                 meal.name.toLowerCase().includes(term) ||
                 meal.description?.toLowerCase().includes(term) ||
-                meal.tags.some(tag => tag.toLowerCase().includes(term))
+                (meal.tags && meal.tags.some(tag => tag.toLowerCase().includes(term))) ||
+                (meal.labels && meal.labels.some(label => label.toLowerCase().includes(term)))
             );
         }
 
         // Apply meal type filter
         if (this.selectedMealType !== 'all') {
             filtered = filtered.filter(meal => 
-                meal.mealTypes.includes(this.selectedMealType)
+                meal.mealTypes && meal.mealTypes.includes(this.selectedMealType)
             );
+        }
+
+        // Apply label filter
+        if (this.selectedLabel !== 'all') {
+            filtered = filtered.filter(meal => {
+                const mealLabels = [
+                    ...(meal.labels || []),
+                    ...(meal.tags || [])
+                ];
+                return mealLabels.some(label => label.toLowerCase() === this.selectedLabel.toLowerCase());
+            });
         }
 
         // Apply sorting
@@ -256,6 +302,35 @@ class MealManager {
         });
 
         return filtered;
+    }
+
+    getAllLabels() {
+        // Get labels from both meals and recipes to create a unified label system
+        const labels = new Set();
+        
+        // Add labels from meals
+        this.meals.forEach(meal => {
+            (meal.labels || []).forEach(label => labels.add(label));
+            (meal.tags || []).forEach(tag => labels.add(tag));
+        });
+        
+        // Add labels from recipes to create shared label system
+        this.recipes.forEach(recipe => {
+            (recipe.labels || []).forEach(label => labels.add(label));
+            (recipe.tags || []).forEach(tag => labels.add(tag));
+        });
+        
+        // Only show predefined labels if we're in demo mode (consistent with RecipeManager)
+        if (window.mealPlannerSettings && window.mealPlannerSettings.getCurrentDatabaseSource() === 'demo') {
+            const predefinedLabels = [
+                'quick', 'healthy', 'vegetarian', 'vegan', 'gluten-free', 'dairy-free',
+                'comfort-food', 'spicy', 'sweet', 'savory', 'protein-rich', 'low-carb',
+                'kid-friendly', 'party', 'holiday', 'summer', 'winter', 'easy', 'advanced'
+            ];
+            predefinedLabels.forEach(label => labels.add(label));
+        }
+        
+        return Array.from(labels).sort();
     }
 
     getRecipeById(recipeId) {
@@ -307,6 +382,15 @@ class MealManager {
             });
         }
 
+        // Label filter
+        const labelFilter = document.getElementById('meal-label-filter');
+        if (labelFilter) {
+            labelFilter.addEventListener('change', (e) => {
+                this.selectedLabel = e.target.value;
+                this.render();
+            });
+        }
+
         // Sort selector
         const sortSelect = document.getElementById('meal-sort');
         if (sortSelect) {
@@ -322,6 +406,7 @@ class MealManager {
             clearFiltersBtn.addEventListener('click', () => {
                 this.searchTerm = '';
                 this.selectedMealType = 'all';
+                this.selectedLabel = 'all';
                 this.sortBy = 'name';
                 this.render();
             });
@@ -427,14 +512,24 @@ class MealManager {
                             </button>
                         </div>
 
-                        <!-- Tags -->
-                        <div>
-                            <label for="meal-tags" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tags</label>
-                            <input type="text" id="meal-tags"
-                                   value="${isEditing ? meal.tags.join(', ') : ''}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                   placeholder="e.g., family, comfort food, special occasion">
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Separate tags with commas</p>
+                        <!-- Labels and Tags -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="meal-labels" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Labels</label>
+                                <input type="text" id="meal-labels"
+                                       value="${isEditing ? (meal.labels || []).join(', ') : ''}"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                       placeholder="e.g., vegetarian, quick, healthy">
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Separate labels with commas</p>
+                            </div>
+                            <div>
+                                <label for="meal-tags" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tags</label>
+                                <input type="text" id="meal-tags"
+                                       value="${isEditing ? (meal.tags || []).join(', ') : ''}"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                       placeholder="e.g., family, comfort food, special occasion">
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Separate tags with commas</p>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -591,6 +686,7 @@ class MealManager {
             const nameInput = document.getElementById('meal-name');
             const descriptionInput = document.getElementById('meal-description');
             const servingsInput = document.getElementById('meal-servings');
+            const labelsInput = document.getElementById('meal-labels');
             const tagsInput = document.getElementById('meal-tags');
             const mealTypeInputs = document.querySelectorAll('input[name="meal-types"]:checked');
 
@@ -601,6 +697,7 @@ class MealManager {
                 recipes: this.getCurrentFormRecipes(),
                 totalServings: servingsInput ? parseInt(servingsInput.value) || 4 : 4,
                 mealTypes: Array.from(mealTypeInputs).map(input => input.value),
+                labels: labelsInput ? labelsInput.value.split(',').map(label => label.trim()).filter(label => label) : [],
                 tags: tagsInput ? tagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag) : [],
                 estimatedTime: 0, // Will be calculated from recipes
                 createdAt: this.currentMeal ? this.currentMeal.createdAt : new Date().toISOString(),
@@ -824,7 +921,8 @@ class MealManager {
         this.recipes = [];
         this.filteredMeals = [];
         this.searchTerm = '';
-        this.selectedMealType = '';
+        this.selectedMealType = 'all';
+        this.selectedLabel = 'all';
         this.sortBy = 'name';
         
         // Clear from localStorage

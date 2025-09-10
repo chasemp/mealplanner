@@ -481,7 +481,7 @@ class SettingsManager {
                 case 'pantryItems':
                     return demoData.getPantryItems ? demoData.getPantryItems() : [];
                 case 'meals':
-                    return []; // Meals are user-created, not in demo data
+                    return demoData.getMeals ? demoData.getMeals() : [];
                 default:
                     console.warn(`⚠️ Unknown data type: ${dataType}`);
                     return [];
