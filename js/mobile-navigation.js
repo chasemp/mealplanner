@@ -39,44 +39,59 @@ class MobileNavigation {
         bottomNav.id = 'mobile-bottom-nav';
         bottomNav.className = 'fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-40 safe-area-inset-bottom';
         
-        bottomNav.innerHTML = `
-            <div class="flex justify-around items-center py-2">
-                <button class="mobile-nav-tab flex flex-col items-center py-1 px-1 min-w-0 flex-1" data-tab="ingredients">
-                    <span class="text-lg mb-1">🥕</span>
-                    <span class="text-xs font-medium">Ingredients</span>
-                </button>
-                
-                <button class="mobile-nav-tab flex flex-col items-center py-1 px-1 min-w-0 flex-1" data-tab="recipes">
-                    <span class="text-lg mb-1">📖</span>
-                    <span class="text-xs font-medium">Recipes</span>
-                </button>
-                
-                <button class="mobile-nav-tab flex flex-col items-center py-1 px-1 min-w-0 flex-1" data-tab="meals">
-                    <span class="text-lg mb-1">🍽️</span>
-                    <span class="text-xs font-medium">Meals</span>
-                </button>
-                
-                <button class="mobile-nav-tab flex flex-col items-center py-1 px-1 min-w-0 flex-1" data-tab="breakfast">
-                    <span class="text-lg mb-1">🍳</span>
-                    <span class="text-xs font-medium">Breakfast</span>
-                </button>
-                
-                <button class="mobile-nav-tab flex flex-col items-center py-1 px-1 min-w-0 flex-1" data-tab="lunch">
-                    <span class="text-lg mb-1">🥪</span>
-                    <span class="text-xs font-medium">Lunch</span>
-                </button>
-                
-                <button class="mobile-nav-tab flex flex-col items-center py-1 px-1 min-w-0 flex-1" data-tab="dinner">
-                    <span class="text-lg mb-1">📋</span>
-                    <span class="text-xs font-medium">Plan</span>
-                </button>
-                
-                <button class="mobile-nav-tab flex flex-col items-center py-1 px-1 min-w-0 flex-1" data-tab="scheduled">
-                    <span class="text-lg mb-1">🍽️</span>
-                    <span class="text-xs font-medium">Menu</span>
-                </button>
-            </div>
-        `;
+        // Get settings to determine which tabs to show
+        const settings = window.settingsManager?.settings || { showBreakfast: false, showLunch: false, showDinner: true };
+        
+        let tabsHTML = `
+            <button class="mobile-nav-tab flex flex-col items-center py-1 px-1 min-w-0 flex-1" data-tab="ingredients">
+                <span class="text-lg mb-1">🥕</span>
+                <span class="text-xs font-medium">Ingredients</span>
+            </button>
+            
+            <button class="mobile-nav-tab flex flex-col items-center py-1 px-1 min-w-0 flex-1" data-tab="recipes">
+                <span class="text-lg mb-1">📖</span>
+                <span class="text-xs font-medium">Recipes</span>
+            </button>
+            
+            <button class="mobile-nav-tab flex flex-col items-center py-1 px-1 min-w-0 flex-1" data-tab="meals">
+                <span class="text-lg mb-1">🍽️</span>
+                <span class="text-xs font-medium">Meals</span>
+            </button>`;
+        
+        // Only add breakfast tab if enabled
+        if (settings.showBreakfast) {
+            tabsHTML += `
+            <button class="mobile-nav-tab flex flex-col items-center py-1 px-1 min-w-0 flex-1" data-tab="breakfast">
+                <span class="text-lg mb-1">🍳</span>
+                <span class="text-xs font-medium">Breakfast</span>
+            </button>`;
+        }
+        
+        // Only add lunch tab if enabled
+        if (settings.showLunch) {
+            tabsHTML += `
+            <button class="mobile-nav-tab flex flex-col items-center py-1 px-1 min-w-0 flex-1" data-tab="lunch">
+                <span class="text-lg mb-1">🥪</span>
+                <span class="text-xs font-medium">Lunch</span>
+            </button>`;
+        }
+        
+        // Only add dinner tab if enabled (should be true by default)
+        if (settings.showDinner) {
+            tabsHTML += `
+            <button class="mobile-nav-tab flex flex-col items-center py-1 px-1 min-w-0 flex-1" data-tab="dinner">
+                <span class="text-lg mb-1">📋</span>
+                <span class="text-xs font-medium">Plan</span>
+            </button>`;
+        }
+        
+        tabsHTML += `
+            <button class="mobile-nav-tab flex flex-col items-center py-1 px-1 min-w-0 flex-1" data-tab="scheduled">
+                <span class="text-lg mb-1">🍽️</span>
+                <span class="text-xs font-medium">Menu</span>
+            </button>`;
+        
+        bottomNav.innerHTML = `<div class="flex justify-around items-center py-2">${tabsHTML}</div>`;
 
         document.body.appendChild(bottomNav);
         
@@ -185,6 +200,17 @@ class MobileNavigation {
     onTabChange(tabName) {
         this.currentTab = tabName;
         this.updateActiveTab(tabName);
+    }
+
+    // Method to refresh mobile navigation when settings change
+    refreshNavigation() {
+        const bottomNav = document.getElementById('mobile-bottom-nav');
+        if (bottomNav && this.isMobile) {
+            bottomNav.remove();
+            this.createBottomNavigation();
+            this.setupEventListeners();
+            this.setupTouchFeedback();
+        }
     }
 
     // Add haptic feedback for mobile interactions (if supported)
