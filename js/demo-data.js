@@ -649,7 +649,7 @@ class DemoDataManager {
 
         // Comprehensive recipe list (20 items)
         this.recipes = [
-        {
+            {
                 "id": 1,
                 "title": "Mashed Potatoes",
                 "description": "Creamy and buttery mashed potatoes",
@@ -2581,7 +2581,7 @@ class DemoDataManager {
     // Validation method to ensure data consistency
     validateConsistency() {
         const issues = [];
-        
+
         // Check recipe-ingredient references
         this.recipes.forEach(recipe => {
             if (recipe.ingredients) {

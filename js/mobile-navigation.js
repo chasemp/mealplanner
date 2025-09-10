@@ -16,6 +16,7 @@ class MobileNavigation {
             this.createBottomNavigation();
             this.hideTopNavigation();
             this.setupEventListeners();
+            this.setupTouchFeedback();
         }
 
         // Listen for resize events
@@ -27,6 +28,17 @@ class MobileNavigation {
                 this.toggleNavigationMode();
             }
         });
+
+        // Periodic check to ensure event listeners stay attached (every 5 seconds)
+        setInterval(() => {
+            if (this.isMobile) {
+                const bottomNav = document.getElementById('mobile-bottom-nav');
+                if (bottomNav && !bottomNav._mobileNavHandler) {
+                    console.log('📱 Mobile nav event listeners lost, reattaching...');
+                    this.setupEventListeners();
+                }
+            }
+        }, 5000);
     }
 
     createBottomNavigation() {
@@ -132,15 +144,34 @@ class MobileNavigation {
 
     setupEventListeners() {
         const bottomNav = document.getElementById('mobile-bottom-nav');
-        if (!bottomNav) return;
+        if (!bottomNav) {
+            console.warn('⚠️ Mobile bottom nav not found for event listeners');
+            return;
+        }
 
-        bottomNav.addEventListener('click', (e) => {
+        // Remove any existing listeners to prevent duplicates
+        const existingHandler = bottomNav._mobileNavHandler;
+        if (existingHandler) {
+            bottomNav.removeEventListener('click', existingHandler);
+        }
+
+        // Create new handler and store reference for cleanup
+        const clickHandler = (e) => {
+            console.log('📱 Mobile nav click detected:', e.target);
             const tabButton = e.target.closest('.mobile-nav-tab');
             if (tabButton) {
                 const tabName = tabButton.dataset.tab;
+                console.log('📱 Switching to tab:', tabName);
                 this.switchTab(tabName);
+            } else {
+                console.log('📱 Click not on tab button');
             }
-        });
+        };
+
+        bottomNav.addEventListener('click', clickHandler);
+        bottomNav._mobileNavHandler = clickHandler; // Store for cleanup
+        
+        console.log('📱 Mobile navigation event listeners attached');
     }
 
     switchTab(tabName) {
@@ -211,6 +242,36 @@ class MobileNavigation {
             this.setupEventListeners();
             this.setupTouchFeedback();
         }
+    }
+
+    // Method to ensure event listeners are attached (can be called safely multiple times)
+    ensureEventListeners() {
+        if (this.isMobile) {
+            console.log('📱 Ensuring mobile navigation event listeners...');
+            this.setupEventListeners();
+        }
+    }
+
+    // Debug method to check mobile navigation health
+    checkHealth() {
+        const bottomNav = document.getElementById('mobile-bottom-nav');
+        const hasHandler = bottomNav && bottomNav._mobileNavHandler;
+        const tabButtons = bottomNav ? bottomNav.querySelectorAll('.mobile-nav-tab').length : 0;
+        
+        console.log('📱 Mobile Navigation Health Check:', {
+            isMobile: this.isMobile,
+            bottomNavExists: !!bottomNav,
+            hasEventHandler: !!hasHandler,
+            tabButtonCount: tabButtons,
+            currentTab: this.currentTab
+        });
+        
+        return {
+            healthy: this.isMobile && bottomNav && hasHandler && tabButtons > 0,
+            bottomNavExists: !!bottomNav,
+            hasEventHandler: !!hasHandler,
+            tabButtonCount: tabButtons
+        };
     }
 
     // Add haptic feedback for mobile interactions (if supported)

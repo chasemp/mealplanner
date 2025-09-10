@@ -903,4 +903,155 @@ describe('RecipeManager', () => {
             expect(favoriteLabel.textContent.trim()).toBe('Favorite')
         })
     })
+
+    describe('Label Chip Rendering', () => {
+        beforeEach(() => {
+            // Mock the labelTypes system
+            global.window.labelTypes = {
+                getColorClasses: (type) => {
+                    switch (type) {
+                        case 'recipe_type':
+                            return 'bg-blue-100 text-blue-800 dark:!bg-blue-200 dark:!text-blue-900'
+                        case 'meal_type':
+                            return 'bg-orange-100 text-orange-800 dark:!bg-orange-900 dark:!text-orange-200'
+                        case 'default':
+                        default:
+                            return 'bg-green-100 text-green-800 dark:!bg-green-200 dark:!text-green-900'
+                    }
+                },
+                getIcon: (type) => {
+                    switch (type) {
+                        case 'recipe_type':
+                            return '<svg class="w-3 h-3 mr-1">recipe</svg>'
+                        case 'meal_type':
+                            return '<svg class="w-3 h-3 mr-1">meal</svg>'
+                        default:
+                            return ''
+                    }
+                }
+            }
+            
+            // Add methods to mock manager
+            recipeManager.selectedLabels = []
+            recipeManager.inferLabelType = (label) => {
+                if (['Recipe Combo'].includes(label)) return 'recipe_type'
+                if (['Breakfast', 'Lunch', 'Dinner', 'Snack'].includes(label)) return 'meal_type'
+                return 'default'
+            }
+            recipeManager.getLabelButtonColors = (labelType) => {
+                switch (labelType) {
+                    case 'recipe_type':
+                        return 'text-blue-600 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-100'
+                    case 'meal_type':
+                        return 'text-orange-600 dark:text-orange-300 hover:text-orange-800 dark:hover:text-orange-100'
+                    case 'default':
+                    default:
+                        return 'text-green-600 dark:text-green-300 hover:text-green-800 dark:hover:text-green-100'
+                }
+            }
+            recipeManager.removeLabel = vi.fn()
+            
+            recipeManager.init()
+        })
+
+        it('should render selected label chips with correct colors for default labels', () => {
+            recipeManager.selectedLabels = ['vegetarian', 'healthy']
+            recipeManager.render()
+            
+            const labelContainer = container.querySelector('#recipe-labels-container')
+            const labelChips = labelContainer.querySelectorAll('span.inline-flex')
+            
+            expect(labelChips).toHaveLength(2)
+            
+            // Check first chip (vegetarian - default type)
+            const vegetarianChip = labelChips[0]
+            expect(vegetarianChip.className).toContain('bg-green-100')
+            expect(vegetarianChip.className).toContain('text-green-800')
+            expect(vegetarianChip.className).toContain('font-bold')
+            expect(vegetarianChip.textContent.trim()).toBe('vegetarian')
+            
+            // Check remove button color
+            const removeButton = vegetarianChip.querySelector('button')
+            expect(removeButton.className).toContain('text-green-600')
+        })
+
+        it('should render selected label chips with correct colors for recipe type labels', () => {
+            recipeManager.selectedLabels = ['Recipe Combo']
+            recipeManager.render()
+            
+            const labelContainer = container.querySelector('#recipe-labels-container')
+            const labelChips = labelContainer.querySelectorAll('span.inline-flex')
+            
+            expect(labelChips).toHaveLength(1)
+            
+            // Check recipe type chip
+            const comboChip = labelChips[0]
+            expect(comboChip.className).toContain('bg-blue-100')
+            expect(comboChip.className).toContain('text-blue-800')
+            expect(comboChip.className).toContain('font-bold')
+            expect(comboChip.textContent.trim()).toContain('Recipe Combo')
+            
+            // Check remove button color
+            const removeButton = comboChip.querySelector('button')
+            expect(removeButton.className).toContain('text-blue-600')
+        })
+
+        it('should render selected label chips with correct colors for meal type labels', () => {
+            recipeManager.selectedLabels = ['Dinner', 'Breakfast']
+            recipeManager.render()
+            
+            const labelContainer = container.querySelector('#recipe-labels-container')
+            const labelChips = labelContainer.querySelectorAll('span.inline-flex')
+            
+            expect(labelChips).toHaveLength(2)
+            
+            // Check meal type chips
+            labelChips.forEach(chip => {
+                expect(chip.className).toContain('bg-orange-100')
+                expect(chip.className).toContain('text-orange-800')
+                expect(chip.className).toContain('font-bold')
+                
+                // Check remove button color
+                const removeButton = chip.querySelector('button')
+                expect(removeButton.className).toContain('text-orange-600')
+            })
+        })
+
+        it('should include icons for non-default label types', () => {
+            recipeManager.selectedLabels = ['Recipe Combo', 'Dinner']
+            recipeManager.render()
+            
+            const labelContainer = container.querySelector('#recipe-labels-container')
+            const labelChips = labelContainer.querySelectorAll('span.inline-flex')
+            
+            expect(labelChips).toHaveLength(2)
+            
+            // Recipe type should have icon
+            const comboChip = labelChips[0]
+            expect(comboChip.innerHTML).toContain('<svg class="w-3 h-3 mr-1">recipe</svg>')
+            
+            // Meal type should have icon
+            const dinnerChip = labelChips[1]
+            expect(dinnerChip.innerHTML).toContain('<svg class="w-3 h-3 mr-1">meal</svg>')
+        })
+
+        it('should handle mixed label types correctly', () => {
+            recipeManager.selectedLabels = ['vegetarian', 'Recipe Combo', 'Dinner']
+            recipeManager.render()
+            
+            const labelContainer = container.querySelector('#recipe-labels-container')
+            const labelChips = labelContainer.querySelectorAll('span.inline-flex')
+            
+            expect(labelChips).toHaveLength(3)
+            
+            // Default label (green)
+            expect(labelChips[0].className).toContain('bg-green-100')
+            
+            // Recipe type label (blue)
+            expect(labelChips[1].className).toContain('bg-blue-100')
+            
+            // Meal type label (orange)
+            expect(labelChips[2].className).toContain('bg-orange-100')
+        })
+    })
 })
