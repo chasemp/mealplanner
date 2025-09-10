@@ -81,23 +81,23 @@ class RecipeManager {
                 - Desktop: 5-column grid with Search+Sort sharing first column (md:grid-cols-5)
                 
                 COLUMN DISTRIBUTION:
-                1. Search + Sort (stacked vertically in same column): Exception grouping
+                1. Search + Sort (side-by-side on same line): Exception grouping
                 2. Meal Type (1 column): Gets its own column
                 3. Multi-Label Filter (1 column): Gets its own column  
                 4. Clear Filters (1 column): Gets its own column
                 5. [Empty/Future expansion]
                 
                 DESIGN RATIONALE:
-                - Matches Meals tab 5-column structure exactly
-                - Search + Sort grouped in first column (stacked, not side-by-side)
+                - Matches Meals tab 5-column structure with exception
+                - Search + Sort share first column (side-by-side on same line)
                 - Each other filter gets individual column for clarity
-                - Consistent with user's "one line per input" request
+                - Exception: Search and Sort on same line for efficiency
                 -->
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
                     <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                        <!-- Column 1: Search + Sort (stacked vertically) -->
-                        <div class="space-y-4">
-                            <!-- Search Input -->
+                        <!-- Column 1: Search + Sort (side-by-side on same line) -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                            <!-- Search Input (left side) -->
                             <div>
                                 <label for="recipe-search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search Recipes</label>
                                 <div class="relative">
@@ -112,7 +112,7 @@ class RecipeManager {
                                     </div>
                                 </div>
                             </div>
-                            <!-- Sort + Direction -->
+                            <!-- Sort + Direction (right side) -->
                             <div>
                                 <label for="recipe-sort" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort</label>
                                 <!-- Sort dropdown + Direction button in flex layout -->

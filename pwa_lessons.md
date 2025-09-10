@@ -1103,4 +1103,117 @@ Replacing Tailwind CDN with a proper build system provides significant performan
 
 ---
 
-*This document captures the lessons learned from building the MealPlanner PWA, emphasizing the importance of the static PWA sweet spot: modular organization without build complexity.*
+## 🔄 **Development Server with Auto-Reload for Static PWAs**
+
+### **The Caching Challenge in Static PWA Development**
+**Problem**: Manual server restarts during development are tedious and break development flow, especially when testing cache-sensitive features like service workers and PWA installation.
+
+**Traditional Approach**: 
+```bash
+# Manual restart cycle (inefficient)
+python3 -m http.server 8080
+# Edit files...
+# Ctrl+C to stop server
+# Restart server
+# Refresh browser
+```
+
+### **The Auto-Reload Solution**
+**Implementation**: Custom Python development server with file watching and automatic restarts.
+
+**Key Features**:
+- **File Watching**: Monitors `.html`, `.js`, `.css`, `.json`, `.md` files
+- **Smart Reloading**: 1-second debounce prevents excessive restarts
+- **Process Management**: Graceful server termination and restart
+- **Error Recovery**: Automatically restarts if server process dies
+- **Cross-Platform**: Works on macOS, Linux, Windows
+
+**Usage**:
+```bash
+# Start auto-reload development server
+npm run dev:server
+
+# Traditional server (no auto-reload)
+npm run serve
+```
+
+### **Technical Implementation**
+```python
+# scripts/dev-server.py
+class ReloadHandler(FileSystemEventHandler):
+    def on_modified(self, event):
+        if event.is_directory:
+            return
+        
+        # Only reload for relevant file types
+        relevant_extensions = {'.html', '.js', '.css', '.json', '.md'}
+        file_path = Path(event.src_path)
+        
+        if file_path.suffix.lower() in relevant_extensions:
+            self.restart_server()
+```
+
+### **Development Workflow Benefits**
+1. **Faster Iteration**: No manual server management
+2. **Cache Testing**: Reliable testing of cache-busting and PWA features
+3. **Consistent Environment**: Same server behavior across development sessions
+4. **Error Prevention**: Eliminates "forgot to restart server" bugs
+5. **Focus Maintenance**: Developers stay in code, not server management
+
+### **Integration with Existing Tools**
+- **Cache-Busting**: Works seamlessly with `update-version.cjs` system
+- **Testing**: Compatible with Playwright E2E tests
+- **Build Process**: Doesn't interfere with Vite or Tailwind builds
+- **Deployment**: Uses same static file structure as production
+
+### **Performance Considerations**
+- **Reload Delay**: 1-second minimum prevents excessive CPU usage
+- **File Filtering**: Only watches relevant file types to reduce overhead
+- **Process Cleanup**: Proper termination prevents resource leaks
+- **Memory Usage**: Lightweight Python process with minimal overhead
+
+### **Static PWA Development Best Practices**
+```bash
+# Development workflow
+npm run dev:server          # Start auto-reload server
+# Edit files - server restarts automatically
+# Browser refresh shows changes immediately
+
+# Testing workflow  
+npm run dev:server &        # Background server
+npm run test:e2e           # E2E tests against auto-reload server
+```
+
+### **Why This Matters for PWAs**
+- **Service Worker Testing**: Reliable server restarts help test SW updates
+- **Cache Behavior**: Consistent server behavior for cache testing
+- **Installation Testing**: Stable server for PWA installation flows
+- **Performance Testing**: Consistent baseline for performance measurements
+- **Mobile Testing**: Reliable server for mobile device testing
+
+### **Requirements & Compatibility**
+- **Python 3.9+**: Uses standard library features
+- **Watchdog Package**: `pip install --user watchdog`
+- **Cross-Platform**: Works on macOS, Linux, Windows
+- **No Build Dependencies**: Pure Python, no Node.js requirements
+
+### **Future Enhancements**
+- **Browser Auto-Refresh**: WebSocket-based browser refresh
+- **Build Integration**: Automatic `npm run version:update` on changes
+- **Selective Watching**: Configure which files/directories to monitor
+- **Hot Module Replacement**: For faster development cycles
+- **HTTPS Support**: For testing PWA features requiring secure contexts
+
+### **Key Lesson**
+**Auto-reload development servers are essential for productive static PWA development.** They eliminate the manual server management overhead while providing consistent, reliable testing environments for cache-sensitive PWA features.
+
+**Implementation Strategy**:
+1. **Start Simple**: Basic file watching with server restart
+2. **Add Intelligence**: Debouncing, file filtering, error recovery
+3. **Integrate Smoothly**: Work with existing build and test tools
+4. **Document Thoroughly**: Clear usage instructions and troubleshooting
+5. **Plan for Growth**: Architecture that supports future enhancements
+
+---
+
+*This document captures the lessons learned from building the MealPlanner PWA, emphasizing the importance of the static PWA sweet spot: modular organization without build complexity, enhanced with intelligent development tooling.*
