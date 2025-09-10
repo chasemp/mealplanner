@@ -2,7 +2,7 @@
 class MealPlannerApp {
     constructor() {
         this.currentTab = 'dinner';
-        this.version = '2025.09.09.2138';
+        this.version = '2025.09.09.2142';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
@@ -819,6 +819,17 @@ class MealPlannerApp {
         return filtered;
     }
 
+    // Extract label names from typed labels (handles both old and new format)
+    extractLabelNames(labels) {
+        if (!Array.isArray(labels)) return [];
+        
+        return labels.map(label => {
+            if (typeof label === 'string') return label;
+            if (label && typeof label === 'object' && label.name) return label.name;
+            return String(label);
+        });
+    }
+
     updateLabelOptions(recipes) {
         const labelSelect = document.getElementById('plan-recipe-label');
         if (!labelSelect) return;
@@ -826,7 +837,9 @@ class MealPlannerApp {
         // Get all unique labels
         const labels = new Set();
         recipes.forEach(recipe => {
-            (recipe.labels || []).forEach(label => labels.add(label));
+            // Extract label names from typed labels
+            const labelNames = this.extractLabelNames(recipe.labels || []);
+            labelNames.forEach(label => labels.add(label));
             (recipe.tags || []).forEach(tag => labels.add(tag));
         });
 
