@@ -170,7 +170,7 @@ class RecipeManager {
                                     autocomplete="off"
                                 />
                             </div>
-                            <div id="recipe-labels-dropdown" class="absolute z-40 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg hidden max-h-48 overflow-y-auto">
+                            <div id="recipe-labels-dropdown" class="absolute z-40 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg hidden max-h-48 overflow-y-auto">
                                 <!-- Dropdown options will be populated by JavaScript -->
                             </div>
                         </div>
