@@ -57,21 +57,16 @@ class GroceryListManager {
     }
 
     async loadScheduledMeals() {
-        // Load from centralized demo data for consistency
-        // Load scheduled meals from app storage (real data) or demo data as fallback
-        if (window.app && window.app.getScheduledMeals) {
-            this.scheduledMeals = window.app.getScheduledMeals();
-            console.log(`✅ Grocery List Manager loaded ${this.scheduledMeals.length} scheduled meals from app storage`);
+        console.log('📱 Grocery List Manager loading scheduled meals from authoritative data source...');
+        
+        // Get data from centralized authority
+        if (window.mealPlannerSettings) {
+            this.scheduledMeals = window.mealPlannerSettings.getAuthoritativeData('scheduledMeals');
+            console.log(`✅ Grocery List Manager loaded ${this.scheduledMeals.length} scheduled meals from authoritative source`);
         } else {
-            // Fallback to demo data if app not available
-            if (window.DemoDataManager) {
-                const demoData = new window.DemoDataManager();
-                this.scheduledMeals = demoData.getScheduledMeals();
-                console.log(`✅ Grocery List Manager loaded ${this.scheduledMeals.length} scheduled meals from demo data (fallback)`);
-            } else {
-                this.scheduledMeals = [];
-                console.warn('⚠️ No scheduled meals source available');
-            }
+            // Fallback if settings not available
+            console.warn('⚠️ Settings manager not available, using empty scheduled meals');
+            this.scheduledMeals = [];
         }
     }
 
