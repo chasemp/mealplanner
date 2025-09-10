@@ -943,9 +943,9 @@ class RecipeManager {
         // Create modal HTML
         const modal = document.createElement('div');
         modal.id = modalId;
-        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4';
         modal.innerHTML = `
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col mx-4 sm:mx-0">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-sm sm:max-w-2xl md:max-w-4xl max-h-[95vh] sm:max-h-[90vh] flex flex-col mx-2 sm:mx-4 md:mx-0">
                 <div class="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
                     <h2 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
                         ${isEdit ? 'Edit Recipe' : 'Add New Recipe'}
@@ -958,7 +958,7 @@ class RecipeManager {
                 </div>
                 
                 <div class="overflow-y-auto flex-1">
-                    <form id="recipe-form" class="p-4 sm:p-6 space-y-4 sm:space-y-6">
+                    <form id="recipe-form" class="p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4 md:space-y-6">
                     <!-- Basic Information -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                         <div class="sm:col-span-2">
@@ -1008,10 +1008,10 @@ class RecipeManager {
                         </div>
                     </div>
                     
-                    <!-- Ingredients Section -->
+                    <!-- Items Section -->
                     <div>
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
-                            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Ingredients</h3>
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Items</h3>
                             <div class="flex gap-2">
                                 <button type="button" id="scan-ingredient-barcode" class="bg-blue-500 hover:bg-blue-600 text-white px-2 sm:px-3 py-1.5 rounded text-xs sm:text-sm transition-colors flex items-center">
                                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1023,7 +1023,7 @@ class RecipeManager {
                                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                     </svg>
-                                    <span class="hidden sm:inline">Add Ingredient</span>
+                                    <span class="hidden sm:inline">Add Item</span>
                                     <span class="sm:hidden">Add</span>
                                 </button>
                             </div>
@@ -1564,7 +1564,7 @@ class RecipeManager {
         // Create modal HTML
         const modal = document.createElement('div');
         modal.id = 'recipe-detail-modal';
-        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4';
         
         // Prepare ingredients list with resolved names
         const ingredientsList = recipe.ingredients.map(ingredient => {
@@ -1601,7 +1601,7 @@ class RecipeManager {
             '<span class="text-gray-500 dark:text-gray-400">No labels</span>';
 
         modal.innerHTML = `
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto mx-4 sm:mx-0">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-sm sm:max-w-2xl md:max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto mx-2 sm:mx-4 md:mx-0">
                 <!-- Header -->
                 <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 py-3 sm:py-4">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -1622,7 +1622,7 @@ class RecipeManager {
                     </div>
                 </div>
 
-                <div class="p-4 sm:p-6">
+                <div class="p-3 sm:p-4 md:p-6">
                     <!-- Recipe Image (if available) -->
                     ${recipe.image_url ? `
                         <div class="mb-4 sm:mb-6 flex justify-center">
@@ -1631,7 +1631,7 @@ class RecipeManager {
                     ` : ''}
 
                     <!-- Description and Basic Info -->
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-4 sm:mb-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-3 sm:mb-4 md:mb-6">
                         <div class="lg:col-span-2">
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Description</h3>
                             <p class="text-gray-700 dark:text-gray-300 text-sm sm:text-base">${recipe.description || 'No description available'}</p>
@@ -1663,18 +1663,18 @@ class RecipeManager {
                         </div>
                     </div>
 
-                    <!-- Ingredients -->
-                    <div class="mb-4 sm:mb-6">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Ingredients (${recipe.ingredients.length})</h3>
-                        <ul class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 sm:p-4 text-sm sm:text-base">
+                    <!-- Items -->
+                    <div class="mb-3 sm:mb-4 md:mb-6">
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-2 sm:mb-3">Items (${recipe.ingredients.length})</h3>
+                        <ul class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 sm:p-3 md:p-4 text-xs sm:text-sm md:text-base">
                             ${ingredientsList}
                         </ul>
                     </div>
 
                     <!-- Instructions -->
-                    <div class="mb-4 sm:mb-6">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Instructions</h3>
-                        <ol class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 sm:p-4 space-y-2 text-sm sm:text-base">
+                    <div class="mb-3 sm:mb-4 md:mb-6">
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-2 sm:mb-3">Instructions</h3>
+                        <ol class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 sm:p-3 md:p-4 space-y-1 sm:space-y-2 text-xs sm:text-sm md:text-base">
                             ${instructions}
                         </ol>
                     </div>
