@@ -392,4 +392,85 @@ describe('Mobile Navigation', () => {
             });
         });
     });
+
+    describe('Event Listener Robustness', () => {
+        it('should attach event listeners with cleanup to prevent duplicates', () => {
+            const mobileNav = new MobileNavigation();
+            
+            const bottomNav = document.getElementById('mobile-bottom-nav');
+            expect(bottomNav).toBeTruthy();
+            
+            // Event handler should be stored for cleanup
+            expect(bottomNav._mobileNavHandler).toBeTruthy();
+            expect(typeof bottomNav._mobileNavHandler).toBe('function');
+        });
+
+        it('should reattach event listeners when refreshNavigation is called', () => {
+            const mobileNav = new MobileNavigation();
+            
+            const originalBottomNav = document.getElementById('mobile-bottom-nav');
+            const originalHandler = originalBottomNav._mobileNavHandler;
+            
+            // Refresh navigation
+            mobileNav.refreshNavigation();
+            
+            const newBottomNav = document.getElementById('mobile-bottom-nav');
+            expect(newBottomNav).toBeTruthy();
+            expect(newBottomNav._mobileNavHandler).toBeTruthy();
+            expect(typeof newBottomNav._mobileNavHandler).toBe('function');
+        });
+
+        it('should handle click events on mobile nav tabs', () => {
+            const mobileNav = new MobileNavigation();
+            const switchTabSpy = vi.spyOn(mobileNav, 'switchTab');
+            
+            const bottomNav = document.getElementById('mobile-bottom-nav');
+            const firstTab = bottomNav.querySelector('.mobile-nav-tab');
+            
+            // Simulate click event
+            const clickEvent = new Event('click', { bubbles: true });
+            firstTab.dispatchEvent(clickEvent);
+            
+            expect(switchTabSpy).toHaveBeenCalled();
+        });
+
+        it('should ensure event listeners stay attached via ensureEventListeners method', () => {
+            const mobileNav = new MobileNavigation();
+            const setupSpy = vi.spyOn(mobileNav, 'setupEventListeners');
+            
+            // Call ensureEventListeners
+            mobileNav.ensureEventListeners();
+            
+            expect(setupSpy).toHaveBeenCalled();
+        });
+
+        it('should provide health check information', () => {
+            const mobileNav = new MobileNavigation();
+            
+            const health = mobileNav.checkHealth();
+            
+            expect(health).toHaveProperty('healthy');
+            expect(health).toHaveProperty('bottomNavExists');
+            expect(health).toHaveProperty('hasEventHandler');
+            expect(health).toHaveProperty('tabButtonCount');
+            
+            expect(health.healthy).toBe(true);
+            expect(health.bottomNavExists).toBe(true);
+            expect(health.hasEventHandler).toBe(true);
+            expect(health.tabButtonCount).toBeGreaterThan(0);
+        });
+
+        it('should detect when event handlers are lost and report unhealthy state', () => {
+            const mobileNav = new MobileNavigation();
+            
+            const bottomNav = document.getElementById('mobile-bottom-nav');
+            
+            // Simulate lost event handler
+            delete bottomNav._mobileNavHandler;
+            
+            const health = mobileNav.checkHealth();
+            expect(health.healthy).toBe(false);
+            expect(health.hasEventHandler).toBe(false);
+        });
+    });
 });

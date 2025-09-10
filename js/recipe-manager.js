@@ -151,10 +151,13 @@ class RecipeManager {
                                 ${this.selectedLabels.map(label => {
                                     const labelType = this.inferLabelType(label);
                                     const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
+                                    const colors = window.labelTypes ? window.labelTypes.getColorClasses(labelType) : 
+                                        'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+                                    const buttonColors = this.getLabelButtonColors(labelType);
                                     return `
-                                    <span class="inline-flex items-center px-2 py-1 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full">
+                                    <span class="inline-flex items-center px-2 py-1 text-xs font-bold ${colors} rounded-full">
                                         ${icon}${label}
-                                        <button type="button" class="ml-1 text-blue-600 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-100" onclick="window.recipeManager.removeLabel('${label}')">
+                                        <button type="button" class="ml-1 ${buttonColors}" onclick="window.recipeManager.removeLabel('${label}')">
                                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                             </svg>
@@ -667,6 +670,19 @@ class RecipeManager {
                 return 'bg-blue-100 text-blue-800 dark:!bg-blue-200 dark:!text-blue-900';
             default:
                 return 'bg-green-100 text-green-800 dark:!bg-green-200 dark:!text-green-900';
+        }
+    }
+
+    // Get button colors that match the label type
+    getLabelButtonColors(labelType) {
+        switch (labelType) {
+            case 'recipe_type':
+                return 'text-blue-600 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-100';
+            case 'meal_type':
+                return 'text-orange-600 dark:text-orange-300 hover:text-orange-800 dark:hover:text-orange-100';
+            case 'default':
+            default:
+                return 'text-green-600 dark:text-green-300 hover:text-green-800 dark:hover:text-green-100';
         }
     }
 
