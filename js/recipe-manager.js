@@ -96,7 +96,7 @@ class RecipeManager {
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
                     <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                         <!-- Column 1: Search + Sort (side-by-side on same line) -->
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                             <!-- Search Input (left side) -->
                             <div>
                                 <label for="recipe-search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search Recipes</label>
@@ -117,10 +117,10 @@ class RecipeManager {
                                 <label for="recipe-sort" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort</label>
                                 <!-- Sort dropdown + Direction button in flex layout -->
                                 <div class="flex gap-2">
-                                    <select id="recipe-sort" class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                                    <select id="recipe-sort" class="w-full md:w-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
                                         <option value="name" ${this.sortBy === 'name' ? 'selected' : ''}>Name</option>
-                                        <option value="date" ${this.sortBy === 'date' ? 'selected' : ''}>Date</option>
-                                        <option value="prep_time" ${this.sortBy === 'prep_time' ? 'selected' : ''}>Prep Time</option>
+                                        <option value="date" ${this.sortBy === 'date' ? 'selected' : ''}>Recipe ID</option>
+                                        <option value="prep_time" ${this.sortBy === 'prep_time' ? 'selected' : ''}>Total Time</option>
                                         <option value="serving_count" ${this.sortBy === 'serving_count' ? 'selected' : ''}>Servings</option>
                                         <option value="label_type" ${this.sortBy === 'label_type' ? 'selected' : ''}>Label Type</option>
                                     </select>
@@ -235,6 +235,24 @@ class RecipeManager {
         
         // Re-attach event listeners after rendering
         this.attachEventListeners();
+    }
+
+    updateRecipeDisplay() {
+        // Update only the recipe cards and empty state without re-rendering entire component
+        const recipeGrid = this.container.querySelector('#recipes-grid');
+        const emptyState = this.container.querySelector('#empty-state');
+        
+        if (recipeGrid && emptyState) {
+            const filteredRecipes = this.getFilteredRecipes();
+            recipeGrid.innerHTML = this.renderRecipeCards();
+            
+            // Update empty state visibility
+            if (filteredRecipes.length > 0) {
+                emptyState.classList.add('hidden');
+            } else {
+                emptyState.classList.remove('hidden');
+            }
+        }
     }
 
     renderRecipeCards() {
@@ -372,13 +390,18 @@ class RecipeManager {
                     result = a.title.localeCompare(b.title);
                     break;
                 case 'date':
-                    result = new Date(b.created_at) - new Date(a.created_at);
+                    // Sort by recipe ID as proxy for creation order (since no created_at field)
+                    result = (b.id || 0) - (a.id || 0);
                     break;
                 case 'prep_time':
-                    result = (a.prep_time + a.cook_time) - (b.prep_time + b.cook_time);
+                    // Sort by total time (prep + cook)
+                    const aTotalTime = (a.prep_time || 0) + (a.cook_time || 0);
+                    const bTotalTime = (b.prep_time || 0) + (b.cook_time || 0);
+                    result = aTotalTime - bTotalTime;
                     break;
                 case 'serving_count':
-                    result = (b.serving_count || b.servings || 0) - (a.serving_count || a.servings || 0);
+                    // Use 'servings' field from actual data structure
+                    result = (b.servings || 0) - (a.servings || 0);
                     break;
                 case 'label_type':
                     // Sort by primary label type, then by name within each type
@@ -561,7 +584,7 @@ class RecipeManager {
         if (searchInput) {
             searchInput.addEventListener('input', (e) => {
                 this.searchTerm = e.target.value;
-                this.render();
+                this.updateRecipeDisplay();
             });
         }
 
@@ -570,7 +593,7 @@ class RecipeManager {
         if (categorySelect) {
             categorySelect.addEventListener('change', (e) => {
                 this.selectedCategory = e.target.value;
-                this.render();
+                this.updateRecipeDisplay();
             });
         }
 
@@ -676,7 +699,7 @@ class RecipeManager {
         if (sortSelect) {
             sortSelect.addEventListener('change', (e) => {
                 this.sortBy = e.target.value;
-                this.render();
+                this.updateRecipeDisplay();
             });
         }
 
@@ -685,6 +708,7 @@ class RecipeManager {
         if (sortDirectionBtn) {
             sortDirectionBtn.addEventListener('click', () => {
                 this.sortAscending = !this.sortAscending;
+                // Need to re-render for sort direction button to update its icon
                 this.render();
             });
         }
@@ -709,7 +733,7 @@ class RecipeManager {
         if (favoritesFilterBtn) {
             favoritesFilterBtn.addEventListener('click', () => {
                 this.showFavoritesOnly = !this.showFavoritesOnly;
-                this.render();
+                this.updateRecipeDisplay();
             });
         }
 
