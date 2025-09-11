@@ -251,21 +251,47 @@ class RecipeManager {
     }
 
     updateRecipeDisplay() {
+        console.log('🔄 updateRecipeDisplay called, showFavoritesOnly:', this.showFavoritesOnly);
+        
         // Update only the recipe cards, info bar, and empty state without re-rendering entire component
         const recipeGrid = this.container.querySelector('#recipes-grid');
         const emptyState = this.container.querySelector('#empty-state');
         const infoBar = this.container.querySelector('.bg-gray-50.dark\\:bg-gray-700');
         
+        // Try alternative selectors if the first one doesn't work
+        if (!infoBar) {
+            console.log('❌ Info bar not found with primary selector, trying alternatives...');
+            const altInfoBar1 = this.container.querySelector('.bg-gray-50');
+            const altInfoBar2 = this.container.querySelector('[class*="bg-gray-50"]');
+            console.log('🔍 Alternative selectors found:', {
+                altInfoBar1: !!altInfoBar1,
+                altInfoBar2: !!altInfoBar2
+            });
+        }
+        
+        console.log('🔄 Elements found:', {
+            recipeGrid: !!recipeGrid,
+            emptyState: !!emptyState,
+            infoBar: !!infoBar
+        });
+        
         if (recipeGrid && emptyState) {
             const filteredRecipes = this.getFilteredRecipes();
+            console.log('🔄 Filtered recipes count:', filteredRecipes.length);
+            
             const newHTML = this.renderRecipeCards();
+            console.log('🔄 New HTML length:', newHTML.length, 'characters');
+            
             recipeGrid.innerHTML = newHTML;
+            console.log('🔄 innerHTML updated');
             
             // Force a reflow to ensure DOM updates are rendered
             recipeGrid.offsetHeight;
+            console.log('🔄 Reflow forced');
             
             // Re-attach event listeners to the new recipe cards
             this.attachRecipeCardListeners();
+            console.log('🔄 Event listeners reattached');
             
             // Update empty state visibility
             if (filteredRecipes.length > 0) {
@@ -277,28 +303,41 @@ class RecipeManager {
             // Update info bar content
             if (infoBar) {
                 this.updateInfoBar(infoBar);
+                console.log('🔄 Info bar updated');
             }
             
             // Update favorites button state
             this.updateFavoritesButton();
+            console.log('🔄 Favorites button updated');
+        } else {
+            console.log('❌ Missing required elements for updateRecipeDisplay');
         }
     }
 
     updateFavoritesButton() {
         const favoritesBtn = this.container.querySelector('#favorites-filter-btn');
+        console.log('🌟 updateFavoritesButton called, showFavoritesOnly:', this.showFavoritesOnly);
+        console.log('🌟 Favorites button found:', !!favoritesBtn);
+        
         if (favoritesBtn) {
             // Update button appearance and text
-            favoritesBtn.className = `px-4 py-2 rounded-md text-sm font-medium transition-colors ${this.showFavoritesOnly ? 'bg-yellow-400 hover:bg-yellow-500 text-yellow-900 dark:bg-yellow-500 dark:hover:bg-yellow-400 dark:text-yellow-900 font-bold border-2 border-yellow-600 dark:border-yellow-400' : 'bg-yellow-100 hover:bg-yellow-200 text-yellow-800 dark:bg-yellow-900 dark:hover:bg-yellow-800 dark:text-yellow-200 border-2 border-transparent'}`;
+            const newClassName = `px-4 py-2 rounded-md text-sm font-medium transition-colors ${this.showFavoritesOnly ? 'bg-yellow-400 hover:bg-yellow-500 text-yellow-900 dark:bg-yellow-500 dark:hover:bg-yellow-400 dark:text-yellow-900 font-bold border-2 border-yellow-600 dark:border-yellow-400' : 'bg-yellow-100 hover:bg-yellow-200 text-yellow-800 dark:bg-yellow-900 dark:hover:bg-yellow-800 dark:text-yellow-200 border-2 border-transparent'}`;
+            favoritesBtn.className = newClassName;
             favoritesBtn.title = this.showFavoritesOnly ? 'Show all recipes' : 'Show only favorites';
             
+            console.log('🌟 Button className updated to:', newClassName);
+            
             // Update button content with correct star icon
-            favoritesBtn.innerHTML = `
+            const newInnerHTML = `
                 ${this.showFavoritesOnly ? 
                     '<svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>' :
                     '<svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>'
                 }
                 <span class="${this.showFavoritesOnly ? 'font-bold italic' : ''}">${this.showFavoritesOnly ? 'Show All' : 'Favorites'}</span>
             `;
+            favoritesBtn.innerHTML = newInnerHTML;
+            
+            console.log('🌟 Button innerHTML updated, text should be:', this.showFavoritesOnly ? 'Show All' : 'Favorites');
         }
     }
 
@@ -405,8 +444,10 @@ class RecipeManager {
 
     renderRecipeCards() {
         const filteredRecipes = this.getFilteredRecipes();
+        console.log('🎨 renderRecipeCards called, filtered count:', filteredRecipes.length);
+        console.log('🎨 Sample filtered recipes:', filteredRecipes.slice(0, 3).map(r => r.title));
         
-        return filteredRecipes.map(recipe => `
+        const html = filteredRecipes.map(recipe => `
             <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 cursor-pointer recipe-card ${recipe.type === 'combo' ? 'border-l-4 border-purple-500' : ''}" 
                  data-recipe-id="${recipe.id}" data-recipe-type="${recipe.type || 'basic'}">
                 <div class="p-6">
@@ -483,6 +524,9 @@ class RecipeManager {
                 </div>
             </div>
         `).join('');
+        
+        console.log('🎨 Generated HTML length:', html.length, 'characters');
+        return html;
     }
 
     renderEmptyState() {
@@ -503,6 +547,9 @@ class RecipeManager {
     }
 
     getFilteredRecipes() {
+        console.log('🔍 getFilteredRecipes called, showFavoritesOnly:', this.showFavoritesOnly);
+        console.log('🔍 Total recipes:', this.recipes.length);
+        
         let filtered = this.recipes;
 
         // Filter by search term
@@ -513,6 +560,7 @@ class RecipeManager {
                 recipe.description.toLowerCase().includes(term) ||
                 (recipe.labels && this.extractLabelNames(recipe.labels).some(label => label.toLowerCase().includes(term)))
             );
+            console.log('🔍 After search filter:', filtered.length);
         }
 
         // Note: Meal type filtering is now handled through the multi-label system
@@ -526,11 +574,19 @@ class RecipeManager {
                     recipeLabels.includes(selectedLabel.toLowerCase())
                 );
             });
+            console.log('🔍 After label filter:', filtered.length);
         }
 
         // Filter by favorites
         if (this.showFavoritesOnly) {
+            console.log('🔍 Filtering by favorites...');
+            const beforeFavFilter = filtered.length;
+            const favoritesInFiltered = filtered.filter(recipe => recipe.favorite === true);
+            console.log('🔍 Recipes with favorite=true in current filtered set:', favoritesInFiltered.length);
+            console.log('🔍 Sample favorite recipes:', favoritesInFiltered.slice(0, 3).map(r => ({title: r.title, favorite: r.favorite})));
+            
             filtered = filtered.filter(recipe => recipe.favorite === true);
+            console.log('🔍 After favorites filter:', filtered.length, 'from', beforeFavFilter);
         }
 
         // Sort recipes
@@ -926,8 +982,11 @@ class RecipeManager {
         const favoritesFilterBtn = this.container.querySelector('#favorites-filter-btn');
         if (favoritesFilterBtn) {
             favoritesFilterBtn.addEventListener('click', () => {
+                console.log('🌟 Favorites button clicked, current state:', this.showFavoritesOnly);
                 this.showFavoritesOnly = !this.showFavoritesOnly;
+                console.log('🌟 New state:', this.showFavoritesOnly);
                 this.updateRecipeDisplay();
+                console.log('🌟 updateRecipeDisplay called');
             });
         }
 
