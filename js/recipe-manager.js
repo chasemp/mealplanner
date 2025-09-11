@@ -157,28 +157,7 @@ class RecipeManager {
                         </div>
                     </div>
                     
-                    <!-- Row 3: Sort Controls -->
-                    <div class="mb-4">
-                        <label for="recipe-sort" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort</label>
-                        <!-- Sort dropdown + Direction button in flex layout -->
-                        <div class="flex gap-2">
-                            <select id="recipe-sort" class="w-full md:w-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
-                                <option value="name" ${this.sortBy === 'name' ? 'selected' : ''}>Name</option>
-                                <option value="date" ${this.sortBy === 'date' ? 'selected' : ''}>Created</option>
-                                <option value="prep_time" ${this.sortBy === 'prep_time' ? 'selected' : ''}>Total Time</option>
-                                <option value="serving_count" ${this.sortBy === 'serving_count' ? 'selected' : ''}>Servings</option>
-                                <option value="label_type" ${this.sortBy === 'label_type' ? 'selected' : ''}>Label Type</option>
-                            </select>
-                            <button id="sort-direction-btn" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white transition-colors" title="${this.sortAscending ? 'Sort Ascending' : 'Sort Descending'}">
-                                ${this.sortAscending ? 
-                                    '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>' : 
-                                    '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>'
-                                }
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Row 4: Favorites and Clear Filters Buttons -->
+                    <!-- Row 3: Favorites and Clear Filters Buttons -->
                     <div class="flex gap-3">
                         <button id="favorites-filter-btn" class="px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${this.showFavoritesOnly ? 'bg-yellow-100 hover:bg-yellow-200 text-yellow-800 dark:bg-yellow-800 dark:hover:bg-yellow-700 dark:text-yellow-100 font-bold border-2 border-yellow-500 shadow-lg shadow-yellow-400/50 dark:border-yellow-400 dark:shadow-yellow-500/50' : 'bg-yellow-100 hover:bg-yellow-200 text-yellow-800 dark:bg-yellow-800 dark:hover:bg-yellow-700 dark:text-yellow-100 border-2 border-transparent'}" title="${this.showFavoritesOnly ? 'Show all recipes' : 'Show only favorites'}">
                             ${this.showFavoritesOnly ? 
@@ -223,6 +202,26 @@ class RecipeManager {
                             </div>
                         </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Sort Controls -->
+                <div class="mb-4">
+                    <div class="flex items-center gap-3">
+                        <label for="recipe-sort" class="text-sm font-medium text-gray-700 dark:text-gray-300 flex-shrink-0">Sort by:</label>
+                        <select id="recipe-sort" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm">
+                            <option value="name" ${this.sortBy === 'name' ? 'selected' : ''}>Name</option>
+                            <option value="date" ${this.sortBy === 'date' ? 'selected' : ''}>Created</option>
+                            <option value="prep_time" ${this.sortBy === 'prep_time' ? 'selected' : ''}>Total Time</option>
+                            <option value="serving_count" ${this.sortBy === 'serving_count' ? 'selected' : ''}>Servings</option>
+                            <option value="label_type" ${this.sortBy === 'label_type' ? 'selected' : ''}>Label Type</option>
+                        </select>
+                        <button id="sort-direction-btn" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white transition-colors flex items-center" title="${this.sortAscending ? 'Sort Ascending (A-Z, 1-9)' : 'Sort Descending (Z-A, 9-1)'}">
+                            ${this.sortAscending ? 
+                                '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>' : 
+                                '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>'
+                            }
+                        </button>
                     </div>
                 </div>
 
