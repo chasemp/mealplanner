@@ -216,14 +216,6 @@ class RecipeManager {
                                     </svg>
                                     <span><strong>${this.getFilteredRecipes().filter(r => r.favorite === true).length}</strong> favs</span>
                     </div>
-                                ${this.getFilteredComboRecipes().length > 0 ? `
-                                    <div class="flex items-center space-x-1">
-                                        <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                                        </svg>
-                                        <span><strong>${this.getFilteredComboRecipes().length}</strong> combos</span>
-                    </div>
-                                ` : ''}
                             </div>
 
                             <!-- Right side: Filter indicators -->
@@ -384,14 +376,6 @@ class RecipeManager {
                     </svg>
                     <span><strong>${filteredFavorites.length}</strong> favs</span>
                 </div>
-                ${filteredComboRecipes.length > 0 ? `
-                    <div class="flex items-center space-x-1">
-                        <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                        </svg>
-                        <span><strong>${filteredComboRecipes.length}</strong> combos</span>
-                    </div>
-                ` : ''}
             `;
         }
 
@@ -1535,6 +1519,9 @@ class RecipeManager {
             ...recipeData
         };
         
+        // Automatically apply "Recipe Combo" label if this recipe includes other recipes
+        this.ensureRecipeComboLabel(newRecipe);
+        
         // Add to recipes array
         this.recipes.push(newRecipe);
         
@@ -1557,12 +1544,54 @@ class RecipeManager {
             id: recipeId // Ensure ID is preserved
         };
         
+        // Automatically apply "Recipe Combo" label if this recipe includes other recipes
+        this.ensureRecipeComboLabel(updatedRecipe);
+        
         this.recipes[recipeIndex] = updatedRecipe;
         
         // Save to storage
         await this.saveRecipes();
         
         return updatedRecipe;
+    }
+
+    /**
+     * Automatically applies or removes "Recipe Combo" label based on recipe content
+     * @param {Object} recipe - The recipe object to check and update
+     */
+    ensureRecipeComboLabel(recipe) {
+        if (!recipe.labels) {
+            recipe.labels = [];
+        }
+
+        const hasComboRecipes = recipe.combo_recipes && Array.isArray(recipe.combo_recipes) && recipe.combo_recipes.length > 0;
+        const hasRecipeComboLabel = recipe.labels.some(label => {
+            const labelName = typeof label === 'string' ? label : label.name;
+            return labelName === 'Recipe Combo';
+        });
+
+        if (hasComboRecipes && !hasRecipeComboLabel) {
+            // Add "Recipe Combo" label if recipe has combo_recipes but no label
+            recipe.labels.push({
+                name: 'Recipe Combo',
+                type: 'recipe_type'
+            });
+            console.log(`✅ Auto-applied "Recipe Combo" label to "${recipe.title}"`);
+        } else if (!hasComboRecipes && hasRecipeComboLabel) {
+            // Remove "Recipe Combo" label if recipe no longer has combo_recipes
+            recipe.labels = recipe.labels.filter(label => {
+                const labelName = typeof label === 'string' ? label : label.name;
+                return labelName !== 'Recipe Combo';
+            });
+            console.log(`🗑️ Auto-removed "Recipe Combo" label from "${recipe.title}"`);
+        }
+
+        // Also set the type property for consistency
+        if (hasComboRecipes) {
+            recipe.type = 'combo';
+        } else if (recipe.type === 'combo') {
+            recipe.type = 'basic';
+        }
     }
 
 
