@@ -1588,11 +1588,22 @@ class RecipeManager {
     }
 
     showMobileRecipePage(recipe) {
+        // Prevent multiple calls
+        if (this.isShowingMobileRecipe) {
+            console.log('📱 Already showing mobile recipe, ignoring duplicate call');
+            return;
+        }
+        
+        this.isShowingMobileRecipe = true;
+        
         // Store current state for back navigation
         this.previousView = {
             container: this.container.innerHTML,
             scrollPosition: window.scrollY
         };
+        
+        console.log('📱 Stored previous view, container length:', this.previousView.container.length);
+        console.log('📱 Previous view preview:', this.previousView.container.substring(0, 200) + '...');
 
         // Replace entire container with mobile recipe page
         this.container.innerHTML = this.generateMobileRecipeHTML(recipe);
@@ -1600,58 +1611,64 @@ class RecipeManager {
         // Scroll to top
         window.scrollTo(0, 0);
         
-        // Add event listeners after a short delay to ensure DOM is ready
-        setTimeout(() => {
-            console.log('📱 Attaching mobile recipe page event listeners');
-            
-            // Add back button handler
-            const backBtn = this.container.querySelector('#mobile-recipe-back');
-            console.log('📱 Back button found:', !!backBtn);
-            if (backBtn) {
-                backBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('📱 Back button clicked');
-                    this.returnFromMobileRecipe();
-                });
-            }
-            
-            // Add close button handler
-            const closeBtn = this.container.querySelector('#mobile-recipe-close');
-            console.log('📱 Close button found:', !!closeBtn);
-            if (closeBtn) {
-                closeBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('📱 Close button clicked');
-                    this.returnFromMobileRecipe();
-                });
-            }
-            
-            // Add edit button handler
-            const editBtn = this.container.querySelector('#mobile-recipe-edit');
-            console.log('📱 Edit button found:', !!editBtn);
-            if (editBtn) {
-                editBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('📱 Edit button clicked');
-                    
-                    // Store that we're editing from mobile recipe view
-                    this.editingFromMobileView = true;
-                    this.editingRecipe = recipe;
-                    
-                    this.showRecipeForm(recipe);
-                });
-            }
-        }, 10);
+        // Add event listeners immediately (DOM is ready since we just set innerHTML)
+        this.attachMobileRecipeEventListeners(recipe);
         
         console.log('📱 Mobile recipe page HTML set, container innerHTML length:', this.container.innerHTML.length);
     }
 
+    attachMobileRecipeEventListeners(recipe) {
+        console.log('📱 Attaching mobile recipe page event listeners');
+        
+        // Add back button handler
+        const backBtn = this.container.querySelector('#mobile-recipe-back');
+        console.log('📱 Back button found:', !!backBtn);
+        if (backBtn) {
+            backBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('📱 Back button clicked');
+                this.returnFromMobileRecipe();
+            });
+        }
+        
+        // Add close button handler
+        const closeBtn = this.container.querySelector('#mobile-recipe-close');
+        console.log('📱 Close button found:', !!closeBtn);
+        if (closeBtn) {
+            closeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('📱 Close button clicked');
+                this.returnFromMobileRecipe();
+            });
+        }
+        
+        // Add edit button handler
+        const editBtn = this.container.querySelector('#mobile-recipe-edit');
+        console.log('📱 Edit button found:', !!editBtn);
+        if (editBtn) {
+            editBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('📱 Edit button clicked');
+                
+                // Store that we're editing from mobile recipe view
+                this.editingFromMobileView = true;
+                this.editingRecipe = recipe;
+                
+                this.showRecipeForm(recipe);
+            });
+        }
+    }
+
     returnFromMobileRecipe() {
         console.log('📱 Returning from mobile recipe view');
+        console.log('📱 previousView exists:', !!this.previousView);
+        
         if (this.previousView) {
+            console.log('📱 Restoring previous view, container length:', this.previousView.container.length);
+            
             this.container.innerHTML = this.previousView.container;
             window.scrollTo(0, this.previousView.scrollPosition);
             
@@ -1664,7 +1681,11 @@ class RecipeManager {
             }
             
             this.previousView = null;
-            console.log('📱 Successfully returned to recipe list');
+            this.isShowingMobileRecipe = false; // Reset flag
+            console.log('📱 Successfully returned to recipe list, new container length:', this.container.innerHTML.length);
+        } else {
+            console.log('❌ No previousView to restore - already returned or not set');
+            this.isShowingMobileRecipe = false; // Reset flag even if no previousView
         }
     }
 
