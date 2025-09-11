@@ -17,8 +17,8 @@ const STATIC_ASSETS = [
     '/js/grocery-list-manager.js',
     '/js/google-calendar-integration.js',
     '/js/meal-rotation-engine.js',
-    // External CDN resources (cached for offline)
-    'https://cdn.tailwindcss.com/3.3.0',
+    // Local CSS files
+    '/css/tailwind-compiled.css',
     'https://sql.js.org/dist/sql-wasm.js',
     'https://sql.js.org/dist/sql-wasm.wasm'
 ];

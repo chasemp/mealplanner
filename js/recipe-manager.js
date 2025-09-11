@@ -62,7 +62,7 @@ class RecipeManager {
                 window.mealPlannerSettings.saveAuthoritativeData('recipes', this.recipes);
             } else {
                 console.warn('⚠️ Settings manager not available, falling back to localStorage');
-                localStorage.setItem('mealplanner-recipes', JSON.stringify(this.recipes));
+            localStorage.setItem('mealplanner-recipes', JSON.stringify(this.recipes));
             }
             console.log('✅ Recipes saved successfully');
         } catch (error) {
@@ -104,40 +104,18 @@ class RecipeManager {
                 -->
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-4">
                     <!-- Row 1: Search + Sort (side-by-side on same line) -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <!-- Search Input (left side) -->
-                        <div>
-                            <label for="recipe-search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search Recipes</label>
-                            <div class="relative">
-                                <input type="text" id="recipe-search" 
-                                       placeholder="Search by name..." 
-                                       value="${this.searchTerm}"
-                                       class="w-full pl-4 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white placeholder-gray-500 dark:placeholder-gray-400">
-                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Sort + Direction (right side) -->
-                        <div>
-                            <label for="recipe-sort" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort</label>
-                            <!-- Sort dropdown + Direction button in flex layout -->
-                            <div class="flex gap-2">
-                                <select id="recipe-sort" class="w-full md:w-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
-                                    <option value="name" ${this.sortBy === 'name' ? 'selected' : ''}>Name</option>
-                                    <option value="date" ${this.sortBy === 'date' ? 'selected' : ''}>Created</option>
-                                    <option value="prep_time" ${this.sortBy === 'prep_time' ? 'selected' : ''}>Total Time</option>
-                                    <option value="serving_count" ${this.sortBy === 'serving_count' ? 'selected' : ''}>Servings</option>
-                                    <option value="label_type" ${this.sortBy === 'label_type' ? 'selected' : ''}>Label Type</option>
-                                </select>
-                                <button id="sort-direction-btn" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white transition-colors" title="${this.sortAscending ? 'Sort Ascending' : 'Sort Descending'}">
-                                    ${this.sortAscending ? 
-                                        '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>' : 
-                                        '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>'
-                                    }
-                                </button>
+                    <!-- Row 1: Search -->
+                    <div class="mb-4">
+                        <label for="recipe-search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search Recipes</label>
+                        <div class="relative">
+                            <input type="text" id="recipe-search" 
+                                   placeholder="Search by name..." 
+                                   value="${this.searchTerm}"
+                                   class="w-full pl-4 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white placeholder-gray-500 dark:placeholder-gray-400">
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
                             </div>
                         </div>
                     </div>
@@ -179,13 +157,41 @@ class RecipeManager {
                         </div>
                     </div>
                     
-                    <!-- Row 3: Clear Filters Button -->
-                    <div>
-                        <button id="clear-recipe-filters-btn" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md text-sm font-medium transition-colors">
-                            Clear Filters
-                        </button>
+                    <!-- Row 3: Sort Controls -->
+                    <div class="mb-4">
+                        <label for="recipe-sort" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort</label>
+                        <!-- Sort dropdown + Direction button in flex layout -->
+                        <div class="flex gap-2">
+                            <select id="recipe-sort" class="w-full md:w-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                                <option value="name" ${this.sortBy === 'name' ? 'selected' : ''}>Name</option>
+                                <option value="date" ${this.sortBy === 'date' ? 'selected' : ''}>Created</option>
+                                <option value="prep_time" ${this.sortBy === 'prep_time' ? 'selected' : ''}>Total Time</option>
+                                <option value="serving_count" ${this.sortBy === 'serving_count' ? 'selected' : ''}>Servings</option>
+                                <option value="label_type" ${this.sortBy === 'label_type' ? 'selected' : ''}>Label Type</option>
+                            </select>
+                            <button id="sort-direction-btn" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white transition-colors" title="${this.sortAscending ? 'Sort Ascending' : 'Sort Descending'}">
+                                ${this.sortAscending ? 
+                                    '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>' : 
+                                    '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>'
+                                }
+                            </button>
+                        </div>
                     </div>
                     
+                    <!-- Row 4: Favorites and Clear Filters Buttons -->
+                    <div class="flex gap-3">
+                        <button id="favorites-filter-btn" class="px-4 py-2 rounded-md text-sm font-medium transition-colors ${this.showFavoritesOnly ? 'bg-yellow-400 hover:bg-yellow-500 text-yellow-900 dark:bg-yellow-500 dark:hover:bg-yellow-400 dark:text-yellow-900 font-bold border-2 border-yellow-600 dark:border-yellow-400' : 'bg-yellow-100 hover:bg-yellow-200 text-yellow-800 dark:bg-yellow-900 dark:hover:bg-yellow-800 dark:text-yellow-200 border-2 border-transparent'}" title="${this.showFavoritesOnly ? 'Show all recipes' : 'Show only favorites'}">
+                            ${this.showFavoritesOnly ? 
+                                '<svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>' :
+                                '<svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>'
+                            }
+                            <span class="${this.showFavoritesOnly ? 'font-bold italic' : ''}">${this.showFavoritesOnly ? 'Show All' : 'Favorites'}</span>
+                        </button>
+                        <button id="clear-recipe-filters-btn" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md text-sm font-medium transition-colors">
+                                Clear Filters
+                            </button>
+                        </div>
+                        
                     <!-- Recipe Results Info Bar (enhanced with more emphasis) -->
                     <div class="border-t border-gray-200 dark:border-gray-600 pt-4 mt-4">
                         <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
@@ -195,46 +201,30 @@ class RecipeManager {
                                 <div class="flex items-center space-x-1">
                                     <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                                    </svg>
+                            </svg>
                                     <span><strong>${this.getFilteredRecipes().length}</strong> recipes</span>
-                                </div>
+                    </div>
                                 <div class="flex items-center space-x-1">
                                     <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
                                     </svg>
                                     <span><strong>${this.getFilteredLabels().length}</strong> labels</span>
-                                </div>
-                                ${this.getFilteredComboRecipes().length > 0 ? `
-                                    <div class="flex items-center space-x-1">
-                                        <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                                        </svg>
-                                        <span><strong>${this.getFilteredComboRecipes().length}</strong> combos</span>
-                                    </div>
-                                ` : ''}
-                            </div>
-
-                            <!-- Right side: Filter indicators and actions -->
-                            <div class="flex items-center space-x-3">
-                                ${this.hasActiveFilters() ? `
-                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                                        <svg class="w-3 h-3 sm:mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
-                                        </svg>
-                                        <span class="hidden sm:inline">Filtered</span>
-                                    </span>
-                                ` : ''}
-                                <button id="favorites-filter-btn" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-colors ${this.showFavoritesOnly ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-yellow-50 hover:text-yellow-700'}" title="${this.showFavoritesOnly ? 'Show all recipes' : `Filter to ${this.getFavoriteRecipes().length} favorites`}">
-                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                </div>
+                                <div class="flex items-center space-x-1">
+                                    <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
                                     </svg>
-                                    ${this.showFavoritesOnly ? `Showing ${this.getFilteredRecipes().length}` : `${this.getFavoriteRecipes().length} Favorites`}
-                                </button>
+                                    <span><strong>${this.getFilteredRecipes().filter(r => r.favorite === true).length}</strong> favs</span>
+                    </div>
+                    </div>
+
+                            <!-- Right side: Filter indicators -->
+                            <div class="flex items-center space-x-3">
                             </div>
+                        </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
                 <!-- Recipe Grid -->
                 <div id="recipes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -243,7 +233,7 @@ class RecipeManager {
 
                 <!-- Empty State -->
                 <div id="empty-state" class="${this.getFilteredRecipes().length === 0 ? '' : 'hidden'}">
-                    ${this.getFilteredRecipes().length === 0 ? this.renderEmptyState() : ''}
+                ${this.getFilteredRecipes().length === 0 ? this.renderEmptyState() : ''}
                 </div>
             </div>
         `;
@@ -253,17 +243,47 @@ class RecipeManager {
     }
 
     updateRecipeDisplay() {
+        console.log('🔄 updateRecipeDisplay called, showFavoritesOnly:', this.showFavoritesOnly);
+        
         // Update only the recipe cards, info bar, and empty state without re-rendering entire component
         const recipeGrid = this.container.querySelector('#recipes-grid');
         const emptyState = this.container.querySelector('#empty-state');
         const infoBar = this.container.querySelector('.bg-gray-50.dark\\:bg-gray-700');
         
+        // Try alternative selectors if the first one doesn't work
+        if (!infoBar) {
+            console.log('❌ Info bar not found with primary selector, trying alternatives...');
+            const altInfoBar1 = this.container.querySelector('.bg-gray-50');
+            const altInfoBar2 = this.container.querySelector('[class*="bg-gray-50"]');
+            console.log('🔍 Alternative selectors found:', {
+                altInfoBar1: !!altInfoBar1,
+                altInfoBar2: !!altInfoBar2
+            });
+        }
+        
+        console.log('🔄 Elements found:', {
+            recipeGrid: !!recipeGrid,
+            emptyState: !!emptyState,
+            infoBar: !!infoBar
+        });
+        
         if (recipeGrid && emptyState) {
             const filteredRecipes = this.getFilteredRecipes();
-            recipeGrid.innerHTML = this.renderRecipeCards();
+            console.log('🔄 Filtered recipes count:', filteredRecipes.length);
+            
+            const newHTML = this.renderRecipeCards();
+            console.log('🔄 New HTML length:', newHTML.length, 'characters');
+            
+            recipeGrid.innerHTML = newHTML;
+            console.log('🔄 innerHTML updated');
+            
+            // Force a reflow to ensure DOM updates are rendered
+            recipeGrid.offsetHeight;
+            console.log('🔄 Reflow forced');
             
             // Re-attach event listeners to the new recipe cards
             this.attachRecipeCardListeners();
+            console.log('🔄 Event listeners reattached');
             
             // Update empty state visibility
             if (filteredRecipes.length > 0) {
@@ -275,66 +295,94 @@ class RecipeManager {
             // Update info bar content
             if (infoBar) {
                 this.updateInfoBar(infoBar);
+                console.log('🔄 Info bar updated');
             }
+            
+            // Update favorites button state
+            this.updateFavoritesButton();
+            console.log('🔄 Favorites button updated');
+        } else {
+            console.log('❌ Missing required elements for updateRecipeDisplay');
+        }
+    }
+
+    updateFavoritesButton() {
+        const favoritesBtn = this.container.querySelector('#favorites-filter-btn');
+        
+        if (favoritesBtn) {
+            // Update button appearance and text with better dark mode support
+            const newClassName = `px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${this.showFavoritesOnly ? 
+                // Active state: yellow background with border and glow - keep original yellow theme
+                'bg-yellow-100 hover:bg-yellow-200 text-yellow-800 dark:bg-yellow-800 dark:hover:bg-yellow-700 dark:text-yellow-100 font-bold border-2 border-yellow-500 shadow-lg shadow-yellow-400/50 dark:border-yellow-400 dark:shadow-yellow-500/50' :
+                // Inactive state: same yellow background as before, just no border/glow
+                'bg-yellow-100 hover:bg-yellow-200 text-yellow-800 dark:bg-yellow-800 dark:hover:bg-yellow-700 dark:text-yellow-100 border-2 border-transparent'
+            }`;
+            favoritesBtn.className = newClassName;
+            favoritesBtn.title = this.showFavoritesOnly ? 'Show all recipes' : 'Show only favorites';
+            
+            // Update button content with correct star icon and intuitive text
+            const newInnerHTML = `
+                ${this.showFavoritesOnly ? 
+                    // Active: filled star + "Favorites Only"
+                    '<svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>' :
+                    // Inactive: outline star + "Favorites"
+                    '<svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>'
+                }
+                <span class="${this.showFavoritesOnly ? 'font-bold' : ''}">${this.showFavoritesOnly ? 'Favorites Only' : 'Favorites'}</span>
+            `;
+            favoritesBtn.innerHTML = newInnerHTML;
         }
     }
 
     updateInfoBar(infoBar) {
+        // Get current filtered data for accurate counts
+        const filteredRecipes = this.getFilteredRecipes();
+        const filteredComboRecipes = this.getFilteredComboRecipes();
+        
+        // Get labels from filtered recipes only (not all labels in system)
+        const filteredLabels = this.getFilteredLabels();
+        
+        // Count favorites in the currently filtered recipes
+        const filteredFavorites = filteredRecipes.filter(recipe => recipe.favorite === true);
+        
+        console.log('📊 Info bar update:', {
+            totalRecipes: this.recipes.length,
+            filteredRecipes: filteredRecipes.length,
+            filteredLabels: filteredLabels.length,
+            filteredCombos: filteredComboRecipes.length,
+            filteredFavorites: filteredFavorites.length,
+            showFavoritesOnly: this.showFavoritesOnly
+        });
+        
         // Update the left side stats
-        const leftSide = infoBar.querySelector('.flex.items-center.space-x-6');
+        const leftSide = infoBar.querySelector('.flex.items-center.space-x-4');
         if (leftSide) {
             leftSide.innerHTML = `
-                <div class="flex items-center space-x-2">
+                <div class="flex items-center space-x-1">
                     <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                     </svg>
-                    <span><strong>${this.getFilteredRecipes().length}</strong> recipes</span>
+                    <span><strong>${filteredRecipes.length}</strong> recipes</span>
                 </div>
-                <div class="flex items-center space-x-2">
+                <div class="flex items-center space-x-1">
                     <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
                     </svg>
-                    <span><strong>${this.getFilteredLabels().length}</strong> labels</span>
+                    <span><strong>${filteredLabels.length}</strong> labels</span>
                 </div>
-                ${this.getFilteredComboRecipes().length > 0 ? `
-                    <div class="flex items-center space-x-2">
-                        <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                        </svg>
-                        <span><strong>${this.getFilteredComboRecipes().length}</strong> combos</span>
-                    </div>
-                ` : ''}
+                <div class="flex items-center space-x-1">
+                    <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                    </svg>
+                    <span><strong>${filteredFavorites.length}</strong> favs</span>
+                </div>
             `;
         }
 
-        // Update the right side actions
+        // Update the right side filter indicators
         const rightSide = infoBar.querySelector('.flex.items-center.space-x-3');
         if (rightSide) {
-            rightSide.innerHTML = `
-                ${this.hasActiveFilters() ? `
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                        <svg class="w-3 h-3 sm:mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
-                        </svg>
-                        <span class="hidden sm:inline">Filtered</span>
-                    </span>
-                ` : ''}
-                <button id="favorites-filter-btn" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-colors ${this.showFavoritesOnly ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-yellow-50 hover:text-yellow-700'}" title="${this.showFavoritesOnly ? 'Show all recipes' : `Filter to ${this.getFavoriteRecipes().length} favorites`}">
-                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                    </svg>
-                    ${this.showFavoritesOnly ? `Showing ${this.getFilteredRecipes().length}` : `${this.getFavoriteRecipes().length} Favorites`}
-                </button>
-            `;
-            
-            // Re-attach the favorites button event listener
-            const favoritesBtn = rightSide.querySelector('#favorites-filter-btn');
-            if (favoritesBtn) {
-                favoritesBtn.addEventListener('click', () => {
-                    this.showFavoritesOnly = !this.showFavoritesOnly;
-                    this.updateRecipeDisplay();
-                });
-            }
+            rightSide.innerHTML = ``;
         }
     }
 
@@ -381,8 +429,10 @@ class RecipeManager {
 
     renderRecipeCards() {
         const filteredRecipes = this.getFilteredRecipes();
+        console.log('🎨 renderRecipeCards called, filtered count:', filteredRecipes.length);
+        console.log('🎨 Sample filtered recipes:', filteredRecipes.slice(0, 3).map(r => r.title));
         
-        return filteredRecipes.map(recipe => `
+        const html = filteredRecipes.map(recipe => `
             <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 cursor-pointer recipe-card ${recipe.type === 'combo' ? 'border-l-4 border-purple-500' : ''}" 
                  data-recipe-id="${recipe.id}" data-recipe-type="${recipe.type || 'basic'}">
                 <div class="p-6">
@@ -459,6 +509,9 @@ class RecipeManager {
                 </div>
             </div>
         `).join('');
+        
+        console.log('🎨 Generated HTML length:', html.length, 'characters');
+        return html;
     }
 
     renderEmptyState() {
@@ -479,6 +532,9 @@ class RecipeManager {
     }
 
     getFilteredRecipes() {
+        console.log('🔍 getFilteredRecipes called, showFavoritesOnly:', this.showFavoritesOnly);
+        console.log('🔍 Total recipes:', this.recipes.length);
+        
         let filtered = this.recipes;
 
         // Filter by search term
@@ -489,6 +545,7 @@ class RecipeManager {
                 recipe.description.toLowerCase().includes(term) ||
                 (recipe.labels && this.extractLabelNames(recipe.labels).some(label => label.toLowerCase().includes(term)))
             );
+            console.log('🔍 After search filter:', filtered.length);
         }
 
         // Note: Meal type filtering is now handled through the multi-label system
@@ -502,11 +559,19 @@ class RecipeManager {
                     recipeLabels.includes(selectedLabel.toLowerCase())
                 );
             });
+            console.log('🔍 After label filter:', filtered.length);
         }
 
         // Filter by favorites
         if (this.showFavoritesOnly) {
+            console.log('🔍 Filtering by favorites...');
+            const beforeFavFilter = filtered.length;
+            const favoritesInFiltered = filtered.filter(recipe => recipe.favorite === true);
+            console.log('🔍 Recipes with favorite=true in current filtered set:', favoritesInFiltered.length);
+            console.log('🔍 Sample favorite recipes:', favoritesInFiltered.slice(0, 3).map(r => ({title: r.title, favorite: r.favorite})));
+            
             filtered = filtered.filter(recipe => recipe.favorite === true);
+            console.log('🔍 After favorites filter:', filtered.length, 'from', beforeFavFilter);
         }
 
         // Sort recipes
@@ -700,8 +765,7 @@ class RecipeManager {
 
     hasActiveFilters() {
         return this.searchTerm !== '' || 
-               this.selectedLabels.length > 0 ||
-               this.showFavoritesOnly;
+               this.selectedLabels.length > 0;
     }
 
     getAllLabels() {
@@ -719,10 +783,10 @@ class RecipeManager {
                 // Fallback to hardcoded list if labelTypes not available
                 predefinedLabels = [
                     'combo', // Include combo for recipe_type
-                    'quick', 'healthy', 'vegetarian', 'vegan', 'gluten-free', 'dairy-free',
-                    'comfort-food', 'spicy', 'sweet', 'savory', 'protein-rich', 'low-carb',
-                    'kid-friendly', 'party', 'holiday', 'summer', 'winter', 'easy', 'advanced'
-                ];
+            'quick', 'healthy', 'vegetarian', 'vegan', 'gluten-free', 'dairy-free',
+            'comfort-food', 'spicy', 'sweet', 'savory', 'protein-rich', 'low-carb',
+            'kid-friendly', 'party', 'holiday', 'summer', 'winter', 'easy', 'advanced'
+        ];
             }
         }
         
@@ -751,6 +815,16 @@ class RecipeManager {
     }
 
     attachEventListeners() {
+        console.log('🔧 attachEventListeners called');
+        
+        // Remove existing event listeners to prevent duplicates
+        const existingFavBtn = this.container.querySelector('#favorites-filter-btn');
+        if (existingFavBtn) {
+            // Clone the element to remove all event listeners
+            const newFavBtn = existingFavBtn.cloneNode(true);
+            existingFavBtn.parentNode.replaceChild(newFavBtn, existingFavBtn);
+            console.log('🔧 Removed existing favorites button listeners');
+        }
         // Search input
         const searchInput = this.container.querySelector('#recipe-search');
         if (searchInput) {
@@ -850,13 +924,20 @@ class RecipeManager {
             });
 
             // Hide dropdown when clicking outside
-            document.addEventListener('click', (e) => {
+            const handleDocumentClick = (e) => {
                 if (!labelContainer.contains(e.target) && !labelDropdown.contains(e.target)) {
                     labelDropdown.classList.add('hidden');
                     labelInput.value = ''; // Clear search when closing
                     this.labelSearchTerm = '';
                 }
-            });
+            };
+            
+            // Store reference for cleanup
+            if (this.documentClickHandler) {
+                document.removeEventListener('click', this.documentClickHandler);
+            }
+            this.documentClickHandler = handleDocumentClick;
+            document.addEventListener('click', handleDocumentClick);
         }
 
         // Sort selector
@@ -894,11 +975,20 @@ class RecipeManager {
 
         // Favorites filter button
         const favoritesFilterBtn = this.container.querySelector('#favorites-filter-btn');
+        console.log('🔧 Favorites button element found:', !!favoritesFilterBtn, favoritesFilterBtn?.id);
         if (favoritesFilterBtn) {
-            favoritesFilterBtn.addEventListener('click', () => {
+            console.log('🔧 Adding click listener to favorites button');
+            favoritesFilterBtn.addEventListener('click', (e) => {
+                console.log('🌟 Favorites button clicked, current state:', this.showFavoritesOnly);
+                console.log('🌟 Event target:', e.target, e.currentTarget);
+                console.log('🌟 About to toggle state...');
                 this.showFavoritesOnly = !this.showFavoritesOnly;
+                console.log('🌟 New state:', this.showFavoritesOnly);
                 this.updateRecipeDisplay();
+                console.log('🌟 updateRecipeDisplay called');
             });
+        } else {
+            console.log('❌ Favorites button not found!');
         }
 
         // Attach recipe card listeners (favorites, edit, delete, click)
@@ -928,22 +1018,22 @@ class RecipeManager {
         // Create modal HTML
         const modal = document.createElement('div');
         modal.id = modalId;
-        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-1 sm:p-4';
         modal.innerHTML = `
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col mx-4 sm:mx-0">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-full sm:max-w-2xl md:max-w-4xl max-h-[98vh] sm:max-h-[90vh] flex flex-col mx-1 sm:mx-4 md:mx-0">
                 <div class="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
                     <h2 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
-                        ${isEdit ? 'Edit Recipe' : 'Add New Recipe'}
-                    </h2>
+                            ${isEdit ? 'Edit Recipe' : 'Add New Recipe'}
+                        </h2>
                     <button id="close-recipe-form" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1">
                         <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
                 </div>
                 
                 <div class="overflow-y-auto flex-1">
-                    <form id="recipe-form" class="p-4 sm:p-6 space-y-4 sm:space-y-6">
+                    <form id="recipe-form" class="p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4 md:space-y-6">
                     <!-- Basic Information -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                         <div class="sm:col-span-2">
@@ -993,10 +1083,10 @@ class RecipeManager {
                         </div>
                     </div>
                     
-                    <!-- Ingredients Section -->
+                    <!-- Items Section -->
                     <div>
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
-                            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Ingredients</h3>
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Items</h3>
                             <div class="flex gap-2">
                                 <button type="button" id="scan-ingredient-barcode" class="bg-blue-500 hover:bg-blue-600 text-white px-2 sm:px-3 py-1.5 rounded text-xs sm:text-sm transition-colors flex items-center">
                                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1008,7 +1098,7 @@ class RecipeManager {
                                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                     </svg>
-                                    <span class="hidden sm:inline">Add Ingredient</span>
+                                    <span class="hidden sm:inline">Add Item</span>
                                     <span class="sm:hidden">Add</span>
                                 </button>
                             </div>
@@ -1069,17 +1159,17 @@ class RecipeManager {
                         </div>
                     </div>
                     </form>
-                </div>
-                
-                <!-- Form Actions -->
+                    </div>
+                    
+                    <!-- Form Actions -->
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-end space-y-2 sm:space-y-0 sm:space-x-4 p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
                     <button type="button" id="cancel-recipe-form" class="btn-secondary w-full sm:w-auto order-2 sm:order-1">
-                        Cancel
-                    </button>
+                            Cancel
+                        </button>
                     <button type="submit" form="recipe-form" class="btn-primary w-full sm:w-auto order-1 sm:order-2">
-                        ${isEdit ? 'Update Recipe' : 'Save Recipe'}
-                    </button>
-                </div>
+                            ${isEdit ? 'Update Recipe' : 'Save Recipe'}
+                        </button>
+                    </div>
             </div>
         `;
         
@@ -1256,7 +1346,17 @@ class RecipeManager {
 
         // Close modal handlers
         const closeModal = () => {
+            // If we were editing from mobile recipe view, return to that view
+            if (this.editingFromMobileView && this.editingRecipe) {
+                console.log('Returning to mobile recipe view after cancel');
             modal.remove();
+                this.showMobileRecipePage(this.editingRecipe);
+                this.editingFromMobileView = false;
+                this.editingRecipe = null;
+            } else {
+                // Normal desktop modal close
+                modal.remove();
+            }
         };
 
         closeBtn?.addEventListener('click', closeModal);
@@ -1366,9 +1466,43 @@ class RecipeManager {
                 }
             });
 
-            // Save recipe logic would go here
-            console.log('Recipe data collected:', recipeData, 'Ingredients:', ingredients);
-            this.showNotification('Recipe functionality coming soon!', 'info');
+            // Add ingredients to recipe data
+            recipeData.ingredients = ingredients;
+            
+            // Add labels (convert from tags for now)
+            recipeData.labels = recipeData.tags || [];
+            delete recipeData.tags;
+            
+            // Add created_at timestamp if new recipe
+            if (!existingRecipe) {
+                recipeData.created_at = new Date().toISOString();
+            }
+
+            // Save recipe
+            let savedRecipe;
+            if (existingRecipe) {
+                // Update existing recipe
+                savedRecipe = await this.updateRecipe(existingRecipe.id, recipeData);
+                this.showNotification('Recipe updated successfully!', 'success');
+            } else {
+                // Create new recipe
+                savedRecipe = await this.createRecipe(recipeData);
+                this.showNotification('Recipe created successfully!', 'success');
+            }
+
+            // Handle post-save navigation
+            if (this.editingFromMobileView && this.editingRecipe) {
+                // Update the editing recipe with latest data and return to mobile view
+                this.editingRecipe = savedRecipe;
+                this.showMobileRecipePage(this.editingRecipe);
+                this.editingFromMobileView = false;
+                this.editingRecipe = null;
+            } else {
+                // Close modal and refresh recipe list
+                const modal = form.closest('.fixed');
+                if (modal) modal.remove();
+                this.render();
+            }
             
         } catch (error) {
             console.error('Error handling recipe form:', error);
@@ -1376,6 +1510,104 @@ class RecipeManager {
         }
     }
 
+    async createRecipe(recipeData) {
+        // Generate new ID
+        const newId = Math.max(...this.recipes.map(r => r.id), 0) + 1;
+        
+        const newRecipe = {
+            id: newId,
+            ...recipeData
+        };
+        
+        // Automatically apply "Recipe Combo" label if this recipe includes other recipes
+        this.ensureRecipeComboLabel(newRecipe);
+        
+        // Add to recipes array
+        this.recipes.push(newRecipe);
+        
+        // Save to storage
+        await this.saveRecipes();
+        
+        return newRecipe;
+    }
+
+    async updateRecipe(recipeId, recipeData) {
+        const recipeIndex = this.recipes.findIndex(r => r.id === recipeId);
+        if (recipeIndex === -1) {
+            throw new Error('Recipe not found');
+        }
+        
+        // Update recipe while preserving ID
+        const updatedRecipe = {
+            ...this.recipes[recipeIndex],
+            ...recipeData,
+            id: recipeId // Ensure ID is preserved
+        };
+        
+        // Automatically apply "Recipe Combo" label if this recipe includes other recipes
+        this.ensureRecipeComboLabel(updatedRecipe);
+        
+        this.recipes[recipeIndex] = updatedRecipe;
+        
+        // Save to storage
+        await this.saveRecipes();
+        
+        return updatedRecipe;
+    }
+
+    /**
+     * Automatically applies or removes "Recipe Combo" label based on recipe content
+     * @param {Object} recipe - The recipe object to check and update
+     */
+    ensureRecipeComboLabel(recipe) {
+        if (!recipe.labels) {
+            recipe.labels = [];
+        }
+
+        const hasComboRecipes = recipe.combo_recipes && Array.isArray(recipe.combo_recipes) && recipe.combo_recipes.length > 0;
+        const hasRecipeComboLabel = recipe.labels.some(label => {
+            const labelName = typeof label === 'string' ? label : label.name;
+            return labelName === 'Recipe Combo';
+        });
+
+        if (hasComboRecipes && !hasRecipeComboLabel) {
+            // Add "Recipe Combo" label if recipe has combo_recipes but no label
+            recipe.labels.push({
+                name: 'Recipe Combo',
+                type: 'recipe_type'
+            });
+            console.log(`✅ Auto-applied "Recipe Combo" label to "${recipe.title}"`);
+        } else if (!hasComboRecipes && hasRecipeComboLabel) {
+            // Remove "Recipe Combo" label if recipe no longer has combo_recipes
+            recipe.labels = recipe.labels.filter(label => {
+                const labelName = typeof label === 'string' ? label : label.name;
+                return labelName !== 'Recipe Combo';
+            });
+            console.log(`🗑️ Auto-removed "Recipe Combo" label from "${recipe.title}"`);
+        }
+
+        // Also set the type property for consistency
+        if (hasComboRecipes) {
+            recipe.type = 'combo';
+        } else if (recipe.type === 'combo') {
+            recipe.type = 'basic';
+        }
+    }
+
+
+    cleanup() {
+        // Clean up document-level event listeners
+        if (this.documentClickHandler) {
+            document.removeEventListener('click', this.documentClickHandler);
+            this.documentClickHandler = null;
+        }
+        
+        // Reset mobile recipe state
+        this.isShowingMobileRecipe = false;
+        this.editingFromMobileView = false;
+        this.editingRecipe = null;
+        this.previousView = null;
+    }
 
     showBarcodeScanner(ingredientsContainer) {
         // Use the shared barcode scanner component
@@ -1526,7 +1758,18 @@ class RecipeManager {
             
             // Close modal and refresh view
             document.getElementById('recipe-form-modal')?.remove();
+            
+            // If we were editing from mobile recipe view, return to that view
+            if (this.editingFromMobileView && this.editingRecipe) {
+                console.log('📱 Returning to mobile recipe view after save');
+                // Update the recipe reference with the saved data
+                this.editingRecipe = this.recipes.find(r => r.id === this.editingRecipe.id) || this.editingRecipe;
+                this.showMobileRecipePage(this.editingRecipe);
+                this.editingFromMobileView = false;
+                this.editingRecipe = null;
+            } else {
             this.render();
+            }
 
         } catch (error) {
             console.error('Error saving recipe:', error);
@@ -1536,9 +1779,243 @@ class RecipeManager {
 
     showRecipeDetail(recipeId) {
         const recipe = this.recipes.find(r => r.id === recipeId);
-        if (!recipe) return;
+        if (!recipe) {
+            console.error('❌ Recipe not found:', recipeId);
+            return;
+        }
 
         console.log('Showing recipe detail:', recipe.title);
+        
+        // Check if we're on mobile - use different approach
+        const isMobile = window.innerWidth <= 768;
+        
+        if (isMobile) {
+            this.showMobileRecipePage(recipe);
+        } else {
+            this.showDesktopRecipeModal(recipe);
+        }
+    }
+
+    showMobileRecipePage(recipe) {
+        // Prevent multiple calls
+        if (this.isShowingMobileRecipe) {
+            console.log('📱 Already showing mobile recipe, ignoring duplicate call');
+            return;
+        }
+        
+        this.isShowingMobileRecipe = true;
+        
+        // Store current state for back navigation
+        this.previousView = {
+            container: this.container.innerHTML,
+            scrollPosition: window.scrollY
+        };
+        
+        console.log('📱 Stored previous view, container length:', this.previousView.container.length);
+        console.log('📱 Previous view preview:', this.previousView.container.substring(0, 200) + '...');
+
+        // Replace entire container with mobile recipe page
+        this.container.innerHTML = this.generateMobileRecipeHTML(recipe);
+        
+        // Scroll to top
+        window.scrollTo(0, 0);
+        
+        // Add event listeners immediately (DOM is ready since we just set innerHTML)
+        this.attachMobileRecipeEventListeners(recipe);
+        
+        console.log('📱 Mobile recipe page HTML set, container innerHTML length:', this.container.innerHTML.length);
+    }
+
+    attachMobileRecipeEventListeners(recipe) {
+        console.log('📱 Attaching mobile recipe page event listeners');
+        
+        // Add back button handler
+        const backBtn = this.container.querySelector('#mobile-recipe-back');
+        console.log('📱 Back button found:', !!backBtn);
+        if (backBtn) {
+            backBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('📱 Back button clicked');
+                this.returnFromMobileRecipe();
+            });
+        }
+        
+        // Add close button handler
+        const closeBtn = this.container.querySelector('#mobile-recipe-close');
+        console.log('📱 Close button found:', !!closeBtn);
+        if (closeBtn) {
+            closeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('📱 Close button clicked');
+                this.returnFromMobileRecipe();
+            });
+        }
+        
+        // Add edit button handler
+        const editBtn = this.container.querySelector('#mobile-recipe-edit');
+        console.log('📱 Edit button found:', !!editBtn);
+        if (editBtn) {
+            editBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('📱 Edit button clicked');
+                
+                // Store that we're editing from mobile recipe view
+                this.editingFromMobileView = true;
+                this.editingRecipe = recipe;
+                
+                this.showRecipeForm(recipe);
+            });
+        }
+    }
+
+    returnFromMobileRecipe() {
+        console.log('📱 Returning from mobile recipe view');
+        console.log('📱 previousView exists:', !!this.previousView);
+        
+        if (this.previousView) {
+            console.log('📱 Restoring previous view, container length:', this.previousView.container.length);
+            
+            this.container.innerHTML = this.previousView.container;
+            window.scrollTo(0, this.previousView.scrollPosition);
+            
+            // Reattach all event listeners
+            this.attachEventListeners();
+            
+            // Force mobile navigation to update its state
+            if (window.mobileNavigation) {
+                window.mobileNavigation.updateActiveTab('recipes');
+            }
+            
+            this.previousView = null;
+            this.isShowingMobileRecipe = false; // Reset flag
+            console.log('📱 Successfully returned to recipe list, new container length:', this.container.innerHTML.length);
+        } else {
+            console.log('❌ No previousView to restore - already returned or not set');
+            this.isShowingMobileRecipe = false; // Reset flag even if no previousView
+        }
+    }
+
+    generateMobileRecipeHTML(recipe) {
+        const labels = recipe.labels || recipe.tags || [];
+        
+        console.log('📱 Generating mobile recipe HTML for:', recipe.title);
+        console.log('📱 Recipe ingredients count:', recipe.ingredients?.length);
+        
+        const html = `
+            <div class="min-h-screen bg-white dark:bg-gray-900">
+                <!-- Mobile Header -->
+                <div class="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-3 z-10">
+                    <div class="flex items-center justify-between">
+                        <button id="mobile-recipe-back" class="flex items-center text-blue-600 dark:text-blue-400">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                            Back
+                        </button>
+                        <div class="flex gap-2">
+                            <button id="mobile-recipe-close" class="bg-gray-500 text-white px-4 py-2 rounded-lg text-sm">
+                                Close
+                            </button>
+                            <button id="mobile-recipe-edit" class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm">
+                                Edit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recipe Content -->
+                <div class="p-4 space-y-6">
+                    <!-- Title -->
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">${recipe.title}</h1>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">${recipe.description || 'No description available'}</p>
+                    </div>
+
+                    <!-- Recipe Stats -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-center">
+                            <div class="text-blue-600 dark:text-blue-400 text-sm font-medium mb-1">Prep Time</div>
+                            <div class="text-lg font-bold text-gray-900 dark:text-white">${recipe.prep_time || 'N/A'} min</div>
+                        </div>
+                        <div class="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 text-center">
+                            <div class="text-red-600 dark:text-red-400 text-sm font-medium mb-1">Cook Time</div>
+                            <div class="text-lg font-bold text-gray-900 dark:text-white">${recipe.cook_time || 'N/A'} min</div>
+                        </div>
+                        <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 text-center">
+                            <div class="text-green-600 dark:text-green-400 text-sm font-medium mb-1">Serves</div>
+                            <div class="text-lg font-bold text-gray-900 dark:text-white">${recipe.serving_count || recipe.servings || 'N/A'}</div>
+                        </div>
+                        <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 text-center">
+                            <div class="text-purple-600 dark:text-purple-400 text-sm font-medium mb-1">Items</div>
+                            <div class="text-lg font-bold text-gray-900 dark:text-white">${recipe.ingredients?.length || 0}</div>
+                        </div>
+                    </div>
+
+                    <!-- Items -->
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Items (${recipe.ingredients?.length || 0})</h2>
+                        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 space-y-3">
+                            ${recipe.ingredients?.map(ingredient => {
+            const ingredientName = this.getIngredientNameById(ingredient.ingredient_id) || 'Unknown ingredient';
+            return `
+                                    <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
+                    <span class="font-medium text-gray-900 dark:text-white">${ingredientName}</span>
+                                        <span class="text-gray-600 dark:text-gray-400 font-medium">
+                        ${ingredient.quantity} ${ingredient.unit}
+                    </span>
+                                    </div>
+                                `;
+                            }).join('') || '<div class="text-gray-500 dark:text-gray-400">No items available</div>'}
+                        </div>
+                    </div>
+
+                    <!-- Instructions -->
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Instructions</h2>
+                        <div class="space-y-4">
+                            ${(() => {
+        if (recipe.instructions && typeof recipe.instructions === 'string') {
+                                    return recipe.instructions.split(',').map((step, index) => `
+                                        <div class="flex gap-4">
+                                            <div class="flex-shrink-0 w-8 h-8 bg-blue-500 text-white text-sm font-bold rounded-full flex items-center justify-center">${index + 1}</div>
+                                            <div class="flex-1 text-gray-900 dark:text-white leading-relaxed pt-1">${step.trim()}</div>
+                                        </div>
+                                    `).join('');
+        } else if (Array.isArray(recipe.instructions)) {
+                                    return recipe.instructions.map((step, index) => `
+                                        <div class="flex gap-4">
+                                            <div class="flex-shrink-0 w-8 h-8 bg-blue-500 text-white text-sm font-bold rounded-full flex items-center justify-center">${index + 1}</div>
+                                            <div class="flex-1 text-gray-900 dark:text-white leading-relaxed pt-1">${step}</div>
+                                        </div>
+                                    `).join('');
+        } else {
+                                    return '<div class="text-gray-500 dark:text-gray-400">No instructions available</div>';
+                                }
+                            })()}
+                        </div>
+                    </div>
+
+                    <!-- Labels -->
+                    ${labels.length > 0 ? `
+                        <div>
+                            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Labels</h2>
+                            <div class="flex flex-wrap gap-2">
+                                ${this.renderLabelChips(labels)}
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+        
+        console.log('📱 Generated mobile recipe HTML length:', html.length);
+        return html;
+    }
+
+    showDesktopRecipeModal(recipe) {
         
         // Remove existing modal if present
         const existingModal = document.getElementById('recipe-detail-modal');
@@ -1549,65 +2026,34 @@ class RecipeManager {
         // Create modal HTML
         const modal = document.createElement('div');
         modal.id = 'recipe-detail-modal';
-        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
-        
-        // Prepare ingredients list with resolved names
-        const ingredientsList = recipe.ingredients.map(ingredient => {
-            const ingredientName = this.getIngredientNameById(ingredient.ingredient_id) || 'Unknown ingredient';
-            return `
-                <li class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
-                    <span class="font-medium text-gray-900 dark:text-white">${ingredientName}</span>
-                    <span class="text-gray-600 dark:text-gray-300">
-                        ${ingredient.quantity} ${ingredient.unit}
-                        ${ingredient.notes ? `<span class="text-sm text-gray-500 ml-2">(${ingredient.notes})</span>` : ''}
-                    </span>
-                </li>
-            `;
-        }).join('');
-
-        // Format instructions (split by commas and number them)
-        let instructions = '';
-        if (recipe.instructions && typeof recipe.instructions === 'string') {
-            instructions = recipe.instructions.split(',').map((step, index) => {
-                return `<li class="mb-2"><span class="font-semibold text-blue-600 dark:text-blue-400">${index + 1}.</span> ${step.trim()}</li>`;
-            }).join('');
-        } else if (Array.isArray(recipe.instructions)) {
-            instructions = recipe.instructions.map((step, index) => {
-                return `<li class="mb-2"><span class="font-semibold text-blue-600 dark:text-blue-400">${index + 1}.</span> ${step}</li>`;
-            }).join('');
-        } else {
-            instructions = '<li class="mb-2 text-gray-500">No instructions available</li>';
-        }
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-start sm:items-center justify-center z-50 p-1 sm:p-4';
 
         // Format labels/tags
         const labels = recipe.labels || recipe.tags || [];
-        const labelsHtml = labels.length > 0 ? 
-            this.renderLabelChips(labels).replace(/text-xs/g, 'text-sm mr-2 mb-2') :
-            '<span class="text-gray-500 dark:text-gray-400">No labels</span>';
 
         modal.innerHTML = `
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto mx-4 sm:mx-0">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-full sm:max-w-2xl md:max-w-4xl h-[90vh] sm:max-h-[90vh] flex flex-col mx-1 sm:mx-4 md:mx-0">
                 <!-- Header -->
-                <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 py-3 sm:py-4">
+                <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-2 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white pr-2">${recipe.title}</h2>
+                        <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white pr-2">${recipe.title}</h2>
                         <div class="flex items-center justify-end space-x-2 sm:space-x-3 flex-shrink-0">
                             <button id="edit-recipe-detail" class="bg-blue-500 hover:bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg flex items-center space-x-1 sm:space-x-2 transition-colors text-sm sm:text-base">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                </svg>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                            </svg>
                                 <span class="hidden sm:inline">Edit</span>
-                            </button>
+                        </button>
                             <button id="close-recipe-detail" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1">
                                 <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                            </button>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
                         </div>
                     </div>
                 </div>
 
-                <div class="p-4 sm:p-6">
+                <div class="flex-1 overflow-y-auto p-2 sm:p-3 md:p-4 lg:p-6 min-h-0">
                     <!-- Recipe Image (if available) -->
                     ${recipe.image_url ? `
                         <div class="mb-4 sm:mb-6 flex justify-center">
@@ -1615,60 +2061,109 @@ class RecipeManager {
                         </div>
                     ` : ''}
 
-                    <!-- Description and Basic Info -->
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-4 sm:mb-6">
-                        <div class="lg:col-span-2">
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Description</h3>
-                            <p class="text-gray-700 dark:text-gray-300 text-sm sm:text-base">${recipe.description || 'No description available'}</p>
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Description</h3>
+                        <p class="text-gray-700 dark:text-gray-300 text-xs leading-relaxed">${recipe.description || 'No description available'}</p>
                         </div>
-                        <div class="grid grid-cols-2 sm:grid-cols-1 gap-2 sm:gap-3 lg:space-y-3">
-                            <div class="flex items-center text-gray-600 dark:text-gray-400">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+                    <!-- Recipe Info - Mobile Optimized -->
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 text-center">
+                            <div class="flex items-center justify-center mb-1">
+                                <svg class="w-4 h-4 mr-1 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
-                                <span>Prep: ${recipe.prep_time || 'N/A'} min</span>
+                                <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Prep</span>
                             </div>
-                            <div class="flex items-center text-gray-600 dark:text-gray-400">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white">${recipe.prep_time || 'N/A'} min</span>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 text-center">
+                            <div class="flex items-center justify-center mb-1">
+                                <svg class="w-4 h-4 mr-1 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path>
                                 </svg>
-                                <span>Cook: ${recipe.cook_time || 'N/A'} min</span>
+                                <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Cook</span>
                             </div>
-                            <div class="flex items-center text-gray-600 dark:text-gray-400">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white">${recipe.cook_time || 'N/A'} min</span>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 text-center">
+                            <div class="flex items-center justify-center mb-1">
+                                <svg class="w-4 h-4 mr-1 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                                 </svg>
-                                <span>Serves: ${recipe.serving_count || recipe.servings || 'N/A'}</span>
+                                <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Serves</span>
                             </div>
-                            <div class="flex items-center text-gray-600 dark:text-gray-400">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white">${recipe.serving_count || recipe.servings || 'N/A'}</span>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 text-center">
+                            <div class="flex items-center justify-center mb-1">
+                                <svg class="w-4 h-4 mr-1 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.99 1.99 0 013 12V7a4 4 0 014-4z"></path>
                                 </svg>
+                                <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Items</span>
                             </div>
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white">${recipe.ingredients.length}</span>
                         </div>
                     </div>
 
-                    <!-- Ingredients -->
-                    <div class="mb-4 sm:mb-6">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Ingredients (${recipe.ingredients.length})</h3>
-                        <ul class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 sm:p-4 text-sm sm:text-base">
-                            ${ingredientsList}
-                        </ul>
+                    <!-- Items -->
+                    <div class="mb-4">
+                        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Items (${recipe.ingredients.length})</h3>
+                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 space-y-2">
+                            ${(() => {
+                                if (!recipe.ingredients || recipe.ingredients.length === 0) {
+                                    return '<div class="text-xs text-gray-500 dark:text-gray-400">No ingredients available</div>';
+                                }
+                                return recipe.ingredients.map(ingredient => {
+                                    const ingredientName = this.getIngredientNameById(ingredient.ingredient_id) || 'Unknown ingredient';
+                                    return `
+                                        <div class="flex justify-between items-center py-1 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
+                                            <span class="text-xs font-medium text-gray-900 dark:text-white flex-1">${ingredientName}</span>
+                                            <span class="text-xs text-gray-600 dark:text-gray-300 ml-2 flex-shrink-0">
+                                                ${ingredient.quantity} ${ingredient.unit}
+                                            </span>
+                                        </div>
+                                    `;
+                                }).join('');
+                            })()}
+                        </div>
                     </div>
 
                     <!-- Instructions -->
-                    <div class="mb-4 sm:mb-6">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Instructions</h3>
-                        <ol class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 sm:p-4 space-y-2 text-sm sm:text-base">
-                            ${instructions}
-                        </ol>
+                    <div class="mb-4">
+                        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Instructions</h3>
+                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 space-y-3">
+                            ${(() => {
+                                if (recipe.instructions && typeof recipe.instructions === 'string') {
+                                    return recipe.instructions.split(',').map((step, index) => `
+                                        <div class="flex gap-2">
+                                            <span class="flex-shrink-0 w-5 h-5 bg-blue-500 text-white text-xs font-bold rounded-full flex items-center justify-center">${index + 1}</span>
+                                            <span class="text-xs text-gray-900 dark:text-white leading-relaxed">${step.trim()}</span>
+                                        </div>
+                                    `).join('');
+                                } else if (Array.isArray(recipe.instructions)) {
+                                    return recipe.instructions.map((step, index) => `
+                                        <div class="flex gap-2">
+                                            <span class="flex-shrink-0 w-5 h-5 bg-blue-500 text-white text-xs font-bold rounded-full flex items-center justify-center">${index + 1}</span>
+                                            <span class="text-xs text-gray-900 dark:text-white leading-relaxed">${step}</span>
+                                        </div>
+                                    `).join('');
+                                } else {
+                                    return '<div class="text-xs text-gray-500 dark:text-gray-400">No instructions available</div>';
+                                }
+                            })()}
+                        </div>
                     </div>
 
                     <!-- Labels/Tags -->
-                    <div class="mb-4 sm:mb-6">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Labels</h3>
-                        <div class="flex flex-wrap gap-1 sm:gap-2">
-                            ${labelsHtml}
+                    <div class="mb-4">
+                        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Labels</h3>
+                        <div class="flex flex-wrap gap-1">
+                            ${labels.length > 0 ? 
+                                this.renderLabelChips(labels).replace(/text-xs/g, 'text-xs').replace(/px-2 py-1/g, 'px-2 py-1') :
+                                '<span class="text-xs text-gray-500 dark:text-gray-400">No labels</span>'
+                            }
                         </div>
                     </div>
                 </div>
@@ -1723,7 +2218,11 @@ class RecipeManager {
     toggleFavorite(recipeId) {
         const recipe = this.recipes.find(r => r.id === recipeId);
         if (recipe) {
+            const wasLiked = recipe.favorite;
             recipe.favorite = !recipe.favorite;
+            
+            console.log(`⭐ Toggled favorite for "${recipe.title}": ${wasLiked} → ${recipe.favorite}`);
+            console.log(`📊 Total favorites now: ${this.getFavoriteRecipes().length}`);
             
             // Save to storage using the centralized data authority
             this.saveRecipes();
