@@ -316,28 +316,29 @@ class RecipeManager {
 
     updateFavoritesButton() {
         const favoritesBtn = this.container.querySelector('#favorites-filter-btn');
-        console.log('🌟 updateFavoritesButton called, showFavoritesOnly:', this.showFavoritesOnly);
-        console.log('🌟 Favorites button found:', !!favoritesBtn);
         
         if (favoritesBtn) {
-            // Update button appearance and text
-            const newClassName = `px-4 py-2 rounded-md text-sm font-medium transition-colors ${this.showFavoritesOnly ? 'bg-yellow-400 hover:bg-yellow-500 text-yellow-900 dark:bg-yellow-500 dark:hover:bg-yellow-400 dark:text-yellow-900 font-bold border-2 border-yellow-600 dark:border-yellow-400' : 'bg-yellow-100 hover:bg-yellow-200 text-yellow-800 dark:bg-yellow-900 dark:hover:bg-yellow-800 dark:text-yellow-200 border-2 border-transparent'}`;
+            // Update button appearance and text with better dark mode support
+            const newClassName = `px-4 py-2 rounded-md text-sm font-medium transition-colors ${this.showFavoritesOnly ? 
+                // Active state: bright yellow with dark text for both modes
+                'bg-yellow-400 hover:bg-yellow-500 text-gray-900 dark:bg-yellow-400 dark:hover:bg-yellow-300 dark:text-gray-900 font-bold border-2 border-yellow-600 dark:border-yellow-500' : 
+                // Inactive state: subtle yellow
+                'bg-yellow-100 hover:bg-yellow-200 text-yellow-800 dark:bg-yellow-900 dark:hover:bg-yellow-800 dark:text-yellow-200 border-2 border-transparent'
+            }`;
             favoritesBtn.className = newClassName;
             favoritesBtn.title = this.showFavoritesOnly ? 'Show all recipes' : 'Show only favorites';
             
-            console.log('🌟 Button className updated to:', newClassName);
-            
-            // Update button content with correct star icon
+            // Update button content with correct star icon and intuitive text
             const newInnerHTML = `
                 ${this.showFavoritesOnly ? 
+                    // Active: filled star + "Favorites Only"
                     '<svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>' :
+                    // Inactive: outline star + "Favorites"
                     '<svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>'
                 }
-                <span class="${this.showFavoritesOnly ? 'font-bold italic' : ''}">${this.showFavoritesOnly ? 'Show All' : 'Favorites'}</span>
+                <span class="${this.showFavoritesOnly ? 'font-bold' : ''}">${this.showFavoritesOnly ? 'Favorites Only' : 'Favorites'}</span>
             `;
             favoritesBtn.innerHTML = newInnerHTML;
-            
-            console.log('🌟 Button innerHTML updated, text should be:', this.showFavoritesOnly ? 'Show All' : 'Favorites');
         }
     }
 
