@@ -252,11 +252,13 @@ class RecipeManager {
 
     updateRecipeDisplay() {
         // Update only the recipe cards, info bar, and empty state without re-rendering entire component
+        console.log('🔄 updateRecipeDisplay called, showFavoritesOnly at start:', this.showFavoritesOnly);
         const recipeGrid = this.container.querySelector('#recipes-grid');
         const emptyState = this.container.querySelector('#empty-state');
         const infoBar = this.container.querySelector('.bg-gray-50.dark\\:bg-gray-700');
         
         if (recipeGrid && emptyState) {
+            console.log('🔄 About to call getFilteredRecipes from updateRecipeDisplay...');
             const filteredRecipes = this.getFilteredRecipes();
             recipeGrid.innerHTML = this.renderRecipeCards();
             
@@ -934,9 +936,11 @@ class RecipeManager {
             favoritesFilterBtn.addEventListener('click', () => {
                 console.log('🌟 Favorites button clicked, current state:', this.showFavoritesOnly);
                 this.showFavoritesOnly = !this.showFavoritesOnly;
-                console.log('🌟 New favorites state:', this.showFavoritesOnly);
+                console.log('🌟 New favorites state IMMEDIATELY after toggle:', this.showFavoritesOnly);
                 console.log('🌟 Total recipes with favorite=true:', this.recipes.filter(r => r.favorite === true).length);
+                console.log('🌟 About to call updateRecipeDisplay...');
                 this.updateRecipeDisplay();
+                console.log('🌟 updateRecipeDisplay completed');
             });
         }
 
