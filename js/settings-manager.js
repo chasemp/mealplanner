@@ -13,7 +13,8 @@ class SettingsManager {
             showLunch: false,
             showDinner: true,
             calendarManagedMode: false,
-            calendarNotifications: false
+            calendarNotifications: false,
+            confirmBeforeClearingFilters: false
         };
         
         this.githubApi = null;
