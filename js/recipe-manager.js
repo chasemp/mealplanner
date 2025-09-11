@@ -1117,27 +1117,28 @@ class RecipeManager {
                     
                     <!-- Items Section -->
                     <div>
-                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
-                            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Items</h3>
-                            <div class="flex gap-2">
-                                <button type="button" id="scan-ingredient-barcode" class="bg-blue-500 hover:bg-blue-600 text-white px-2 sm:px-3 py-1.5 rounded text-xs sm:text-sm transition-colors flex items-center">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h2M4 4h5m3 0h6m-9 4h2m3 0h2M9 20h2m3 0h2"></path>
-                                    </svg>
-                                    <span class="hidden sm:inline">Scan</span>
-                                </button>
-                                <button type="button" id="add-ingredient-row" class="btn-secondary text-xs sm:text-sm">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                    </svg>
-                                    <span class="hidden sm:inline">Add Item</span>
-                                    <span class="sm:hidden">Add</span>
-                                </button>
-                            </div>
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Items</h3>
+                        
+                        <div id="ingredients-container" class="space-y-3 mb-4">
+                            ${this.renderIngredientRows(isEdit ? recipe.ingredients : [])}
                         </div>
                         
-                        <div id="ingredients-container" class="space-y-3">
-                            ${this.renderIngredientRows(isEdit ? recipe.ingredients : [])}
+                        <!-- Action buttons below the list -->
+                        <div class="flex gap-3">
+                            <button type="button" id="add-ingredient-row" class="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                                <span>🥕</span>
+                                <span>Add</span>
+                            </button>
+                            <button type="button" id="create-new-ingredient" class="flex items-center gap-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 rounded-md transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                                <span>🥕</span>
+                                <span>Create</span>
+                            </button>
                         </div>
                     </div>
                     
@@ -1371,7 +1372,7 @@ class RecipeManager {
         const closeBtn = modal.querySelector('#close-recipe-form');
         const cancelBtn = modal.querySelector('#cancel-recipe-form');
         const addIngredientBtn = modal.querySelector('#add-ingredient-row');
-        const scanBarcodeBtn = modal.querySelector('#scan-ingredient-barcode');
+        const createIngredientBtn = modal.querySelector('#create-new-ingredient');
         const ingredientsContainer = modal.querySelector('#ingredients-container');
 
         // Track form changes
@@ -1447,9 +1448,15 @@ class RecipeManager {
             this.attachIngredientRowListeners(ingredientsContainer.lastElementChild);
         });
 
-        // Scan barcode for ingredient
-        scanBarcodeBtn?.addEventListener('click', () => {
-            this.showBarcodeScanner(ingredientsContainer);
+        // Create new ingredient button
+        createIngredientBtn?.addEventListener('click', () => {
+            console.log('Create new ingredient clicked');
+            // Open the items manager form
+            if (window.itemsManager) {
+                window.itemsManager.showIngredientForm();
+            } else {
+                console.warn('ItemsManager not available');
+            }
         });
 
         // Attach listeners to existing ingredient rows
@@ -2476,27 +2483,28 @@ class RecipeManager {
 
                         <!-- Items Section -->
                         <div>
-                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
-                                <h3 class="text-lg font-medium text-gray-900 dark:text-white">Items</h3>
-                                <div class="flex gap-2">
-                                    <button type="button" id="scan-ingredient-barcode" class="bg-blue-500 hover:bg-blue-600 text-white px-2 sm:px-3 py-1.5 rounded text-xs sm:text-sm transition-colors flex items-center">
-                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h2M4 4h5m3 0h6m-9 4h2m3 0h2M9 20h2m3 0h2"></path>
-                                        </svg>
-                                        <span class="hidden sm:inline">Scan</span>
-                                    </button>
-                                    <button type="button" id="add-ingredient-row" class="btn-secondary text-xs sm:text-sm">
-                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                        </svg>
-                                        <span class="hidden sm:inline">Add Item</span>
-                                        <span class="sm:hidden">Add</span>
-                                    </button>
-                                </div>
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Items</h3>
+                            
+                            <div id="ingredients-container" class="space-y-3 mb-4">
+                                ${this.renderIngredientRows(isEdit ? recipe.ingredients : [])}
                             </div>
                             
-                            <div id="ingredients-container" class="space-y-3">
-                                ${this.renderIngredientRows(isEdit ? recipe.ingredients : [])}
+                            <!-- Action buttons below the list -->
+                            <div class="flex gap-3">
+                                <button type="button" id="add-ingredient-row" class="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    <span>🥕</span>
+                                    <span>Add</span>
+                                </button>
+                                <button type="button" id="create-new-ingredient" class="flex items-center gap-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 rounded-md transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    <span>🥕</span>
+                                    <span>Create</span>
+                                </button>
                             </div>
                         </div>
 
@@ -2633,7 +2641,7 @@ class RecipeManager {
 
     attachFullPageIngredientListeners() {
         const addIngredientBtn = document.querySelector('#add-ingredient-row');
-        const scanBarcodeBtn = document.querySelector('#scan-ingredient-barcode');
+        const createIngredientBtn = document.querySelector('#create-new-ingredient');
         const ingredientsContainer = document.querySelector('#ingredients-container');
 
         // Add ingredient row
@@ -2647,9 +2655,15 @@ class RecipeManager {
             this.attachIngredientRowListeners(ingredientsContainer.lastElementChild);
         });
 
-        // Scan barcode for ingredient
-        scanBarcodeBtn?.addEventListener('click', () => {
-            this.showBarcodeScanner(ingredientsContainer);
+        // Create new ingredient button
+        createIngredientBtn?.addEventListener('click', () => {
+            console.log('Create new ingredient clicked');
+            // Open the items manager form
+            if (window.itemsManager) {
+                window.itemsManager.showIngredientForm();
+            } else {
+                console.warn('ItemsManager not available');
+            }
         });
 
         // Attach listeners to existing ingredient rows
