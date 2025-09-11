@@ -1,5 +1,73 @@
 # PWA Development Lessons Learned
 
+## 📱 **Mobile-First UI Pattern Selection**
+
+**Lesson**: Choose the right UI pattern for each platform - don't force desktop patterns onto mobile.
+
+**Problem**: Recipe detail modals worked perfectly on desktop but were completely unusable on mobile (blank screens, poor scrolling, cramped layout).
+
+**Root Cause**: Modals are inherently desktop-centric UI patterns. Mobile users expect full-screen navigation like native apps.
+
+**Solution**: Platform-specific UI patterns:
+- **Desktop (>768px)**: Keep modals for overlay content
+- **Mobile (≤768px)**: Full-screen page replacement with back navigation
+
+**Implementation**:
+```javascript
+showRecipeDetail(recipeId) {
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+        this.showMobileRecipePage(recipe); // Full-screen page
+    } else {
+        this.showDesktopRecipeModal(recipe); // Modal overlay
+    }
+}
+```
+
+**Key Benefits**:
+- Native mobile app experience (Instagram/Twitter-style navigation)
+- Proper scrolling behavior (page scroll vs modal scroll)
+- Full viewport utilization on mobile
+- Maintains desktop modal experience where it works well
+
+**Takeaway**: Test UI patterns on actual mobile devices early. What works on desktop browser mobile simulation may not work on real mobile browsers.
+
+---
+
+## 🔄 **Haptic Feedback Non-Blocking Implementation**
+
+**Lesson**: Browser security features can block APIs and interfere with core functionality if not handled properly.
+
+**Problem**: Mobile navigation required multiple clicks to work because `navigator.vibrate()` was being blocked by browser security, somehow interfering with click event handling.
+
+**Root Cause**: Browsers block vibration API until user has interacted with the page. The blocking/error was preventing subsequent JavaScript execution.
+
+**Solution**: Make haptic feedback completely asynchronous and non-blocking:
+```javascript
+addHapticFeedback() {
+    // Execute in separate async context to never block main thread
+    setTimeout(() => {
+        if ('vibrate' in navigator) {
+            try {
+                navigator.vibrate(10);
+            } catch (error) {
+                // Silently ignore - never block navigation
+            }
+        }
+    }, 0);
+}
+```
+
+**Key Principles**:
+- **Core functionality first**: Navigation must work regardless of haptic feedback
+- **Progressive enhancement**: Haptic feedback is nice-to-have, not essential
+- **Async execution**: Use `setTimeout(0)` to prevent blocking main thread
+- **Silent failure**: Don't log errors for expected browser security blocks
+
+**Takeaway**: Always make browser API calls non-blocking, especially for progressive enhancement features like haptics, geolocation, or notifications.
+
+---
+
 ## 🗺️ **Complete MealPlanner Roadmap**
 
 ### ✅ **Phase 1: Foundation & Core Features (COMPLETED)**

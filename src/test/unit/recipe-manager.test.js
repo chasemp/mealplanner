@@ -320,8 +320,46 @@ class MockRecipeManager {
     showRecipeDetail(recipeId) {
         const recipe = this.recipes.find(r => r.id === recipeId)
         if (recipe) {
-            // Mock showing recipe detail
-            console.log('Showing recipe detail:', recipe.title)
+            // Mock mobile vs desktop detection
+            const isMobile = window.innerWidth <= 768;
+            
+            if (isMobile) {
+                this.showMobileRecipePage(recipe);
+            } else {
+                this.showDesktopRecipeModal(recipe);
+            }
+        }
+    }
+
+    showMobileRecipePage(recipe) {
+        // Mock mobile recipe page
+        this.previousView = {
+            container: this.container.innerHTML,
+            scrollPosition: 0
+        };
+        
+        this.container.innerHTML = `
+            <div class="mobile-recipe-page">
+                <button id="mobile-recipe-back">Back</button>
+                <button id="mobile-recipe-close">Close</button>
+                <button id="mobile-recipe-edit">Edit</button>
+                <h1>${recipe.title}</h1>
+                <p>${recipe.description}</p>
+            </div>
+        `;
+        
+        console.log('Showing mobile recipe page:', recipe.title);
+    }
+
+    showDesktopRecipeModal(recipe) {
+        // Mock desktop modal (existing behavior)
+        console.log('Showing desktop recipe modal:', recipe.title);
+    }
+
+    returnFromMobileRecipe() {
+        if (this.previousView) {
+            this.container.innerHTML = this.previousView.container;
+            this.previousView = null;
         }
     }
 
