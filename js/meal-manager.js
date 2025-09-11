@@ -398,16 +398,21 @@ class MealManager {
             });
         }
 
-        // Clear filters button
+        // Clear filters button with centralized logic
         const clearFiltersBtn = document.getElementById('clear-meal-filters-btn');
         if (clearFiltersBtn) {
-            clearFiltersBtn.addEventListener('click', () => {
+            const clearCallback = () => {
+                // Clear all filters logic (without confirmation/double press - that's handled by the centralized handler)
                 this.searchTerm = '';
                 this.selectedMealType = 'all';
                 this.selectedLabel = 'all';
                 this.sortBy = 'name';
                 this.render();
-            });
+            };
+            
+            clearFiltersBtn.addEventListener('click', 
+                SettingsManager.createClearFiltersHandler(clearCallback, '#clear-meal-filters-btn', this)
+            );
         }
 
         // Schedule, edit and delete buttons
@@ -911,6 +916,13 @@ class MealManager {
         setTimeout(() => {
             notification.remove();
         }, 3000);
+    }
+    
+    hasActiveFilters() {
+        return this.searchTerm !== '' || 
+               this.selectedMealType !== 'all' || 
+               this.selectedLabel !== 'all' ||
+               this.sortBy !== 'name';
     }
 
     async clearAllData() {

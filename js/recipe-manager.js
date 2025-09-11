@@ -11,6 +11,10 @@ class RecipeManager {
         this.sortBy = 'name';
         this.sortAscending = true; // New property for sort direction
         this.showFavoritesOnly = false;
+        
+        // Double press clear filters state
+        this.clearFiltersFirstPressTime = null;
+        this.clearFiltersTimeout = null;
         this.init();
     }
 
@@ -963,12 +967,24 @@ class RecipeManager {
             });
         }
 
-        // Clear filters button
+        // Clear filters button with centralized logic
         const clearFiltersBtn = this.container.querySelector('#clear-recipe-filters-btn');
         if (clearFiltersBtn) {
-            clearFiltersBtn.addEventListener('click', () => {
-                this.clearFilters();
-            });
+            const clearCallback = () => {
+                // Clear all filters logic (without confirmation/double press - that's handled by the centralized handler)
+                this.searchTerm = '';
+                this.selectedLabels = []; // Reset multi-select labels
+                this.labelSearchTerm = ''; // Reset label search
+                this.sortBy = 'name';
+                this.sortAscending = true; // Reset sort direction
+                this.showFavoritesOnly = false;
+                this.render();
+                this.updateFavoritesButton(); // Ensure favorites button maintains correct state after render
+            };
+            
+            clearFiltersBtn.addEventListener('click', 
+                SettingsManager.createClearFiltersHandler(clearCallback, '#clear-recipe-filters-btn', this)
+            );
         }
 
         // Favorites filter button
@@ -2948,34 +2964,6 @@ class RecipeManager {
         }
     }
 
-    // Clear filters with optional confirmation
-    clearFilters() {
-        // Check if confirmation is required
-        const shouldConfirm = window.mealPlannerSettings && 
-                             window.mealPlannerSettings.settings && 
-                             window.mealPlannerSettings.settings.confirmBeforeClearingFilters;
-        
-        if (shouldConfirm) {
-            // Show confirmation dialog
-            const hasActiveFilters = this.hasActiveFilters();
-            if (hasActiveFilters) {
-                const confirmed = confirm('Are you sure you want to clear all filters? This will reset your search, selected labels, favorites filter, and sort settings.');
-                if (!confirmed) {
-                    return; // User cancelled, don't clear filters
-                }
-            }
-        }
-        
-        // Clear all filters
-        this.searchTerm = '';
-        this.selectedLabels = []; // Reset multi-select labels
-        this.labelSearchTerm = ''; // Reset label search
-        this.sortBy = 'name';
-        this.sortAscending = true; // Reset sort direction
-        this.showFavoritesOnly = false;
-        this.render();
-        this.updateFavoritesButton(); // Ensure favorites button maintains correct state after render
-    }
 
     // Multi-select label methods
     addLabel(label) {

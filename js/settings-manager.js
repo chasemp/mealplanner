@@ -14,7 +14,8 @@ class SettingsManager {
             showDinner: true,
             calendarManagedMode: false,
             calendarNotifications: false,
-            confirmBeforeClearingFilters: false
+            confirmBeforeClearingFilters: false,
+            requireDoublePressForClearFilters: false
         };
         
         this.githubApi = null;
@@ -1129,6 +1130,99 @@ class GitHubDatabaseSync {
         } catch (error) {
             console.error('❌ Failed to commit and push:', error);
             throw error;
+        }
+    }
+    
+    // Centralized clear filters utility with confirmation and double press protection
+    static createClearFiltersHandler(clearCallback, buttonSelector, managerInstance) {
+        return function() {
+            const settings = window.mealPlannerSettings?.settings;
+            const requireDoublePress = settings?.requireDoublePressForClearFilters;
+            const shouldConfirm = settings?.confirmBeforeClearingFilters;
+            
+            // Initialize double press state on manager instance if not exists
+            if (!managerInstance.clearFiltersFirstPressTime) {
+                managerInstance.clearFiltersFirstPressTime = null;
+                managerInstance.clearFiltersTimeout = null;
+            }
+            
+            // Handle double press requirement
+            if (requireDoublePress) {
+                const now = Date.now();
+                const clearButton = document.querySelector(buttonSelector);
+                
+                if (!managerInstance.clearFiltersFirstPressTime) {
+                    // First press
+                    managerInstance.clearFiltersFirstPressTime = now;
+                    
+                    // Update button appearance for visual feedback
+                    if (clearButton) {
+                        clearButton.textContent = 'Press Again to Clear';
+                        clearButton.classList.add('bg-red-600', 'hover:bg-red-700');
+                        clearButton.classList.remove('bg-gray-500', 'hover:bg-gray-600');
+                    }
+                    
+                    // Set timeout to reset after 3 seconds
+                    managerInstance.clearFiltersTimeout = setTimeout(() => {
+                        SettingsManager.resetClearFiltersState(buttonSelector, managerInstance);
+                    }, 3000);
+                    
+                    return; // Don't clear on first press
+                } else {
+                    // Second press - check if within 3 seconds
+                    const timeDiff = now - managerInstance.clearFiltersFirstPressTime;
+                    if (timeDiff <= 3000) {
+                        // Valid double press, proceed with clearing
+                        SettingsManager.resetClearFiltersState(buttonSelector, managerInstance);
+                    } else {
+                        // Too late, reset and treat as first press
+                        SettingsManager.resetClearFiltersState(buttonSelector, managerInstance);
+                        // Recursive call to handle as first press
+                        SettingsManager.createClearFiltersHandler(clearCallback, buttonSelector, managerInstance)();
+                        return;
+                    }
+                }
+            }
+            
+            // Check if confirmation is required (separate from double press)
+            if (shouldConfirm) {
+                // Check if there are active filters (this is manager-specific)
+                let hasActiveFilters = false;
+                if (typeof managerInstance.hasActiveFilters === 'function') {
+                    hasActiveFilters = managerInstance.hasActiveFilters();
+                } else {
+                    // Fallback: assume there are active filters if we got this far
+                    hasActiveFilters = true;
+                }
+                
+                if (hasActiveFilters) {
+                    const confirmed = confirm('Are you sure you want to clear all filters? This will reset your search, selected labels, favorites filter, and sort settings.');
+                    if (!confirmed) {
+                        return; // User cancelled, don't clear filters
+                    }
+                }
+            }
+            
+            // Execute the actual clear callback
+            clearCallback();
+        };
+    }
+    
+    // Reset double press state and button appearance
+    static resetClearFiltersState(buttonSelector, managerInstance) {
+        managerInstance.clearFiltersFirstPressTime = null;
+        
+        if (managerInstance.clearFiltersTimeout) {
+            clearTimeout(managerInstance.clearFiltersTimeout);
+            managerInstance.clearFiltersTimeout = null;
+        }
+        
+        // Reset button appearance
+        const clearButton = document.querySelector(buttonSelector);
+        if (clearButton) {
+            clearButton.textContent = 'Clear Filters';
+            clearButton.classList.remove('bg-red-600', 'hover:bg-red-700');
+            clearButton.classList.add('bg-gray-500', 'hover:bg-gray-600');
         }
     }
 }
