@@ -1149,7 +1149,7 @@ class RecipeManager {
                                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                             </svg>
-                                        </button>
+                                </button>
                                     </span>
                                     `;
                                 }).join('') : ''}
@@ -1163,9 +1163,9 @@ class RecipeManager {
                             </div>
                             <div id="recipe-form-labels-dropdown" class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg hidden max-h-32 overflow-y-auto">
                                 <!-- Dropdown options will be populated by JavaScript -->
+                                </div>
                             </div>
-                        </div>
-                    </div>
+                                </div>
                     </form>
                     </div>
                     
@@ -2413,11 +2413,45 @@ class RecipeManager {
                                       placeholder="Brief description of the recipe...">${isEdit ? recipe.description || '' : ''}</textarea>
                         </div>
 
+                        <!-- Items Section -->
+                        <div>
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
+                                <h3 class="text-lg font-medium text-gray-900 dark:text-white">Items</h3>
+                                <div class="flex gap-2">
+                                    <button type="button" id="scan-ingredient-barcode" class="bg-blue-500 hover:bg-blue-600 text-white px-2 sm:px-3 py-1.5 rounded text-xs sm:text-sm transition-colors flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h2M4 4h5m3 0h6m-9 4h2m3 0h2M9 20h2m3 0h2"></path>
+                                        </svg>
+                                        <span class="hidden sm:inline">Scan</span>
+                                    </button>
+                                    <button type="button" id="add-ingredient-row" class="btn-secondary text-xs sm:text-sm">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                        </svg>
+                                        <span class="hidden sm:inline">Add Item</span>
+                                        <span class="sm:hidden">Add</span>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div id="ingredients-container" class="space-y-3">
+                                ${this.renderIngredientRows(isEdit ? recipe.ingredients : [])}
+                            </div>
+                        </div>
+
+                        <!-- Instructions -->
+                        <div>
+                            <label for="recipe-instructions" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Instructions</label>
+                            <textarea id="recipe-instructions" name="instructions" rows="8" required
+                                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                      placeholder="Enter step-by-step cooking instructions...">${isEdit ? recipe.instructions || '' : ''}</textarea>
+                        </div>
+
                         <!-- Labels Section -->
                         <div>
                             <label for="fullpage-recipe-labels" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Labels</label>
                             <div class="relative">
-                                <div id="fullpage-recipe-labels-container" class="w-full min-h-[42px] max-h-[60px] overflow-y-auto px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus-within:ring-2 focus-within:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white cursor-text flex flex-wrap gap-1 items-center">
+                                <div id="fullpage-recipe-labels-container" class="w-full min-h-[42px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus-within:ring-2 focus-within:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white cursor-text flex flex-wrap gap-1 items-center">
                                     ${isEdit && recipe.labels ? recipe.labels.map(label => {
                                         const labelType = this.inferLabelType(label);
                                         const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
@@ -2427,7 +2461,7 @@ class RecipeManager {
                                         return `
                                         <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-bold ${colors} rounded-full">
                                             ${icon}${typeof label === 'string' ? label : label.name || label}
-                                            <button type="button" class="ml-1 ${buttonColors}" onclick="window.recipeManager.removeFormLabel('${typeof label === 'string' ? label : label.name || label}')">
+                                            <button type="button" class="ml-1 ${buttonColors}" onclick="window.recipeManager.removeFormLabel('${typeof label === 'string' ? label : label.name || label}'); window.recipeManager.updateFullPageLabelsDisplay();">
                                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                                 </svg>
@@ -2449,12 +2483,11 @@ class RecipeManager {
                             </div>
                         </div>
 
-                        <!-- Instructions -->
-                        <div>
-                            <label for="recipe-instructions" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Instructions</label>
-                            <textarea id="recipe-instructions" name="instructions" rows="8" required
-                                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                                      placeholder="Enter step-by-step cooking instructions...">${isEdit ? recipe.instructions || '' : ''}</textarea>
+                        <!-- Form Actions -->
+                        <div class="flex justify-end pt-6 border-t border-gray-200 dark:border-gray-700">
+                            <button type="submit" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium text-lg">
+                                ${isEdit ? 'Update Recipe' : 'Save Recipe'}
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -2479,6 +2512,9 @@ class RecipeManager {
         backBtn?.addEventListener('click', goBack);
         cancelBtn?.addEventListener('click', goBack);
 
+        // Ingredient/Items listeners
+        this.attachFullPageIngredientListeners();
+
         // Form label listeners - reuse existing methods but update selectors
         this.attachFullPageLabelListeners();
 
@@ -2486,6 +2522,33 @@ class RecipeManager {
         form?.addEventListener('submit', (e) => {
             e.preventDefault();
             this.handleFullPageFormSubmit(form, recipe);
+        });
+    }
+
+    attachFullPageIngredientListeners() {
+        const addIngredientBtn = document.querySelector('#add-ingredient-row');
+        const scanBarcodeBtn = document.querySelector('#scan-ingredient-barcode');
+        const ingredientsContainer = document.querySelector('#ingredients-container');
+
+        // Add ingredient row
+        addIngredientBtn?.addEventListener('click', () => {
+            const currentRows = ingredientsContainer.querySelectorAll('.ingredient-row').length;
+            const newRowHtml = this.renderSingleIngredientRow({ ingredient_id: '', name: '', quantity: '', unit: '', notes: '' }, currentRows, true);
+            
+            ingredientsContainer.insertAdjacentHTML('beforeend', newRowHtml);
+            
+            // Attach listeners to new row
+            this.attachIngredientRowListeners(ingredientsContainer.lastElementChild);
+        });
+
+        // Scan barcode for ingredient
+        scanBarcodeBtn?.addEventListener('click', () => {
+            this.showBarcodeScanner(ingredientsContainer);
+        });
+
+        // Attach listeners to existing ingredient rows
+        ingredientsContainer?.querySelectorAll('.ingredient-row').forEach(row => {
+            this.attachIngredientRowListeners(row);
         });
     }
 
@@ -2623,6 +2686,33 @@ class RecipeManager {
                 labels: this.formSelectedLabels || []
             };
 
+            // Collect ingredients
+            const ingredients = [];
+            const ingredientRows = form.querySelectorAll('.ingredient-row');
+            
+            ingredientRows.forEach((row, index) => {
+                const ingredientSelect = row.querySelector('.ingredient-select');
+                const quantityInput = row.querySelector('.quantity-input');
+                const unitSelect = row.querySelector('.unit-select');
+                const notesInput = row.querySelector('.notes-input');
+                
+                const ingredientId = ingredientSelect?.value;
+                const quantity = parseFloat(quantityInput?.value) || 0;
+                const unit = unitSelect?.value || '';
+                const notes = notesInput?.value?.trim() || '';
+                
+                if (ingredientId && quantity > 0) {
+                    ingredients.push({
+                        ingredient_id: parseInt(ingredientId),
+                        quantity: quantity,
+                        unit: unit,
+                        notes: notes
+                    });
+                }
+            });
+
+            recipeData.ingredients = ingredients;
+
             // Validate required fields
             if (!recipeData.title) {
                 this.showNotification('Recipe title is required', 'error');
@@ -2746,6 +2836,8 @@ class RecipeManager {
             this.formSelectedLabels.push(label);
             this.formLabelSearchTerm = '';
             this.updateFormLabelsDisplay();
+            // Also update the dropdown
+            this.updateFormLabelDropdown();
         }
     }
 
@@ -2755,8 +2847,11 @@ class RecipeManager {
     }
 
     updateFormLabelsDisplay() {
-        const container = document.querySelector('#recipe-form-labels-container');
-        const input = document.querySelector('#recipe-form-labels-input');
+        // Try both modal and full-page selectors
+        const container = document.querySelector('#recipe-form-labels-container') || 
+                         document.querySelector('#fullpage-recipe-labels-container');
+        const input = document.querySelector('#recipe-form-labels-input') || 
+                     document.querySelector('#fullpage-recipe-labels-input');
         
         if (!container || !input) return;
 
@@ -2789,6 +2884,44 @@ class RecipeManager {
 
         // Update placeholder
         input.placeholder = this.formSelectedLabels.length > 0 ? 'Type to add more...' : 'Type to search labels...';
+    }
+
+    updateFormLabelDropdown() {
+        // Try both modal and full-page selectors
+        const dropdown = document.querySelector('#recipe-form-labels-dropdown') || 
+                        document.querySelector('#fullpage-recipe-labels-dropdown');
+        if (!dropdown) return;
+
+        const availableLabels = this.getAllLabels().filter(label => 
+            !this.formSelectedLabels.includes(label) &&
+            (!this.formLabelSearchTerm || label.toLowerCase().includes(this.formLabelSearchTerm.toLowerCase()))
+        );
+
+        if (availableLabels.length === 0 || !this.formLabelSearchTerm) {
+            dropdown.classList.add('hidden');
+            return;
+        }
+
+        dropdown.classList.remove('hidden');
+        dropdown.innerHTML = availableLabels.slice(0, 10).map((label, index) => {
+            const labelType = this.inferLabelType(label);
+            const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
+            const colorClasses = this.getLabelColorClasses(labelType);
+            
+            return `
+            <div class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm text-gray-900 dark:text-gray-100 ${index === 0 ? 'bg-gray-50 dark:bg-gray-700' : ''}" 
+                 data-label="${label}" 
+                 onclick="window.recipeManager.addFormLabel('${label}')">
+                <div class="flex items-center space-x-2">
+                    ${icon && labelType !== 'default' ? `<span class="flex-shrink-0">${icon}</span>` : ''}
+                    <span class="font-bold flex-1">${label}</span>
+                    <span class="inline-flex items-center px-2 py-1 ${colorClasses} rounded-full text-xs flex-shrink-0">
+                        ${labelType !== 'default' ? this.getShortLabelTypeName(labelType) : 'label'}
+                    </span>
+                </div>
+            </div>
+            `;
+        }).join('');
     }
 
     /**
