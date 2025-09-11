@@ -410,9 +410,13 @@ class MealManager {
                 this.render();
             };
             
-            clearFiltersBtn.addEventListener('click', 
-                SettingsManager.createClearFiltersHandler(clearCallback, '#clear-meal-filters-btn', this)
-            );
+            // Use settings manager for clear filters with fallback
+            const clearHandler = (window.mealPlannerSettings?.createClearFiltersHandler || 
+                                window.settingsManager?.createClearFiltersHandler || 
+                                ((callback) => callback))
+                                (clearCallback, '#clear-meal-filters-btn', this);
+            
+            clearFiltersBtn.addEventListener('click', clearHandler);
         }
 
         // Schedule, edit and delete buttons

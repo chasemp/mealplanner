@@ -446,9 +446,13 @@ class ItemsManager {
                 this.render();
             };
             
-            clearFiltersBtn.addEventListener('click', 
-                SettingsManager.createClearFiltersHandler(clearCallback, '#clear-filters-btn', this)
-            );
+            // Use settings manager for clear filters with fallback
+            const clearHandler = (window.mealPlannerSettings?.createClearFiltersHandler || 
+                                window.settingsManager?.createClearFiltersHandler || 
+                                ((callback) => callback))
+                                (clearCallback, '#clear-filters-btn', this);
+            
+            clearFiltersBtn.addEventListener('click', clearHandler);
         }
 
         // Add ingredient button
