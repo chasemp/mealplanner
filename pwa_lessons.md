@@ -1629,4 +1629,93 @@ attachEventListeners() {
 
 ---
 
-*This document captures the lessons learned from building the MealPlanner PWA, emphasizing the importance of the static PWA sweet spot: modular organization without build complexity, enhanced with intelligent development tooling, schema-driven demo data generation, holistic data consistency management, and explicit cross-platform UI styling.*
+## 🎯 **Demo Data as Authoritative Source**
+
+**Lesson**: Generated demo data should be the single source of truth, not a secondary testing artifact.
+
+**Problem**: Static demo data diverged from schema changes. Missing `favorite` properties caused `0 favs` display and broken filtering functionality.
+
+**Root Cause**: Manual maintenance of demo data doesn't scale with rapid schema evolution. Static data gets stale.
+
+**Solution**: Generated demo data as the authoritative source:
+- **Single File**: Generation script outputs to `js/demo-data.js` (not separate file)
+- **Schema Compliance**: Generated data validates against current schema expectations
+- **Easy Regeneration**: `npm run demo:refresh` creates fresh data
+- **Guaranteed Test Data**: Specific items (like "Bacon") always favorited for consistent testing
+
+**Implementation**:
+```javascript
+// Generation script ensures schema compliance
+shouldBeFavorite(recipeTitle) {
+    const alwaysFavorites = ['Bacon', 'Caesar Salad', 'Pancakes'];
+    return alwaysFavorites.includes(recipeTitle) || Math.random() < 0.3;
+}
+```
+
+**Workflow Benefits**:
+- Schema changes automatically propagate to demo data
+- No manual sync required between features and test data
+- Predictable test scenarios with guaranteed favorites
+- Validates data generation pipeline continuously
+
+---
+
+## 🔍 **Debugging Strategy for Complex UI Issues**
+
+**Lesson**: Layer debugging systematically - don't jump to conclusions about root causes.
+
+**Problem**: Favorites filtering appeared broken with multiple symptoms: button not updating, list not filtering, info counts wrong.
+
+**Root Cause Discovery Process**:
+1. **Layer 1**: Added comprehensive logging to trace data flow
+2. **Layer 2**: Verified DOM updates were happening (innerHTML changes)
+3. **Layer 3**: Discovered demo data had no `favorite` properties at all
+4. **Layer 4**: Traced back to static demo data vs generated demo data mismatch
+
+**Debugging Implementation**:
+```javascript
+// Systematic debugging approach
+console.log('🔍 getFilteredRecipes called, showFavoritesOnly:', this.showFavoritesOnly);
+console.log('🔄 recipeGrid element found:', !!recipeGrid, recipeGrid?.id);
+console.log('🔄 Generated HTML length:', newHTML.length, 'characters');
+console.log('📊 Info bar update:', {filteredRecipes: X, filteredFavorites: Y});
+```
+
+**Key Insights**:
+- **Don't assume UI logic is broken** - often data source issues
+- **Trace data flow systematically** - from source → processing → display
+- **Log state at each transformation** - identify where expectations diverge
+- **Verify assumptions about test data** - especially in complex data pipelines
+
+**Future Strategy**:
+- Always check data source integrity first
+- Add data validation at load time to catch missing properties early
+- Use generation scripts with validation to prevent data source drift
+
+---
+
+## ⚡ **DOM Rendering and Visual Updates**
+
+**Lesson**: DOM updates don't always trigger immediate visual rendering - force reflows when needed.
+
+**Problem**: Recipe filtering worked correctly (logs showed right data), but visual list didn't update immediately.
+
+**Root Cause**: Modern browsers optimize rendering and may batch DOM updates, causing perceived lag.
+
+**Solution**: Force reflow after critical DOM updates:
+```javascript
+recipeGrid.innerHTML = newHTML;
+// Force a reflow to ensure DOM updates are rendered
+recipeGrid.offsetHeight;
+```
+
+**When to Use**:
+- After major innerHTML updates that users expect immediately
+- When filtering/search results need instant visual feedback
+- Complex UI state changes that feel sluggish
+
+**Performance Note**: Use sparingly - forced reflows are expensive operations.
+
+---
+
+*This document captures the lessons learned from building the MealPlanner PWA, emphasizing the importance of the static PWA sweet spot: modular organization without build complexity, enhanced with intelligent development tooling, schema-driven demo data generation, holistic data consistency management, explicit cross-platform UI styling, and systematic debugging approaches for complex UI state management.*
