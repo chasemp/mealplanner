@@ -252,18 +252,18 @@ class RecipeManager {
         // Update only the recipe cards, info bar, and empty state without re-rendering entire component
         const recipeGrid = this.container.querySelector('#recipes-grid');
         const emptyState = this.container.querySelector('#empty-state');
-        const infoBar = this.container.querySelector('.bg-gray-50');
         
-        // Try alternative selectors if the first one doesn't work
-        if (!infoBar) {
-            console.log('❌ Info bar not found with primary selector, trying alternatives...');
-            const altInfoBar1 = this.container.querySelector('.bg-gray-50');
-            const altInfoBar2 = this.container.querySelector('[class*="bg-gray-50"]');
-            console.log('🔍 Alternative selectors found:', {
-                altInfoBar1: !!altInfoBar1,
-                altInfoBar2: !!altInfoBar2
-            });
-        }
+        // Use more specific selector for info bar to avoid conflicts with other bg-gray-50 elements
+        const infoBar = this.container.querySelector('.border-t.border-gray-200 .bg-gray-50') || 
+                       this.container.querySelector('.bg-gray-50.rounded-lg') ||
+                       this.container.querySelector('.bg-gray-50');
+        
+        console.log('🔍 Info bar search:', {
+            specificSelector: !!this.container.querySelector('.border-t.border-gray-200 .bg-gray-50'),
+            roundedSelector: !!this.container.querySelector('.bg-gray-50.rounded-lg'),
+            genericSelector: !!this.container.querySelector('.bg-gray-50'),
+            finalInfoBar: !!infoBar
+        });
         
         console.log('🔄 Elements found:', {
             recipeGrid: !!recipeGrid,
@@ -1193,7 +1193,7 @@ class RecipeManager {
                     
                     <!-- Form Actions -->
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-end space-y-2 sm:space-y-0 sm:space-x-4 p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
-                    <button type="button" id="cancel-recipe-form" class="btn-secondary w-full sm:w-auto order-2 sm:order-1">
+                    <button type="button" id="cancel-recipe-form" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 px-4 py-2 w-full sm:w-auto order-2 sm:order-1 transition-colors">
                             Cancel
                         </button>
                     <button type="submit" form="recipe-form" class="btn-primary w-full sm:w-auto order-1 sm:order-2">
@@ -1374,12 +1374,51 @@ class RecipeManager {
         const scanBarcodeBtn = modal.querySelector('#scan-ingredient-barcode');
         const ingredientsContainer = modal.querySelector('#ingredients-container');
 
-        // Close modal handlers
+        // Track form changes
+        let hasUnsavedChanges = false;
+        const originalFormData = new FormData(form);
+        
+        // Monitor form changes
+        const trackChanges = () => {
+            const currentFormData = new FormData(form);
+            hasUnsavedChanges = false;
+            
+            // Compare form data
+            for (let [key, value] of currentFormData.entries()) {
+                if (originalFormData.get(key) !== value) {
+                    hasUnsavedChanges = true;
+                    break;
+                }
+            }
+            
+            // Also check if original had fields that current doesn't
+            if (!hasUnsavedChanges) {
+                for (let [key, value] of originalFormData.entries()) {
+                    if (currentFormData.get(key) !== value) {
+                        hasUnsavedChanges = true;
+                        break;
+                    }
+                }
+            }
+        };
+
+        // Attach change listeners to form inputs
+        form.addEventListener('input', trackChanges);
+        form.addEventListener('change', trackChanges);
+
+        // Close modal handlers with confirmation
         const closeModal = () => {
+            if (hasUnsavedChanges) {
+                const confirmed = confirm('You have unsaved changes. Are you sure you want to cancel?');
+                if (!confirmed) {
+                    return; // Don't close if user cancels
+                }
+            }
+            
             // If we were editing from mobile recipe view, return to that view
             if (this.editingFromMobileView && this.editingRecipe) {
                 console.log('Returning to mobile recipe view after cancel');
-            modal.remove();
+                modal.remove();
                 this.showMobileRecipePage(this.editingRecipe);
                 this.editingFromMobileView = false;
                 this.editingRecipe = null;
@@ -2404,7 +2443,7 @@ class RecipeManager {
                                 </h1>
                             </div>
                             <div class="flex items-center space-x-3">
-                                <button type="button" id="cancel-fullpage-form" class="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
+                                <button type="button" id="cancel-fullpage-form" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 px-4 py-2 transition-colors">
                                     Cancel
                                 </button>
                                 <button type="submit" form="fullpage-recipe-form" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium">
@@ -2525,8 +2564,47 @@ class RecipeManager {
         const backBtn = document.querySelector('#back-to-recipes');
         const cancelBtn = document.querySelector('#cancel-fullpage-form');
 
-        // Back/Cancel handlers
+        // Track form changes
+        let hasUnsavedChanges = false;
+        const originalFormData = new FormData(form);
+        
+        // Monitor form changes
+        const trackChanges = () => {
+            const currentFormData = new FormData(form);
+            hasUnsavedChanges = false;
+            
+            // Compare form data
+            for (let [key, value] of currentFormData.entries()) {
+                if (originalFormData.get(key) !== value) {
+                    hasUnsavedChanges = true;
+                    break;
+                }
+            }
+            
+            // Also check if original had fields that current doesn't
+            if (!hasUnsavedChanges) {
+                for (let [key, value] of originalFormData.entries()) {
+                    if (currentFormData.get(key) !== value) {
+                        hasUnsavedChanges = true;
+                        break;
+                    }
+                }
+            }
+        };
+
+        // Attach change listeners to form inputs
+        form.addEventListener('input', trackChanges);
+        form.addEventListener('change', trackChanges);
+
+        // Back/Cancel handlers with confirmation
         const goBack = () => {
+            if (hasUnsavedChanges) {
+                const confirmed = confirm('You have unsaved changes. Are you sure you want to cancel?');
+                if (!confirmed) {
+                    return; // Don't go back if user cancels
+                }
+            }
+            
             if (this.previousView) {
                 this.container.innerHTML = this.previousView.container;
                 window.scrollTo(0, this.previousView.scrollPosition || 0);
