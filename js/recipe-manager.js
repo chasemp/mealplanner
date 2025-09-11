@@ -3100,13 +3100,17 @@ class RecipeManager {
         // This ensures the dropdown only shows labels that exist in the current search results
         const availableLabels = this.getFilteredLabels().filter(label => !this.selectedLabels.includes(label));
         
+        let filteredLabels;
         if (!this.labelSearchTerm) {
-            return availableLabels;
+            filteredLabels = availableLabels;
+        } else {
+            filteredLabels = availableLabels.filter(label => 
+                label.toLowerCase().includes(this.labelSearchTerm.toLowerCase())
+            );
         }
         
-        return availableLabels.filter(label => 
-            label.toLowerCase().includes(this.labelSearchTerm.toLowerCase())
-        );
+        // Sort labels alphabetically (case-insensitive)
+        return filteredLabels.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
     }
 
     // Update dropdown content based on current search
