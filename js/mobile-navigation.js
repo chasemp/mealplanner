@@ -179,6 +179,9 @@ class MobileNavigation {
         this.currentTab = tabName;
         this.updateActiveTab(tabName);
         
+        // Add haptic feedback AFTER successful navigation to avoid Chrome blocking
+        this.addHapticFeedback();
+        
         // Trigger the main app's tab switching
         if (window.app && typeof window.app.switchTab === 'function') {
             window.app.switchTab(tabName);
@@ -299,7 +302,7 @@ class MobileNavigation {
             tab.addEventListener('touchstart', () => {
                 tab.style.transform = 'scale(0.95)';
                 tab.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
-                this.addHapticFeedback();
+                // Note: Haptic feedback moved to successful navigation to avoid Chrome blocking
             });
 
             tab.addEventListener('touchend', () => {
