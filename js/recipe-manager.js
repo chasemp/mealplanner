@@ -1445,9 +1445,14 @@ class RecipeManager {
         // Create new ingredient button
         createIngredientBtn?.addEventListener('click', () => {
             console.log('Create new ingredient clicked');
-            // Open the items manager form
+            // Open the items manager form with callback to add to recipe
             if (window.itemsManager) {
-                window.itemsManager.showIngredientForm();
+                const onSaveCallback = (savedIngredient) => {
+                    console.log('New ingredient saved, adding to recipe:', savedIngredient);
+                    // Add the new ingredient to the recipe form
+                    this.addIngredientToRecipeForm(savedIngredient, ingredientsContainer);
+                };
+                window.itemsManager.showIngredientForm(null, onSaveCallback);
             } else {
                 console.warn('ItemsManager not available');
             }
@@ -2627,13 +2632,49 @@ class RecipeManager {
         });
     }
 
+    addIngredientToRecipeForm(savedIngredient, ingredientsContainer) {
+        console.log('Adding ingredient to recipe form:', savedIngredient);
+        
+        // Add the new ingredient to the ingredients list (for the select dropdown)
+        if (!this.ingredients.find(ing => ing.id === savedIngredient.id)) {
+            this.ingredients.push(savedIngredient);
+        }
+        
+        // Create a new ingredient row with the saved ingredient pre-selected
+        const currentRows = ingredientsContainer.querySelectorAll('.ingredient-row').length;
+        const newIngredientRow = {
+            ingredient_id: savedIngredient.id,
+            name: savedIngredient.name,
+            quantity: '1', // Default quantity
+            unit: savedIngredient.default_unit || 'pieces',
+            notes: ''
+        };
+        
+        const newRowHtml = this.renderSingleIngredientRow(newIngredientRow, currentRows, true);
+        ingredientsContainer.insertAdjacentHTML('beforeend', newRowHtml);
+        
+        // Attach listeners to the new row
+        const newRow = ingredientsContainer.lastElementChild;
+        this.attachIngredientRowListeners(newRow);
+        
+        // Focus on the quantity input for easy editing
+        const quantityInput = newRow.querySelector('.ingredient-quantity');
+        if (quantityInput) {
+            quantityInput.focus();
+            quantityInput.select();
+        }
+    }
+
     attachFullPageIngredientListeners() {
         const addIngredientBtn = document.querySelector('#add-ingredient-row');
         const createIngredientBtn = document.querySelector('#create-new-ingredient');
         const ingredientsContainer = document.querySelector('#ingredients-container');
 
+        console.log('Attaching ingredient listeners:', { addIngredientBtn, createIngredientBtn, ingredientsContainer });
+
         // Add ingredient row
         addIngredientBtn?.addEventListener('click', () => {
+            console.log('Add ingredient button clicked');
             const currentRows = ingredientsContainer.querySelectorAll('.ingredient-row').length;
             const newRowHtml = this.renderSingleIngredientRow({ ingredient_id: '', name: '', quantity: '', unit: '', notes: '' }, currentRows, true);
             
@@ -2646,9 +2687,14 @@ class RecipeManager {
         // Create new ingredient button
         createIngredientBtn?.addEventListener('click', () => {
             console.log('Create new ingredient clicked');
-            // Open the items manager form
+            // Open the items manager form with callback to add to recipe
             if (window.itemsManager) {
-                window.itemsManager.showIngredientForm();
+                const onSaveCallback = (savedIngredient) => {
+                    console.log('New ingredient saved, adding to recipe:', savedIngredient);
+                    // Add the new ingredient to the recipe form
+                    this.addIngredientToRecipeForm(savedIngredient, ingredientsContainer);
+                };
+                window.itemsManager.showIngredientForm(null, onSaveCallback);
             } else {
                 console.warn('ItemsManager not available');
             }

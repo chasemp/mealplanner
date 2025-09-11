@@ -478,11 +478,11 @@ class ItemsManager {
         });
     }
 
-    showIngredientForm(ingredient = null) {
+    showIngredientForm(ingredient = null, onSaveCallback = null) {
         console.log('Opening ingredient form...', ingredient ? 'Edit mode' : 'Add mode');
         
         // Use full-page form for better mobile experience
-        this.showFullPageIngredientForm(ingredient);
+        this.showFullPageIngredientForm(ingredient, onSaveCallback);
         return;
         
         const isEdit = ingredient !== null;
@@ -649,14 +649,15 @@ class ItemsManager {
         }, 100);
     }
 
-    showFullPageIngredientForm(ingredient = null) {
+    showFullPageIngredientForm(ingredient = null, onSaveCallback = null) {
         const isEdit = ingredient !== null;
         
-        // Store previous view for navigation
+        // Store previous view for navigation and callback
         this.previousView = {
             container: this.container.innerHTML,
             scrollPosition: window.scrollY
         };
+        this.onSaveCallback = onSaveCallback;
         
         // Generate full-page form HTML
         this.container.innerHTML = this.generateFullPageIngredientFormHTML(ingredient);
@@ -891,21 +892,41 @@ class ItemsManager {
                 }
             };
 
+            let savedIngredient;
             if (existingIngredient) {
                 // Update existing ingredient
                 ingredientData.id = existingIngredient.id;
-                await this.updateIngredient(ingredientData);
+                const index = this.ingredients.findIndex(ing => ing.id === existingIngredient.id);
+                if (index !== -1) {
+                    this.ingredients[index] = { ...this.ingredients[index], ...ingredientData };
+                    savedIngredient = this.ingredients[index];
+                }
             } else {
                 // Add new ingredient
-                await this.addIngredient(ingredientData);
+                ingredientData.id = Math.max(0, ...this.ingredients.map(ing => ing.id)) + 1;
+                ingredientData.recipe_count = 0;
+                ingredientData.avg_quantity = 0;
+                this.ingredients.push(ingredientData);
+                savedIngredient = ingredientData;
             }
 
-            // Go back to items list
+            // Save to persistent storage
+            this.saveIngredients();
+
+            // Call the callback if provided (e.g., to add to recipe)
+            if (this.onSaveCallback && savedIngredient) {
+                this.onSaveCallback(savedIngredient);
+            }
+
+            // Go back to previous view
             if (this.previousView) {
                 this.container.innerHTML = this.previousView.container;
                 window.scrollTo(0, this.previousView.scrollPosition || 0);
                 this.attachEventListeners();
             }
+            
+            // Clear callback
+            this.onSaveCallback = null;
         } catch (error) {
             console.error('Error saving ingredient:', error);
             alert('Error saving ingredient. Please try again.');
