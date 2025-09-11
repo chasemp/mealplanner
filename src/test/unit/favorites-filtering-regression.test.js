@@ -91,6 +91,25 @@ class MockRecipeManager {
         return filtered;
     }
 
+    getFilteredLabels() {
+        // Get labels from currently filtered recipes only
+        const filteredRecipes = this.getFilteredRecipes();
+        const labels = new Set();
+        
+        filteredRecipes.forEach(recipe => {
+            if (recipe.labels && Array.isArray(recipe.labels)) {
+                recipe.labels.forEach(label => {
+                    const labelName = typeof label === 'string' ? label : label.name;
+                    if (labelName) {
+                        labels.add(labelName);
+                    }
+                });
+            }
+        });
+        
+        return Array.from(labels);
+    }
+
     renderRecipeCards() {
         const filteredRecipes = this.getFilteredRecipes();
         return filteredRecipes.map(recipe => `
@@ -354,6 +373,52 @@ describe('Favorites Filtering Regression Tests', () => {
             expect(() => {
                 recipeManager.updateInfoBar(mockInfoBar);
             }).not.toThrow();
+        });
+
+        it('should update label count to reflect only filtered recipes', () => {
+            // This is a regression test for the bug where label count showed
+            // all labels in system (44) instead of labels from filtered recipes
+            
+            // Setup: Create recipes with different label sets
+            recipeManager.recipes = [
+                { id: 1, title: 'Bacon', favorite: true, labels: [
+                    { name: 'breakfast', type: 'meal_type' },
+                    { name: 'protein', type: 'ingredient_type' }
+                ]},
+                { id: 2, title: 'Caesar Salad', favorite: true, labels: [
+                    { name: 'lunch', type: 'meal_type' },
+                    { name: 'healthy', type: 'default' }
+                ]},
+                { id: 3, title: 'Pasta', favorite: false, labels: [
+                    { name: 'dinner', type: 'meal_type' },
+                    { name: 'carbs', type: 'ingredient_type' },
+                    { name: 'italian', type: 'default' }
+                ]},
+                { id: 4, title: 'Pizza', favorite: false, labels: [
+                    { name: 'dinner', type: 'meal_type' },
+                    { name: 'cheese', type: 'ingredient_type' }
+                ]}
+            ];
+
+            // Test 1: All recipes should show all unique labels
+            recipeManager.showFavoritesOnly = false;
+            const allLabels = recipeManager.getFilteredLabels();
+            // Should have: breakfast, protein, lunch, healthy, dinner, carbs, italian, cheese = 8 labels
+            expect(allLabels.length).toBe(8);
+
+            // Test 2: Favorites only should show only labels from favorite recipes
+            recipeManager.showFavoritesOnly = true;
+            const favoritesLabels = recipeManager.getFilteredLabels();
+            // Should have: breakfast, protein, lunch, healthy = 4 labels (only from Bacon + Caesar Salad)
+            expect(favoritesLabels.length).toBe(4);
+            expect(favoritesLabels).toContain('breakfast');
+            expect(favoritesLabels).toContain('protein');
+            expect(favoritesLabels).toContain('lunch');
+            expect(favoritesLabels).toContain('healthy');
+            expect(favoritesLabels).not.toContain('dinner');
+            expect(favoritesLabels).not.toContain('carbs');
+            expect(favoritesLabels).not.toContain('italian');
+            expect(favoritesLabels).not.toContain('cheese');
         });
 
         it('should maintain button tooltip accuracy', () => {
