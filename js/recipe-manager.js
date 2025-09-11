@@ -1130,7 +1130,7 @@ class RecipeManager {
                         <label for="recipe-form-labels" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Labels</label>
                         <!-- Multi-select label input with typeahead and chips -->
                         <div class="relative">
-                            <div id="recipe-form-labels-container" class="w-full min-h-[42px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus-within:ring-2 focus-within:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white cursor-text flex flex-wrap gap-1 items-center">
+                            <div id="recipe-form-labels-container" class="w-full min-h-[42px] max-h-[80px] overflow-y-auto px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus-within:ring-2 focus-within:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white cursor-text flex flex-wrap gap-1 items-center">
                                 ${isEdit && recipe.labels ? recipe.labels.map(label => {
                                     const labelType = this.inferLabelType(label);
                                     const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
@@ -1156,7 +1156,7 @@ class RecipeManager {
                                     autocomplete="off"
                                 />
                             </div>
-                            <div id="recipe-form-labels-dropdown" class="absolute z-40 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg hidden max-h-48 overflow-y-auto">
+                            <div id="recipe-form-labels-dropdown" class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg hidden max-h-32 overflow-y-auto">
                                 <!-- Dropdown options will be populated by JavaScript -->
                             </div>
                         </div>
@@ -1495,7 +1495,8 @@ class RecipeManager {
 
     updateFormLabelDropdown() {
         const dropdown = document.querySelector('#recipe-form-labels-dropdown');
-        if (!dropdown) return;
+        const container = document.querySelector('#recipe-form-labels-container');
+        if (!dropdown || !container) return;
 
         const availableLabels = this.getAllLabels().filter(label => 
             !this.formSelectedLabels.includes(label) &&
@@ -1505,6 +1506,26 @@ class RecipeManager {
         if (availableLabels.length === 0 || !this.formLabelSearchTerm) {
             dropdown.classList.add('hidden');
             return;
+        }
+
+        // Check if dropdown would go off the bottom of the viewport
+        const containerRect = container.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const dropdownHeight = 128; // max-h-32 = 128px
+        const spaceBelow = viewportHeight - containerRect.bottom;
+        const spaceAbove = containerRect.top;
+
+        // Position dropdown above if not enough space below
+        if (spaceBelow < dropdownHeight && spaceAbove > dropdownHeight) {
+            dropdown.style.top = 'auto';
+            dropdown.style.bottom = '100%';
+            dropdown.style.marginBottom = '4px';
+            dropdown.style.marginTop = '0';
+        } else {
+            dropdown.style.top = '100%';
+            dropdown.style.bottom = 'auto';
+            dropdown.style.marginTop = '4px';
+            dropdown.style.marginBottom = '0';
         }
 
         dropdown.classList.remove('hidden');
