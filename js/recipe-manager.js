@@ -252,7 +252,7 @@ class RecipeManager {
         // Update only the recipe cards, info bar, and empty state without re-rendering entire component
         const recipeGrid = this.container.querySelector('#recipes-grid');
         const emptyState = this.container.querySelector('#empty-state');
-        const infoBar = this.container.querySelector('.bg-gray-50.dark\\:bg-gray-700');
+        const infoBar = this.container.querySelector('.bg-gray-50');
         
         // Try alternative selectors if the first one doesn't work
         if (!infoBar) {
@@ -980,6 +980,7 @@ class RecipeManager {
                 this.sortAscending = true; // Reset sort direction
                 this.showFavoritesOnly = false;
                 this.render();
+                this.attachEventListeners(); // Reattach event listeners after render
                 this.updateFavoritesButton(); // Ensure favorites button maintains correct state after render
             };
             
