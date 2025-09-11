@@ -1009,6 +1009,9 @@ class RecipeManager {
         console.log('Opening recipe form...', recipe ? 'Edit mode' : 'Add mode');
         
         const isEdit = recipe !== null;
+        
+        // Initialize form labels
+        this.initFormLabels(recipe);
         const modalId = 'recipe-form-modal';
         
         // Remove existing modal if present
@@ -1124,39 +1127,37 @@ class RecipeManager {
                     
                     <!-- Labels Section -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Labels
-                        </label>
-                        <div class="space-y-3">
-                            <!-- Label Input -->
-                            <div class="flex gap-2">
-                                <input type="text" id="recipe-tags" name="labels"
-                                       class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm sm:text-base"
-                                       placeholder="Add labels (e.g., healthy, quick, vegetarian)"
-                                       value="${isEdit && recipe.labels ? recipe.labels.join(', ') : ''}"
-                                <button type="button" id="add-label-btn" class="px-2 sm:px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs sm:text-sm">
-                                    Add
-                                </button>
-                            </div>
-                            
-                            <!-- Popular Labels -->
-                            <div>
-                                <div class="text-xs text-gray-500 mb-2">Popular labels:</div>
-                                <div class="flex flex-wrap gap-1">
-                                    ${this.getAllLabels().slice(0, 12).map(label => `
-                                        <button type="button" class="popular-label-btn px-2 py-1 text-xs bg-gray-100 hover:bg-blue-100 text-gray-700 rounded-full border" data-label="${label}">
-                                            ${label}
+                        <label for="recipe-form-labels" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Labels</label>
+                        <!-- Multi-select label input with typeahead and chips -->
+                        <div class="relative">
+                            <div id="recipe-form-labels-container" class="w-full min-h-[42px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus-within:ring-2 focus-within:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white cursor-text flex flex-wrap gap-1 items-center">
+                                ${isEdit && recipe.labels ? recipe.labels.map(label => {
+                                    const labelType = this.inferLabelType(label);
+                                    const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
+                                    const colors = window.labelTypes ? window.labelTypes.getColorClasses(labelType) : 
+                                        'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+                                    const buttonColors = this.getLabelButtonColors(labelType);
+                                    return `
+                                    <span class="inline-flex items-center px-2 py-1 text-xs font-bold ${colors} rounded-full">
+                                        ${icon}${typeof label === 'string' ? label : label.name || label}
+                                        <button type="button" class="ml-1 ${buttonColors}" onclick="window.recipeManager.removeFormLabel('${typeof label === 'string' ? label : label.name || label}')">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                            </svg>
                                         </button>
-                                    `).join('')}
-                                </div>
+                                    </span>
+                                    `;
+                                }).join('') : ''}
+                                <input 
+                                    type="text" 
+                                    id="recipe-form-labels-input" 
+                                    class="flex-1 min-w-[120px] bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-none outline-none text-sm placeholder-gray-500 dark:placeholder-gray-400" 
+                                    placeholder="${isEdit && recipe.labels && recipe.labels.length > 0 ? 'Type to add more...' : 'Type to search labels...'}"
+                                    autocomplete="off"
+                                />
                             </div>
-                            
-                            <!-- Selected Labels Display -->
-                            <div id="selected-labels-display" class="min-h-[2rem] p-2 border border-gray-200 rounded-md bg-gray-50">
-                                <div class="text-xs text-gray-500 mb-1">Selected labels:</div>
-                                <div id="selected-labels-container" class="flex flex-wrap gap-1">
-                                    <!-- Selected labels will be displayed here -->
-                                </div>
+                            <div id="recipe-form-labels-dropdown" class="absolute z-40 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg hidden max-h-48 overflow-y-auto">
+                                <!-- Dropdown options will be populated by JavaScript -->
                             </div>
                         </div>
                     </div>
@@ -1390,6 +1391,9 @@ class RecipeManager {
             this.attachIngredientRowListeners(row);
         });
 
+        // Form label input and dropdown
+        this.attachFormLabelListeners(modal);
+
         // Form submission
         form?.addEventListener('submit', (e) => {
             console.log('🔥 Form submit event triggered', { form, recipe });
@@ -1419,6 +1423,112 @@ class RecipeManager {
         });
     }
 
+    attachFormLabelListeners(modal) {
+        const labelInput = modal.querySelector('#recipe-form-labels-input');
+        const labelContainer = modal.querySelector('#recipe-form-labels-container');
+        const labelDropdown = modal.querySelector('#recipe-form-labels-dropdown');
+
+        if (!labelInput || !labelContainer || !labelDropdown) return;
+
+        // Input event for typeahead
+        labelInput.addEventListener('input', (e) => {
+            this.formLabelSearchTerm = e.target.value;
+            this.updateFormLabelDropdown();
+        });
+
+        // Focus/blur events for dropdown
+        labelInput.addEventListener('focus', () => {
+            this.updateFormLabelDropdown();
+        });
+
+        // Click on container to focus input
+        labelContainer.addEventListener('click', (e) => {
+            if (e.target === labelContainer) {
+                labelInput.focus();
+            }
+        });
+
+        // Keyboard navigation
+        labelInput.addEventListener('keydown', (e) => {
+            const dropdown = modal.querySelector('#recipe-form-labels-dropdown');
+            const highlighted = dropdown.querySelector('.bg-gray-50, .dark\\:bg-gray-700');
+            
+            switch (e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    const firstOption = dropdown.querySelector('[data-label]');
+                    if (firstOption) {
+                        // Remove existing highlight
+                        dropdown.querySelectorAll('[data-label]').forEach(opt => {
+                            opt.classList.remove('bg-gray-50', 'dark:bg-gray-700');
+                        });
+                        // Add highlight to first option
+                        firstOption.classList.add('bg-gray-50', 'dark:bg-gray-700');
+                    }
+                    break;
+                    
+                case 'Enter':
+                    e.preventDefault();
+                    if (highlighted) {
+                        const label = highlighted.getAttribute('data-label');
+                        if (label) {
+                            this.addFormLabel(label);
+                            labelInput.focus();
+                        }
+                    }
+                    break;
+                    
+                case 'Escape':
+                    labelDropdown.classList.add('hidden');
+                    labelInput.blur();
+                    break;
+            }
+        });
+
+        // Hide dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!labelContainer.contains(e.target)) {
+                labelDropdown.classList.add('hidden');
+            }
+        });
+    }
+
+    updateFormLabelDropdown() {
+        const dropdown = document.querySelector('#recipe-form-labels-dropdown');
+        if (!dropdown) return;
+
+        const availableLabels = this.getAllLabels().filter(label => 
+            !this.formSelectedLabels.includes(label) &&
+            (!this.formLabelSearchTerm || label.toLowerCase().includes(this.formLabelSearchTerm.toLowerCase()))
+        );
+
+        if (availableLabels.length === 0 || !this.formLabelSearchTerm) {
+            dropdown.classList.add('hidden');
+            return;
+        }
+
+        dropdown.classList.remove('hidden');
+        dropdown.innerHTML = availableLabels.slice(0, 10).map((label, index) => {
+            const labelType = this.inferLabelType(label);
+            const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
+            const colorClasses = this.getLabelColorClasses(labelType);
+            
+            return `
+            <div class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm text-gray-900 dark:text-gray-100 ${index === 0 ? 'bg-gray-50 dark:bg-gray-700' : ''}" 
+                 data-label="${label}" 
+                 onclick="window.recipeManager.addFormLabel('${label}')">
+                <div class="flex items-center space-x-2">
+                    ${icon && labelType !== 'default' ? `<span class="flex-shrink-0">${icon}</span>` : ''}
+                    <span class="font-bold flex-1">${label}</span>
+                    <span class="inline-flex items-center px-2 py-1 ${colorClasses} rounded-full text-xs flex-shrink-0">
+                        ${labelType !== 'default' ? this.getShortLabelTypeName(labelType) : 'label'}
+                    </span>
+                </div>
+            </div>
+            `;
+        }).join('');
+    }
+
     async handleRecipeFormSubmit(form, existingRecipe) {
         try {
             // Collect form data
@@ -1430,7 +1540,7 @@ class RecipeManager {
                 prep_time: parseInt(formData.get('prep_time')) || 0,
                 cook_time: parseInt(formData.get('cook_time')) || 0,
                 instructions: formData.get('instructions').trim(),
-                tags: formData.get('tags').split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
+                labels: this.formSelectedLabels || []
             };
 
             // Validate required fields
@@ -2281,6 +2391,63 @@ class RecipeManager {
         this.labelSearchTerm = '';
         this.render();
         this.updateFavoritesButton(); // Ensure favorites button maintains correct state after render
+    }
+
+    // Form label management methods
+    initFormLabels(recipe = null) {
+        this.formSelectedLabels = recipe && recipe.labels ? 
+            recipe.labels.map(label => typeof label === 'string' ? label : label.name || label) : [];
+        this.formLabelSearchTerm = '';
+    }
+
+    addFormLabel(label) {
+        if (!this.formSelectedLabels.includes(label)) {
+            this.formSelectedLabels.push(label);
+            this.formLabelSearchTerm = '';
+            this.updateFormLabelsDisplay();
+        }
+    }
+
+    removeFormLabel(label) {
+        this.formSelectedLabels = this.formSelectedLabels.filter(l => l !== label);
+        this.updateFormLabelsDisplay();
+    }
+
+    updateFormLabelsDisplay() {
+        const container = document.querySelector('#recipe-form-labels-container');
+        const input = document.querySelector('#recipe-form-labels-input');
+        
+        if (!container || !input) return;
+
+        // Clear existing chips (keep the input)
+        const existingChips = container.querySelectorAll('span');
+        existingChips.forEach(chip => chip.remove());
+
+        // Add chips for selected labels
+        this.formSelectedLabels.forEach(label => {
+            const labelType = this.inferLabelType(label);
+            const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
+            const colors = window.labelTypes ? window.labelTypes.getColorClasses(labelType) : 
+                'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+            const buttonColors = this.getLabelButtonColors(labelType);
+            
+            const chip = document.createElement('span');
+            chip.className = `inline-flex items-center px-2 py-1 text-xs font-bold ${colors} rounded-full`;
+            chip.innerHTML = `
+                ${icon}${label}
+                <button type="button" class="ml-1 ${buttonColors}" onclick="window.recipeManager.removeFormLabel('${label}')">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            `;
+            
+            // Insert before the input
+            container.insertBefore(chip, input);
+        });
+
+        // Update placeholder
+        input.placeholder = this.formSelectedLabels.length > 0 ? 'Type to add more...' : 'Type to search labels...';
     }
 
     /**
