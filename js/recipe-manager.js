@@ -260,7 +260,13 @@ class RecipeManager {
         if (recipeGrid && emptyState) {
             console.log('🔄 About to call getFilteredRecipes from updateRecipeDisplay...');
             const filteredRecipes = this.getFilteredRecipes();
-            recipeGrid.innerHTML = this.renderRecipeCards();
+            console.log('🔄 About to update recipeGrid.innerHTML...');
+            console.log('🔄 recipeGrid element found:', !!recipeGrid, recipeGrid?.id);
+            const newHTML = this.renderRecipeCards();
+            console.log('🔄 Generated HTML length:', newHTML.length, 'characters');
+            console.log('🔄 Setting recipeGrid.innerHTML...');
+            recipeGrid.innerHTML = newHTML;
+            console.log('🔄 recipeGrid.innerHTML updated successfully');
             
             // Re-attach event listeners to the new recipe cards
             this.attachRecipeCardListeners();
