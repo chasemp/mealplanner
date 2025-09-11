@@ -772,49 +772,49 @@ class DemoDataGenerator {
             {
                 name: 'Sunday Dinner Combo',
                 description: 'Classic Sunday dinner with fried chicken and mashed potatoes',
-                labels: ['combo', 'sunday-dinner', 'comfort-food'],
+                labels: ['Recipe Combo', 'sunday-dinner', 'comfort-food'],
                 requiredRecipes: ['Fried Chicken', 'Mashed Potatoes']
             },
             {
                 name: 'Italian Night Combo',
                 description: 'Perfect Italian dinner with pasta and salad',
-                labels: ['combo', 'italian', 'complete'],
+                labels: ['Recipe Combo', 'italian', 'complete'],
                 requiredRecipes: ['Pasta', 'Salad']
             },
             {
                 name: 'Full American Breakfast Combo',
                 description: 'Complete American breakfast with pancakes and bacon',
-                labels: ['combo', 'american', 'hearty'],
+                labels: ['Recipe Combo', 'american', 'hearty'],
                 requiredRecipes: ['Pancakes', 'Bacon']
             },
             {
                 name: 'Grilled Salmon Dinner Combo',
                 description: 'Healthy grilled salmon with vegetables',
-                labels: ['combo', 'healthy', 'seafood'],
+                labels: ['Recipe Combo', 'healthy', 'seafood'],
                 requiredRecipes: ['Salmon', 'Vegetables']
             },
             {
                 name: 'Greek Feast Combo',
                 description: 'Mediterranean feast with multiple dishes',
-                labels: ['combo', 'greek', 'mediterranean'],
+                labels: ['Recipe Combo', 'greek', 'mediterranean'],
                 requiredRecipes: ['Salad', 'Bread']
             },
             {
                 name: 'Vegetarian Quinoa Feast Combo',
                 description: 'Healthy vegetarian meal with quinoa',
-                labels: ['combo', 'vegetarian', 'healthy'],
+                labels: ['Recipe Combo', 'vegetarian', 'healthy'],
                 requiredRecipes: ['Quinoa', 'Vegetables']
             },
             {
                 name: 'Weekend Brunch Combo',
                 description: 'Perfect weekend brunch combination',
-                labels: ['combo', 'brunch', 'weekend'],
+                labels: ['Recipe Combo', 'brunch', 'weekend'],
                 requiredRecipes: ['Hash Browns', 'Eggs']
             },
             {
                 name: 'Light Lunch Combo',
                 description: 'Light and fresh lunch combination',
-                labels: ['combo', 'light', 'fresh'],
+                labels: ['Recipe Combo', 'light', 'fresh'],
                 requiredRecipes: ['Salad', 'Bread']
             }
         ];
@@ -1470,6 +1470,7 @@ function parseArgs() {
         meals: 7,
         scheduledMeals: 7,
         validate: false,
+        test: false,
         help: false
     };
     
@@ -1493,6 +1494,9 @@ function parseArgs() {
             case '--validate':
                 options.validate = true;
                 break;
+            case '--test':
+                options.test = true;
+                break;
             case '--help':
                 options.help = true;
                 break;
@@ -1513,6 +1517,7 @@ Options:
   --recipes <count>     Number of recipes to generate (default: 26)
   --items <count>       Number of items to generate (default: 30)
   --validate            Validate generated data against schema
+  --test                Run test suite against generated data
   --help                Show this help
 
 Examples:
