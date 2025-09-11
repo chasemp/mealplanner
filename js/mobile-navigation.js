@@ -3,6 +3,7 @@ class MobileNavigation {
     constructor() {
         this.isMobile = this.detectMobile();
         this.currentTab = 'dinner';
+        this.userHasInteracted = false; // Track if user has interacted with page
         this.init();
     }
 
@@ -276,9 +277,17 @@ class MobileNavigation {
 
     // Add haptic feedback for mobile interactions (if supported)
     addHapticFeedback() {
-        if ('vibrate' in navigator) {
-            navigator.vibrate(10); // Short vibration for feedback
-        }
+        // Run haptic feedback asynchronously to avoid blocking navigation
+        setTimeout(() => {
+            if ('vibrate' in navigator) {
+                try {
+                    navigator.vibrate(10); // Short vibration for feedback
+                } catch (error) {
+                    // Silently ignore vibration errors (blocked by browser security)
+                    // This is expected on first interaction before user gesture
+                }
+            }
+        }, 0);
     }
 
     // Enhanced touch feedback
