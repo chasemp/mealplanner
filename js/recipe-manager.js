@@ -1362,115 +1362,12 @@ class RecipeManager {
     }
 
     attachRecipeFormListeners(modal, recipe) {
-        const form = modal.querySelector('#recipe-form');
-        const closeBtn = modal.querySelector('#close-recipe-form');
-        const cancelBtn = modal.querySelector('#cancel-recipe-form');
-        const addIngredientBtn = modal.querySelector('#add-ingredient-row');
-        const createIngredientBtn = modal.querySelector('#create-new-ingredient');
-        const ingredientsContainer = modal.querySelector('#ingredients-container');
-
-        // Track form changes
-        let hasUnsavedChanges = false;
-        const originalFormData = new FormData(form);
-        
-        // Monitor form changes
-        const trackChanges = () => {
-            const currentFormData = new FormData(form);
-            hasUnsavedChanges = false;
-            
-            // Compare form data
-            for (let [key, value] of currentFormData.entries()) {
-                if (originalFormData.get(key) !== value) {
-                    hasUnsavedChanges = true;
-                    break;
-                }
-            }
-            
-            // Also check if original had fields that current doesn't
-            if (!hasUnsavedChanges) {
-                for (let [key, value] of originalFormData.entries()) {
-                    if (currentFormData.get(key) !== value) {
-                        hasUnsavedChanges = true;
-                        break;
-                    }
-                }
-            }
-        };
-
-        // Attach change listeners to form inputs
-        form.addEventListener('input', trackChanges);
-        form.addEventListener('change', trackChanges);
-
-        // Close modal handlers with confirmation
-        const closeModal = () => {
-            if (hasUnsavedChanges) {
-                const confirmed = confirm('You have unsaved changes. Are you sure you want to cancel?');
-                if (!confirmed) {
-                    return; // Don't close if user cancels
-                }
-            }
-            
-            // If we were editing from mobile recipe view, return to that view
-            if (this.editingFromMobileView && this.editingRecipe) {
-                console.log('Returning to mobile recipe view after cancel');
-                modal.remove();
-                this.showMobileRecipePage(this.editingRecipe);
-                this.editingFromMobileView = false;
-                this.editingRecipe = null;
-            } else {
-                // Normal desktop modal close
-                modal.remove();
-            }
-        };
-
-        closeBtn?.addEventListener('click', closeModal);
-        cancelBtn?.addEventListener('click', closeModal);
-        
-        // Close on backdrop click
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeModal();
-        });
-
-        // Add ingredient row
-        addIngredientBtn?.addEventListener('click', () => {
-            const currentRows = ingredientsContainer.querySelectorAll('.ingredient-row').length;
-            const newRowHtml = this.renderSingleIngredientRow({ ingredient_id: '', name: '', quantity: '', unit: '', notes: '' }, currentRows, true);
-            
-            ingredientsContainer.insertAdjacentHTML('beforeend', newRowHtml);
-            
-            // Attach listeners to new row
-            this.attachIngredientRowListeners(ingredientsContainer.lastElementChild);
-        });
-
-        // Create new ingredient button
-        createIngredientBtn?.addEventListener('click', () => {
-            console.log('Create new ingredient clicked');
-            // Open the items manager form with callback to add to recipe
-            if (window.itemsManager) {
-                const onSaveCallback = (savedIngredient) => {
-                    console.log('New ingredient saved, adding to recipe:', savedIngredient);
-                    // Add the new ingredient to the recipe form
-                    this.addIngredientToRecipeForm(savedIngredient, ingredientsContainer);
-                };
-                window.itemsManager.showIngredientForm(null, onSaveCallback);
-            } else {
-                console.warn('ItemsManager not available');
-            }
-        });
-
-        // Attach listeners to existing ingredient rows
-        ingredientsContainer.querySelectorAll('.ingredient-row').forEach(row => {
-            this.attachIngredientRowListeners(row);
-        });
-
-        // Form label input and dropdown
-        this.attachFormLabelListeners(modal);
-
-        // Form submission
-        form?.addEventListener('submit', (e) => {
-            console.log('🔥 Form submit event triggered', { form, recipe });
-            e.preventDefault();
-            this.handleRecipeFormSubmit(form, recipe);
+        // Use shared form logic with modal specific selectors
+        this.attachSharedFormListeners(recipe, {
+            form: '#recipe-form',
+            closeBtn: '#close-recipe-form',
+            cancelBtn: '#cancel-recipe-form',
+            isFullPage: false
         });
     }
 
@@ -2560,10 +2457,16 @@ class RecipeManager {
         `;
     }
 
-    attachFullPageFormListeners(recipe) {
-        const form = document.querySelector('#fullpage-recipe-form');
-        const backBtn = document.querySelector('#back-to-recipes');
-        const cancelBtn = document.querySelector('#cancel-fullpage-form');
+    attachSharedFormListeners(recipe, config) {
+        const form = document.querySelector(config.form);
+        const backBtn = document.querySelector(config.backBtn);
+        const cancelBtn = document.querySelector(config.cancelBtn);
+        const closeBtn = config.closeBtn ? document.querySelector(config.closeBtn) : null;
+
+        if (!form) {
+            console.warn('Form not found:', config.form);
+            return;
+        }
 
         // Track form changes
         let hasUnsavedChanges = false;
@@ -2597,38 +2500,124 @@ class RecipeManager {
         form.addEventListener('input', trackChanges);
         form.addEventListener('change', trackChanges);
 
-        // Back/Cancel handlers with confirmation
-        const goBack = () => {
+        // Close/Cancel handlers with confirmation
+        const handleClose = () => {
             if (hasUnsavedChanges) {
                 const confirmed = confirm('You have unsaved changes. Are you sure you want to cancel?');
                 if (!confirmed) {
-                    return; // Don't go back if user cancels
+                    return; // Don't close if user cancels
                 }
             }
             
-            if (this.previousView) {
-                this.container.innerHTML = this.previousView.container;
-                window.scrollTo(0, this.previousView.scrollPosition || 0);
-                this.attachEventListeners(); // Re-attach main recipe list listeners
+            if (config.isFullPage) {
+                // Full-page form: restore previous view
+                if (this.previousView) {
+                    this.container.innerHTML = this.previousView.container;
+                    window.scrollTo(0, this.previousView.scrollPosition || 0);
+                    this.attachEventListeners(); // Re-attach main recipe list listeners
+                }
+            } else {
+                // Modal form: handle mobile vs desktop
+                if (this.editingFromMobileView && this.editingRecipe) {
+                    console.log('Returning to mobile recipe view after cancel');
+                    const modal = form.closest('.fixed');
+                    modal?.remove();
+                    this.showMobileRecipePage(this.editingRecipe);
+                    this.editingFromMobileView = false;
+                    this.editingRecipe = null;
+                } else {
+                    // Normal desktop modal close
+                    const modal = form.closest('.fixed');
+                    modal?.remove();
+                }
             }
         };
 
-        backBtn?.addEventListener('click', goBack);
-        cancelBtn?.addEventListener('click', goBack);
+        // Attach close handlers
+        backBtn?.addEventListener('click', handleClose);
+        cancelBtn?.addEventListener('click', handleClose);
+        closeBtn?.addEventListener('click', handleClose);
 
-        // Ingredient/Items listeners
-        this.attachFullPageIngredientListeners();
+        // Close on backdrop click for modals
+        if (!config.isFullPage) {
+            const modal = form.closest('.fixed');
+            modal?.addEventListener('click', (e) => {
+                if (e.target === modal) handleClose();
+            });
+        }
+
+        // Shared ingredient/items listeners
+        this.attachSharedIngredientListeners(config);
 
         // Instruction step listeners
         this.attachInstructionStepListeners();
 
-        // Form label listeners - reuse existing methods but update selectors
-        this.attachFullPageLabelListeners();
+        // Form label listeners
+        if (config.isFullPage) {
+            this.attachFullPageLabelListeners();
+        } else {
+            this.attachFormLabelListeners(form.closest('.fixed'));
+        }
 
         // Form submission
-        form?.addEventListener('submit', (e) => {
+        form.addEventListener('submit', (e) => {
             e.preventDefault();
-            this.handleFullPageFormSubmit(form, recipe);
+            if (config.isFullPage) {
+                this.handleFullPageFormSubmit(form, recipe);
+            } else {
+                this.handleRecipeFormSubmit(form, recipe);
+            }
+        });
+    }
+
+    attachSharedIngredientListeners(config) {
+        const addIngredientBtn = document.querySelector('#add-ingredient-row');
+        const createIngredientBtn = document.querySelector('#create-new-ingredient');
+        const ingredientsContainer = document.querySelector('#ingredients-container');
+
+        console.log('Attaching shared ingredient listeners:', { addIngredientBtn, createIngredientBtn, ingredientsContainer });
+
+        // Add ingredient row
+        addIngredientBtn?.addEventListener('click', () => {
+            console.log('Add ingredient button clicked');
+            const currentRows = ingredientsContainer.querySelectorAll('.ingredient-row').length;
+            const newRowHtml = this.renderSingleIngredientRow({ ingredient_id: '', name: '', quantity: '', unit: '', notes: '' }, currentRows, true);
+            
+            ingredientsContainer.insertAdjacentHTML('beforeend', newRowHtml);
+            
+            // Attach listeners to new row
+            this.attachIngredientRowListeners(ingredientsContainer.lastElementChild);
+        });
+
+        // Create new ingredient button
+        createIngredientBtn?.addEventListener('click', () => {
+            console.log('Create new ingredient clicked');
+            // Open the items manager form with callback to add to recipe
+            if (window.itemsManager) {
+                const onSaveCallback = (savedIngredient) => {
+                    console.log('New ingredient saved, adding to recipe:', savedIngredient);
+                    // Add the new ingredient to the recipe form
+                    this.addIngredientToRecipeForm(savedIngredient, ingredientsContainer);
+                };
+                window.itemsManager.showIngredientForm(null, onSaveCallback);
+            } else {
+                console.warn('ItemsManager not available');
+            }
+        });
+
+        // Attach listeners to existing ingredient rows
+        ingredientsContainer?.querySelectorAll('.ingredient-row').forEach(row => {
+            this.attachIngredientRowListeners(row);
+        });
+    }
+
+    attachFullPageFormListeners(recipe) {
+        // Use shared form logic with full-page specific selectors
+        this.attachSharedFormListeners(recipe, {
+            form: '#fullpage-recipe-form',
+            backBtn: '#back-to-recipes',
+            cancelBtn: '#cancel-fullpage-form',
+            isFullPage: true
         });
     }
 
@@ -2665,46 +2654,6 @@ class RecipeManager {
         }
     }
 
-    attachFullPageIngredientListeners() {
-        const addIngredientBtn = document.querySelector('#add-ingredient-row');
-        const createIngredientBtn = document.querySelector('#create-new-ingredient');
-        const ingredientsContainer = document.querySelector('#ingredients-container');
-
-        console.log('Attaching ingredient listeners:', { addIngredientBtn, createIngredientBtn, ingredientsContainer });
-
-        // Add ingredient row
-        addIngredientBtn?.addEventListener('click', () => {
-            console.log('Add ingredient button clicked');
-            const currentRows = ingredientsContainer.querySelectorAll('.ingredient-row').length;
-            const newRowHtml = this.renderSingleIngredientRow({ ingredient_id: '', name: '', quantity: '', unit: '', notes: '' }, currentRows, true);
-            
-            ingredientsContainer.insertAdjacentHTML('beforeend', newRowHtml);
-            
-            // Attach listeners to new row
-            this.attachIngredientRowListeners(ingredientsContainer.lastElementChild);
-        });
-
-        // Create new ingredient button
-        createIngredientBtn?.addEventListener('click', () => {
-            console.log('Create new ingredient clicked');
-            // Open the items manager form with callback to add to recipe
-            if (window.itemsManager) {
-                const onSaveCallback = (savedIngredient) => {
-                    console.log('New ingredient saved, adding to recipe:', savedIngredient);
-                    // Add the new ingredient to the recipe form
-                    this.addIngredientToRecipeForm(savedIngredient, ingredientsContainer);
-                };
-                window.itemsManager.showIngredientForm(null, onSaveCallback);
-            } else {
-                console.warn('ItemsManager not available');
-            }
-        });
-
-        // Attach listeners to existing ingredient rows
-        ingredientsContainer?.querySelectorAll('.ingredient-row').forEach(row => {
-            this.attachIngredientRowListeners(row);
-        });
-    }
 
     attachFullPageLabelListeners() {
         const labelInput = document.querySelector('#fullpage-recipe-labels-input');
