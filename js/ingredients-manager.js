@@ -813,10 +813,16 @@ class ItemsManager {
         `;
     }
 
-    attachFullPageIngredientFormListeners(ingredient) {
-        const form = document.querySelector('#fullpage-ingredient-form');
-        const backBtn = document.querySelector('#back-to-items');
-        const cancelBtn = document.querySelector('#cancel-fullpage-ingredient-form');
+    attachSharedIngredientFormListeners(ingredient, config) {
+        const form = document.querySelector(config.form);
+        const backBtn = document.querySelector(config.backBtn);
+        const cancelBtn = document.querySelector(config.cancelBtn);
+        const closeBtn = config.closeBtn ? document.querySelector(config.closeBtn) : null;
+
+        if (!form) {
+            console.warn('Ingredient form not found:', config.form);
+            return;
+        }
 
         // Track form changes
         let hasUnsavedChanges = false;
@@ -850,29 +856,63 @@ class ItemsManager {
         form.addEventListener('input', trackChanges);
         form.addEventListener('change', trackChanges);
 
-        // Back/Cancel handlers with confirmation
-        const goBack = () => {
+        // Close/Cancel handlers with confirmation
+        const handleClose = () => {
             if (hasUnsavedChanges) {
                 const confirmed = confirm('You have unsaved changes. Are you sure you want to cancel?');
                 if (!confirmed) {
-                    return; // Don't go back if user cancels
+                    return; // Don't close if user cancels
                 }
             }
             
-            if (this.previousView) {
-                this.container.innerHTML = this.previousView.container;
-                window.scrollTo(0, this.previousView.scrollPosition || 0);
-                this.attachEventListeners(); // Re-attach main items list listeners
+            if (config.isFullPage) {
+                // Full-page form: restore previous view
+                if (this.previousView) {
+                    this.container.innerHTML = this.previousView.container;
+                    window.scrollTo(0, this.previousView.scrollPosition || 0);
+                    this.attachEventListeners();
+                }
+            } else {
+                // Modal form: remove modal
+                const modal = form.closest('.fixed');
+                modal?.remove();
             }
+            
+            // Clear callback
+            this.onSaveCallback = null;
         };
 
-        backBtn?.addEventListener('click', goBack);
-        cancelBtn?.addEventListener('click', goBack);
+        // Attach close handlers
+        backBtn?.addEventListener('click', handleClose);
+        cancelBtn?.addEventListener('click', handleClose);
+        closeBtn?.addEventListener('click', handleClose);
+
+        // Close on backdrop click for modals
+        if (!config.isFullPage) {
+            const modal = form.closest('.fixed');
+            modal?.addEventListener('click', (e) => {
+                if (e.target === modal) handleClose();
+            });
+        }
 
         // Form submission
-        form?.addEventListener('submit', (e) => {
+        form.addEventListener('submit', (e) => {
             e.preventDefault();
-            this.handleFullPageIngredientFormSubmit(form, ingredient);
+            if (config.isFullPage) {
+                this.handleFullPageIngredientFormSubmit(form, ingredient);
+            } else {
+                this.handleIngredientFormSubmit(form, ingredient);
+            }
+        });
+    }
+
+    attachFullPageIngredientFormListeners(ingredient) {
+        // Use shared form logic with full-page specific selectors
+        this.attachSharedIngredientFormListeners(ingredient, {
+            form: '#fullpage-ingredient-form',
+            backBtn: '#back-to-items',
+            cancelBtn: '#cancel-fullpage-ingredient-form',
+            isFullPage: true
         });
     }
 
@@ -934,27 +974,12 @@ class ItemsManager {
     }
 
     attachIngredientFormListeners(modal, ingredient) {
-        const form = modal.querySelector('#ingredient-form');
-        const closeBtn = modal.querySelector('#close-ingredient-form');
-        const cancelBtn = modal.querySelector('#cancel-ingredient-form');
-
-        // Close modal handlers
-        const closeModal = () => {
-            modal.remove();
-        };
-
-        closeBtn?.addEventListener('click', closeModal);
-        cancelBtn?.addEventListener('click', closeModal);
-        
-        // Close on backdrop click
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeModal();
-        });
-
-        // Form submission
-        form?.addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.handleIngredientFormSubmit(form, ingredient);
+        // Use shared form logic with modal specific selectors
+        this.attachSharedIngredientFormListeners(ingredient, {
+            form: '#ingredient-form',
+            closeBtn: '#close-ingredient-form',
+            cancelBtn: '#cancel-ingredient-form',
+            isFullPage: false
         });
     }
 
