@@ -11,6 +11,10 @@ class RecipeManager {
         this.sortBy = 'name';
         this.sortAscending = true; // New property for sort direction
         this.showFavoritesOnly = false;
+        
+        // Double press clear filters state
+        this.clearFiltersFirstPressTime = null;
+        this.clearFiltersTimeout = null;
         this.init();
     }
 
@@ -157,40 +161,22 @@ class RecipeManager {
                         </div>
                     </div>
                     
-                    <!-- Row 3: Sort Controls -->
-                    <div class="mb-4">
-                        <label for="recipe-sort" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort</label>
-                        <!-- Sort dropdown + Direction button in flex layout -->
-                        <div class="flex gap-2">
-                            <select id="recipe-sort" class="w-full md:w-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
-                                <option value="name" ${this.sortBy === 'name' ? 'selected' : ''}>Name</option>
-                                <option value="date" ${this.sortBy === 'date' ? 'selected' : ''}>Created</option>
-                                <option value="prep_time" ${this.sortBy === 'prep_time' ? 'selected' : ''}>Total Time</option>
-                                <option value="serving_count" ${this.sortBy === 'serving_count' ? 'selected' : ''}>Servings</option>
-                                <option value="label_type" ${this.sortBy === 'label_type' ? 'selected' : ''}>Label Type</option>
-                            </select>
-                            <button id="sort-direction-btn" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white transition-colors" title="${this.sortAscending ? 'Sort Ascending' : 'Sort Descending'}">
-                                ${this.sortAscending ? 
-                                    '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>' : 
-                                    '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>'
-                                }
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Row 4: Favorites and Clear Filters Buttons -->
-                    <div class="flex gap-3">
-                        <button id="favorites-filter-btn" class="px-4 py-2 rounded-md text-sm font-medium transition-colors ${this.showFavoritesOnly ? 'bg-yellow-400 hover:bg-yellow-500 text-yellow-900 dark:bg-yellow-500 dark:hover:bg-yellow-400 dark:text-yellow-900 font-bold border-2 border-yellow-600 dark:border-yellow-400' : 'bg-yellow-100 hover:bg-yellow-200 text-yellow-800 dark:bg-yellow-900 dark:hover:bg-yellow-800 dark:text-yellow-200 border-2 border-transparent'}" title="${this.showFavoritesOnly ? 'Show all recipes' : 'Show only favorites'}">
+                    <!-- Row 3: Favorites and Clear Filters -->
+                    <div class="flex items-center justify-between gap-3">
+                        <!-- Left side: Favorites -->
+                        <button id="favorites-filter-btn" class="px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${this.showFavoritesOnly ? 'bg-yellow-100 hover:bg-yellow-200 text-yellow-800 dark:bg-yellow-800 dark:hover:bg-yellow-700 dark:text-yellow-100 font-bold border-2 border-yellow-500 shadow-lg shadow-yellow-400/50 dark:border-yellow-400 dark:shadow-yellow-500/50' : 'bg-yellow-100 hover:bg-yellow-200 text-yellow-800 dark:bg-yellow-800 dark:hover:bg-yellow-700 dark:text-yellow-100 border-2 border-transparent'}" title="${this.showFavoritesOnly ? 'Show all recipes' : 'Show only favorites'}">
                             ${this.showFavoritesOnly ? 
                                 '<svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>' :
                                 '<svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>'
                             }
-                            <span class="${this.showFavoritesOnly ? 'font-bold italic' : ''}">${this.showFavoritesOnly ? 'Show All' : 'Favorites'}</span>
+                            <span class="${this.showFavoritesOnly ? 'font-bold' : ''}">${this.showFavoritesOnly ? 'Favorites Only' : 'Favorites'}</span>
                         </button>
+                        
+                        <!-- Right side: Clear Filters Button -->
                         <button id="clear-recipe-filters-btn" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md text-sm font-medium transition-colors">
-                                Clear Filters
-                            </button>
-                        </div>
+                            Clear Filters
+                        </button>
+                    </div>
                         
                     <!-- Recipe Results Info Bar (enhanced with more emphasis) -->
                     <div class="border-t border-gray-200 dark:border-gray-600 pt-4 mt-4">
@@ -223,6 +209,24 @@ class RecipeManager {
                             </div>
                         </div>
                         </div>
+                        
+                        <!-- Row 4: Sort Controls (Full Width on Mobile) -->
+                        <div class="flex items-center gap-3 w-full mt-3">
+                            <select id="recipe-sort" class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm">
+                                <option value="name" ${this.sortBy === 'name' ? 'selected' : ''}>Name</option>
+                                <option value="date" ${this.sortBy === 'date' ? 'selected' : ''}>Created</option>
+                                <option value="prep_time" ${this.sortBy === 'prep_time' ? 'selected' : ''}>Total Time</option>
+                                <option value="serving_count" ${this.sortBy === 'serving_count' ? 'selected' : ''}>Servings</option>
+                                <option value="label_type" ${this.sortBy === 'label_type' ? 'selected' : ''}>Label Type</option>
+                            </select>
+                            
+                            <button id="sort-direction-btn" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white transition-colors flex items-center" title="${this.sortAscending ? 'Sort Ascending (A-Z, 1-9)' : 'Sort Descending (Z-A, 9-1)'}">
+                                ${this.sortAscending ? 
+                                    '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>' : 
+                                    '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>'
+                                }
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -248,7 +252,7 @@ class RecipeManager {
         // Update only the recipe cards, info bar, and empty state without re-rendering entire component
         const recipeGrid = this.container.querySelector('#recipes-grid');
         const emptyState = this.container.querySelector('#empty-state');
-        const infoBar = this.container.querySelector('.bg-gray-50.dark\\:bg-gray-700');
+        const infoBar = this.container.querySelector('.bg-gray-50');
         
         // Try alternative selectors if the first one doesn't work
         if (!infoBar) {
@@ -301,6 +305,10 @@ class RecipeManager {
             // Update favorites button state
             this.updateFavoritesButton();
             console.log('🔄 Favorites button updated');
+            
+            // Update labels dropdown to show only labels from filtered recipes
+            this.updateLabelsDropdown();
+            console.log('🔄 Labels dropdown updated');
         } else {
             console.log('❌ Missing required elements for updateRecipeDisplay');
         }
@@ -956,13 +964,15 @@ class RecipeManager {
                 this.sortAscending = !this.sortAscending;
                 // Need to re-render for sort direction button to update its icon
                 this.render();
+                this.updateFavoritesButton(); // Ensure favorites button maintains correct state after render
             });
         }
 
-        // Clear filters button
+        // Clear filters button with centralized logic
         const clearFiltersBtn = this.container.querySelector('#clear-recipe-filters-btn');
         if (clearFiltersBtn) {
-            clearFiltersBtn.addEventListener('click', () => {
+            const clearCallback = () => {
+                // Clear all filters logic (without confirmation/double press - that's handled by the centralized handler)
                 this.searchTerm = '';
                 this.selectedLabels = []; // Reset multi-select labels
                 this.labelSearchTerm = ''; // Reset label search
@@ -970,7 +980,21 @@ class RecipeManager {
                 this.sortAscending = true; // Reset sort direction
                 this.showFavoritesOnly = false;
                 this.render();
-            });
+                this.attachEventListeners(); // Reattach event listeners after render
+                this.updateFavoritesButton(); // Ensure favorites button maintains correct state after render
+            };
+            
+            // Use fallback for settings manager access
+            const settingsManager = window.mealPlannerSettings || window.settingsManager;
+            if (settingsManager && settingsManager.createClearFiltersHandler) {
+                clearFiltersBtn.addEventListener('click', 
+                    settingsManager.createClearFiltersHandler(clearCallback, '#clear-recipe-filters-btn', this)
+                );
+            } else {
+                // Fallback to simple click handler if settings manager not available
+                console.warn('⚠️ Settings manager not available, using simple clear filters');
+                clearFiltersBtn.addEventListener('click', clearCallback);
+            }
         }
 
         // Favorites filter button
@@ -1007,6 +1031,14 @@ class RecipeManager {
         console.log('Opening recipe form...', recipe ? 'Edit mode' : 'Add mode');
         
         const isEdit = recipe !== null;
+        
+        // Initialize form labels
+        this.initFormLabels(recipe);
+        
+        // Use full-page form for better label container behavior
+        // Modal constraints are causing layout issues with the labels container
+        this.showFullPageRecipeForm(recipe);
+        return;
         const modalId = 'recipe-form-modal';
         
         // Remove existing modal if present
@@ -1122,42 +1154,40 @@ class RecipeManager {
                     
                     <!-- Labels Section -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Labels
-                        </label>
-                        <div class="space-y-3">
-                            <!-- Label Input -->
-                            <div class="flex gap-2">
-                                <input type="text" id="recipe-tags" name="labels"
-                                       class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm sm:text-base"
-                                       placeholder="Add labels (e.g., healthy, quick, vegetarian)"
-                                       value="${isEdit && recipe.labels ? recipe.labels.join(', ') : ''}"
-                                <button type="button" id="add-label-btn" class="px-2 sm:px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs sm:text-sm">
-                                    Add
+                        <label for="recipe-form-labels" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Labels</label>
+                        <!-- Multi-select label input with typeahead and chips -->
+                        <div class="relative">
+                            <div id="recipe-form-labels-container" class="w-full h-10 px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus-within:ring-2 focus-within:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white cursor-text flex items-center gap-1 overflow-x-auto" style="min-height: 2.5rem; max-height: 2.5rem;">
+                                ${isEdit && recipe.labels ? recipe.labels.map(label => {
+                                    const labelType = this.inferLabelType(label);
+                                    const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
+                                    const colors = window.labelTypes ? window.labelTypes.getColorClasses(labelType) : 
+                                        'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+                                    const buttonColors = this.getLabelButtonColors(labelType);
+                                    return `
+                                    <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-bold ${colors} rounded-full">
+                                        ${icon}${typeof label === 'string' ? label : label.name || label}
+                                        <button type="button" class="ml-1 ${buttonColors}" onclick="window.recipeManager.removeFormLabel('${typeof label === 'string' ? label : label.name || label}')">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                            </svg>
                                 </button>
+                                    </span>
+                                    `;
+                                }).join('') : ''}
+                                <input 
+                                    type="text" 
+                                    id="recipe-form-labels-input" 
+                                    class="flex-1 min-w-[100px] bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-none outline-none text-sm placeholder-gray-500 dark:placeholder-gray-400" 
+                                    placeholder="${isEdit && recipe.labels && recipe.labels.length > 0 ? 'Type to add more...' : 'Type to search labels...'}"
+                                    autocomplete="off"
+                                />
                             </div>
-                            
-                            <!-- Popular Labels -->
-                            <div>
-                                <div class="text-xs text-gray-500 mb-2">Popular labels:</div>
-                                <div class="flex flex-wrap gap-1">
-                                    ${this.getAllLabels().slice(0, 12).map(label => `
-                                        <button type="button" class="popular-label-btn px-2 py-1 text-xs bg-gray-100 hover:bg-blue-100 text-gray-700 rounded-full border" data-label="${label}">
-                                            ${label}
-                                        </button>
-                                    `).join('')}
+                            <div id="recipe-form-labels-dropdown" class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg hidden max-h-32 overflow-y-auto">
+                                <!-- Dropdown options will be populated by JavaScript -->
                                 </div>
                             </div>
-                            
-                            <!-- Selected Labels Display -->
-                            <div id="selected-labels-display" class="min-h-[2rem] p-2 border border-gray-200 rounded-md bg-gray-50">
-                                <div class="text-xs text-gray-500 mb-1">Selected labels:</div>
-                                <div id="selected-labels-container" class="flex flex-wrap gap-1">
-                                    <!-- Selected labels will be displayed here -->
                                 </div>
-                            </div>
-                        </div>
-                    </div>
                     </form>
                     </div>
                     
@@ -1388,6 +1418,9 @@ class RecipeManager {
             this.attachIngredientRowListeners(row);
         });
 
+        // Form label input and dropdown
+        this.attachFormLabelListeners(modal);
+
         // Form submission
         form?.addEventListener('submit', (e) => {
             console.log('🔥 Form submit event triggered', { form, recipe });
@@ -1417,6 +1450,133 @@ class RecipeManager {
         });
     }
 
+    attachFormLabelListeners(modal) {
+        const labelInput = modal.querySelector('#recipe-form-labels-input');
+        const labelContainer = modal.querySelector('#recipe-form-labels-container');
+        const labelDropdown = modal.querySelector('#recipe-form-labels-dropdown');
+
+        if (!labelInput || !labelContainer || !labelDropdown) return;
+
+        // Input event for typeahead
+        labelInput.addEventListener('input', (e) => {
+            this.formLabelSearchTerm = e.target.value;
+            this.updateFormLabelDropdown();
+        });
+
+        // Focus/blur events for dropdown
+        labelInput.addEventListener('focus', () => {
+            this.updateFormLabelDropdown();
+        });
+
+        // Click on container to focus input
+        labelContainer.addEventListener('click', (e) => {
+            if (e.target === labelContainer) {
+                labelInput.focus();
+            }
+        });
+
+        // Keyboard navigation
+        labelInput.addEventListener('keydown', (e) => {
+            const dropdown = modal.querySelector('#recipe-form-labels-dropdown');
+            const highlighted = dropdown.querySelector('.bg-gray-50, .dark\\:bg-gray-700');
+            
+            switch (e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    const firstOption = dropdown.querySelector('[data-label]');
+                    if (firstOption) {
+                        // Remove existing highlight
+                        dropdown.querySelectorAll('[data-label]').forEach(opt => {
+                            opt.classList.remove('bg-gray-50', 'dark:bg-gray-700');
+                        });
+                        // Add highlight to first option
+                        firstOption.classList.add('bg-gray-50', 'dark:bg-gray-700');
+                    }
+                    break;
+                    
+                case 'Enter':
+                    e.preventDefault();
+                    if (highlighted) {
+                        const label = highlighted.getAttribute('data-label');
+                        if (label) {
+                            this.addFormLabel(label);
+                            labelInput.focus();
+                        }
+                    }
+                    break;
+                    
+                case 'Escape':
+                    labelDropdown.classList.add('hidden');
+                    labelInput.blur();
+                    break;
+            }
+        });
+
+        // Hide dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!labelContainer.contains(e.target)) {
+                labelDropdown.classList.add('hidden');
+            }
+        });
+    }
+
+    updateFormLabelDropdown() {
+        const dropdown = document.querySelector('#recipe-form-labels-dropdown');
+        const container = document.querySelector('#recipe-form-labels-container');
+        if (!dropdown || !container) return;
+
+        const availableLabels = this.getAllLabels().filter(label => 
+            !this.formSelectedLabels.includes(label) &&
+            (!this.formLabelSearchTerm || label.toLowerCase().includes(this.formLabelSearchTerm.toLowerCase()))
+        );
+
+        if (availableLabels.length === 0 || !this.formLabelSearchTerm) {
+            dropdown.classList.add('hidden');
+            return;
+        }
+
+        // Check if dropdown would go off the bottom of the viewport
+        const containerRect = container.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const dropdownHeight = 128; // max-h-32 = 128px
+        const spaceBelow = viewportHeight - containerRect.bottom;
+        const spaceAbove = containerRect.top;
+
+        // Position dropdown above if not enough space below
+        if (spaceBelow < dropdownHeight && spaceAbove > dropdownHeight) {
+            dropdown.style.top = 'auto';
+            dropdown.style.bottom = '100%';
+            dropdown.style.marginBottom = '4px';
+            dropdown.style.marginTop = '0';
+        } else {
+            dropdown.style.top = '100%';
+            dropdown.style.bottom = 'auto';
+            dropdown.style.marginTop = '4px';
+            dropdown.style.marginBottom = '0';
+        }
+
+        dropdown.classList.remove('hidden');
+        dropdown.innerHTML = availableLabels.slice(0, 10).map((label, index) => {
+            const labelType = this.inferLabelType(label);
+            const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
+            const colorClasses = this.getLabelColorClasses(labelType);
+            
+            return `
+            <div class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm text-gray-900 dark:text-gray-100 ${index === 0 ? 'bg-gray-50 dark:bg-gray-700' : ''}" 
+                 data-label="${label}" 
+                 onclick="window.recipeManager.addFormLabel('${label}')">
+                <div class="flex items-center space-x-2">
+                    ${icon && labelType !== 'default' ? `<span class="flex-shrink-0">${icon}</span>` : ''}
+                    <span class="font-bold flex-1">${label}</span>
+                    <span class="inline-flex items-center px-2 py-1 ${colorClasses} rounded-full text-xs flex-shrink-0">
+                        ${labelType !== 'default' ? this.getShortLabelTypeName(labelType) : 'label'}
+                    </span>
+                </div>
+            </div>
+            `;
+        }).join('');
+    }
+
     async handleRecipeFormSubmit(form, existingRecipe) {
         try {
             // Collect form data
@@ -1428,7 +1588,7 @@ class RecipeManager {
                 prep_time: parseInt(formData.get('prep_time')) || 0,
                 cook_time: parseInt(formData.get('cook_time')) || 0,
                 instructions: formData.get('instructions').trim(),
-                tags: formData.get('tags').split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
+                labels: this.formSelectedLabels || []
             };
 
             // Validate required fields
@@ -2205,6 +2365,427 @@ class RecipeManager {
         }
     }
 
+    showFullPageRecipeForm(recipe = null) {
+        console.log('📄 Opening full-page recipe form...', recipe ? 'Edit mode' : 'Add mode');
+        
+        // Store current state for back navigation
+        this.previousView = {
+            container: this.container.innerHTML,
+            scrollPosition: window.scrollY
+        };
+        
+        // Replace entire container with full-page recipe form
+        this.container.innerHTML = this.generateFullPageRecipeFormHTML(recipe);
+        
+        // Scroll to top
+        window.scrollTo(0, 0);
+        
+        // Attach event listeners
+        this.attachFullPageFormListeners(recipe);
+    }
+
+    generateFullPageRecipeFormHTML(recipe = null) {
+        const isEdit = recipe !== null;
+        
+        return `
+            <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+                <!-- Header -->
+                <div class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+                    <div class="max-w-4xl mx-auto px-4 py-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <button id="back-to-recipes" class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                    </svg>
+                                </button>
+                                <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
+                                    ${isEdit ? 'Edit Recipe' : 'Add New Recipe'}
+                                </h1>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <button type="button" id="cancel-fullpage-form" class="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
+                                    Cancel
+                                </button>
+                                <button type="submit" form="fullpage-recipe-form" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium">
+                                    ${isEdit ? 'Update Recipe' : 'Save Recipe'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Content -->
+                <div class="max-w-4xl mx-auto px-4 py-6">
+                    <form id="fullpage-recipe-form" class="space-y-6">
+                        <!-- Title -->
+                        <div>
+                            <label for="recipe-title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Recipe Title</label>
+                            <input type="text" id="recipe-title" name="title" required
+                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                   placeholder="Enter recipe title..."
+                                   value="${isEdit ? recipe.title || '' : ''}">
+                        </div>
+
+                        <!-- Description -->
+                        <div>
+                            <label for="recipe-description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
+                            <textarea id="recipe-description" name="description" rows="3"
+                                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                      placeholder="Brief description of the recipe...">${isEdit ? recipe.description || '' : ''}</textarea>
+                        </div>
+
+                        <!-- Items Section -->
+                        <div>
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
+                                <h3 class="text-lg font-medium text-gray-900 dark:text-white">Items</h3>
+                                <div class="flex gap-2">
+                                    <button type="button" id="scan-ingredient-barcode" class="bg-blue-500 hover:bg-blue-600 text-white px-2 sm:px-3 py-1.5 rounded text-xs sm:text-sm transition-colors flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h2M4 4h5m3 0h6m-9 4h2m3 0h2M9 20h2m3 0h2"></path>
+                                        </svg>
+                                        <span class="hidden sm:inline">Scan</span>
+                                    </button>
+                                    <button type="button" id="add-ingredient-row" class="btn-secondary text-xs sm:text-sm">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                        </svg>
+                                        <span class="hidden sm:inline">Add Item</span>
+                                        <span class="sm:hidden">Add</span>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div id="ingredients-container" class="space-y-3">
+                                ${this.renderIngredientRows(isEdit ? recipe.ingredients : [])}
+                            </div>
+                        </div>
+
+                        <!-- Instructions -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Instructions</label>
+                            <div id="instructions-container" class="space-y-3">
+                                ${this.renderInstructionSteps(isEdit ? recipe.instructions : null)}
+                            </div>
+                            <button type="button" id="add-instruction-step" class="mt-3 px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 border border-blue-300 dark:border-blue-600 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
+                                + Add Another Step
+                            </button>
+                        </div>
+
+                        <!-- Labels Section -->
+                        <div>
+                            <label for="fullpage-recipe-labels" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Labels</label>
+                            <div class="relative">
+                                <div id="fullpage-recipe-labels-container" class="w-full min-h-[42px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus-within:ring-2 focus-within:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white cursor-text flex flex-wrap gap-1 items-center">
+                                    ${isEdit && recipe.labels ? recipe.labels.map(label => {
+                                        const labelType = this.inferLabelType(label);
+                                        const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
+                                        const colors = window.labelTypes ? window.labelTypes.getColorClasses(labelType) : 
+                                            'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+                                        const buttonColors = this.getLabelButtonColors(labelType);
+                                        return `
+                                        <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-bold ${colors} rounded-full">
+                                            ${icon}${typeof label === 'string' ? label : label.name || label}
+                                            <button type="button" class="ml-1 ${buttonColors}" onclick="window.recipeManager.removeFormLabel('${typeof label === 'string' ? label : label.name || label}'); window.recipeManager.updateFullPageLabelsDisplay();">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                </svg>
+                                            </button>
+                                        </span>
+                                        `;
+                                    }).join('') : ''}
+                                    <input 
+                                        type="text" 
+                                        id="fullpage-recipe-labels-input" 
+                                        class="flex-1 min-w-[100px] bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-none outline-none text-sm placeholder-gray-500 dark:placeholder-gray-400" 
+                                        placeholder="${isEdit && recipe.labels && recipe.labels.length > 0 ? 'Type to add more...' : 'Type to search labels...'}"
+                                        autocomplete="off"
+                                    />
+                                </div>
+                                <div id="fullpage-recipe-labels-dropdown" class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg hidden max-h-32 overflow-y-auto">
+                                    <!-- Dropdown options will be populated by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="flex justify-end pt-6 border-t border-gray-200 dark:border-gray-700">
+                            <button type="submit" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium text-lg">
+                                ${isEdit ? 'Update Recipe' : 'Save Recipe'}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+    }
+
+    attachFullPageFormListeners(recipe) {
+        const form = document.querySelector('#fullpage-recipe-form');
+        const backBtn = document.querySelector('#back-to-recipes');
+        const cancelBtn = document.querySelector('#cancel-fullpage-form');
+
+        // Back/Cancel handlers
+        const goBack = () => {
+            if (this.previousView) {
+                this.container.innerHTML = this.previousView.container;
+                window.scrollTo(0, this.previousView.scrollPosition || 0);
+                this.attachEventListeners(); // Re-attach main recipe list listeners
+            }
+        };
+
+        backBtn?.addEventListener('click', goBack);
+        cancelBtn?.addEventListener('click', goBack);
+
+        // Ingredient/Items listeners
+        this.attachFullPageIngredientListeners();
+
+        // Instruction step listeners
+        this.attachInstructionStepListeners();
+
+        // Form label listeners - reuse existing methods but update selectors
+        this.attachFullPageLabelListeners();
+
+        // Form submission
+        form?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.handleFullPageFormSubmit(form, recipe);
+        });
+    }
+
+    attachFullPageIngredientListeners() {
+        const addIngredientBtn = document.querySelector('#add-ingredient-row');
+        const scanBarcodeBtn = document.querySelector('#scan-ingredient-barcode');
+        const ingredientsContainer = document.querySelector('#ingredients-container');
+
+        // Add ingredient row
+        addIngredientBtn?.addEventListener('click', () => {
+            const currentRows = ingredientsContainer.querySelectorAll('.ingredient-row').length;
+            const newRowHtml = this.renderSingleIngredientRow({ ingredient_id: '', name: '', quantity: '', unit: '', notes: '' }, currentRows, true);
+            
+            ingredientsContainer.insertAdjacentHTML('beforeend', newRowHtml);
+            
+            // Attach listeners to new row
+            this.attachIngredientRowListeners(ingredientsContainer.lastElementChild);
+        });
+
+        // Scan barcode for ingredient
+        scanBarcodeBtn?.addEventListener('click', () => {
+            this.showBarcodeScanner(ingredientsContainer);
+        });
+
+        // Attach listeners to existing ingredient rows
+        ingredientsContainer?.querySelectorAll('.ingredient-row').forEach(row => {
+            this.attachIngredientRowListeners(row);
+        });
+    }
+
+    attachFullPageLabelListeners() {
+        const labelInput = document.querySelector('#fullpage-recipe-labels-input');
+        const labelContainer = document.querySelector('#fullpage-recipe-labels-container');
+        const labelDropdown = document.querySelector('#fullpage-recipe-labels-dropdown');
+
+        if (!labelInput || !labelContainer || !labelDropdown) return;
+
+        // Input event for typeahead
+        labelInput.addEventListener('input', (e) => {
+            this.formLabelSearchTerm = e.target.value;
+            this.updateFullPageLabelDropdown();
+        });
+
+        // Focus events
+        labelInput.addEventListener('focus', () => {
+            this.updateFullPageLabelDropdown();
+        });
+
+        // Click on container to focus input
+        labelContainer.addEventListener('click', (e) => {
+            if (e.target === labelContainer) {
+                labelInput.focus();
+            }
+        });
+
+        // Keyboard navigation
+        labelInput.addEventListener('keydown', (e) => {
+            const dropdown = document.querySelector('#fullpage-recipe-labels-dropdown');
+            const highlighted = dropdown.querySelector('.bg-gray-50, .dark\\:bg-gray-700');
+            
+            switch (e.key) {
+                case 'Enter':
+                    e.preventDefault();
+                    if (highlighted) {
+                        const label = highlighted.getAttribute('data-label');
+                        if (label) {
+                            this.addFormLabel(label);
+                            this.updateFullPageLabelsDisplay();
+                            labelInput.focus();
+                        }
+                    }
+                    break;
+                    
+                case 'Escape':
+                    labelDropdown.classList.add('hidden');
+                    labelInput.blur();
+                    break;
+            }
+        });
+    }
+
+    updateFullPageLabelDropdown() {
+        const dropdown = document.querySelector('#fullpage-recipe-labels-dropdown');
+        if (!dropdown) return;
+
+        const availableLabels = this.getAllLabels().filter(label => 
+            !this.formSelectedLabels.includes(label) &&
+            (!this.formLabelSearchTerm || label.toLowerCase().includes(this.formLabelSearchTerm.toLowerCase()))
+        );
+
+        if (availableLabels.length === 0 || !this.formLabelSearchTerm) {
+            dropdown.classList.add('hidden');
+            return;
+        }
+
+        dropdown.classList.remove('hidden');
+        dropdown.innerHTML = availableLabels.slice(0, 10).map((label, index) => {
+            const labelType = this.inferLabelType(label);
+            const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
+            const colorClasses = this.getLabelColorClasses(labelType);
+            
+            return `
+            <div class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm text-gray-900 dark:text-gray-100 ${index === 0 ? 'bg-gray-50 dark:bg-gray-700' : ''}" 
+                 data-label="${label}" 
+                 onclick="window.recipeManager.addFormLabel('${label}'); window.recipeManager.updateFullPageLabelsDisplay();">
+                <div class="flex items-center space-x-2">
+                    ${icon && labelType !== 'default' ? `<span class="flex-shrink-0">${icon}</span>` : ''}
+                    <span class="font-bold flex-1">${label}</span>
+                    <span class="inline-flex items-center px-2 py-1 ${colorClasses} rounded-full text-xs flex-shrink-0">
+                        ${labelType !== 'default' ? this.getShortLabelTypeName(labelType) : 'label'}
+                    </span>
+                </div>
+            </div>
+            `;
+        }).join('');
+    }
+
+    updateFullPageLabelsDisplay() {
+        const container = document.querySelector('#fullpage-recipe-labels-container');
+        const input = document.querySelector('#fullpage-recipe-labels-input');
+        
+        if (!container || !input) return;
+
+        // Clear existing chips (keep the input)
+        const existingChips = container.querySelectorAll('span');
+        existingChips.forEach(chip => chip.remove());
+
+        // Add chips for selected labels
+        this.formSelectedLabels.forEach(label => {
+            const labelType = this.inferLabelType(label);
+            const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
+            const colors = window.labelTypes ? window.labelTypes.getColorClasses(labelType) : 
+                'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+            const buttonColors = this.getLabelButtonColors(labelType);
+            
+            const chip = document.createElement('span');
+            chip.className = `inline-flex items-center px-1.5 py-0.5 text-xs font-bold ${colors} rounded-full`;
+            chip.innerHTML = `
+                ${icon}${label}
+                <button type="button" class="ml-1 ${buttonColors}" onclick="window.recipeManager.removeFormLabel('${label}'); window.recipeManager.updateFullPageLabelsDisplay();">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            `;
+            
+            // Insert before the input
+            container.insertBefore(chip, input);
+        });
+
+        // Update placeholder
+        input.placeholder = this.formSelectedLabels.length > 0 ? 'Type to add more...' : 'Type to search labels...';
+    }
+
+    async handleFullPageFormSubmit(form, existingRecipe) {
+        try {
+            const formData = new FormData(form);
+            // Collect instruction steps
+            const instructionSteps = [];
+            const instructionTextareas = form.querySelectorAll('textarea[name^="instructions["]');
+            instructionTextareas.forEach(textarea => {
+                const step = textarea.value.trim();
+                if (step) {
+                    instructionSteps.push(step);
+                }
+            });
+
+            const recipeData = {
+                title: formData.get('title').trim(),
+                description: formData.get('description').trim(),
+                instructions: instructionSteps,
+                labels: this.formSelectedLabels || []
+            };
+
+            // Collect ingredients
+            const ingredients = [];
+            const ingredientRows = form.querySelectorAll('.ingredient-row');
+            
+            ingredientRows.forEach((row, index) => {
+                const ingredientSelect = row.querySelector('.ingredient-select');
+                const quantityInput = row.querySelector('.quantity-input');
+                const unitSelect = row.querySelector('.unit-select');
+                const notesInput = row.querySelector('.notes-input');
+                
+                const ingredientId = ingredientSelect?.value;
+                const quantity = parseFloat(quantityInput?.value) || 0;
+                const unit = unitSelect?.value || '';
+                const notes = notesInput?.value?.trim() || '';
+                
+                if (ingredientId && quantity > 0) {
+                    ingredients.push({
+                        ingredient_id: parseInt(ingredientId),
+                        quantity: quantity,
+                        unit: unit,
+                        notes: notes
+                    });
+                }
+            });
+
+            recipeData.ingredients = ingredients;
+
+            // Validate required fields
+            if (!recipeData.title) {
+                this.showNotification('Recipe title is required', 'error');
+                return;
+            }
+
+            if (!recipeData.instructions || recipeData.instructions.length === 0) {
+                this.showNotification('At least one instruction step is required', 'error');
+                return;
+            }
+
+            // Save recipe
+            let savedRecipe;
+            if (existingRecipe) {
+                savedRecipe = await this.updateRecipe(existingRecipe.id, recipeData);
+                this.showNotification('Recipe updated successfully!', 'success');
+            } else {
+                savedRecipe = await this.createRecipe(recipeData);
+                this.showNotification('Recipe created successfully!', 'success');
+            }
+
+            // Return to recipe list
+            if (this.previousView) {
+                this.container.innerHTML = this.previousView.container;
+                window.scrollTo(0, this.previousView.scrollPosition || 0);
+                this.attachEventListeners();
+                this.render(); // Refresh to show new/updated recipe
+            }
+
+        } catch (error) {
+            console.error('Error handling full-page form:', error);
+            this.showNotification('Error saving recipe', 'error');
+        }
+    }
+
     async deleteRecipe(recipeId) {
         const recipe = this.recipes.find(r => r.id === recipeId);
         if (recipe && confirm(`Are you sure you want to delete "${recipe.title}"?`)) {
@@ -2258,37 +2839,300 @@ class RecipeManager {
         return parseFloat(rounded.toFixed(2));
     }
 
+    // Instruction steps methods
+    renderInstructionSteps(instructions = null) {
+        let steps = [];
+        
+        if (instructions) {
+            if (Array.isArray(instructions)) {
+                steps = instructions;
+            } else if (typeof instructions === 'string') {
+                // Handle legacy string format - split by newlines or numbered steps
+                steps = instructions.split(/\n+|\d+\.\s*/).filter(step => step.trim());
+            }
+        }
+        
+        // Ensure at least one step
+        if (steps.length === 0) {
+            steps = [''];
+        }
+        
+        return steps.map((step, index) => this.renderInstructionStep(step, index + 1)).join('');
+    }
+    
+    renderInstructionStep(content = '', stepNumber = 1) {
+        return `
+            <div class="instruction-step flex gap-3 items-start">
+                <div class="flex-shrink-0 w-8 h-8 bg-blue-500 text-white text-sm font-bold rounded-full flex items-center justify-center mt-1">
+                    ${stepNumber}
+                </div>
+                <div class="flex-1">
+                    <textarea name="instructions[${stepNumber - 1}]" rows="3" required
+                              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm resize-y"
+                              placeholder="Enter step ${stepNumber} instructions...">${content}</textarea>
+                </div>
+                ${stepNumber > 1 ? `
+                <button type="button" class="remove-instruction-step flex-shrink-0 p-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors mt-1" data-step="${stepNumber}">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                </button>
+                ` : ''}
+            </div>
+        `;
+    }
+    
+    addInstructionStep() {
+        const container = document.getElementById('instructions-container');
+        if (!container) return;
+        
+        const currentSteps = container.querySelectorAll('.instruction-step');
+        const nextStepNumber = currentSteps.length + 1;
+        
+        const newStepHTML = this.renderInstructionStep('', nextStepNumber);
+        container.insertAdjacentHTML('beforeend', newStepHTML);
+        
+        // Attach event listeners to the new step
+        this.attachInstructionStepListeners();
+        
+        // Focus on the new textarea
+        const newTextarea = container.querySelector(`textarea[name="instructions[${nextStepNumber - 1}]"]`);
+        if (newTextarea) {
+            newTextarea.focus();
+        }
+    }
+    
+    removeInstructionStep(stepNumber) {
+        const container = document.getElementById('instructions-container');
+        if (!container) return;
+        
+        const steps = container.querySelectorAll('.instruction-step');
+        if (steps.length <= 1) return; // Don't remove the last step
+        
+        // Remove the step
+        const stepToRemove = Array.from(steps).find(step => {
+            const removeBtn = step.querySelector('.remove-instruction-step');
+            return removeBtn && removeBtn.dataset.step == stepNumber;
+        });
+        
+        if (stepToRemove) {
+            stepToRemove.remove();
+            this.renumberInstructionSteps();
+        }
+    }
+    
+    renumberInstructionSteps() {
+        const container = document.getElementById('instructions-container');
+        if (!container) return;
+        
+        const steps = container.querySelectorAll('.instruction-step');
+        steps.forEach((step, index) => {
+            const stepNumber = index + 1;
+            
+            // Update the number circle
+            const numberCircle = step.querySelector('.w-8.h-8');
+            if (numberCircle) {
+                numberCircle.textContent = stepNumber;
+            }
+            
+            // Update the textarea name attribute
+            const textarea = step.querySelector('textarea');
+            if (textarea) {
+                textarea.name = `instructions[${index}]`;
+                textarea.placeholder = `Enter step ${stepNumber} instructions...`;
+            }
+            
+            // Update remove button data attribute
+            const removeBtn = step.querySelector('.remove-instruction-step');
+            if (removeBtn) {
+                removeBtn.dataset.step = stepNumber;
+            }
+        });
+    }
+    
+    attachInstructionStepListeners() {
+        // Remove existing listeners to prevent duplicates
+        document.querySelectorAll('.remove-instruction-step').forEach(btn => {
+            btn.replaceWith(btn.cloneNode(true));
+        });
+        
+        // Add listeners to remove buttons
+        document.querySelectorAll('.remove-instruction-step').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const stepNumber = parseInt(e.currentTarget.dataset.step);
+                this.removeInstructionStep(stepNumber);
+            });
+        });
+        
+        // Add listener to "Add Another Step" button
+        const addBtn = document.getElementById('add-instruction-step');
+        if (addBtn) {
+            addBtn.replaceWith(addBtn.cloneNode(true));
+            document.getElementById('add-instruction-step').addEventListener('click', () => {
+                this.addInstructionStep();
+            });
+        }
+    }
+
+
     // Multi-select label methods
     addLabel(label) {
         if (!this.selectedLabels.includes(label)) {
             this.selectedLabels.push(label);
             this.labelSearchTerm = ''; // Clear search after selection
-            this.render(); // Need full render to update label chips
+            this.render(); // Need full render to update label chips and maintain favorites button state
+            this.attachEventListeners(); // Reattach event listeners after render
+            this.updateFavoritesButton(); // Ensure favorites button maintains correct state after render
         }
     }
 
     removeLabel(label) {
         this.selectedLabels = this.selectedLabels.filter(l => l !== label);
-        this.render();
+        this.render(); // Need full render to update label chips
+        this.attachEventListeners(); // Reattach event listeners after render
+        this.updateFavoritesButton(); // Ensure favorites button maintains correct state after render
     }
 
     clearAllLabels() {
         this.selectedLabels = [];
         this.labelSearchTerm = '';
         this.render();
+        this.attachEventListeners(); // Reattach event listeners after render
+        this.updateFavoritesButton(); // Ensure favorites button maintains correct state after render
     }
 
-    // Get filtered labels for dropdown based on search term
-    getFilteredLabelsForDropdown() {
-        const availableLabels = this.getAllLabels().filter(label => !this.selectedLabels.includes(label));
+    // Form label management methods
+    initFormLabels(recipe = null) {
+        this.formSelectedLabels = recipe && recipe.labels ? 
+            recipe.labels.map(label => typeof label === 'string' ? label : label.name || label) : [];
+        this.formLabelSearchTerm = '';
+    }
+
+    addFormLabel(label) {
+        if (!this.formSelectedLabels.includes(label)) {
+            this.formSelectedLabels.push(label);
+            this.formLabelSearchTerm = '';
+            this.updateFormLabelsDisplay();
+            // Also update the dropdown
+            this.updateFormLabelDropdown();
+        }
+    }
+
+    removeFormLabel(label) {
+        this.formSelectedLabels = this.formSelectedLabels.filter(l => l !== label);
+        this.updateFormLabelsDisplay();
+    }
+
+    updateFormLabelsDisplay() {
+        // Try both modal and full-page selectors
+        const container = document.querySelector('#recipe-form-labels-container') || 
+                         document.querySelector('#fullpage-recipe-labels-container');
+        const input = document.querySelector('#recipe-form-labels-input') || 
+                     document.querySelector('#fullpage-recipe-labels-input');
         
+        if (!container || !input) return;
+
+        // Clear existing chips (keep the input)
+        const existingChips = container.querySelectorAll('span');
+        existingChips.forEach(chip => chip.remove());
+
+        // Add chips for selected labels
+        this.formSelectedLabels.forEach(label => {
+            const labelType = this.inferLabelType(label);
+            const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
+            const colors = window.labelTypes ? window.labelTypes.getColorClasses(labelType) : 
+                'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+            const buttonColors = this.getLabelButtonColors(labelType);
+            
+            const chip = document.createElement('span');
+            chip.className = `inline-flex items-center px-1.5 py-0.5 text-xs font-bold ${colors} rounded-full`;
+            chip.innerHTML = `
+                ${icon}${label}
+                <button type="button" class="ml-1 ${buttonColors}" onclick="window.recipeManager.removeFormLabel('${label}')">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            `;
+            
+            // Insert before the input
+            container.insertBefore(chip, input);
+        });
+
+        // Update placeholder
+        input.placeholder = this.formSelectedLabels.length > 0 ? 'Type to add more...' : 'Type to search labels...';
+    }
+
+    updateFormLabelDropdown() {
+        // Try both modal and full-page selectors
+        const dropdown = document.querySelector('#recipe-form-labels-dropdown') || 
+                        document.querySelector('#fullpage-recipe-labels-dropdown');
+        if (!dropdown) return;
+
+        const availableLabels = this.getAllLabels().filter(label => 
+            !this.formSelectedLabels.includes(label) &&
+            (!this.formLabelSearchTerm || label.toLowerCase().includes(this.formLabelSearchTerm.toLowerCase()))
+        );
+
+        if (availableLabels.length === 0 || !this.formLabelSearchTerm) {
+            dropdown.classList.add('hidden');
+            return;
+        }
+
+        dropdown.classList.remove('hidden');
+        dropdown.innerHTML = availableLabels.slice(0, 10).map((label, index) => {
+            const labelType = this.inferLabelType(label);
+            const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
+            const colorClasses = this.getLabelColorClasses(labelType);
+            
+            return `
+            <div class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm text-gray-900 dark:text-gray-100 ${index === 0 ? 'bg-gray-50 dark:bg-gray-700' : ''}" 
+                 data-label="${label}" 
+                 onclick="window.recipeManager.addFormLabel('${label}')">
+                <div class="flex items-center space-x-2">
+                    ${icon && labelType !== 'default' ? `<span class="flex-shrink-0">${icon}</span>` : ''}
+                    <span class="font-bold flex-1">${label}</span>
+                    <span class="inline-flex items-center px-2 py-1 ${colorClasses} rounded-full text-xs flex-shrink-0">
+                        ${labelType !== 'default' ? this.getShortLabelTypeName(labelType) : 'label'}
+                    </span>
+                </div>
+            </div>
+            `;
+        }).join('');
+    }
+
+    /**
+     * Get short, concise names for label types in dropdown
+     * @param {string} labelType - The label type (e.g., 'meal_type', 'recipe_type')
+     * @returns {string} Short display name
+     */
+    getShortLabelTypeName(labelType) {
+        const shortNames = {
+            'meal_type': 'meal',
+            'recipe_type': 'combo',
+            'ingredient_type': 'ingredient',
+            'default': 'label'
+        };
+        return shortNames[labelType] || labelType.replace('_', ' ');
+    }
+
+    // Get filtered labels for dropdown based on search term and current recipe filters
+    getFilteredLabelsForDropdown() {
+        // Use labels from currently filtered recipes (after search term is applied)
+        // This ensures the dropdown only shows labels that exist in the current search results
+        const availableLabels = this.getFilteredLabels().filter(label => !this.selectedLabels.includes(label));
+        
+        let filteredLabels;
         if (!this.labelSearchTerm) {
-            return availableLabels;
+            filteredLabels = availableLabels;
+        } else {
+            filteredLabels = availableLabels.filter(label => 
+                label.toLowerCase().includes(this.labelSearchTerm.toLowerCase())
+            );
         }
         
-        return availableLabels.filter(label => 
-            label.toLowerCase().includes(this.labelSearchTerm.toLowerCase())
-        );
+        // Sort labels alphabetically (case-insensitive)
+        return filteredLabels.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
     }
 
     // Update dropdown content based on current search
@@ -2318,7 +3162,7 @@ class RecipeManager {
                         ${icon && labelType !== 'default' ? `<span class="flex-shrink-0">${icon}</span>` : ''}
                         <span class="font-bold flex-1">${label}</span>
                         <span class="inline-flex items-center px-2 py-1 ${colorClasses} rounded-full text-xs flex-shrink-0">
-                            ${labelType !== 'default' ? labelType.replace('_', ' ') : 'label'}
+                            ${labelType !== 'default' ? this.getShortLabelTypeName(labelType) : 'label'}
                         </span>
                     </div>
                 </div>

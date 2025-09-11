@@ -444,14 +444,19 @@ class ItemsManager {
             });
         });
 
-        // Clear filters
+        // Clear filters with centralized logic
         const clearFiltersBtn = this.container.querySelector('#clear-filters-btn');
         if (clearFiltersBtn) {
-            clearFiltersBtn.addEventListener('click', () => {
+            const clearCallback = () => {
+                // Clear all filters logic (without confirmation/double press - that's handled by the centralized handler)
                 this.currentFilter = { search: '', category: '', label: '' };
                 this.applyFilters();
                 this.render();
-            });
+            };
+            
+            clearFiltersBtn.addEventListener('click', 
+                SettingsManager.createClearFiltersHandler(clearCallback, '#clear-filters-btn', this)
+            );
         }
 
         // Add ingredient button
@@ -835,6 +840,12 @@ class ItemsManager {
         setTimeout(() => {
             notification.remove();
         }, 3000);
+    }
+    
+    hasActiveFilters() {
+        return this.currentFilter.search !== '' || 
+               this.currentFilter.category !== '' || 
+               this.currentFilter.label !== '';
     }
 
     async clearAllData() {

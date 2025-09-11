@@ -190,6 +190,9 @@
                         <button class="nav-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="scheduled">
                             📄 Menu
                         </button>
+                        <button class="nav-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="settings">
+                            ⚙️ Settings
+                        </button>
                     </div>
                 </div>
             </nav>
@@ -660,6 +663,40 @@
                                 </div>
                             </div>
                             
+                            <!-- Cache Status -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Cache Status</h3>
+                                <div class="bg-gray-50 dark:bg-gray-700 rounded-md p-4">
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-gray-600 dark:text-gray-400">App Version:</span>
+                                            <span id="cache-app-version" class="font-mono text-xs">v2025.09.08.1911</span>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-gray-600 dark:text-gray-400">Cache Status:</span>
+                                            <span id="cache-status" class="text-xs">🔍 Checking...</span>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-gray-600 dark:text-gray-400">Last Updated:</span>
+                                            <span id="cache-last-updated" class="text-xs">Unknown</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Quick Actions -->
+                                <div class="mt-4 flex flex-col sm:flex-row gap-3">
+                                    <button id="export-db-btn-settings" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                                        Export Database
+                                    </button>
+                                    <button id="advanced-settings-btn" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                                        Advanced
+                                    </button>
+                                    <button id="refresh-assets-btn" class="flex-1 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors" title="Force refresh all cached assets">
+                                        🔄 Refresh
+                                    </button>
+                                </div>
+                            </div>
+                            
                             <!-- Meal Type Visibility -->
                             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Meal Time Visibility</h3>
@@ -771,6 +808,38 @@
                                     </div>
                                 </div>
                             </div>
+                            
+                            <!-- Filter Safety Settings -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Filter Safety Settings</h3>
+                                <div class="space-y-4">
+                                    <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md p-4">
+                                        <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                                            <strong>Safety Features:</strong> These settings help prevent accidental loss of filter settings across all tabs (Recipes, Meals, Items).
+                                        </p>
+                                    </div>
+                                    
+                                    <div class="flex items-center space-x-3">
+                                        <input type="checkbox" id="confirm-before-clearing-filters" class="text-blue-600">
+                                        <label for="confirm-before-clearing-filters" class="text-sm text-gray-700 dark:text-gray-300">
+                                            Always ask before clearing filters
+                                        </label>
+                                    </div>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 ml-7">
+                                        Shows a confirmation dialog before clearing all filters on any tab
+                                    </p>
+                                    
+                                    <div class="flex items-center space-x-3">
+                                        <input type="checkbox" id="require-double-press-clear-filters" class="text-blue-600">
+                                        <label for="require-double-press-clear-filters" class="text-sm text-gray-700 dark:text-gray-300">
+                                            Always require double press to clear filters
+                                        </label>
+                                    </div>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 ml-7">
+                                        Requires pressing the "Clear Filters" button twice within 3 seconds to actually clear filters
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -808,56 +877,49 @@
     <script src="./js/mobile-navigation.js?v=2025.09.10.0730"></script>
     <script src="./js/main.js?v=2025.09.10.0730"></script>
     
-    <!-- Settings Dropdown Script -->
+    <!-- Settings Navigation Script -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const dropdownToggle = document.getElementById('settings-dropdown-toggle');
-            const dropdownMenu = document.getElementById('settings-dropdown-menu');
             
-            if (dropdownToggle && dropdownMenu) {
+            if (dropdownToggle) {
                 dropdownToggle.addEventListener('click', function(e) {
                     e.stopPropagation();
                     
-                    if (dropdownMenu.classList.contains('hidden')) {
-                        // Show dropdown
-                        dropdownMenu.classList.remove('hidden');
-                        
-                        // Smart positioning for desktop
-                        if (window.innerWidth >= 768) { // md breakpoint
-                            const rect = dropdownToggle.getBoundingClientRect();
-                            const menuWidth = 320; // md:w-80 = 20rem = 320px
-                            const viewportWidth = window.innerWidth;
-                            const spaceOnRight = viewportWidth - rect.right;
-                            
-                            // If not enough space on right, position from left edge of button
-                            if (spaceOnRight < menuWidth + 16) { // 16px margin
-                                dropdownMenu.style.right = 'auto';
-                                dropdownMenu.style.left = '0';
-                                console.log('🎯 Positioned dropdown to left due to space constraints');
-                            } else {
-                                dropdownMenu.style.left = 'auto';
-                                dropdownMenu.style.right = '0';
-                                console.log('🎯 Positioned dropdown to right (normal)');
-                            }
-                        }
+                    // Navigate to settings tab instead of showing dropdown
+                    if (window.app && window.app.switchTab) {
+                        window.app.switchTab('settings');
                     } else {
-                        // Hide dropdown
-                        dropdownMenu.classList.add('hidden');
+                        // Fallback: manually switch to settings tab
+                        // Hide all tab contents
+                        document.querySelectorAll('.tab-content').forEach(tab => {
+                            tab.classList.add('hidden');
+                        });
+                        
+                        // Show settings tab
+                        const settingsTab = document.getElementById('settings-tab');
+                        if (settingsTab) {
+                            settingsTab.classList.remove('hidden');
+                        }
+                        
+                        // Update navigation active state
+                        document.querySelectorAll('.nav-tab').forEach(tab => {
+                            tab.classList.remove('active', 'border-blue-500', 'text-blue-600', 'dark:text-blue-400');
+                            tab.classList.add('border-transparent', 'text-gray-500', 'dark:text-gray-400');
+                        });
                     }
-                });
-                
-                // Close dropdown when clicking outside
-                document.addEventListener('click', function(e) {
-                    if (!dropdownMenu.contains(e.target) && !dropdownToggle.contains(e.target)) {
-                        dropdownMenu.classList.add('hidden');
-                    }
-                });
-                
-                // Prevent dropdown from closing when clicking inside
-                dropdownMenu.addEventListener('click', function(e) {
-                    e.stopPropagation();
                 });
             }
+            
+            // Remove the old dropdown functionality since we're not using it anymore
+            const dropdownMenu = document.getElementById('settings-dropdown-menu');
+            if (dropdownMenu) {
+                // Hide the dropdown permanently since we're navigating to the settings tab instead
+                dropdownMenu.classList.add('hidden');
+            }
+            
+            // Legacy dropdown positioning code removed - now navigating to settings tab instead
+            // The old modal dropdown had positioning issues on mobile, so we converted to full-page settings
             
             // Cache Refresh Functionality
             const refreshAssetsBtn = document.getElementById('refresh-assets-btn');
