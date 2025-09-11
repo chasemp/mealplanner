@@ -1272,6 +1272,14 @@ class RecipeManager {
         // Close modal handlers
         const closeModal = () => {
             modal.remove();
+            
+            // If we were editing from mobile recipe view, return to that view
+            if (this.editingFromMobileView && this.editingRecipe) {
+                console.log('📱 Returning to mobile recipe view after edit');
+                this.showMobileRecipePage(this.editingRecipe);
+                this.editingFromMobileView = false;
+                this.editingRecipe = null;
+            }
         };
 
         closeBtn?.addEventListener('click', closeModal);
@@ -1541,7 +1549,18 @@ class RecipeManager {
             
             // Close modal and refresh view
             document.getElementById('recipe-form-modal')?.remove();
-            this.render();
+            
+            // If we were editing from mobile recipe view, return to that view
+            if (this.editingFromMobileView && this.editingRecipe) {
+                console.log('📱 Returning to mobile recipe view after save');
+                // Update the recipe reference with the saved data
+                this.editingRecipe = this.recipes.find(r => r.id === this.editingRecipe.id) || this.editingRecipe;
+                this.showMobileRecipePage(this.editingRecipe);
+                this.editingFromMobileView = false;
+                this.editingRecipe = null;
+            } else {
+                this.render();
+            }
 
         } catch (error) {
             console.error('Error saving recipe:', error);
@@ -1584,22 +1603,58 @@ class RecipeManager {
         // Add back button handler
         const backBtn = this.container.querySelector('#mobile-recipe-back');
         if (backBtn) {
-            backBtn.addEventListener('click', () => this.returnFromMobileRecipe());
+            backBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('📱 Back button clicked');
+                this.returnFromMobileRecipe();
+            });
+        }
+        
+        // Add close button handler
+        const closeBtn = this.container.querySelector('#mobile-recipe-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('📱 Close button clicked');
+                this.returnFromMobileRecipe();
+            });
         }
         
         // Add edit button handler
         const editBtn = this.container.querySelector('#mobile-recipe-edit');
         if (editBtn) {
-            editBtn.addEventListener('click', () => this.showRecipeForm(recipe));
+            editBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('📱 Edit button clicked');
+                
+                // Store that we're editing from mobile recipe view
+                this.editingFromMobileView = true;
+                this.editingRecipe = recipe;
+                
+                this.showRecipeForm(recipe);
+            });
         }
     }
 
     returnFromMobileRecipe() {
+        console.log('📱 Returning from mobile recipe view');
         if (this.previousView) {
             this.container.innerHTML = this.previousView.container;
             window.scrollTo(0, this.previousView.scrollPosition);
-            this.attachEventListeners(); // Reattach event listeners
+            
+            // Reattach all event listeners
+            this.attachEventListeners();
+            
+            // Force mobile navigation to update its state
+            if (window.mobileNavigation) {
+                window.mobileNavigation.updateActiveTab('recipes');
+            }
+            
             this.previousView = null;
+            console.log('📱 Successfully returned to recipe list');
         }
     }
 
@@ -1617,9 +1672,14 @@ class RecipeManager {
                             </svg>
                             Back
                         </button>
-                        <button id="mobile-recipe-edit" class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm">
-                            Edit
-                        </button>
+                        <div class="flex gap-2">
+                            <button id="mobile-recipe-close" class="bg-gray-500 text-white px-4 py-2 rounded-lg text-sm">
+                                Close
+                            </button>
+                            <button id="mobile-recipe-edit" class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm">
+                                Edit
+                            </button>
+                        </div>
                     </div>
                 </div>
 
