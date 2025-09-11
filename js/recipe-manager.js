@@ -161,33 +161,16 @@ class RecipeManager {
                         </div>
                     </div>
                     
-                    <!-- Row 3: Favorites, Sort Controls, and Clear Filters -->
+                    <!-- Row 3: Favorites and Clear Filters -->
                     <div class="flex items-center justify-between gap-3">
-                        <!-- Left side: Favorites and Sort Controls -->
-                        <div class="flex items-center gap-3">
-                            <button id="favorites-filter-btn" class="px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${this.showFavoritesOnly ? 'bg-yellow-100 hover:bg-yellow-200 text-yellow-800 dark:bg-yellow-800 dark:hover:bg-yellow-700 dark:text-yellow-100 font-bold border-2 border-yellow-500 shadow-lg shadow-yellow-400/50 dark:border-yellow-400 dark:shadow-yellow-500/50' : 'bg-yellow-100 hover:bg-yellow-200 text-yellow-800 dark:bg-yellow-800 dark:hover:bg-yellow-700 dark:text-yellow-100 border-2 border-transparent'}" title="${this.showFavoritesOnly ? 'Show all recipes' : 'Show only favorites'}">
-                                ${this.showFavoritesOnly ? 
-                                    '<svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>' :
-                                    '<svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>'
-                                }
-                                <span class="${this.showFavoritesOnly ? 'font-bold' : ''}">${this.showFavoritesOnly ? 'Favorites Only' : 'Favorites'}</span>
-                            </button>
-                            
-                            <select id="recipe-sort" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm">
-                                <option value="name" ${this.sortBy === 'name' ? 'selected' : ''}>Name</option>
-                                <option value="date" ${this.sortBy === 'date' ? 'selected' : ''}>Created</option>
-                                <option value="prep_time" ${this.sortBy === 'prep_time' ? 'selected' : ''}>Total Time</option>
-                                <option value="serving_count" ${this.sortBy === 'serving_count' ? 'selected' : ''}>Servings</option>
-                                <option value="label_type" ${this.sortBy === 'label_type' ? 'selected' : ''}>Label Type</option>
-                            </select>
-                            
-                            <button id="sort-direction-btn" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white transition-colors flex items-center" title="${this.sortAscending ? 'Sort Ascending (A-Z, 1-9)' : 'Sort Descending (Z-A, 9-1)'}">
-                                ${this.sortAscending ? 
-                                    '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>' : 
-                                    '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>'
-                                }
-                            </button>
-                        </div>
+                        <!-- Left side: Favorites -->
+                        <button id="favorites-filter-btn" class="px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${this.showFavoritesOnly ? 'bg-yellow-100 hover:bg-yellow-200 text-yellow-800 dark:bg-yellow-800 dark:hover:bg-yellow-700 dark:text-yellow-100 font-bold border-2 border-yellow-500 shadow-lg shadow-yellow-400/50 dark:border-yellow-400 dark:shadow-yellow-500/50' : 'bg-yellow-100 hover:bg-yellow-200 text-yellow-800 dark:bg-yellow-800 dark:hover:bg-yellow-700 dark:text-yellow-100 border-2 border-transparent'}" title="${this.showFavoritesOnly ? 'Show all recipes' : 'Show only favorites'}">
+                            ${this.showFavoritesOnly ? 
+                                '<svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>' :
+                                '<svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>'
+                            }
+                            <span class="${this.showFavoritesOnly ? 'font-bold' : ''}">${this.showFavoritesOnly ? 'Favorites Only' : 'Favorites'}</span>
+                        </button>
                         
                         <!-- Right side: Clear Filters Button -->
                         <button id="clear-recipe-filters-btn" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md text-sm font-medium transition-colors">
@@ -225,6 +208,24 @@ class RecipeManager {
                             <div class="flex items-center space-x-3">
                             </div>
                         </div>
+                        </div>
+                        
+                        <!-- Row 4: Sort Controls (Full Width on Mobile) -->
+                        <div class="flex items-center gap-3 w-full mt-3">
+                            <select id="recipe-sort" class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm">
+                                <option value="name" ${this.sortBy === 'name' ? 'selected' : ''}>Name</option>
+                                <option value="date" ${this.sortBy === 'date' ? 'selected' : ''}>Created</option>
+                                <option value="prep_time" ${this.sortBy === 'prep_time' ? 'selected' : ''}>Total Time</option>
+                                <option value="serving_count" ${this.sortBy === 'serving_count' ? 'selected' : ''}>Servings</option>
+                                <option value="label_type" ${this.sortBy === 'label_type' ? 'selected' : ''}>Label Type</option>
+                            </select>
+                            
+                            <button id="sort-direction-btn" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white transition-colors flex items-center" title="${this.sortAscending ? 'Sort Ascending (A-Z, 1-9)' : 'Sort Descending (Z-A, 9-1)'}">
+                                ${this.sortAscending ? 
+                                    '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>' : 
+                                    '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>'
+                                }
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -983,7 +984,7 @@ class RecipeManager {
             };
             
             clearFiltersBtn.addEventListener('click', 
-                SettingsManager.createClearFiltersHandler(clearCallback, '#clear-recipe-filters-btn', this)
+                window.mealPlannerSettings.createClearFiltersHandler(clearCallback, '#clear-recipe-filters-btn', this)
             );
         }
 
@@ -2971,6 +2972,7 @@ class RecipeManager {
             this.selectedLabels.push(label);
             this.labelSearchTerm = ''; // Clear search after selection
             this.render(); // Need full render to update label chips and maintain favorites button state
+            this.attachEventListeners(); // Reattach event listeners after render
             this.updateFavoritesButton(); // Ensure favorites button maintains correct state after render
         }
     }
@@ -2978,6 +2980,7 @@ class RecipeManager {
     removeLabel(label) {
         this.selectedLabels = this.selectedLabels.filter(l => l !== label);
         this.render(); // Need full render to update label chips
+        this.attachEventListeners(); // Reattach event listeners after render
         this.updateFavoritesButton(); // Ensure favorites button maintains correct state after render
     }
 
@@ -2985,6 +2988,7 @@ class RecipeManager {
         this.selectedLabels = [];
         this.labelSearchTerm = '';
         this.render();
+        this.attachEventListeners(); // Reattach event listeners after render
         this.updateFavoritesButton(); // Ensure favorites button maintains correct state after render
     }
 
