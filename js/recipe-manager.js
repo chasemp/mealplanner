@@ -2283,6 +2283,21 @@ class RecipeManager {
         this.updateFavoritesButton(); // Ensure favorites button maintains correct state after render
     }
 
+    /**
+     * Get short, concise names for label types in dropdown
+     * @param {string} labelType - The label type (e.g., 'meal_type', 'recipe_type')
+     * @returns {string} Short display name
+     */
+    getShortLabelTypeName(labelType) {
+        const shortNames = {
+            'meal_type': 'meal',
+            'recipe_type': 'combo',
+            'ingredient_type': 'ingredient',
+            'default': 'label'
+        };
+        return shortNames[labelType] || labelType.replace('_', ' ');
+    }
+
     // Get filtered labels for dropdown based on search term
     getFilteredLabelsForDropdown() {
         const availableLabels = this.getAllLabels().filter(label => !this.selectedLabels.includes(label));
@@ -2323,7 +2338,7 @@ class RecipeManager {
                         ${icon && labelType !== 'default' ? `<span class="flex-shrink-0">${icon}</span>` : ''}
                         <span class="font-bold flex-1">${label}</span>
                         <span class="inline-flex items-center px-2 py-1 ${colorClasses} rounded-full text-xs flex-shrink-0">
-                            ${labelType !== 'default' ? labelType.replace('_', ' ') : 'label'}
+                            ${labelType !== 'default' ? this.getShortLabelTypeName(labelType) : 'label'}
                         </span>
                     </div>
                 </div>
