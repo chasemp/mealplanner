@@ -1600,43 +1600,53 @@ class RecipeManager {
         // Scroll to top
         window.scrollTo(0, 0);
         
-        // Add back button handler
-        const backBtn = this.container.querySelector('#mobile-recipe-back');
-        if (backBtn) {
-            backBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log('📱 Back button clicked');
-                this.returnFromMobileRecipe();
-            });
-        }
+        // Add event listeners after a short delay to ensure DOM is ready
+        setTimeout(() => {
+            console.log('📱 Attaching mobile recipe page event listeners');
+            
+            // Add back button handler
+            const backBtn = this.container.querySelector('#mobile-recipe-back');
+            console.log('📱 Back button found:', !!backBtn);
+            if (backBtn) {
+                backBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('📱 Back button clicked');
+                    this.returnFromMobileRecipe();
+                });
+            }
+            
+            // Add close button handler
+            const closeBtn = this.container.querySelector('#mobile-recipe-close');
+            console.log('📱 Close button found:', !!closeBtn);
+            if (closeBtn) {
+                closeBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('📱 Close button clicked');
+                    this.returnFromMobileRecipe();
+                });
+            }
+            
+            // Add edit button handler
+            const editBtn = this.container.querySelector('#mobile-recipe-edit');
+            console.log('📱 Edit button found:', !!editBtn);
+            if (editBtn) {
+                editBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('📱 Edit button clicked');
+                    
+                    // Store that we're editing from mobile recipe view
+                    this.editingFromMobileView = true;
+                    this.editingRecipe = recipe;
+                    
+                    this.showRecipeForm(recipe);
+                });
+            }
+        }, 10);
         
-        // Add close button handler
-        const closeBtn = this.container.querySelector('#mobile-recipe-close');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log('📱 Close button clicked');
-                this.returnFromMobileRecipe();
-            });
-        }
-        
-        // Add edit button handler
-        const editBtn = this.container.querySelector('#mobile-recipe-edit');
-        if (editBtn) {
-            editBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log('📱 Edit button clicked');
-                
-                // Store that we're editing from mobile recipe view
-                this.editingFromMobileView = true;
-                this.editingRecipe = recipe;
-                
-                this.showRecipeForm(recipe);
-            });
-        }
+        console.log('📱 Mobile recipe page HTML set, container innerHTML length:', this.container.innerHTML.length);
     }
 
     returnFromMobileRecipe() {
@@ -1661,7 +1671,10 @@ class RecipeManager {
     generateMobileRecipeHTML(recipe) {
         const labels = recipe.labels || recipe.tags || [];
         
-        return `
+        console.log('📱 Generating mobile recipe HTML for:', recipe.title);
+        console.log('📱 Recipe ingredients count:', recipe.ingredients?.length);
+        
+        const html = `
             <div class="min-h-screen bg-white dark:bg-gray-900">
                 <!-- Mobile Header -->
                 <div class="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-3 z-10">
@@ -1767,6 +1780,9 @@ class RecipeManager {
                 </div>
             </div>
         `;
+        
+        console.log('📱 Generated mobile recipe HTML length:', html.length);
+        return html;
     }
 
     showDesktopRecipeModal(recipe) {
