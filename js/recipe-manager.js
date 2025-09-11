@@ -311,11 +311,11 @@ class RecipeManager {
         
         if (favoritesBtn) {
             // Update button appearance and text with better dark mode support
-            const newClassName = `px-4 py-2 rounded-md text-sm font-medium transition-colors ${this.showFavoritesOnly ? 
-                // Active state: bright yellow with dark text for both modes
-                'bg-yellow-400 hover:bg-yellow-500 text-gray-900 dark:bg-yellow-500 dark:hover:bg-yellow-400 dark:text-gray-900 font-bold border-2 border-yellow-600 dark:border-yellow-400' : 
-                // Inactive state: subtle yellow for light, distinct dark yellow for dark mode
-                'bg-yellow-100 hover:bg-yellow-200 text-yellow-800 dark:bg-yellow-800 dark:hover:bg-yellow-700 dark:text-yellow-100 border-2 border-transparent dark:border-yellow-700'
+            const newClassName = `px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${this.showFavoritesOnly ? 
+                // Active state: yellow with glow and border for both modes
+                'bg-yellow-400 hover:bg-yellow-500 text-gray-900 dark:bg-yellow-500 dark:hover:bg-yellow-400 dark:text-gray-900 font-bold border-2 border-yellow-500 shadow-lg shadow-yellow-400/50 dark:border-yellow-400 dark:shadow-yellow-500/50' :
+                // Inactive state: subtle yellow with transparent border
+                'bg-yellow-100 hover:bg-yellow-200 text-yellow-800 dark:bg-yellow-800 dark:hover:bg-yellow-700 dark:text-yellow-100 border-2 border-transparent hover:border-yellow-300 dark:hover:border-yellow-600'
             }`;
             favoritesBtn.className = newClassName;
             favoritesBtn.title = this.showFavoritesOnly ? 'Show all recipes' : 'Show only favorites';
