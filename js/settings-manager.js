@@ -85,6 +85,13 @@ class SettingsManager {
         
         if (managedModeInput) managedModeInput.checked = this.settings.calendarManagedMode;
         if (notificationsInput) notificationsInput.checked = this.settings.calendarNotifications;
+        
+        // Apply filter safety settings
+        const confirmBeforeClearingInput = document.getElementById('confirm-before-clearing-filters');
+        const requireDoublePressInput = document.getElementById('require-double-press-clear-filters');
+        
+        if (confirmBeforeClearingInput) confirmBeforeClearingInput.checked = this.settings.confirmBeforeClearingFilters;
+        if (requireDoublePressInput) requireDoublePressInput.checked = this.settings.requireDoublePressForClearFilters;
     }
 
     applyMealTimeVisibility() {
@@ -243,6 +250,22 @@ class SettingsManager {
                     const settingKey = inputId.replace('-', '').replace('-', '');
                     const camelCase = settingKey.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
                     this.settings[camelCase] = e.target.checked;
+                    this.saveSettings();
+                });
+            }
+        });
+        
+        // Filter safety settings
+        const filterSafetyInputs = ['confirm-before-clearing-filters', 'require-double-press-clear-filters'];
+        filterSafetyInputs.forEach(inputId => {
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.addEventListener('change', (e) => {
+                    if (inputId === 'confirm-before-clearing-filters') {
+                        this.settings.confirmBeforeClearingFilters = e.target.checked;
+                    } else if (inputId === 'require-double-press-clear-filters') {
+                        this.settings.requireDoublePressForClearFilters = e.target.checked;
+                    }
                     this.saveSettings();
                 });
             }
