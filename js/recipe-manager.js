@@ -1551,9 +1551,20 @@ class RecipeManager {
 
     showRecipeDetail(recipeId) {
         const recipe = this.recipes.find(r => r.id === recipeId);
-        if (!recipe) return;
+        if (!recipe) {
+            console.error('❌ Recipe not found:', recipeId);
+            return;
+        }
 
-        console.log('Showing recipe detail:', recipe.title);
+        console.log('🔍 Showing recipe detail:', recipe.title);
+        console.log('📊 Recipe data:', {
+            id: recipe.id,
+            title: recipe.title,
+            description: recipe.description,
+            ingredients: recipe.ingredients?.length || 0,
+            instructions: recipe.instructions?.length || 0,
+            hasImageUrl: !!recipe.image_url
+        });
         
         // Remove existing modal if present
         const existingModal = document.getElementById('recipe-detail-modal');
@@ -1567,8 +1578,15 @@ class RecipeManager {
         modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-1 sm:p-4';
         
         // Prepare ingredients list with resolved names
-        const ingredientsList = recipe.ingredients.map(ingredient => {
+        console.log('🥕 Processing ingredients:', recipe.ingredients);
+        const ingredientsList = recipe.ingredients.map((ingredient, index) => {
             const ingredientName = this.getIngredientNameById(ingredient.ingredient_id) || 'Unknown ingredient';
+            console.log(`🥕 Ingredient ${index}:`, { 
+                id: ingredient.ingredient_id, 
+                name: ingredientName, 
+                quantity: ingredient.quantity, 
+                unit: ingredient.unit 
+            });
             return `
                 <li class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
                     <span class="font-medium text-gray-900 dark:text-white">${ingredientName}</span>
@@ -1579,8 +1597,10 @@ class RecipeManager {
                 </li>
             `;
         }).join('');
+        console.log('🥕 Generated ingredients HTML length:', ingredientsList.length);
 
         // Format instructions (split by commas and number them)
+        console.log('📝 Processing instructions:', recipe.instructions, typeof recipe.instructions);
         let instructions = '';
         if (recipe.instructions && typeof recipe.instructions === 'string') {
             instructions = recipe.instructions.split(',').map((step, index) => {
@@ -1593,6 +1613,7 @@ class RecipeManager {
         } else {
             instructions = '<li class="mb-2 text-gray-500">No instructions available</li>';
         }
+        console.log('📝 Generated instructions HTML length:', instructions.length);
 
         // Format labels/tags
         const labels = recipe.labels || recipe.tags || [];
@@ -1690,7 +1711,11 @@ class RecipeManager {
             </div>
         `;
 
+        console.log('🎭 Modal HTML generated, length:', modal.innerHTML.length);
+        console.log('🎭 Modal content preview:', modal.innerHTML.substring(0, 200) + '...');
+        
         document.body.appendChild(modal);
+        console.log('🎭 Modal appended to body');
 
         // Add event listeners
         const closeBtn = modal.querySelector('#close-recipe-detail');
