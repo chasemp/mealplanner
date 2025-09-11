@@ -287,6 +287,8 @@ class RecipeManager {
         const favoritesBtn = this.container.querySelector('#favorites-filter-btn');
         if (favoritesBtn) {
             console.log('🔄 Found favorites button, updating...');
+            console.log('🔄 Current button className before update:', favoritesBtn.className);
+            console.log('🔄 Current button innerHTML before update:', favoritesBtn.innerHTML);
             // Update button appearance and text
             favoritesBtn.className = `px-4 py-2 rounded-md text-sm font-medium transition-colors ${this.showFavoritesOnly ? 'bg-yellow-400 hover:bg-yellow-500 text-yellow-900 dark:bg-yellow-500 dark:hover:bg-yellow-400 dark:text-yellow-900 font-bold border-2 border-yellow-600 dark:border-yellow-400' : 'bg-yellow-100 hover:bg-yellow-200 text-yellow-800 dark:bg-yellow-900 dark:hover:bg-yellow-800 dark:text-yellow-200 border-2 border-transparent'}`;
             favoritesBtn.title = this.showFavoritesOnly ? 'Show all recipes' : 'Show only favorites';
@@ -300,6 +302,8 @@ class RecipeManager {
                 <span class="${this.showFavoritesOnly ? 'font-bold italic' : ''}">${this.showFavoritesOnly ? 'Show All' : 'Favorites'}</span>
             `;
             console.log('🔄 Button updated with text:', this.showFavoritesOnly ? 'Show All' : 'Favorites');
+            console.log('🔄 New button className after update:', favoritesBtn.className);
+            console.log('🔄 New button innerHTML after update:', favoritesBtn.innerHTML);
         } else {
             console.log('❌ Favorites button not found!');
         }
