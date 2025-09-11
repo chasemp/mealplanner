@@ -289,8 +289,10 @@ class RecipeManager {
     }
 
     updateFavoritesButton() {
+        console.log('🔄 updateFavoritesButton called, showFavoritesOnly:', this.showFavoritesOnly);
         const favoritesBtn = this.container.querySelector('#favorites-filter-btn');
         if (favoritesBtn) {
+            console.log('🔄 Found favorites button, updating...');
             // Update button appearance and text
             favoritesBtn.className = `px-4 py-2 rounded-md text-sm font-medium transition-colors ${this.showFavoritesOnly ? 'bg-yellow-400 hover:bg-yellow-500 text-yellow-900 dark:bg-yellow-500 dark:hover:bg-yellow-400 dark:text-yellow-900' : 'bg-yellow-100 hover:bg-yellow-200 text-yellow-800 dark:bg-yellow-900 dark:hover:bg-yellow-800 dark:text-yellow-200'}`;
             favoritesBtn.title = this.showFavoritesOnly ? 'Show all recipes' : 'Show only favorites';
@@ -303,6 +305,9 @@ class RecipeManager {
                 }
                 ${this.showFavoritesOnly ? 'Show All' : 'Favorites'}
             `;
+            console.log('🔄 Button updated with text:', this.showFavoritesOnly ? 'Show All' : 'Favorites');
+        } else {
+            console.log('❌ Favorites button not found!');
         }
     }
 
@@ -543,7 +548,11 @@ class RecipeManager {
 
         // Filter by favorites
         if (this.showFavoritesOnly) {
+            console.log('🌟 Filtering for favorites only...');
+            console.log('🌟 Before favorites filter:', filtered.length, 'recipes');
+            console.log('🌟 Recipes with favorite=true:', filtered.filter(recipe => recipe.favorite === true).length);
             filtered = filtered.filter(recipe => recipe.favorite === true);
+            console.log('🌟 After favorites filter:', filtered.length, 'recipes');
         }
 
         // Sort recipes
@@ -939,7 +948,10 @@ class RecipeManager {
         const favoritesFilterBtn = this.container.querySelector('#favorites-filter-btn');
         if (favoritesFilterBtn) {
             favoritesFilterBtn.addEventListener('click', () => {
+                console.log('🌟 Favorites button clicked, current state:', this.showFavoritesOnly);
                 this.showFavoritesOnly = !this.showFavoritesOnly;
+                console.log('🌟 New favorites state:', this.showFavoritesOnly);
+                console.log('🌟 Total recipes with favorite=true:', this.recipes.filter(r => r.favorite === true).length);
                 this.updateRecipeDisplay();
             });
         }
@@ -1502,12 +1514,6 @@ class RecipeManager {
         return updatedRecipe;
     }
 
-    async saveRecipes() {
-        // Save to localStorage or other storage
-        if (window.storageManager) {
-            await window.storageManager.saveData('recipes', this.recipes);
-        }
-    }
 
     cleanup() {
         // Clean up document-level event listeners
