@@ -1012,6 +1012,11 @@ class RecipeManager {
         
         // Initialize form labels
         this.initFormLabels(recipe);
+        
+        // Use full-page form for better label container behavior
+        // Modal constraints are causing layout issues with the labels container
+        this.showFullPageRecipeForm(recipe);
+        return;
         const modalId = 'recipe-form-modal';
         
         // Remove existing modal if present
@@ -1130,7 +1135,7 @@ class RecipeManager {
                         <label for="recipe-form-labels" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Labels</label>
                         <!-- Multi-select label input with typeahead and chips -->
                         <div class="relative">
-                            <div id="recipe-form-labels-container" class="w-full h-[42px] overflow-hidden px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus-within:ring-2 focus-within:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white cursor-text flex items-center gap-1 overflow-x-auto">
+                            <div id="recipe-form-labels-container" class="w-full h-10 px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus-within:ring-2 focus-within:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white cursor-text flex items-center gap-1 overflow-x-auto" style="min-height: 2.5rem; max-height: 2.5rem;">
                                 ${isEdit && recipe.labels ? recipe.labels.map(label => {
                                     const labelType = this.inferLabelType(label);
                                     const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
@@ -2335,6 +2340,321 @@ class RecipeManager {
         const recipe = this.recipes.find(r => r.id === recipeId);
         if (recipe) {
             this.showRecipeForm(recipe);
+        }
+    }
+
+    showFullPageRecipeForm(recipe = null) {
+        console.log('📄 Opening full-page recipe form...', recipe ? 'Edit mode' : 'Add mode');
+        
+        // Store current state for back navigation
+        this.previousView = {
+            container: this.container.innerHTML,
+            scrollPosition: window.scrollY
+        };
+        
+        // Replace entire container with full-page recipe form
+        this.container.innerHTML = this.generateFullPageRecipeFormHTML(recipe);
+        
+        // Scroll to top
+        window.scrollTo(0, 0);
+        
+        // Attach event listeners
+        this.attachFullPageFormListeners(recipe);
+    }
+
+    generateFullPageRecipeFormHTML(recipe = null) {
+        const isEdit = recipe !== null;
+        
+        return `
+            <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+                <!-- Header -->
+                <div class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+                    <div class="max-w-4xl mx-auto px-4 py-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <button id="back-to-recipes" class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                    </svg>
+                                </button>
+                                <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
+                                    ${isEdit ? 'Edit Recipe' : 'Add New Recipe'}
+                                </h1>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <button type="button" id="cancel-fullpage-form" class="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
+                                    Cancel
+                                </button>
+                                <button type="submit" form="fullpage-recipe-form" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium">
+                                    ${isEdit ? 'Update Recipe' : 'Save Recipe'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Content -->
+                <div class="max-w-4xl mx-auto px-4 py-6">
+                    <form id="fullpage-recipe-form" class="space-y-6">
+                        <!-- Title -->
+                        <div>
+                            <label for="recipe-title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Recipe Title</label>
+                            <input type="text" id="recipe-title" name="title" required
+                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                   placeholder="Enter recipe title..."
+                                   value="${isEdit ? recipe.title || '' : ''}">
+                        </div>
+
+                        <!-- Description -->
+                        <div>
+                            <label for="recipe-description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
+                            <textarea id="recipe-description" name="description" rows="3"
+                                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                      placeholder="Brief description of the recipe...">${isEdit ? recipe.description || '' : ''}</textarea>
+                        </div>
+
+                        <!-- Labels Section -->
+                        <div>
+                            <label for="fullpage-recipe-labels" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Labels</label>
+                            <div class="relative">
+                                <div id="fullpage-recipe-labels-container" class="w-full min-h-[42px] max-h-[60px] overflow-y-auto px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus-within:ring-2 focus-within:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white cursor-text flex flex-wrap gap-1 items-center">
+                                    ${isEdit && recipe.labels ? recipe.labels.map(label => {
+                                        const labelType = this.inferLabelType(label);
+                                        const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
+                                        const colors = window.labelTypes ? window.labelTypes.getColorClasses(labelType) : 
+                                            'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+                                        const buttonColors = this.getLabelButtonColors(labelType);
+                                        return `
+                                        <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-bold ${colors} rounded-full">
+                                            ${icon}${typeof label === 'string' ? label : label.name || label}
+                                            <button type="button" class="ml-1 ${buttonColors}" onclick="window.recipeManager.removeFormLabel('${typeof label === 'string' ? label : label.name || label}')">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                </svg>
+                                            </button>
+                                        </span>
+                                        `;
+                                    }).join('') : ''}
+                                    <input 
+                                        type="text" 
+                                        id="fullpage-recipe-labels-input" 
+                                        class="flex-1 min-w-[100px] bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-none outline-none text-sm placeholder-gray-500 dark:placeholder-gray-400" 
+                                        placeholder="${isEdit && recipe.labels && recipe.labels.length > 0 ? 'Type to add more...' : 'Type to search labels...'}"
+                                        autocomplete="off"
+                                    />
+                                </div>
+                                <div id="fullpage-recipe-labels-dropdown" class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg hidden max-h-32 overflow-y-auto">
+                                    <!-- Dropdown options will be populated by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Instructions -->
+                        <div>
+                            <label for="recipe-instructions" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Instructions</label>
+                            <textarea id="recipe-instructions" name="instructions" rows="8" required
+                                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                      placeholder="Enter step-by-step cooking instructions...">${isEdit ? recipe.instructions || '' : ''}</textarea>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+    }
+
+    attachFullPageFormListeners(recipe) {
+        const form = document.querySelector('#fullpage-recipe-form');
+        const backBtn = document.querySelector('#back-to-recipes');
+        const cancelBtn = document.querySelector('#cancel-fullpage-form');
+
+        // Back/Cancel handlers
+        const goBack = () => {
+            if (this.previousView) {
+                this.container.innerHTML = this.previousView.container;
+                window.scrollTo(0, this.previousView.scrollPosition || 0);
+                this.attachEventListeners(); // Re-attach main recipe list listeners
+            }
+        };
+
+        backBtn?.addEventListener('click', goBack);
+        cancelBtn?.addEventListener('click', goBack);
+
+        // Form label listeners - reuse existing methods but update selectors
+        this.attachFullPageLabelListeners();
+
+        // Form submission
+        form?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.handleFullPageFormSubmit(form, recipe);
+        });
+    }
+
+    attachFullPageLabelListeners() {
+        const labelInput = document.querySelector('#fullpage-recipe-labels-input');
+        const labelContainer = document.querySelector('#fullpage-recipe-labels-container');
+        const labelDropdown = document.querySelector('#fullpage-recipe-labels-dropdown');
+
+        if (!labelInput || !labelContainer || !labelDropdown) return;
+
+        // Input event for typeahead
+        labelInput.addEventListener('input', (e) => {
+            this.formLabelSearchTerm = e.target.value;
+            this.updateFullPageLabelDropdown();
+        });
+
+        // Focus events
+        labelInput.addEventListener('focus', () => {
+            this.updateFullPageLabelDropdown();
+        });
+
+        // Click on container to focus input
+        labelContainer.addEventListener('click', (e) => {
+            if (e.target === labelContainer) {
+                labelInput.focus();
+            }
+        });
+
+        // Keyboard navigation
+        labelInput.addEventListener('keydown', (e) => {
+            const dropdown = document.querySelector('#fullpage-recipe-labels-dropdown');
+            const highlighted = dropdown.querySelector('.bg-gray-50, .dark\\:bg-gray-700');
+            
+            switch (e.key) {
+                case 'Enter':
+                    e.preventDefault();
+                    if (highlighted) {
+                        const label = highlighted.getAttribute('data-label');
+                        if (label) {
+                            this.addFormLabel(label);
+                            this.updateFullPageLabelsDisplay();
+                            labelInput.focus();
+                        }
+                    }
+                    break;
+                    
+                case 'Escape':
+                    labelDropdown.classList.add('hidden');
+                    labelInput.blur();
+                    break;
+            }
+        });
+    }
+
+    updateFullPageLabelDropdown() {
+        const dropdown = document.querySelector('#fullpage-recipe-labels-dropdown');
+        if (!dropdown) return;
+
+        const availableLabels = this.getAllLabels().filter(label => 
+            !this.formSelectedLabels.includes(label) &&
+            (!this.formLabelSearchTerm || label.toLowerCase().includes(this.formLabelSearchTerm.toLowerCase()))
+        );
+
+        if (availableLabels.length === 0 || !this.formLabelSearchTerm) {
+            dropdown.classList.add('hidden');
+            return;
+        }
+
+        dropdown.classList.remove('hidden');
+        dropdown.innerHTML = availableLabels.slice(0, 10).map((label, index) => {
+            const labelType = this.inferLabelType(label);
+            const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
+            const colorClasses = this.getLabelColorClasses(labelType);
+            
+            return `
+            <div class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm text-gray-900 dark:text-gray-100 ${index === 0 ? 'bg-gray-50 dark:bg-gray-700' : ''}" 
+                 data-label="${label}" 
+                 onclick="window.recipeManager.addFormLabel('${label}'); window.recipeManager.updateFullPageLabelsDisplay();">
+                <div class="flex items-center space-x-2">
+                    ${icon && labelType !== 'default' ? `<span class="flex-shrink-0">${icon}</span>` : ''}
+                    <span class="font-bold flex-1">${label}</span>
+                    <span class="inline-flex items-center px-2 py-1 ${colorClasses} rounded-full text-xs flex-shrink-0">
+                        ${labelType !== 'default' ? this.getShortLabelTypeName(labelType) : 'label'}
+                    </span>
+                </div>
+            </div>
+            `;
+        }).join('');
+    }
+
+    updateFullPageLabelsDisplay() {
+        const container = document.querySelector('#fullpage-recipe-labels-container');
+        const input = document.querySelector('#fullpage-recipe-labels-input');
+        
+        if (!container || !input) return;
+
+        // Clear existing chips (keep the input)
+        const existingChips = container.querySelectorAll('span');
+        existingChips.forEach(chip => chip.remove());
+
+        // Add chips for selected labels
+        this.formSelectedLabels.forEach(label => {
+            const labelType = this.inferLabelType(label);
+            const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
+            const colors = window.labelTypes ? window.labelTypes.getColorClasses(labelType) : 
+                'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+            const buttonColors = this.getLabelButtonColors(labelType);
+            
+            const chip = document.createElement('span');
+            chip.className = `inline-flex items-center px-1.5 py-0.5 text-xs font-bold ${colors} rounded-full`;
+            chip.innerHTML = `
+                ${icon}${label}
+                <button type="button" class="ml-1 ${buttonColors}" onclick="window.recipeManager.removeFormLabel('${label}'); window.recipeManager.updateFullPageLabelsDisplay();">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            `;
+            
+            // Insert before the input
+            container.insertBefore(chip, input);
+        });
+
+        // Update placeholder
+        input.placeholder = this.formSelectedLabels.length > 0 ? 'Type to add more...' : 'Type to search labels...';
+    }
+
+    async handleFullPageFormSubmit(form, existingRecipe) {
+        try {
+            const formData = new FormData(form);
+            const recipeData = {
+                title: formData.get('title').trim(),
+                description: formData.get('description').trim(),
+                instructions: formData.get('instructions').trim(),
+                labels: this.formSelectedLabels || []
+            };
+
+            // Validate required fields
+            if (!recipeData.title) {
+                this.showNotification('Recipe title is required', 'error');
+                return;
+            }
+
+            if (!recipeData.instructions) {
+                this.showNotification('Instructions are required', 'error');
+                return;
+            }
+
+            // Save recipe
+            let savedRecipe;
+            if (existingRecipe) {
+                savedRecipe = await this.updateRecipe(existingRecipe.id, recipeData);
+                this.showNotification('Recipe updated successfully!', 'success');
+            } else {
+                savedRecipe = await this.createRecipe(recipeData);
+                this.showNotification('Recipe created successfully!', 'success');
+            }
+
+            // Return to recipe list
+            if (this.previousView) {
+                this.container.innerHTML = this.previousView.container;
+                window.scrollTo(0, this.previousView.scrollPosition || 0);
+                this.attachEventListeners();
+                this.render(); // Refresh to show new/updated recipe
+            }
+
+        } catch (error) {
+            console.error('Error handling full-page form:', error);
+            this.showNotification('Error saving recipe', 'error');
         }
     }
 
