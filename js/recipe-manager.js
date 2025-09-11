@@ -984,9 +984,17 @@ class RecipeManager {
                 this.updateFavoritesButton(); // Ensure favorites button maintains correct state after render
             };
             
-            clearFiltersBtn.addEventListener('click', 
-                window.mealPlannerSettings.createClearFiltersHandler(clearCallback, '#clear-recipe-filters-btn', this)
-            );
+            // Use fallback for settings manager access
+            const settingsManager = window.mealPlannerSettings || window.settingsManager;
+            if (settingsManager && settingsManager.createClearFiltersHandler) {
+                clearFiltersBtn.addEventListener('click', 
+                    settingsManager.createClearFiltersHandler(clearCallback, '#clear-recipe-filters-btn', this)
+                );
+            } else {
+                // Fallback to simple click handler if settings manager not available
+                console.warn('⚠️ Settings manager not available, using simple clear filters');
+                clearFiltersBtn.addEventListener('click', clearCallback);
+            }
         }
 
         // Favorites filter button
