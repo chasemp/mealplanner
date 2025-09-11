@@ -865,13 +865,20 @@ class RecipeManager {
             });
 
             // Hide dropdown when clicking outside
-            document.addEventListener('click', (e) => {
+            const handleDocumentClick = (e) => {
                 if (!labelContainer.contains(e.target) && !labelDropdown.contains(e.target)) {
                     labelDropdown.classList.add('hidden');
                     labelInput.value = ''; // Clear search when closing
                     this.labelSearchTerm = '';
                 }
-            });
+            };
+            
+            // Store reference for cleanup
+            if (this.documentClickHandler) {
+                document.removeEventListener('click', this.documentClickHandler);
+            }
+            this.documentClickHandler = handleDocumentClick;
+            document.addEventListener('click', handleDocumentClick);
         }
 
         // Sort selector
@@ -1271,14 +1278,16 @@ class RecipeManager {
 
         // Close modal handlers
         const closeModal = () => {
-            modal.remove();
-            
             // If we were editing from mobile recipe view, return to that view
             if (this.editingFromMobileView && this.editingRecipe) {
-                console.log('📱 Returning to mobile recipe view after edit');
+                console.log('Returning to mobile recipe view after cancel');
+                modal.remove();
                 this.showMobileRecipePage(this.editingRecipe);
                 this.editingFromMobileView = false;
                 this.editingRecipe = null;
+            } else {
+                // Normal desktop modal close
+                modal.remove();
             }
         };
 
@@ -1389,9 +1398,43 @@ class RecipeManager {
                 }
             });
 
-            // Save recipe logic would go here
-            console.log('Recipe data collected:', recipeData, 'Ingredients:', ingredients);
-            this.showNotification('Recipe functionality coming soon!', 'info');
+            // Add ingredients to recipe data
+            recipeData.ingredients = ingredients;
+            
+            // Add labels (convert from tags for now)
+            recipeData.labels = recipeData.tags || [];
+            delete recipeData.tags;
+            
+            // Add created_at timestamp if new recipe
+            if (!existingRecipe) {
+                recipeData.created_at = new Date().toISOString();
+            }
+
+            // Save recipe
+            let savedRecipe;
+            if (existingRecipe) {
+                // Update existing recipe
+                savedRecipe = await this.updateRecipe(existingRecipe.id, recipeData);
+                this.showNotification('Recipe updated successfully!', 'success');
+            } else {
+                // Create new recipe
+                savedRecipe = await this.createRecipe(recipeData);
+                this.showNotification('Recipe created successfully!', 'success');
+            }
+
+            // Handle post-save navigation
+            if (this.editingFromMobileView && this.editingRecipe) {
+                // Update the editing recipe with latest data and return to mobile view
+                this.editingRecipe = savedRecipe;
+                this.showMobileRecipePage(this.editingRecipe);
+                this.editingFromMobileView = false;
+                this.editingRecipe = null;
+            } else {
+                // Close modal and refresh recipe list
+                const modal = form.closest('.fixed');
+                if (modal) modal.remove();
+                this.render();
+            }
             
         } catch (error) {
             console.error('Error handling recipe form:', error);
@@ -1399,6 +1442,65 @@ class RecipeManager {
         }
     }
 
+    async createRecipe(recipeData) {
+        // Generate new ID
+        const newId = Math.max(...this.recipes.map(r => r.id), 0) + 1;
+        
+        const newRecipe = {
+            id: newId,
+            ...recipeData
+        };
+        
+        // Add to recipes array
+        this.recipes.push(newRecipe);
+        
+        // Save to storage
+        await this.saveRecipes();
+        
+        return newRecipe;
+    }
+
+    async updateRecipe(recipeId, recipeData) {
+        const recipeIndex = this.recipes.findIndex(r => r.id === recipeId);
+        if (recipeIndex === -1) {
+            throw new Error('Recipe not found');
+        }
+        
+        // Update recipe while preserving ID
+        const updatedRecipe = {
+            ...this.recipes[recipeIndex],
+            ...recipeData,
+            id: recipeId // Ensure ID is preserved
+        };
+        
+        this.recipes[recipeIndex] = updatedRecipe;
+        
+        // Save to storage
+        await this.saveRecipes();
+        
+        return updatedRecipe;
+    }
+
+    async saveRecipes() {
+        // Save to localStorage or other storage
+        if (window.storageManager) {
+            await window.storageManager.saveData('recipes', this.recipes);
+        }
+    }
+
+    cleanup() {
+        // Clean up document-level event listeners
+        if (this.documentClickHandler) {
+            document.removeEventListener('click', this.documentClickHandler);
+            this.documentClickHandler = null;
+        }
+        
+        // Reset mobile recipe state
+        this.isShowingMobileRecipe = false;
+        this.editingFromMobileView = false;
+        this.editingRecipe = null;
+        this.previousView = null;
+    }
 
     showBarcodeScanner(ingredientsContainer) {
         // Use the shared barcode scanner component
