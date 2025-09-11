@@ -1126,18 +1126,12 @@ class RecipeManager {
                         <!-- Action buttons below the list -->
                         <div class="flex gap-3">
                             <button type="button" id="add-ingredient-row" class="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                </svg>
-                                <span>🥕</span>
                                 <span>Add</span>
+                                <span>🥕</span>
                             </button>
                             <button type="button" id="create-new-ingredient" class="flex items-center gap-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 rounded-md transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                </svg>
-                                <span>🥕</span>
                                 <span>Create</span>
+                                <span>🥕</span>
                             </button>
                         </div>
                     </div>
@@ -2492,18 +2486,12 @@ class RecipeManager {
                             <!-- Action buttons below the list -->
                             <div class="flex gap-3">
                                 <button type="button" id="add-ingredient-row" class="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md transition-colors">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                    </svg>
-                                    <span>🥕</span>
                                     <span>Add</span>
+                                    <span>🥕</span>
                                 </button>
                                 <button type="button" id="create-new-ingredient" class="flex items-center gap-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 rounded-md transition-colors">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                    </svg>
-                                    <span>🥕</span>
                                     <span>Create</span>
+                                    <span>🥕</span>
                                 </button>
                             </div>
                         </div>
