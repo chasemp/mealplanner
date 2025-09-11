@@ -301,6 +301,10 @@ class RecipeManager {
             // Update favorites button state
             this.updateFavoritesButton();
             console.log('🔄 Favorites button updated');
+            
+            // Update labels dropdown to show only labels from filtered recipes
+            this.updateLabelsDropdown();
+            console.log('🔄 Labels dropdown updated');
         } else {
             console.log('❌ Missing required elements for updateRecipeDisplay');
         }
@@ -2441,10 +2445,13 @@ class RecipeManager {
 
                         <!-- Instructions -->
                         <div>
-                            <label for="recipe-instructions" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Instructions</label>
-                            <textarea id="recipe-instructions" name="instructions" rows="8" required
-                                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                                      placeholder="Enter step-by-step cooking instructions...">${isEdit ? recipe.instructions || '' : ''}</textarea>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Instructions</label>
+                            <div id="instructions-container" class="space-y-3">
+                                ${this.renderInstructionSteps(isEdit ? recipe.instructions : null)}
+                            </div>
+                            <button type="button" id="add-instruction-step" class="mt-3 px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 border border-blue-300 dark:border-blue-600 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
+                                + Add Another Step
+                            </button>
                         </div>
 
                         <!-- Labels Section -->
@@ -2514,6 +2521,9 @@ class RecipeManager {
 
         // Ingredient/Items listeners
         this.attachFullPageIngredientListeners();
+
+        // Instruction step listeners
+        this.attachInstructionStepListeners();
 
         // Form label listeners - reuse existing methods but update selectors
         this.attachFullPageLabelListeners();
@@ -2679,10 +2689,20 @@ class RecipeManager {
     async handleFullPageFormSubmit(form, existingRecipe) {
         try {
             const formData = new FormData(form);
+            // Collect instruction steps
+            const instructionSteps = [];
+            const instructionTextareas = form.querySelectorAll('textarea[name^="instructions["]');
+            instructionTextareas.forEach(textarea => {
+                const step = textarea.value.trim();
+                if (step) {
+                    instructionSteps.push(step);
+                }
+            });
+
             const recipeData = {
                 title: formData.get('title').trim(),
                 description: formData.get('description').trim(),
-                instructions: formData.get('instructions').trim(),
+                instructions: instructionSteps,
                 labels: this.formSelectedLabels || []
             };
 
@@ -2719,8 +2739,8 @@ class RecipeManager {
                 return;
             }
 
-            if (!recipeData.instructions) {
-                this.showNotification('Instructions are required', 'error');
+            if (!recipeData.instructions || recipeData.instructions.length === 0) {
+                this.showNotification('At least one instruction step is required', 'error');
                 return;
             }
 
@@ -2799,6 +2819,141 @@ class RecipeManager {
     roundQuantity(quantity) {
         const rounded = Math.round(quantity * 100) / 100;
         return parseFloat(rounded.toFixed(2));
+    }
+
+    // Instruction steps methods
+    renderInstructionSteps(instructions = null) {
+        let steps = [];
+        
+        if (instructions) {
+            if (Array.isArray(instructions)) {
+                steps = instructions;
+            } else if (typeof instructions === 'string') {
+                // Handle legacy string format - split by newlines or numbered steps
+                steps = instructions.split(/\n+|\d+\.\s*/).filter(step => step.trim());
+            }
+        }
+        
+        // Ensure at least one step
+        if (steps.length === 0) {
+            steps = [''];
+        }
+        
+        return steps.map((step, index) => this.renderInstructionStep(step, index + 1)).join('');
+    }
+    
+    renderInstructionStep(content = '', stepNumber = 1) {
+        return `
+            <div class="instruction-step flex gap-3 items-start">
+                <div class="flex-shrink-0 w-8 h-8 bg-blue-500 text-white text-sm font-bold rounded-full flex items-center justify-center mt-1">
+                    ${stepNumber}
+                </div>
+                <div class="flex-1">
+                    <textarea name="instructions[${stepNumber - 1}]" rows="3" required
+                              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm resize-y"
+                              placeholder="Enter step ${stepNumber} instructions...">${content}</textarea>
+                </div>
+                ${stepNumber > 1 ? `
+                <button type="button" class="remove-instruction-step flex-shrink-0 p-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors mt-1" data-step="${stepNumber}">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                </button>
+                ` : ''}
+            </div>
+        `;
+    }
+    
+    addInstructionStep() {
+        const container = document.getElementById('instructions-container');
+        if (!container) return;
+        
+        const currentSteps = container.querySelectorAll('.instruction-step');
+        const nextStepNumber = currentSteps.length + 1;
+        
+        const newStepHTML = this.renderInstructionStep('', nextStepNumber);
+        container.insertAdjacentHTML('beforeend', newStepHTML);
+        
+        // Attach event listeners to the new step
+        this.attachInstructionStepListeners();
+        
+        // Focus on the new textarea
+        const newTextarea = container.querySelector(`textarea[name="instructions[${nextStepNumber - 1}]"]`);
+        if (newTextarea) {
+            newTextarea.focus();
+        }
+    }
+    
+    removeInstructionStep(stepNumber) {
+        const container = document.getElementById('instructions-container');
+        if (!container) return;
+        
+        const steps = container.querySelectorAll('.instruction-step');
+        if (steps.length <= 1) return; // Don't remove the last step
+        
+        // Remove the step
+        const stepToRemove = Array.from(steps).find(step => {
+            const removeBtn = step.querySelector('.remove-instruction-step');
+            return removeBtn && removeBtn.dataset.step == stepNumber;
+        });
+        
+        if (stepToRemove) {
+            stepToRemove.remove();
+            this.renumberInstructionSteps();
+        }
+    }
+    
+    renumberInstructionSteps() {
+        const container = document.getElementById('instructions-container');
+        if (!container) return;
+        
+        const steps = container.querySelectorAll('.instruction-step');
+        steps.forEach((step, index) => {
+            const stepNumber = index + 1;
+            
+            // Update the number circle
+            const numberCircle = step.querySelector('.w-8.h-8');
+            if (numberCircle) {
+                numberCircle.textContent = stepNumber;
+            }
+            
+            // Update the textarea name attribute
+            const textarea = step.querySelector('textarea');
+            if (textarea) {
+                textarea.name = `instructions[${index}]`;
+                textarea.placeholder = `Enter step ${stepNumber} instructions...`;
+            }
+            
+            // Update remove button data attribute
+            const removeBtn = step.querySelector('.remove-instruction-step');
+            if (removeBtn) {
+                removeBtn.dataset.step = stepNumber;
+            }
+        });
+    }
+    
+    attachInstructionStepListeners() {
+        // Remove existing listeners to prevent duplicates
+        document.querySelectorAll('.remove-instruction-step').forEach(btn => {
+            btn.replaceWith(btn.cloneNode(true));
+        });
+        
+        // Add listeners to remove buttons
+        document.querySelectorAll('.remove-instruction-step').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const stepNumber = parseInt(e.currentTarget.dataset.step);
+                this.removeInstructionStep(stepNumber);
+            });
+        });
+        
+        // Add listener to "Add Another Step" button
+        const addBtn = document.getElementById('add-instruction-step');
+        if (addBtn) {
+            addBtn.replaceWith(addBtn.cloneNode(true));
+            document.getElementById('add-instruction-step').addEventListener('click', () => {
+                this.addInstructionStep();
+            });
+        }
     }
 
     // Multi-select label methods
@@ -2939,9 +3094,11 @@ class RecipeManager {
         return shortNames[labelType] || labelType.replace('_', ' ');
     }
 
-    // Get filtered labels for dropdown based on search term
+    // Get filtered labels for dropdown based on search term and current recipe filters
     getFilteredLabelsForDropdown() {
-        const availableLabels = this.getAllLabels().filter(label => !this.selectedLabels.includes(label));
+        // Use labels from currently filtered recipes (after search term is applied)
+        // This ensures the dropdown only shows labels that exist in the current search results
+        const availableLabels = this.getFilteredLabels().filter(label => !this.selectedLabels.includes(label));
         
         if (!this.labelSearchTerm) {
             return availableLabels;
