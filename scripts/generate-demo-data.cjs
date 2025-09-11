@@ -758,7 +758,8 @@ class DemoDataGenerator {
             created_at: '', // Will be set by caller
             instructions: this.generateInstructions(template, selectedIngredients),
             labels: [...template.labels, ...this.generateRecipeLabels()],
-            ingredients: this.generateRecipeIngredients(selectedIngredients)
+            ingredients: this.generateRecipeIngredients(selectedIngredients),
+            favorite: Math.random() < 0.3 // 30% chance of being a favorite
         };
         
         
