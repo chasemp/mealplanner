@@ -830,6 +830,16 @@ class RecipeManager {
     }
 
     attachEventListeners() {
+        console.log('🔧 attachEventListeners called');
+        
+        // Remove existing event listeners to prevent duplicates
+        const existingFavBtn = this.container.querySelector('#favorites-filter-btn');
+        if (existingFavBtn) {
+            // Clone the element to remove all event listeners
+            const newFavBtn = existingFavBtn.cloneNode(true);
+            existingFavBtn.parentNode.replaceChild(newFavBtn, existingFavBtn);
+            console.log('🔧 Removed existing favorites button listeners');
+        }
         // Search input
         const searchInput = this.container.querySelector('#recipe-search');
         if (searchInput) {
@@ -980,14 +990,20 @@ class RecipeManager {
 
         // Favorites filter button
         const favoritesFilterBtn = this.container.querySelector('#favorites-filter-btn');
+        console.log('🔧 Favorites button element found:', !!favoritesFilterBtn, favoritesFilterBtn?.id);
         if (favoritesFilterBtn) {
-            favoritesFilterBtn.addEventListener('click', () => {
+            console.log('🔧 Adding click listener to favorites button');
+            favoritesFilterBtn.addEventListener('click', (e) => {
                 console.log('🌟 Favorites button clicked, current state:', this.showFavoritesOnly);
+                console.log('🌟 Event target:', e.target, e.currentTarget);
+                console.log('🌟 About to toggle state...');
                 this.showFavoritesOnly = !this.showFavoritesOnly;
                 console.log('🌟 New state:', this.showFavoritesOnly);
                 this.updateRecipeDisplay();
                 console.log('🌟 updateRecipeDisplay called');
             });
+        } else {
+            console.log('❌ Favorites button not found!');
         }
 
         // Attach recipe card listeners (favorites, edit, delete, click)
