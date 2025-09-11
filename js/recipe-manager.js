@@ -1558,6 +1558,159 @@ class RecipeManager {
 
         console.log('Showing recipe detail:', recipe.title);
         
+        // Check if we're on mobile - use different approach
+        const isMobile = window.innerWidth <= 768;
+        
+        if (isMobile) {
+            this.showMobileRecipePage(recipe);
+        } else {
+            this.showDesktopRecipeModal(recipe);
+        }
+    }
+
+    showMobileRecipePage(recipe) {
+        // Store current state for back navigation
+        this.previousView = {
+            container: this.container.innerHTML,
+            scrollPosition: window.scrollY
+        };
+
+        // Replace entire container with mobile recipe page
+        this.container.innerHTML = this.generateMobileRecipeHTML(recipe);
+        
+        // Scroll to top
+        window.scrollTo(0, 0);
+        
+        // Add back button handler
+        const backBtn = this.container.querySelector('#mobile-recipe-back');
+        if (backBtn) {
+            backBtn.addEventListener('click', () => this.returnFromMobileRecipe());
+        }
+        
+        // Add edit button handler
+        const editBtn = this.container.querySelector('#mobile-recipe-edit');
+        if (editBtn) {
+            editBtn.addEventListener('click', () => this.showRecipeForm(recipe));
+        }
+    }
+
+    returnFromMobileRecipe() {
+        if (this.previousView) {
+            this.container.innerHTML = this.previousView.container;
+            window.scrollTo(0, this.previousView.scrollPosition);
+            this.attachEventListeners(); // Reattach event listeners
+            this.previousView = null;
+        }
+    }
+
+    generateMobileRecipeHTML(recipe) {
+        const labels = recipe.labels || recipe.tags || [];
+        
+        return `
+            <div class="min-h-screen bg-white dark:bg-gray-900">
+                <!-- Mobile Header -->
+                <div class="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-3 z-10">
+                    <div class="flex items-center justify-between">
+                        <button id="mobile-recipe-back" class="flex items-center text-blue-600 dark:text-blue-400">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                            Back
+                        </button>
+                        <button id="mobile-recipe-edit" class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm">
+                            Edit
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recipe Content -->
+                <div class="p-4 space-y-6">
+                    <!-- Title -->
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">${recipe.title}</h1>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">${recipe.description || 'No description available'}</p>
+                    </div>
+
+                    <!-- Recipe Stats -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-center">
+                            <div class="text-blue-600 dark:text-blue-400 text-sm font-medium mb-1">Prep Time</div>
+                            <div class="text-lg font-bold text-gray-900 dark:text-white">${recipe.prep_time || 'N/A'} min</div>
+                        </div>
+                        <div class="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 text-center">
+                            <div class="text-red-600 dark:text-red-400 text-sm font-medium mb-1">Cook Time</div>
+                            <div class="text-lg font-bold text-gray-900 dark:text-white">${recipe.cook_time || 'N/A'} min</div>
+                        </div>
+                        <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 text-center">
+                            <div class="text-green-600 dark:text-green-400 text-sm font-medium mb-1">Serves</div>
+                            <div class="text-lg font-bold text-gray-900 dark:text-white">${recipe.serving_count || recipe.servings || 'N/A'}</div>
+                        </div>
+                        <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 text-center">
+                            <div class="text-purple-600 dark:text-purple-400 text-sm font-medium mb-1">Items</div>
+                            <div class="text-lg font-bold text-gray-900 dark:text-white">${recipe.ingredients?.length || 0}</div>
+                        </div>
+                    </div>
+
+                    <!-- Items -->
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Items (${recipe.ingredients?.length || 0})</h2>
+                        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 space-y-3">
+                            ${recipe.ingredients?.map(ingredient => {
+                                const ingredientName = this.getIngredientNameById(ingredient.ingredient_id) || 'Unknown ingredient';
+                                return `
+                                    <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
+                                        <span class="font-medium text-gray-900 dark:text-white">${ingredientName}</span>
+                                        <span class="text-gray-600 dark:text-gray-400 font-medium">
+                                            ${ingredient.quantity} ${ingredient.unit}
+                                        </span>
+                                    </div>
+                                `;
+                            }).join('') || '<div class="text-gray-500 dark:text-gray-400">No items available</div>'}
+                        </div>
+                    </div>
+
+                    <!-- Instructions -->
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Instructions</h2>
+                        <div class="space-y-4">
+                            ${(() => {
+                                if (recipe.instructions && typeof recipe.instructions === 'string') {
+                                    return recipe.instructions.split(',').map((step, index) => `
+                                        <div class="flex gap-4">
+                                            <div class="flex-shrink-0 w-8 h-8 bg-blue-500 text-white text-sm font-bold rounded-full flex items-center justify-center">${index + 1}</div>
+                                            <div class="flex-1 text-gray-900 dark:text-white leading-relaxed pt-1">${step.trim()}</div>
+                                        </div>
+                                    `).join('');
+                                } else if (Array.isArray(recipe.instructions)) {
+                                    return recipe.instructions.map((step, index) => `
+                                        <div class="flex gap-4">
+                                            <div class="flex-shrink-0 w-8 h-8 bg-blue-500 text-white text-sm font-bold rounded-full flex items-center justify-center">${index + 1}</div>
+                                            <div class="flex-1 text-gray-900 dark:text-white leading-relaxed pt-1">${step}</div>
+                                        </div>
+                                    `).join('');
+                                } else {
+                                    return '<div class="text-gray-500 dark:text-gray-400">No instructions available</div>';
+                                }
+                            })()}
+                        </div>
+                    </div>
+
+                    <!-- Labels -->
+                    ${labels.length > 0 ? `
+                        <div>
+                            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Labels</h2>
+                            <div class="flex flex-wrap gap-2">
+                                ${this.renderLabelChips(labels)}
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    showDesktopRecipeModal(recipe) {
+        
         // Remove existing modal if present
         const existingModal = document.getElementById('recipe-detail-modal');
         if (existingModal) {
@@ -1573,7 +1726,7 @@ class RecipeManager {
         const labels = recipe.labels || recipe.tags || [];
 
         modal.innerHTML = `
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-full sm:max-w-2xl md:max-w-4xl h-full sm:max-h-[90vh] flex flex-col mx-1 sm:mx-4 md:mx-0">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-full sm:max-w-2xl md:max-w-4xl h-[90vh] sm:max-h-[90vh] flex flex-col mx-1 sm:mx-4 md:mx-0">
                 <!-- Header -->
                 <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-2 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -1594,7 +1747,7 @@ class RecipeManager {
                     </div>
                 </div>
 
-                <div class="flex-1 overflow-y-auto p-2 sm:p-3 md:p-4 lg:p-6">
+                <div class="flex-1 overflow-y-auto p-2 sm:p-3 md:p-4 lg:p-6 min-h-0">
                     <!-- Recipe Image (if available) -->
                     ${recipe.image_url ? `
                         <div class="mb-4 sm:mb-6 flex justify-center">
@@ -1631,7 +1784,7 @@ class RecipeManager {
                         <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 text-center">
                             <div class="flex items-center justify-center mb-1">
                                 <svg class="w-4 h-4 mr-1 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 715.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                                 </svg>
                                 <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Serves</span>
                             </div>
@@ -1652,17 +1805,22 @@ class RecipeManager {
                     <div class="mb-4">
                         <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Items (${recipe.ingredients.length})</h3>
                         <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 space-y-2">
-                            ${recipe.ingredients.map(ingredient => {
-                                const ingredientName = this.getIngredientNameById(ingredient.ingredient_id) || 'Unknown ingredient';
-                                return `
-                                    <div class="flex justify-between items-center py-1 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
-                                        <span class="text-xs font-medium text-gray-900 dark:text-white flex-1">${ingredientName}</span>
-                                        <span class="text-xs text-gray-600 dark:text-gray-300 ml-2 flex-shrink-0">
-                                            ${ingredient.quantity} ${ingredient.unit}
-                                        </span>
-                                    </div>
-                                `;
-                            }).join('')}
+                            ${(() => {
+                                if (!recipe.ingredients || recipe.ingredients.length === 0) {
+                                    return '<div class="text-xs text-gray-500 dark:text-gray-400">No ingredients available</div>';
+                                }
+                                return recipe.ingredients.map(ingredient => {
+                                    const ingredientName = this.getIngredientNameById(ingredient.ingredient_id) || 'Unknown ingredient';
+                                    return `
+                                        <div class="flex justify-between items-center py-1 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
+                                            <span class="text-xs font-medium text-gray-900 dark:text-white flex-1">${ingredientName}</span>
+                                            <span class="text-xs text-gray-600 dark:text-gray-300 ml-2 flex-shrink-0">
+                                                ${ingredient.quantity} ${ingredient.unit}
+                                            </span>
+                                        </div>
+                                    `;
+                                }).join('');
+                            })()}
                         </div>
                     </div>
 
