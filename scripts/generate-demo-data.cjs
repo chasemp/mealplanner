@@ -9,7 +9,7 @@
  *   node scripts/generate-demo-data.cjs [options]
  * 
  * Options:
- *   --output <file>     Output file (default: js/demo-data-generated.js)
+ *   --output <file>     Output file (default: js/demo-data.js)
  *   --recipes <count>   Number of recipes to generate (default: 26)
  *   --items <count>       Number of items to generate (default: 30)
  *   --validate          Validate generated data against schema
@@ -759,7 +759,7 @@ class DemoDataGenerator {
             instructions: this.generateInstructions(template, selectedIngredients),
             labels: [...template.labels, ...this.generateRecipeLabels()],
             ingredients: this.generateRecipeIngredients(selectedIngredients),
-            favorite: Math.random() < 0.3 // 30% chance of being a favorite
+            favorite: this.shouldBeFavorite(template.title)
         };
         
         
@@ -947,6 +947,18 @@ class DemoDataGenerator {
         }
         
         return selected;
+    }
+    
+    shouldBeFavorite(recipeTitle) {
+        // Always favorite these recipes for consistent testing
+        const alwaysFavorites = ['Bacon', 'Caesar Salad', 'Pancakes'];
+        
+        if (alwaysFavorites.includes(recipeTitle)) {
+            return true;
+        }
+        
+        // Random chance for other recipes (30% chance)
+        return Math.random() < 0.3;
     }
     
     generateRecipeIngredients(selectedIngredients) {
@@ -1452,7 +1464,7 @@ if (typeof module !== 'undefined' && module.exports) {
 function parseArgs() {
     const args = process.argv.slice(2);
     const options = {
-        output: 'js/demo-data-generated.js',
+        output: 'js/demo-data.js',
         recipes: 26,
         items: 30,
         meals: 7,
@@ -1497,7 +1509,7 @@ Demo Data Generator for MealPlanner
 Usage: node scripts/generate-demo-data.cjs [options]
 
 Options:
-  --output <file>       Output file (default: js/demo-data-generated.js)
+  --output <file>       Output file (default: js/demo-data.js)
   --recipes <count>     Number of recipes to generate (default: 26)
   --items <count>       Number of items to generate (default: 30)
   --validate            Validate generated data against schema
