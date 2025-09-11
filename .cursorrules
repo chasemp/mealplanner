@@ -52,3 +52,16 @@ When modifying data structures (ingredients, recipes, meals, scheduled meals), y
 - Changes must not break existing test assumptions without updating tests
 
 This rule prevents the data inconsistency bugs we've encountered and ensures holistic updates across the entire application when data structures change.
+
+## Git Commit Message Guidelines
+- Use clear, descriptive commit messages without emojis
+- Start with a verb in imperative mood (fix, add, update, remove, etc.)
+- Keep the first line under 50 characters when possible
+- Use additional lines for detailed explanations when needed
+- Focus on WHAT changed and WHY, not HOW
+
+Examples:
+- Good: "fix mobile recipe page navigation buttons not working"
+- Good: "add label filtering to meals tab"
+- Bad: "🐛 fix mobile recipe page navigation buttons not working"
+- Bad: "✨ add label filtering to meals tab"
