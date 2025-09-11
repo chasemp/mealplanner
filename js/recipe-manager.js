@@ -943,9 +943,9 @@ class RecipeManager {
         // Create modal HTML
         const modal = document.createElement('div');
         modal.id = modalId;
-        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4';
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-1 sm:p-4';
         modal.innerHTML = `
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-sm sm:max-w-2xl md:max-w-4xl max-h-[95vh] sm:max-h-[90vh] flex flex-col mx-2 sm:mx-4 md:mx-0">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-full sm:max-w-2xl md:max-w-4xl max-h-[98vh] sm:max-h-[90vh] flex flex-col mx-1 sm:mx-4 md:mx-0">
                 <div class="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
                     <h2 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
                         ${isEdit ? 'Edit Recipe' : 'Add New Recipe'}
@@ -1564,7 +1564,7 @@ class RecipeManager {
         // Create modal HTML
         const modal = document.createElement('div');
         modal.id = 'recipe-detail-modal';
-        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4';
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-1 sm:p-4';
         
         // Prepare ingredients list with resolved names
         const ingredientsList = recipe.ingredients.map(ingredient => {
@@ -1601,11 +1601,11 @@ class RecipeManager {
             '<span class="text-gray-500 dark:text-gray-400">No labels</span>';
 
         modal.innerHTML = `
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-sm sm:max-w-2xl md:max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto mx-2 sm:mx-4 md:mx-0">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-full sm:max-w-2xl md:max-w-4xl max-h-[98vh] sm:max-h-[90vh] overflow-y-auto mx-1 sm:mx-4 md:mx-0">
                 <!-- Header -->
-                <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 py-3 sm:py-4">
+                <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-2 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white pr-2">${recipe.title}</h2>
+                        <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white pr-2">${recipe.title}</h2>
                         <div class="flex items-center justify-end space-x-2 sm:space-x-3 flex-shrink-0">
                             <button id="edit-recipe-detail" class="bg-blue-500 hover:bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg flex items-center space-x-1 sm:space-x-2 transition-colors text-sm sm:text-base">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1622,7 +1622,7 @@ class RecipeManager {
                     </div>
                 </div>
 
-                <div class="p-3 sm:p-4 md:p-6">
+                <div class="p-2 sm:p-3 md:p-4 lg:p-6">
                     <!-- Recipe Image (if available) -->
                     ${recipe.image_url ? `
                         <div class="mb-4 sm:mb-6 flex justify-center">
