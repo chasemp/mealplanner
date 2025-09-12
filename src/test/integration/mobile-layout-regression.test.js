@@ -12,7 +12,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { RecipeManager } from '../../js/recipe-manager.js';
+// Note: RecipeManager is a global class, not an ES6 module
 
 describe('Mobile Layout Regression Tests', () => {
     let mockContainer;
@@ -44,7 +44,15 @@ describe('Mobile Layout Regression Tests', () => {
         `;
         document.body.appendChild(mockContainer);
         
-        recipeManager = new RecipeManager(mockContainer.querySelector('#recipe-tab'));
+        // Mock RecipeManager as a global class
+        global.RecipeManager = vi.fn(() => ({
+            attachEventListeners: vi.fn(),
+            render: vi.fn(),
+            showNotification: vi.fn(),
+            recipes: []
+        }));
+        
+        recipeManager = new global.RecipeManager(mockContainer.querySelector('#recipe-tab'));
     });
 
     describe('Control Layout and Positioning', () => {

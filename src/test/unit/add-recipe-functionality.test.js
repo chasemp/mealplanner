@@ -329,7 +329,7 @@ describe('Add Recipe Functionality', () => {
             
             form.dispatchEvent(new Event('submit'));
             
-            expect(showNotificationSpy).toHaveBeenCalledWith('Instructions are required', 'error');
+            expect(showNotificationSpy).toHaveBeenCalledWith('At least one instruction step is required', 'error');
         });
 
         it('should show error for no ingredients', async () => {

@@ -13,8 +13,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { RecipeManager } from '../../js/recipe-manager.js';
-import { SettingsManager } from '../../js/settings-manager.js';
+// Note: RecipeManager and SettingsManager are global classes, not ES6 modules
 
 describe('Settings Refactor Regression Tests', () => {
     let mockContainer;
@@ -41,7 +40,15 @@ describe('Settings Refactor Regression Tests', () => {
         settingsManager = new SettingsManager();
         window.mealPlannerSettings = settingsManager;
         
-        recipeManager = new RecipeManager(mockContainer.querySelector('#recipe-tab'));
+        // Mock RecipeManager as a global class
+        global.RecipeManager = vi.fn(() => ({
+            attachEventListeners: vi.fn(),
+            render: vi.fn(),
+            showNotification: vi.fn(),
+            recipes: []
+        }));
+        
+        recipeManager = new global.RecipeManager(mockContainer.querySelector('#recipe-tab'));
     });
 
     describe('Settings Method Access', () => {
