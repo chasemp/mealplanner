@@ -1089,9 +1089,6 @@ class RecipeManager {
         }
 
         // Attach recipe card listeners (favorites, edit, delete, click)
-        console.log('🔧 About to attach recipe card listeners');
-        const recipeCards = this.container.querySelectorAll('.recipe-card');
-        console.log('🔧 Found recipe cards:', recipeCards.length);
         this.attachRecipeCardListeners();
 
         // Add recipe button
@@ -2071,65 +2068,41 @@ class RecipeManager {
     }
 
     showMobileRecipePage(recipe) {
-        // Allow navigation between mobile recipe views
+        // Prevent multiple calls
         if (this.isShowingMobileRecipe) {
-            console.log('📱 Already in mobile view, navigating to different recipe:', recipe.title);
-        } else {
-            console.log('📱 Entering mobile recipe view for:', recipe.title);
-            this.isShowingMobileRecipe = true;
+            console.log('📱 Already showing mobile recipe, ignoring duplicate call');
+            return;
         }
         
-        // Store current state for back navigation using a stack
-        if (!this.navigationStack) {
-            this.navigationStack = [];
-        }
+        this.isShowingMobileRecipe = true;
         
-        const currentView = {
+        // Store current state for back navigation
+        this.previousView = {
             container: this.container.innerHTML,
-            scrollPosition: window.scrollY,
-            timestamp: Date.now(),
-            recipe: recipe, // Store recipe for event listener reattachment
-            isMobileView: true
+            scrollPosition: window.scrollY
         };
         
-        this.navigationStack.push(currentView);
-        console.log('📱 Pushed to navigation stack, stack size:', this.navigationStack.length);
-        console.log('📱 Current view container length:', currentView.container.length);
-        console.log('📱 Navigation stack:', this.navigationStack.map(v => v.container.length));
+        console.log('📱 Stored previous view, container length:', this.previousView.container.length);
+        console.log('📱 Previous view preview:', this.previousView.container.substring(0, 200) + '...');
 
         // Replace entire container with mobile recipe page
-        const generatedHTML = this.generateMobileRecipeHTML(recipe);
-        console.log('🔧 HTML before setting innerHTML, length:', generatedHTML.length);
-        console.log('🔧 HTML preview before DOM:', generatedHTML.substring(0, 500) + '...');
-        
-        this.container.innerHTML = generatedHTML;
-        
-        console.log('🔧 HTML after setting innerHTML, length:', this.container.innerHTML.length);
-        console.log('🔧 HTML preview after DOM:', this.container.innerHTML.substring(0, 500) + '...');
+        this.container.innerHTML = this.generateMobileRecipeHTML(recipe);
         
         // Scroll to top
         window.scrollTo(0, 0);
         
-        // Add event listeners with a small delay to ensure DOM is ready
-        setTimeout(() => {
-            this.attachMobileRecipeEventListeners(recipe);
-        }, 10);
+        // Add event listeners immediately (DOM is ready since we just set innerHTML)
+        this.attachMobileRecipeEventListeners(recipe);
         
         console.log('📱 Mobile recipe page HTML set, container innerHTML length:', this.container.innerHTML.length);
     }
 
     attachMobileRecipeEventListeners(recipe) {
-        console.log('📱 Attaching mobile recipe page event listeners for:', recipe.title);
-        console.log('📱 Container has content:', this.container.innerHTML.length > 0);
-        console.log('📱 Container element:', this.container);
-        console.log('📱 Container innerHTML preview:', this.container.innerHTML.substring(0, 200));
+        console.log('📱 Attaching mobile recipe page event listeners');
         
         // Add back button handler
         const backBtn = this.container.querySelector('#mobile-recipe-back');
-        const allBackBtns = this.container.querySelectorAll('#mobile-recipe-back');
         console.log('📱 Back button found:', !!backBtn);
-        console.log('📱 All back buttons count:', allBackBtns.length);
-        console.log('📱 Back button element:', backBtn);
         if (backBtn) {
             backBtn.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -2137,14 +2110,11 @@ class RecipeManager {
                 console.log('📱 Back button clicked');
                 this.returnFromMobileRecipe();
             });
-        } else {
-            console.warn('⚠️ Back button NOT found in DOM');
         }
         
         // Add close button handler
         const closeBtn = this.container.querySelector('#mobile-recipe-close');
         console.log('📱 Close button found:', !!closeBtn);
-        console.log('📱 Close button element:', closeBtn);
         if (closeBtn) {
             closeBtn.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -2152,14 +2122,11 @@ class RecipeManager {
                 console.log('📱 Close button clicked');
                 this.returnFromMobileRecipe();
             });
-        } else {
-            console.warn('⚠️ Close button NOT found in DOM');
         }
         
         // Add edit button handler
         const editBtn = this.container.querySelector('#mobile-recipe-edit');
         console.log('📱 Edit button found:', !!editBtn);
-        console.log('📱 Edit button element:', editBtn);
         if (editBtn) {
             editBtn.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -2176,102 +2143,33 @@ class RecipeManager {
                 console.log('📱 Mobile editing recipe:', recipe.title, 'isCombo:', isCombo);
                 this.showRecipeForm(recipe, isCombo);
             });
-        } else {
-            console.warn('⚠️ Edit button NOT found in DOM');
         }
-        
-        console.log('📱 Event listener attachment complete');
     }
 
     returnFromMobileRecipe() {
         console.log('📱 Returning from mobile recipe view');
-        console.log('📱 Navigation stack size:', this.navigationStack ? this.navigationStack.length : 0);
+        console.log('📱 previousView exists:', !!this.previousView);
         
-        if (this.navigationStack && this.navigationStack.length > 0) {
-            const previousView = this.navigationStack.pop();
-            console.log('📱 Popped from navigation stack, remaining:', this.navigationStack.length);
-            console.log('📱 Restoring view, container length:', previousView.container.length);
+        if (this.previousView) {
+            console.log('📱 Restoring previous view, container length:', this.previousView.container.length);
             
-            this.container.innerHTML = previousView.container;
-            window.scrollTo(0, previousView.scrollPosition);
+            this.container.innerHTML = this.previousView.container;
+            window.scrollTo(0, this.previousView.scrollPosition);
             
-            // Reattach appropriate event listeners based on view type
-            // Check if this is actually a mobile recipe view by looking for mobile buttons in the HTML
-            const isMobileRecipeView = previousView.container.includes('mobile-recipe-back');
-            
-            if (isMobileRecipeView && previousView.recipe) {
-                // This is a mobile recipe/combo view, need mobile event listeners
-                console.log('📱 Restored mobile recipe view detected, reattaching mobile listeners for:', previousView.recipe.title);
-                setTimeout(() => {
-                    this.attachMobileRecipeEventListeners(previousView.recipe);
-                }, 10);
-            } else {
-                // This is the main recipe list view
-                console.log('📱 Restored main recipe list view, reattaching list listeners');
-                this.attachEventListeners();
-            }
+            // Reattach all event listeners
+            this.attachEventListeners();
             
             // Force mobile navigation to update its state
             if (window.mobileNavigation) {
                 window.mobileNavigation.updateActiveTab('recipes');
             }
             
-            // Only reset mobile flag if we're back to the main list (stack empty)
-            if (this.navigationStack.length === 0) {
-                this.isShowingMobileRecipe = false;
-                console.log('📱 Returned to main recipe list');
-            } else {
-                console.log('📱 Returned to previous mobile view, stack remaining:', this.navigationStack.length);
-            }
-            
-            console.log('📱 Successfully restored view, new container length:', this.container.innerHTML.length);
+            this.previousView = null;
+            this.isShowingMobileRecipe = false; // Reset flag
+            console.log('📱 Successfully returned to recipe list, new container length:', this.container.innerHTML.length);
         } else {
-            console.log('❌ No navigation stack to restore - already returned or not set');
-            this.isShowingMobileRecipe = false; // Reset flag even if no stack
-        }
-    }
-
-    generateInstructionsSection(recipe) {
-        console.log('📝 generateInstructionsSection called for:', recipe.title);
-        
-        if (recipe.instructions && typeof recipe.instructions === 'string') {
-            return recipe.instructions.split(',').map((step, index) => `
-                <div class="flex gap-2">
-                    <span class="flex-shrink-0 w-5 h-5 bg-blue-500 text-white text-xs font-bold rounded-full flex items-center justify-center">${index + 1}</span>
-                    <span class="text-xs text-gray-900 dark:text-white leading-relaxed">${step.trim()}</span>
-                </div>
-            `).join('');
-        } else if (Array.isArray(recipe.instructions)) {
-            return recipe.instructions.map((step, index) => `
-                <div class="flex gap-2">
-                    <span class="flex-shrink-0 w-5 h-5 bg-blue-500 text-white text-xs font-bold rounded-full flex items-center justify-center">${index + 1}</span>
-                    <span class="text-xs text-gray-900 dark:text-white leading-relaxed">${step}</span>
-                </div>
-            `).join('');
-        } else {
-            return '<div class="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 rounded-lg p-2">No instructions available</div>';
-        }
-    }
-
-    generateDesktopInstructionsSection(recipe) {
-        console.log('🖥️ generateDesktopInstructionsSection called for:', recipe.title);
-        
-        if (recipe.instructions && typeof recipe.instructions === 'string') {
-            return recipe.instructions.split(',').map((step, index) => `
-                <div class="flex gap-4">
-                    <div class="flex-shrink-0 w-8 h-8 bg-blue-500 text-white text-sm font-bold rounded-full flex items-center justify-center">${index + 1}</div>
-                    <div class="flex-1 text-gray-900 dark:text-white leading-relaxed pt-1">${step.trim()}</div>
-                </div>
-            `).join('');
-        } else if (Array.isArray(recipe.instructions)) {
-            return recipe.instructions.map((step, index) => `
-                <div class="flex gap-4">
-                    <div class="flex-shrink-0 w-8 h-8 bg-blue-500 text-white text-sm font-bold rounded-full flex items-center justify-center">${index + 1}</div>
-                    <div class="flex-1 text-gray-900 dark:text-white leading-relaxed pt-1">${step}</div>
-                </div>
-            `).join('');
-        } else {
-            return '<div class="text-gray-500 dark:text-gray-400">No instructions available</div>';
+            console.log('❌ No previousView to restore - already returned or not set');
+            this.isShowingMobileRecipe = false; // Reset flag even if no previousView
         }
     }
 
@@ -2283,13 +2181,6 @@ class RecipeManager {
         const isCombo = recipe.recipe_type === 'combo';
         console.log('🔍 Is combo:', isCombo);
         
-        // CRITICAL DEBUG: Log what we're about to return
-        if (isCombo) {
-            console.log('🎯 COMBO PATH: About to generate combo content');
-        } else {
-            console.log('🎯 RECIPE PATH: About to generate recipe content');
-        }
-        
         if (isCombo) {
             // For combo recipes, show both recipes and additional items
             const recipes = recipe.combo_recipes || recipe.recipes || [];
@@ -2299,7 +2190,7 @@ class RecipeManager {
             console.log('🔍 Mobile view - Recipes:', recipes, 'Additional items:', additionalItems);
             console.log('🔍 Full recipe data for combo view:', recipe);
             
-            const comboHTML = `
+            return `
                 <!-- Recipes in Combo -->
                 <div class="mb-4">
                     <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Recipes (${recipes.length})</h3>
@@ -2368,10 +2259,6 @@ class RecipeManager {
                     </div>
                 </div>
             `;
-            
-            console.log('🎯 COMBO HTML GENERATED, length:', comboHTML.length);
-            console.log('🎯 COMBO HTML preview:', comboHTML.substring(0, 200) + '...');
-            return comboHTML;
         } else {
             // For regular recipes, show ingredients
             const ingredients = recipe.ingredients || [];
@@ -2395,168 +2282,17 @@ class RecipeManager {
     }
 
     generateMobileRecipeHTML(recipe) {
-        console.log('📱 Generating mobile recipe HTML for:', recipe.title);
-        console.log('📱 Recipe recipe_type:', recipe.recipe_type);
-        console.log('📱 Is combo check:', recipe.recipe_type === 'combo');
-        
-        // Route to appropriate generator
-        if (recipe.recipe_type === 'combo') {
-            console.log('📱 Using combo-specific generator');
-            return this.generateMobileComboHTML(recipe);
-        } else {
-            console.log('📱 Using recipe-specific generator');
-            return this.generateMobileRegularRecipeHTML(recipe);
-        }
-    }
-
-    generateMobileComboHTML(recipe) {
-        console.log('🎯 Generating COMBO mobile HTML for:', recipe.title);
-        
-        const recipes = recipe.combo_recipes || recipe.recipes || [];
-        const additionalItems = recipe.ingredients || [];
-        const combinedItems = this.getCombinedItemsForCombo(recipe);
-        const labels = recipe.labels || [];
-        
-        console.log('🎯 Combo recipes:', recipes.length);
-        console.log('🎯 Additional items:', additionalItems.length);
-        console.log('🎯 Combined items:', combinedItems.length);
-        console.log('🎯 Combined items sample:', combinedItems.slice(0, 2));
-        
-        return `
-            <div class="min-h-screen bg-white dark:bg-gray-900">
-                <!-- Mobile Header -->
-                <div class="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-3 z-10">
-                    <div class="flex items-center justify-between">
-                        <button id="mobile-recipe-back" class="flex items-center text-blue-600 dark:text-blue-400">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                            </svg>
-                            Back
-                        </button>
-                        <div class="flex gap-2">
-                            <button id="mobile-recipe-close" class="bg-gray-500 text-white px-4 py-2 rounded-lg text-sm">
-                                Close
-                            </button>
-                            <button id="mobile-recipe-edit" class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm">
-                                Edit
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Recipe Content -->
-                <div class="p-4 space-y-6">
-                    <!-- Title -->
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">${recipe.title}</h1>
-                        <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">${recipe.description || 'No description available'}</p>
-                    </div>
-
-                    <!-- Recipe Stats -->
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 text-center">
-                            <div class="text-green-600 dark:text-green-400 text-sm font-medium mb-1">Serves</div>
-                            <div class="text-lg font-bold text-gray-900 dark:text-white">${recipe.servings || 4}</div>
-                        </div>
-                        <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 text-center">
-                            <div class="text-purple-600 dark:text-purple-400 text-sm font-medium mb-1">Total Items</div>
-                            <div class="text-lg font-bold text-gray-900 dark:text-white">${combinedItems.length}</div>
-                        </div>
-                    </div>
-
-                    <!-- Recipes in Combo -->
-                    <div class="mb-4">
-                        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Recipes (${recipes.length})</h3>
-                        <div class="space-y-3">
-                            ${recipes.map(recipeRef => {
-                                const foundRecipe = this.recipes.find(r => r.id === parseInt(recipeRef.recipe_id));
-                                if (!foundRecipe) return '';
-                                
-                                const portions = recipeRef.servings_multiplier || 1;
-                                const totalServings = portions * (foundRecipe.servings || 1);
-                                
-                                return `
-                                    <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700" 
-                                         onclick="window.recipeManager.showRecipeDetail(${foundRecipe.id})">
-                                        <div class="flex justify-between items-start mb-2">
-                                            <h4 class="font-medium text-gray-900 dark:text-white">${foundRecipe.title}</h4>
-                                            <div class="text-xs text-gray-500 dark:text-gray-400">
-                                                ${portions} portions • ${totalServings} servings
-                                            </div>
-                                        </div>
-                                        <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">${foundRecipe.description || ''}</p>
-                                        <div class="flex gap-4 text-xs text-gray-500 dark:text-gray-400">
-                                            ${foundRecipe.prep_time ? `<span>Prep: ${foundRecipe.prep_time}min</span>` : ''}
-                                            ${foundRecipe.cook_time ? `<span>Cook: ${foundRecipe.cook_time}min</span>` : ''}
-                                        </div>
-                                    </div>
-                                `;
-                            }).join('')}
-                        </div>
-                    </div>
-
-                    <!-- Additional Items -->
-                    ${additionalItems.length > 0 ? `
-                        <div class="mb-4">
-                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Additional Items (${additionalItems.length})</h3>
-                            <div class="space-y-2">
-                                ${additionalItems.map(ing => {
-                                    const ingredient = window.itemsManager.ingredients.find(i => i.id === ing.ingredient_id);
-                                    return `
-                                        <div class="flex justify-between items-center py-1">
-                                            <span class="text-gray-900 dark:text-white">${ingredient ? ingredient.name : 'Unknown Item'}</span>
-                                            <span class="text-gray-600 dark:text-gray-400">${ing.quantity} ${ing.unit || ''}</span>
-                                        </div>
-                                    `;
-                                }).join('')}
-                            </div>
-                        </div>
-                    ` : ''}
-
-                    <!-- Combined Items Summary -->
-                    <div class="mb-4">
-                        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">All Items (${combinedItems.length})</h3>
-                        <div class="space-y-2">
-                            ${combinedItems.map(item => {
-                                return `
-                                    <div class="flex justify-between items-center py-1">
-                                        <span class="text-gray-900 dark:text-white">${item.name}</span>
-                                        <span class="text-gray-600 dark:text-gray-400">${item.quantity} ${item.unit}</span>
-                                    </div>
-                                `;
-                            }).join('')}
-                        </div>
-                    </div>
-
-                    <!-- Labels -->
-                    <div class="mb-4">
-                        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Labels</h3>
-                        <div class="flex flex-wrap gap-1">
-                            ${labels.length > 0 ? 
-                                this.renderLabelChips(labels) :
-                                '<span class="text-xs text-gray-500 dark:text-gray-400">No labels</span>'
-                            }
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        console.log('🎯 Generated COMBO HTML length:', html.length);
-        console.log('🎯 COMBO HTML includes "Recipes (":', html.includes('Recipes ('));
-        console.log('🎯 COMBO HTML includes "Additional Items":', html.includes('Additional Items'));
-        console.log('🎯 COMBO HTML includes "All Items":', html.includes('All Items'));
-        return html;
-    }
-
-    generateMobileRegularRecipeHTML(recipe) {
-        console.log('📖 Generating REGULAR recipe mobile HTML for:', recipe.title);
         const labels = recipe.labels || recipe.tags || [];
         
-        // For regular recipes, keep it simple - no complex content generation
-        const ingredients = recipe.ingredients || [];
-        const itemCount = ingredients.length;
-        console.log('📖 Regular recipe ingredients:', itemCount);
+        console.log('📱 Generating mobile recipe HTML for:', recipe.title);
+        console.log('📱 Recipe ingredients count:', recipe.ingredients?.length);
+        console.log('📱 Recipe recipe_type:', recipe.recipe_type);
+        console.log('📱 Recipe type:', recipe.type);
+        console.log('📱 Is combo check:', recipe.recipe_type === 'combo');
+        
+        // Generate content section separately to avoid template literal issues
+        const contentSection = this.generateRecipeContentSection(recipe);
+        console.log('📱 Content section generated, length:', contentSection.length);
         
         const html = `
             <div class="min-h-screen bg-white dark:bg-gray-900">
@@ -2600,76 +2336,72 @@ class RecipeManager {
                         </div>
                         <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 text-center">
                             <div class="text-green-600 dark:text-green-400 text-sm font-medium mb-1">Serves</div>
-                            <div class="text-lg font-bold text-gray-900 dark:text-white">${recipe.servings || 4}</div>
+                            <div class="text-lg font-bold text-gray-900 dark:text-white">${recipe.serving_count || recipe.servings || 'N/A'}</div>
                         </div>
                         <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 text-center">
                             <div class="text-purple-600 dark:text-purple-400 text-sm font-medium mb-1">Items</div>
-                            <div class="text-lg font-bold text-gray-900 dark:text-white">${itemCount}</div>
+                            <div class="text-lg font-bold text-gray-900 dark:text-white">${recipe.ingredients?.length || 0}</div>
                         </div>
                     </div>
 
                     <!-- Items -->
-                    <div class="mb-4">
-                        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Items (${ingredients.length})</h3>
-                        <div class="space-y-2">
-                            ${ingredients.length === 0 ? 
-                                '<div class="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 rounded-lg p-2">No items added</div>' :
-                                ingredients.map(ing => {
-                                    const ingredient = window.itemsManager?.ingredients?.find(i => i.id === ing.ingredient_id);
-                                    return `
-                                        <div class="flex justify-between items-center py-1">
-                                            <span class="text-gray-900 dark:text-white">${ingredient ? ingredient.name : 'Unknown Item'}</span>
-                                            <span class="text-gray-600 dark:text-gray-400">${ing.quantity} ${ing.unit || ''}</span>
-                                        </div>
-                                    `;
-                                }).join('')
-                            }
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Items (${recipe.ingredients?.length || 0})</h2>
+                        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 space-y-3">
+                            ${recipe.ingredients?.map(ingredient => {
+            const ingredientName = this.getIngredientNameById(ingredient.ingredient_id) || 'Unknown ingredient';
+            return `
+                                    <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
+                    <span class="font-medium text-gray-900 dark:text-white">${ingredientName}</span>
+                                        <span class="text-gray-600 dark:text-gray-400 font-medium">
+                        ${ingredient.quantity} ${ingredient.unit}
+                    </span>
+                                    </div>
+                                `;
+                            }).join('') || '<div class="text-gray-500 dark:text-gray-400">No items available</div>'}
                         </div>
                     </div>
 
                     <!-- Instructions -->
-                    <div class="mb-4">
-                        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Instructions</h3>
-                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 space-y-3">
-                            ${recipe.instructions && recipe.instructions.length > 0 ? 
-                                (Array.isArray(recipe.instructions) ? 
-                                    recipe.instructions.map((step, index) => `
-                                        <div class="flex gap-2">
-                                            <span class="flex-shrink-0 w-5 h-5 bg-blue-500 text-white text-xs font-bold rounded-full flex items-center justify-center">${index + 1}</span>
-                                            <span class="text-xs text-gray-900 dark:text-white leading-relaxed">${step}</span>
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Instructions</h2>
+                        <div class="space-y-4">
+                            ${(() => {
+        if (recipe.instructions && typeof recipe.instructions === 'string') {
+                                    return recipe.instructions.split(',').map((step, index) => `
+                                        <div class="flex gap-4">
+                                            <div class="flex-shrink-0 w-8 h-8 bg-blue-500 text-white text-sm font-bold rounded-full flex items-center justify-center">${index + 1}</div>
+                                            <div class="flex-1 text-gray-900 dark:text-white leading-relaxed pt-1">${step.trim()}</div>
                                         </div>
-                                    `).join('') :
-                                    (typeof recipe.instructions === 'string' ? 
-                                        recipe.instructions.split(',').map((step, index) => `
-                                            <div class="flex gap-2">
-                                                <span class="flex-shrink-0 w-5 h-5 bg-blue-500 text-white text-xs font-bold rounded-full flex items-center justify-center">${index + 1}</span>
-                                                <span class="text-xs text-gray-900 dark:text-white leading-relaxed">${step.trim()}</span>
-                                            </div>
-                                        `).join('') :
-                                        '<div class="text-xs text-gray-500 dark:text-gray-400">No instructions available</div>'
-                                    )
-                                ) :
-                                '<div class="text-xs text-gray-500 dark:text-gray-400">No instructions available</div>'
-                            }
+                                    `).join('');
+        } else if (Array.isArray(recipe.instructions)) {
+                                    return recipe.instructions.map((step, index) => `
+                                        <div class="flex gap-4">
+                                            <div class="flex-shrink-0 w-8 h-8 bg-blue-500 text-white text-sm font-bold rounded-full flex items-center justify-center">${index + 1}</div>
+                                            <div class="flex-1 text-gray-900 dark:text-white leading-relaxed pt-1">${step}</div>
+                                        </div>
+                                    `).join('');
+        } else {
+                                    return '<div class="text-gray-500 dark:text-gray-400">No instructions available</div>';
+                                }
+                            })()}
                         </div>
                     </div>
 
                     <!-- Labels -->
-                    <div class="mb-4">
-                        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Labels</h3>
-                        <div class="flex flex-wrap gap-1">
-                            ${labels.length > 0 ? 
-                                this.renderLabelChips(labels) :
-                                '<span class="text-xs text-gray-500 dark:text-gray-400">No labels</span>'
-                            }
+                    ${labels.length > 0 ? `
+                        <div>
+                            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Labels</h2>
+                            <div class="flex flex-wrap gap-2">
+                                ${this.renderLabelChips(labels)}
+                            </div>
                         </div>
-                    </div>
+                    ` : ''}
                 </div>
             </div>
         `;
-
-        console.log('📖 Generated REGULAR recipe HTML length:', html.length);
-        console.log('📖 REGULAR recipe includes items:', html.includes('Items ('));
+        
+        console.log('📱 Generated mobile recipe HTML length:', html.length);
         return html;
     }
 
@@ -2761,17 +2493,160 @@ class RecipeManager {
                                 </svg>
                                 <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Items</span>
                             </div>
-                            <span class="text-sm font-semibold text-gray-900 dark:text-white">${itemCount}</span>
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white">${recipe.recipe_type === 'combo' ? 
+                                this.getCombinedItemsForCombo(recipe).length : 
+                                (recipe.ingredients ? recipe.ingredients.length : 0)}</span>
                         </div>
                     </div>
 
                     ${contentSection}
+                        console.log('🔍 Mobile view - Recipe:', recipe.title, 'isCombo:', isCombo, 'recipe_type:', recipe.recipe_type);
+                        console.log('🔍 Recipe object keys:', Object.keys(recipe));
+                        
+                        if (isCombo) {
+                            // For combo recipes, show both recipes and additional items
+                            const recipes = recipe.combo_recipes || recipe.recipes || [];
+                            const additionalItems = recipe.ingredients || [];
+                            const combinedItems = this.getCombinedItemsForCombo(recipe);
+                            
+                            console.log('🔍 Mobile view - Recipes:', recipes, 'Additional items:', additionalItems);
+                            console.log('🔍 Full recipe data for combo view:', recipe);
+                            
+                            return `
+                                <!-- Recipes in Combo -->
+                                <div class="mb-4">
+                                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Recipes (${recipes.length})</h3>
+                                    <div class="space-y-3">
+                                        ${recipes.length === 0 ? 
+                                            '<div class="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 rounded-lg p-2">No recipes added</div>' :
+                                            recipes.map(recipeRef => {
+                                                const foundRecipe = this.recipes.find(r => r.id === parseInt(recipeRef.recipe_id));
+                                                if (!foundRecipe) return '';
+                                                const portions = recipeRef.servings || recipeRef.servings_multiplier || 1;
+                                                const recipeServings = foundRecipe.servings || foundRecipe.serving_count || 4;
+                                                const totalServings = portions * recipeServings;
+                                                const prepTime = foundRecipe.prep_time || 0;
+                                                const cookTime = foundRecipe.cook_time || 0;
+                                                const totalTime = prepTime + cookTime;
+                                                
+                                                return `
+                                                    <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-3 cursor-pointer hover:shadow-md transition-shadow" onclick="window.recipeManager.showRecipeDetail(${foundRecipe.id})">
+                                                        <div class="flex items-start justify-between mb-2">
+                                                            <h4 class="font-medium text-gray-900 dark:text-white text-sm">${foundRecipe.title}</h4>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400 text-right ml-2">
+                                                                <div>${portions} portion${portions !== 1 ? 's' : ''}</div>
+                                                                <div class="font-medium">${totalServings} servings</div>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        ${foundRecipe.description ? `
+                                                            <p class="text-xs text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">${foundRecipe.description}</p>
+                                                        ` : ''}
+                                                        
+                                                        <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                                                            <div class="flex items-center space-x-3">
+                                                                ${prepTime > 0 ? `<span>⏱️ ${prepTime}min prep</span>` : ''}
+                                                                ${cookTime > 0 ? `<span>🔥 ${cookTime}min cook</span>` : ''}
+                                                                ${totalTime > 0 ? `<span class="font-medium">⏰ ${totalTime}min total</span>` : ''}
+                                                            </div>
+                                                            <span class="text-blue-500 dark:text-blue-400">→ View Recipe</span>
+                                                        </div>
+                                                    </div>
+                                                `;
+                                            }).join('')
+                                        }
+                                    </div>
+                                </div>
+
+                                <!-- Additional Items -->
+                                <div class="mb-4">
+                                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Additional Items (${additionalItems.length})</h3>
+                                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 space-y-2">
+                                        ${additionalItems.length === 0 ? 
+                                            '<div class="text-xs text-gray-500 dark:text-gray-400">No additional items</div>' :
+                                            additionalItems.map(ingredient => {
+                                                const ingredientName = this.getIngredientNameById(ingredient.ingredient_id) || 'Unknown item';
+                                                return `
+                                                    <div class="flex justify-between items-center py-1 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
+                                                        <span class="text-xs font-medium text-gray-900 dark:text-white flex-1">${ingredientName}</span>
+                                                        <span class="text-xs text-gray-600 dark:text-gray-300 ml-2 flex-shrink-0">
+                                                            ${ingredient.quantity} ${ingredient.unit}
+                                                        </span>
+                                                    </div>
+                                                `;
+                                            }).join('')
+                                        }
+                                    </div>
+                                </div>
+
+                                <!-- Combined Shopping List -->
+                                <div class="mb-4">
+                                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Combined Shopping List (${combinedItems.length})</h3>
+                                    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-2 space-y-2">
+                                        ${combinedItems.length === 0 ? 
+                                            '<div class="text-xs text-gray-500 dark:text-gray-400">No items to shop for</div>' :
+                                            combinedItems.map(item => `
+                                                <div class="flex justify-between items-center py-1 border-b border-blue-200 dark:border-blue-800 last:border-b-0">
+                                                    <span class="text-xs font-medium text-gray-900 dark:text-white flex-1">${item.name}</span>
+                                                    <span class="text-xs text-blue-600 dark:text-blue-300 ml-2 flex-shrink-0">
+                                                        ${item.quantity} ${item.unit}
+                                                    </span>
+                                                </div>
+                                            `).join('')
+                                        }
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            // For regular recipes, show their own items
+                            const items = recipe.ingredients || [];
+                            return `
+                                <div class="mb-4">
+                                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Items (${items.length})</h3>
+                                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 space-y-2">
+                                        ${items.length === 0 ? 
+                                            '<div class="text-xs text-gray-500 dark:text-gray-400">No items available</div>' :
+                                            items.map(ingredient => {
+                                                const ingredientName = this.getIngredientNameById(ingredient.ingredient_id) || 'Unknown item';
+                                                return `
+                                                    <div class="flex justify-between items-center py-1 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
+                                                        <span class="text-xs font-medium text-gray-900 dark:text-white flex-1">${ingredientName}</span>
+                                                        <span class="text-xs text-gray-600 dark:text-gray-300 ml-2 flex-shrink-0">
+                                                            ${ingredient.quantity} ${ingredient.unit}
+                                                        </span>
+                                                    </div>
+                                                `;
+                                            }).join('')
+                                        }
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    })()}
 
                     <!-- Instructions -->
                     <div class="mb-4">
                         <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Instructions</h3>
                         <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 space-y-3">
-                            ${instructionsSection}
+                            ${(() => {
+                                if (recipe.instructions && typeof recipe.instructions === 'string') {
+                                    return recipe.instructions.split(',').map((step, index) => `
+                                        <div class="flex gap-2">
+                                            <span class="flex-shrink-0 w-5 h-5 bg-blue-500 text-white text-xs font-bold rounded-full flex items-center justify-center">${index + 1}</span>
+                                            <span class="text-xs text-gray-900 dark:text-white leading-relaxed">${step.trim()}</span>
+                                        </div>
+                                    `).join('');
+                                } else if (Array.isArray(recipe.instructions)) {
+                                    return recipe.instructions.map((step, index) => `
+                                        <div class="flex gap-2">
+                                            <span class="flex-shrink-0 w-5 h-5 bg-blue-500 text-white text-xs font-bold rounded-full flex items-center justify-center">${index + 1}</span>
+                                            <span class="text-xs text-gray-900 dark:text-white leading-relaxed">${step}</span>
+                                        </div>
+                                    `).join('');
+                                } else {
+                                    return '<div class="text-xs text-gray-500 dark:text-gray-400">No instructions available</div>';
+                                }
+                            })()}
                         </div>
                     </div>
 

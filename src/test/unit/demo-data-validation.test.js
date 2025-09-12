@@ -28,7 +28,7 @@ describe('Demo Data Validation', () => {
         });
 
         it('should have at least 7 combo recipes as requested', () => {
-            const comboRecipes = demoData.recipes.filter(r => r.type === 'combo');
+            const comboRecipes = demoData.recipes.filter(r => r.recipe_type === 'combo');
             expect(comboRecipes.length).toBeGreaterThanOrEqual(7);
             
             // Verify we have exactly the expected combo recipes
@@ -43,26 +43,26 @@ describe('Demo Data Validation', () => {
             expect(comboTitles).toContain('Light Lunch Combo');
         });
 
-        it('should have basic recipes to support combo recipes', () => {
-            const basicRecipes = demoData.recipes.filter(r => r.type === 'basic');
-            expect(basicRecipes.length).toBeGreaterThan(10);
+        it('should have regular recipes to support combo recipes', () => {
+            const regularRecipes = demoData.recipes.filter(r => r.recipe_type === 'regular');
+            expect(regularRecipes.length).toBeGreaterThan(10);
             
             // Verify key component recipes exist
-            const basicTitles = basicRecipes.map(r => r.title);
-            expect(basicTitles).toContain('Mashed Potatoes');
-            expect(basicTitles).toContain('Fried Chicken');
-            expect(basicTitles).toContain('Green Beans');
-            expect(basicTitles).toContain('Garlic Bread');
-            expect(basicTitles).toContain('Caesar Salad');
-            expect(basicTitles).toContain('Pancakes');
-            expect(basicTitles).toContain('Bacon');
-            expect(basicTitles).toContain('Hash Browns');
+            const regularTitles = regularRecipes.map(r => r.title);
+            expect(regularTitles).toContain('Mashed Potatoes');
+            expect(regularTitles).toContain('Fried Chicken');
+            expect(regularTitles).toContain('Green Beans');
+            expect(regularTitles).toContain('Garlic Bread');
+            expect(regularTitles).toContain('Caesar Salad');
+            expect(regularTitles).toContain('Pancakes');
+            expect(regularTitles).toContain('Bacon');
+            expect(regularTitles).toContain('Hash Browns');
         });
     });
 
     describe('Recipe Cross-Linking Validation', () => {
         it('should have all combo recipes reference valid basic recipes', () => {
-            const comboRecipes = demoData.recipes.filter(r => r.type === 'combo');
+            const comboRecipes = demoData.recipes.filter(r => r.recipe_type === 'combo');
             const allRecipeIds = demoData.recipes.map(r => r.id);
 
             comboRecipes.forEach(combo => {
@@ -81,7 +81,7 @@ describe('Demo Data Validation', () => {
                     
                     // Verify referenced recipe is not another combo (no nested combos)
                     const referencedRecipe = demoData.recipes.find(r => r.id === ref.recipe_id);
-                    expect(referencedRecipe.type).toBe('basic');
+                    expect(referencedRecipe.recipe_type).toBe('regular');
                 });
             });
         });
@@ -169,7 +169,7 @@ describe('Demo Data Validation', () => {
                 expect(recipe.ingredients).toBeDefined();
                 expect(recipe.instructions).toBeDefined();
 
-                if (recipe.type === 'combo') {
+                if (recipe.recipe_type === 'combo') {
                     expect(recipe.combo_recipes).toBeDefined();
                     expect(recipe.combo_recipes.length).toBeGreaterThan(0);
                 }
@@ -194,7 +194,7 @@ describe('Demo Data Validation', () => {
 
     describe('Combo Recipe Specific Validation', () => {
         it('should have combo recipes with aggregated ingredients matching component recipes', () => {
-            const comboRecipes = demoData.recipes.filter(r => r.type === 'combo');
+            const comboRecipes = demoData.recipes.filter(r => r.recipe_type === 'combo');
             
             comboRecipes.forEach(combo => {
                 // Verify combo has both combo_recipes and ingredients
@@ -207,13 +207,13 @@ describe('Demo Data Validation', () => {
                 combo.combo_recipes.forEach(ref => {
                     const referencedRecipe = demoData.recipes.find(r => r.id === ref.recipe_id);
                     expect(referencedRecipe).toBeDefined();
-                    expect(referencedRecipe.type).toBe('basic');
+                    expect(referencedRecipe.recipe_type).toBe('regular');
                 });
             });
         });
 
         it('should have combo recipes with meaningful servings multipliers', () => {
-            const comboRecipes = demoData.recipes.filter(r => r.type === 'combo');
+            const comboRecipes = demoData.recipes.filter(r => r.recipe_type === 'combo');
             
             comboRecipes.forEach(combo => {
                 combo.combo_recipes.forEach(ref => {
@@ -224,7 +224,7 @@ describe('Demo Data Validation', () => {
         });
 
         it('should have combo recipes scheduled in meal plan', () => {
-            const comboRecipeIds = demoData.recipes.filter(r => r.type === 'combo').map(r => r.id);
+            const comboRecipeIds = demoData.recipes.filter(r => r.recipe_type === 'combo').map(r => r.id);
             const scheduledRecipeIds = demoData.scheduledMeals.map(m => m.recipe_id);
             
             // At least some combo recipes should be scheduled
@@ -233,7 +233,7 @@ describe('Demo Data Validation', () => {
         });
 
         it('should have combo recipes with appropriate meal types', () => {
-            const comboRecipes = demoData.recipes.filter(r => r.type === 'combo');
+            const comboRecipes = demoData.recipes.filter(r => r.recipe_type === 'combo');
             
             comboRecipes.forEach(combo => {
                 // Note: meal_type is now handled via labels system, not required field

@@ -29,7 +29,7 @@ class DemoDataGenerator {
         
         this.labelTypes = {
             default: ['healthy', 'quick', 'easy', 'comfort', 'spicy', 'sweet', 'savory', 'fresh', 'hearty'],
-            recipe_type: ['Recipe Combo', 'basic', 'advanced', 'beginner'],
+            recipe_type: ['Recipe Combo'],
             meal_type: ['Breakfast', 'Lunch', 'Dinner', 'Snack']
         };
         
@@ -485,7 +485,7 @@ class DemoDataGenerator {
         }
         
         // Generate combo recipes using the basic recipes we just created
-        const basicRecipes = recipes.filter(r => r.type === 'basic');
+        const basicRecipes = recipes.filter(r => r.recipe_type === 'regular');
         for (let i = 0; i < comboRecipesToGenerate; i++) {
             const comboRecipe = this.generateComboRecipe(basicRecipes, ingredients, basicRecipesToGenerate + i + 1, i);
             comboRecipe.created_at = this.generateTimestamp(startDate, endDate, basicRecipesToGenerate + i, count);
@@ -750,7 +750,7 @@ class DemoDataGenerator {
             id,
             title,
             description,
-            type: 'basic',
+            recipe_type: 'regular',
             image_url: this.generateImageUrl(),
             servings: this.getRandomElement(template.servings),
             prep_time: this.getRandomElement(template.prep_time),
@@ -901,7 +901,7 @@ class DemoDataGenerator {
             id,
             title: template.name,
             description: template.description,
-            type: 'combo',
+            recipe_type: 'combo',
             image_url: this.generateImageUrl(),
             servings: maxServings,
             prep_time: totalPrepTime,
@@ -1145,10 +1145,10 @@ class DemoDataGenerator {
             errors.push(`Insufficient ingredients: ${ingredients.length} (need at least 20 for tests)`);
         }
         
-        // Test requirement: At least 10 basic recipes
-        const basicRecipes = recipes.filter(r => r.type === 'basic');
-        if (basicRecipes.length < 10) {
-            errors.push(`Insufficient basic recipes: ${basicRecipes.length} (need at least 10 for tests)`);
+        // Test requirement: At least 10 regular recipes
+        const regularRecipes = recipes.filter(r => r.recipe_type === 'regular');
+        if (regularRecipes.length < 10) {
+            errors.push(`Insufficient regular recipes: ${regularRecipes.length} (need at least 10 for tests)`);
         }
         
         // Test requirement: At least 10 unique labels across all recipes
@@ -1199,8 +1199,8 @@ class DemoDataGenerator {
             if (!recipe.id || !recipe.title) {
                 errors.push(`Recipe ${index}: Missing required fields (id, title)`);
             }
-            if (!recipe.description || !recipe.type || !recipe.prep_time || recipe.cook_time === undefined || !recipe.servings) {
-                errors.push(`Recipe ${index}: Missing required fields (description, type, prep_time, cook_time, servings)`);
+            if (!recipe.description || !recipe.recipe_type || !recipe.prep_time || recipe.cook_time === undefined || !recipe.servings) {
+                errors.push(`Recipe ${index}: Missing required fields (description, recipe_type, prep_time, cook_time, servings)`);
             }
             if (!recipe.labels || !recipe.ingredients || !recipe.instructions) {
                 errors.push(`Recipe ${index}: Missing required fields (labels, ingredients, instructions)`);
@@ -1217,9 +1217,9 @@ class DemoDataGenerator {
                 errors.push(`Recipe ${index}: Invalid meal_type ${mealType}`);
             }
             
-            // Test requirement: Valid type
-            if (!['basic', 'combo'].includes(recipe.type)) {
-                errors.push(`Recipe ${index}: Invalid type ${recipe.type} (must be 'basic' or 'combo')`);
+            // Test requirement: Valid recipe_type
+            if (!['regular', 'combo'].includes(recipe.recipe_type)) {
+                errors.push(`Recipe ${index}: Invalid recipe_type ${recipe.recipe_type} (must be 'regular' or 'combo')`);
             }
             
             // Test requirement: Created timestamp
@@ -1264,8 +1264,8 @@ class DemoDataGenerator {
                 });
             }
             
-            // Validate combo recipes if type is combo
-            if (recipe.type === 'combo') {
+            // Validate combo recipes if recipe_type is combo
+            if (recipe.recipe_type === 'combo') {
                 if (!recipe.combo_recipes || recipe.combo_recipes.length === 0) {
                     errors.push(`Recipe ${index}: Combo recipe must have combo_recipes array`);
                 }
@@ -1326,7 +1326,7 @@ class DemoDataGenerator {
 // 
 // Data Summary:
 // - ${ingredients.length} ingredients across ${new Set(ingredients.map(i => i.category)).size} categories
-// - ${recipes.length} recipes (${recipes.filter(r => r.type === 'basic').length} basic, ${recipes.filter(r => r.type === 'combo').length} combo)
+// - ${recipes.length} recipes (${recipes.filter(r => r.recipe_type === 'regular').length} regular, ${recipes.filter(r => r.recipe_type === 'combo').length} combo)
 // - ${meals.length} meals combining multiple recipes
 // - ${scheduledMeals.length} scheduled meals for planning
 // - All data is interconnected with valid references

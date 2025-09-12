@@ -56,7 +56,7 @@ class MobileNavigation {
         const settings = window.settingsManager?.settings || { showBreakfast: false, showLunch: false, showDinner: true };
         
         let tabsHTML = `
-            <button class="mobile-nav-tab flex flex-col items-center py-1 px-1 min-w-0 flex-1" data-tab="ingredients">
+            <button class="mobile-nav-tab flex flex-col items-center py-1 px-1 min-w-0 flex-1" data-tab="items">
                 <span class="text-lg mb-1">🥕</span>
                 <span class="text-xs font-medium">Items</span>
             </button>
@@ -102,11 +102,6 @@ class MobileNavigation {
             <button class="mobile-nav-tab flex flex-col items-center py-1 px-1 min-w-0 flex-1" data-tab="scheduled">
                 <span class="text-lg mb-1">📄</span>
                 <span class="text-xs font-medium">Menu</span>
-            </button>
-            
-            <button class="mobile-nav-tab flex flex-col items-center py-1 px-1 min-w-0 flex-1" data-tab="settings">
-                <span class="text-lg mb-1">⚙️</span>
-                <span class="text-xs font-medium">Settings</span>
             </button>`;
         
         bottomNav.innerHTML = `<div class="flex justify-around items-center py-2">${tabsHTML}</div>`;

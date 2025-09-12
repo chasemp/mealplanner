@@ -51,7 +51,7 @@ describe('Combo Recipe Functionality', () => {
                         id: 9,
                         title: 'Mashed Potatoes',
                         description: 'Creamy, buttery mashed potatoes',
-                        type: 'basic',
+                        recipe_type: 'regular',
                         meal_type: 'dinner',
                         prep_time: 10,
                         cook_time: 20,
@@ -65,7 +65,7 @@ describe('Combo Recipe Functionality', () => {
                         id: 10,
                         title: 'Fried Chicken',
                         description: 'Crispy, golden fried chicken pieces',
-                        type: 'basic',
+                        recipe_type: 'regular',
                         meal_type: 'dinner',
                         prep_time: 20,
                         cook_time: 15,
@@ -80,7 +80,7 @@ describe('Combo Recipe Functionality', () => {
                         id: 12,
                         title: 'Sunday Dinner Combo',
                         description: 'Classic Sunday dinner with fried chicken and mashed potatoes',
-                        type: 'combo',
+                        recipe_type: 'combo',
                         meal_type: 'dinner',
                         prep_time: 35,
                         cook_time: 30,
@@ -165,29 +165,23 @@ describe('Combo Recipe Functionality', () => {
         });
 
         it('should display basic recipes without combo styling', () => {
-            const basicRecipeCards = container.querySelectorAll('[data-recipe-type="basic"]');
-            expect(basicRecipeCards.length).toBeGreaterThan(0);
+            const regularRecipeCards = container.querySelectorAll('[data-recipe-type="regular"]');
+            expect(regularRecipeCards.length).toBeGreaterThan(0);
             
-            basicRecipeCards.forEach(card => {
+            regularRecipeCards.forEach(card => {
                 // Should not have combo styling
                 expect(card.classList.contains('border-purple-500')).toBe(false);
                 expect(card.querySelector('.bg-purple-100')).toBeFalsy();
-                expect(card.textContent).toContain('ingredients');
+                expect(card.textContent).toContain('items');
             });
         });
     });
 
     describe('Recipe Type Filtering', () => {
-        it('should have meal type filter dropdown (recipe-category)', () => {
-            const categoryFilter = container.querySelector('#recipe-category');
-            expect(categoryFilter).toBeTruthy();
-            
-            const options = categoryFilter.querySelectorAll('option');
-            expect(options.length).toBeGreaterThanOrEqual(5); // All Types, Breakfast, Lunch, Dinner, Snack
-            
-            expect(options[0].value).toBe('all');
-            // Note: This tests meal type filtering, not recipe type (basic/combo) filtering
-            // Combo recipe filtering is handled by the search functionality
+        it('should have search input for filtering', () => {
+            const searchInput = container.querySelector('#recipe-search');
+            expect(searchInput).toBeTruthy();
+            expect(searchInput.placeholder).toContain('Search');
         });
 
         it('should filter recipes by meal type', () => {
@@ -228,10 +222,10 @@ describe('Combo Recipe Functionality', () => {
 
         it('should show all recipes by default', () => {
             // Test that both basic and combo recipes are visible by default
-            const basicCards = container.querySelectorAll('[data-recipe-type="basic"]');
+            const regularCards = container.querySelectorAll('[data-recipe-type="regular"]');
             const comboCards = container.querySelectorAll('[data-recipe-type="combo"]');
             
-            expect(basicCards.length).toBeGreaterThan(0);
+            expect(regularCards.length).toBeGreaterThan(0);
             expect(comboCards.length).toBeGreaterThan(0);
             
             // Test that category filter shows all types by default
@@ -260,7 +254,7 @@ describe('Combo Recipe Functionality', () => {
         it('should have combo_recipes field for combo recipes', () => {
             expect(recipeManager.recipes).toBeDefined();
             
-            const comboRecipe = recipeManager.recipes.find(r => r.type === 'combo');
+            const comboRecipe = recipeManager.recipes.find(r => r.recipe_type === 'combo');
             expect(comboRecipe).toBeTruthy();
             expect(comboRecipe.combo_recipes).toBeDefined();
             expect(Array.isArray(comboRecipe.combo_recipes)).toBe(true);
@@ -268,7 +262,7 @@ describe('Combo Recipe Functionality', () => {
         });
 
         it('should have recipe_id and servings_multiplier in combo_recipes', () => {
-            const comboRecipe = recipeManager.recipes.find(r => r.type === 'combo');
+            const comboRecipe = recipeManager.recipes.find(r => r.recipe_type === 'combo');
             expect(comboRecipe).toBeTruthy();
             
             comboRecipe.combo_recipes.forEach(comboRef => {
@@ -280,7 +274,7 @@ describe('Combo Recipe Functionality', () => {
         });
 
         it('should still have ingredients field for grocery list generation', () => {
-            const comboRecipe = recipeManager.recipes.find(r => r.type === 'combo');
+            const comboRecipe = recipeManager.recipes.find(r => r.recipe_type === 'combo');
             expect(comboRecipe).toBeTruthy();
             expect(comboRecipe.ingredients).toBeDefined();
             expect(Array.isArray(comboRecipe.ingredients)).toBe(true);
@@ -288,17 +282,17 @@ describe('Combo Recipe Functionality', () => {
         });
 
         it('should have type field set to combo', () => {
-            const comboRecipe = recipeManager.recipes.find(r => r.type === 'combo');
+            const comboRecipe = recipeManager.recipes.find(r => r.recipe_type === 'combo');
             expect(comboRecipe).toBeTruthy();
-            expect(comboRecipe.type).toBe('combo');
+            expect(comboRecipe.recipe_type).toBe('combo');
         });
 
-        it('should have basic recipes with type field set to basic', () => {
-            const basicRecipes = recipeManager.recipes.filter(r => r.type === 'basic');
-            expect(basicRecipes.length).toBeGreaterThan(0);
+        it('should have regular recipes with recipe_type field set to regular', () => {
+            const regularRecipes = recipeManager.recipes.filter(r => r.recipe_type === 'regular');
+            expect(regularRecipes.length).toBeGreaterThan(0);
             
-            basicRecipes.forEach(recipe => {
-                expect(recipe.type).toBe('basic');
+            regularRecipes.forEach(recipe => {
+                expect(recipe.recipe_type).toBe('regular');
             });
         });
     });
@@ -331,9 +325,9 @@ describe('Combo Recipe Functionality', () => {
             });
             
             // Should include both basic and combo recipes
-            const basicCards = container.querySelectorAll('[data-recipe-type="basic"]');
+            const regularCards = container.querySelectorAll('[data-recipe-type="regular"]');
             const comboCards = container.querySelectorAll('[data-recipe-type="combo"]');
-            expect(basicCards.length).toBeGreaterThan(0);
+            expect(regularCards.length).toBeGreaterThan(0);
             expect(comboCards.length).toBeGreaterThan(0);
         });
 
