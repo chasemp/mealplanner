@@ -1,8 +1,8 @@
 // MealPlanner Main Application
 class MealPlannerApp {
     constructor() {
-        this.currentTab = 'dinner';
-        this.version = '2025.09.11.1800';
+        this.currentTab = 'recipes';
+        this.version = '2025.09.12.1152';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
@@ -299,7 +299,8 @@ class MealPlannerApp {
         console.log('⚙️ Initializing settings manager...');
         this.settingsManager = new SettingsManager();
         window.settingsManager = this.settingsManager;
-        console.log('✅ Settings manager initialized');
+        window.mealPlannerSettings = this.settingsManager; // Also set the expected reference
+        console.log('✅ Settings manager initialized and available as both window.settingsManager and window.mealPlannerSettings');
     }
 
     initializeGoogleCalendar() {
@@ -2329,18 +2330,19 @@ class MealPlannerApp {
         
         // Check for saved theme preference or default to light mode
         const savedTheme = localStorage.getItem('theme');
-        const prefersDark = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)').matches : false;
         
-        console.log('🔍 Theme debug:', { savedTheme, prefersDark });
+        console.log('🔍 Theme debug:', { savedTheme });
         
-        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+        // Only use dark mode if explicitly saved as 'dark'
+        if (savedTheme === 'dark') {
             document.documentElement.classList.add('dark');
             this.updateThemeIcons(true);
             console.log('🌙 Applied dark theme');
         } else {
+            // Default to light mode (ignore system preference)
             document.documentElement.classList.remove('dark');
             this.updateThemeIcons(false);
-            console.log('🌞 Applied light theme');
+            console.log('🌞 Applied light theme (default)');
         }
         
         console.log('✅ Theme system initialized');

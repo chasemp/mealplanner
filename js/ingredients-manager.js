@@ -21,23 +21,23 @@ class ItemsManager {
         // Get data from centralized authority
         if (window.mealPlannerSettings) {
             this.ingredients = window.mealPlannerSettings.getAuthoritativeData('ingredients');
-            console.log(`✅ Ingredients Manager loaded ${this.ingredients.length} ingredients from authoritative source`);
+            console.log(`✅ Items Manager loaded ${this.ingredients.length} items from authoritative source`);
             if (this.ingredients.length > 0) {
-                console.log('📱 First ingredient:', this.ingredients[0]);
+                console.log('📱 First item:', this.ingredients[0]);
             }
         } else {
             // Fallback if settings not available
-            console.warn('⚠️ Settings manager not available, using empty ingredients');
+            console.warn('⚠️ Settings manager not available, using empty items');
             this.ingredients = [];
         }
         
-        console.log('📱 Final ingredients count:', this.ingredients.length);
+        console.log('📱 Final items count:', this.ingredients.length);
         this.applyFilters();
     }
 
     applyFilters() {
         console.log('🔍 Applying filters:', this.currentFilter);
-        console.log('📦 Total ingredients:', this.ingredients.length);
+        console.log('📦 Total items:', this.ingredients.length);
         
         this.filteredIngredients = this.ingredients.filter(ingredient => {
             const matchesSearch = !this.currentFilter.search || 
@@ -56,7 +56,7 @@ class ItemsManager {
             return matches;
         });
         
-        console.log('✅ Filtered ingredients:', this.filteredIngredients.length);
+        console.log('✅ Filtered items:', this.filteredIngredients.length);
     }
 
     getAllLabels() {
