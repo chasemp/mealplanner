@@ -482,11 +482,11 @@ class ItemsManager {
         });
     }
 
-    showIngredientForm(ingredient = null, onSaveCallback = null) {
+    showIngredientForm(ingredient = null, onSaveCallback = null, onCancelCallback = null) {
         console.log('Opening ingredient form...', ingredient ? 'Edit mode' : 'Add mode');
         
         // Use full-page form for better mobile experience
-        this.showFullPageIngredientForm(ingredient, onSaveCallback);
+        this.showFullPageIngredientForm(ingredient, onSaveCallback, onCancelCallback);
         return;
         
         const isEdit = ingredient !== null;
@@ -653,20 +653,29 @@ class ItemsManager {
         }, 100);
     }
 
-    showFullPageIngredientForm(ingredient = null, onSaveCallback = null) {
+    showFullPageIngredientForm(ingredient = null, onSaveCallback = null, onCancelCallback = null) {
+        console.log('🥕 showFullPageIngredientForm called', { ingredient, hasCallback: !!onSaveCallback, hasCancelCallback: !!onCancelCallback });
+        console.log('🥕 ItemsManager container:', this.container);
+        
         const isEdit = ingredient !== null;
         
-        // Store previous view for navigation and callback
+        // Store previous view for navigation and callbacks
         this.previousView = {
             container: this.container.innerHTML,
             scrollPosition: window.scrollY
         };
         this.onSaveCallback = onSaveCallback;
+        this.onCancelCallback = onCancelCallback;
+        
+        console.log('🥕 Previous view stored, container length:', this.previousView.container.length);
         
         // Generate full-page form HTML
+        console.log('🥕 Setting container innerHTML...');
         this.container.innerHTML = this.generateFullPageIngredientFormHTML(ingredient);
+        console.log('🥕 Container innerHTML set, new length:', this.container.innerHTML.length);
         
         // Attach event listeners
+        console.log('🥕 Attaching form listeners...');
         this.attachFullPageIngredientFormListeners(ingredient);
         
         // Focus on name input
@@ -869,8 +878,17 @@ class ItemsManager {
                 }
             }
             
+            // If we have a cancel callback (came from recipe form), use it
+            if (this.onCancelCallback) {
+                console.log('🥕 Using cancel callback to return to recipe form');
+                this.onCancelCallback();
+                this.onCancelCallback = null;
+                this.onSaveCallback = null;
+                return;
+            }
+            
             if (config.isFullPage) {
-                // Full-page form: restore previous view
+                // Full-page form: restore previous view (items tab)
                 if (this.previousView) {
                     this.container.innerHTML = this.previousView.container;
                     window.scrollTo(0, this.previousView.scrollPosition || 0);
@@ -882,8 +900,9 @@ class ItemsManager {
                 modal?.remove();
             }
             
-            // Clear callback
+            // Clear callbacks
             this.onSaveCallback = null;
+            this.onCancelCallback = null;
         };
 
         // Attach close handlers

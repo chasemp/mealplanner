@@ -174,9 +174,9 @@ class RecipeManager {
                         
                         <!-- Right side: Clear Filters Button -->
                         <button id="clear-recipe-filters-btn" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md text-sm font-medium transition-colors">
-                            Clear Filters
-                        </button>
-                    </div>
+                                Clear Filters
+                            </button>
+                        </div>
                         
                     <!-- Recipe Results Info Bar (enhanced with more emphasis) -->
                     <div class="border-t border-gray-200 dark:border-gray-600 pt-4 mt-4">
@@ -202,13 +202,13 @@ class RecipeManager {
                                     </svg>
                                     <span><strong>${this.getFilteredRecipes().filter(r => r.favorite === true).length}</strong> favs</span>
                     </div>
-                    </div>
+                </div>
 
                             <!-- Right side: Filter indicators -->
                             <div class="flex items-center space-x-3">
+                    </div>
+                    </div>
                             </div>
-                        </div>
-                        </div>
                         
                         <!-- Row 4: Sort Controls (Full Width on Mobile) -->
                         <div class="flex items-center gap-3 w-full mt-3">
@@ -1128,11 +1128,11 @@ class RecipeManager {
                             <button type="button" id="add-ingredient-row" class="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md transition-colors">
                                 <span>Add</span>
                                 <span>🥕</span>
-                            </button>
+                                </button>
                             <button type="button" id="create-new-ingredient" class="flex items-center gap-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 rounded-md transition-colors">
                                 <span>Create</span>
                                 <span>🥕</span>
-                            </button>
+                                </button>
                         </div>
                     </div>
                     
@@ -1217,14 +1217,14 @@ class RecipeManager {
         }
         
         return ingredients.map((ingredient, index) => `
-            <div class="ingredient-row grid grid-cols-12 gap-2 items-end">
+            <div class="ingredient-row grid grid-cols-10 gap-2 items-end">
                 <div class="col-span-5">
                     <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Ingredient ${index === 0 ? '*' : ''}
+                        Item
                     </label>
                     <select class="ingredient-select w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                             name="ingredients[${index}][ingredient_id]" ${index === 0 ? 'required' : ''}>
-                        <option value="">Select ingredient...</option>
+                        <option value="">Select item...</option>
                         ${this.ingredients.map(ing => `
                             <option value="${ing.id}" data-unit="${ing.default_unit}" 
                                     ${ingredient.ingredient_id == ing.id ? 'selected' : ''}>
@@ -1236,16 +1236,16 @@ class RecipeManager {
                 
                 <div class="col-span-2">
                     <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Quantity ${index === 0 ? '*' : ''}
+                        Quantity
                     </label>
                     <input type="number" step="0.25" min="0" 
-                           class="w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                           class="ingredient-quantity w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                            name="ingredients[${index}][quantity]" 
                            value="${ingredient.quantity}"
                            placeholder="1.5" ${index === 0 ? 'required' : ''}>
                 </div>
                 
-                <div class="col-span-2">
+                <div class="col-span-3">
                     <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Unit
                     </label>
@@ -1260,17 +1260,6 @@ class RecipeManager {
                         <option value="cloves" ${ingredient.unit === 'cloves' ? 'selected' : ''}>cloves</option>
                         <option value="slices" ${ingredient.unit === 'slices' ? 'selected' : ''}>slices</option>
                     </select>
-                </div>
-                
-                <div class="col-span-2">
-                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Notes
-                    </label>
-                    <input type="text" 
-                           class="w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                           name="ingredients[${index}][notes]" 
-                           value="${ingredient.notes || ''}"
-                           placeholder="optional">
                 </div>
                 
                 <div class="col-span-1">
@@ -1290,14 +1279,14 @@ class RecipeManager {
 
     renderSingleIngredientRow(ingredient, index, showRemoveButton = false) {
         return `
-            <div class="ingredient-row grid grid-cols-12 gap-2 items-end">
+            <div class="ingredient-row grid grid-cols-10 gap-2 items-end">
                 <div class="col-span-5">
                     <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Ingredient ${index === 0 ? '*' : ''}
+                        Item
                     </label>
                     <select class="ingredient-select w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                             name="ingredients[${index}][ingredient_id]" ${index === 0 ? 'required' : ''}>
-                        <option value="">Select ingredient...</option>
+                        <option value="">Select item...</option>
                         ${this.ingredients.map(ing => `
                             <option value="${ing.id}" data-unit="${ing.default_unit}" 
                                     ${ingredient.ingredient_id == ing.id ? 'selected' : ''}>
@@ -1309,16 +1298,16 @@ class RecipeManager {
                 
                 <div class="col-span-2">
                     <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Quantity ${index === 0 ? '*' : ''}
+                        Quantity
                     </label>
                     <input type="number" step="0.25" min="0" 
-                           class="w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                           class="ingredient-quantity w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                            name="ingredients[${index}][quantity]" 
                            value="${ingredient.quantity}"
                            placeholder="1.5" ${index === 0 ? 'required' : ''}>
                 </div>
                 
-                <div class="col-span-2">
+                <div class="col-span-3">
                     <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Unit
                     </label>
@@ -1333,17 +1322,6 @@ class RecipeManager {
                         <option value="cloves" ${ingredient.unit === 'cloves' ? 'selected' : ''}>cloves</option>
                         <option value="slices" ${ingredient.unit === 'slices' ? 'selected' : ''}>slices</option>
                     </select>
-                </div>
-                
-                <div class="col-span-2">
-                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Notes
-                    </label>
-                    <input type="text" 
-                           class="w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                           name="ingredients[${index}][notes]" 
-                           value="${ingredient.notes || ''}"
-                           placeholder="optional">
                 </div>
                 
                 <div class="col-span-1">
@@ -1596,9 +1574,17 @@ class RecipeManager {
             if (this.editingFromMobileView && this.editingRecipe) {
                 // Update the editing recipe with latest data and return to mobile view
                 this.editingRecipe = savedRecipe;
-                this.showMobileRecipePage(this.editingRecipe);
-                this.editingFromMobileView = false;
-                this.editingRecipe = null;
+                
+                // First restore the recipe list view, then show mobile recipe
+                this.render(); // Restore recipe list
+                
+                // Small delay to ensure render is complete, then show mobile recipe
+                setTimeout(() => {
+                    this.isShowingMobileRecipe = false; // Reset flag
+                    this.showMobileRecipePage(this.editingRecipe);
+                    this.editingFromMobileView = false;
+                    this.editingRecipe = null;
+                }, 50);
             } else {
                 // Close modal and refresh recipe list
                 const modal = form.closest('.fixed');
@@ -1866,9 +1852,17 @@ class RecipeManager {
                 console.log('📱 Returning to mobile recipe view after save');
                 // Update the recipe reference with the saved data
                 this.editingRecipe = this.recipes.find(r => r.id === this.editingRecipe.id) || this.editingRecipe;
-                this.showMobileRecipePage(this.editingRecipe);
-                this.editingFromMobileView = false;
-                this.editingRecipe = null;
+                
+                // First restore the recipe list view, then show mobile recipe
+                this.render(); // Restore recipe list
+                
+                // Small delay to ensure render is complete, then show mobile recipe
+                setTimeout(() => {
+                    this.isShowingMobileRecipe = false; // Reset flag
+                    this.showMobileRecipePage(this.editingRecipe);
+                    this.editingFromMobileView = false;
+                    this.editingRecipe = null;
+                }, 50);
             } else {
             this.render();
             }
@@ -2346,7 +2340,7 @@ class RecipeManager {
                                 </h1>
                             </div>
                             <div class="flex items-center space-x-3">
-                                <button type="button" id="cancel-fullpage-form" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 px-4 py-2 transition-colors">
+                                <button type="button" id="cancel-fullpage-form" class="bg-gray-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-600 transition-colors flex items-center justify-center">
                                     Cancel
                                 </button>
                                 <button type="submit" form="fullpage-recipe-form" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium">
@@ -2502,19 +2496,51 @@ class RecipeManager {
 
         // Close/Cancel handlers with confirmation
         const handleClose = () => {
+            console.log('🚪 handleClose called, hasUnsavedChanges:', hasUnsavedChanges);
+            
             if (hasUnsavedChanges) {
                 const confirmed = confirm('You have unsaved changes. Are you sure you want to cancel?');
+                console.log('🚪 User confirmed close:', confirmed);
                 if (!confirmed) {
                     return; // Don't close if user cancels
                 }
             }
             
+            console.log('🚪 Proceeding to close, isFullPage:', config.isFullPage);
+            console.log('🚪 previousView available:', !!this.previousView);
+            
             if (config.isFullPage) {
-                // Full-page form: restore previous view
-                if (this.previousView) {
-                    this.container.innerHTML = this.previousView.container;
-                    window.scrollTo(0, this.previousView.scrollPosition || 0);
-                    this.attachEventListeners(); // Re-attach main recipe list listeners
+                // Full-page form: handle mobile vs desktop
+                if (this.editingFromMobileView && this.editingRecipe) {
+                    console.log('📱 Returning to mobile recipe view after full-page cancel');
+                    
+                    // First restore the recipe list view, then show mobile recipe
+                    this.render(); // Restore recipe list
+                    
+                    // Small delay to ensure render is complete, then show mobile recipe
+                    setTimeout(() => {
+                        this.isShowingMobileRecipe = false; // Reset flag
+                        this.showMobileRecipePage(this.editingRecipe);
+                        this.editingFromMobileView = false;
+                        this.editingRecipe = null;
+                    }, 50);
+                } else {
+                    // Normal full-page form: restore previous view
+                    if (this.previousView) {
+                        console.log('🚪 Restoring previous view');
+                        this.container.innerHTML = this.previousView.container;
+                        window.scrollTo(0, this.previousView.scrollPosition || 0);
+                        
+                        // Re-attach main recipe list listeners and re-render to ensure everything is properly initialized
+                        setTimeout(() => {
+                            this.attachEventListeners();
+                            this.render(); // This will ensure all buttons and event listeners are properly set up
+                        }, 0);
+                        
+                        console.log('🚪 Previous view restored successfully');
+                    } else {
+                        console.error('🚪 No previous view to restore!');
+                    }
                 }
             } else {
                 // Modal form: handle mobile vs desktop
@@ -2522,9 +2548,17 @@ class RecipeManager {
                     console.log('Returning to mobile recipe view after cancel');
                     const modal = form.closest('.fixed');
                     modal?.remove();
-                    this.showMobileRecipePage(this.editingRecipe);
-                    this.editingFromMobileView = false;
-                    this.editingRecipe = null;
+                    
+                    // First restore the recipe list view, then show mobile recipe
+                    this.render(); // Restore recipe list
+                    
+                    // Small delay to ensure render is complete, then show mobile recipe
+                    setTimeout(() => {
+                        this.isShowingMobileRecipe = false; // Reset flag
+                        this.showMobileRecipePage(this.editingRecipe);
+                        this.editingFromMobileView = false;
+                        this.editingRecipe = null;
+                    }, 50);
                 } else {
                     // Normal desktop modal close
                     const modal = form.closest('.fixed');
@@ -2591,17 +2625,120 @@ class RecipeManager {
 
         // Create new ingredient button
         createIngredientBtn?.addEventListener('click', () => {
-            console.log('Create new ingredient clicked');
+            console.log('🥕 Create new ingredient clicked');
+            console.log('🥕 window.itemsManager available:', !!window.itemsManager);
+            console.log('🥕 ingredientsContainer:', ingredientsContainer);
+            
             // Open the items manager form with callback to add to recipe
-            if (window.itemsManager) {
+            if (window.itemsManager && window.app) {
+                // Store current form data before switching tabs
+                const currentForm = document.querySelector('#fullpage-recipe-form');
+                let savedFormData = null;
+                if (currentForm) {
+                    savedFormData = new FormData(currentForm);
+                    console.log('🥕 Storing current form data before switching to items');
+                }
+                
                 const onSaveCallback = (savedIngredient) => {
-                    console.log('New ingredient saved, adding to recipe:', savedIngredient);
-                    // Add the new ingredient to the recipe form
-                    this.addIngredientToRecipeForm(savedIngredient, ingredientsContainer);
+                    console.log('🥕 New ingredient saved, determining return destination:', savedIngredient);
+                    console.log('🥕 editingFromMobileView:', this.editingFromMobileView);
+                    console.log('🥕 editingRecipe:', !!this.editingRecipe);
+                    
+                    // Switch back to recipes tab
+                    window.app.switchTab('recipes');
+                    
+                    setTimeout(() => {
+                        if (this.editingFromMobileView && this.editingRecipe) {
+                            // Add ingredient to the existing recipe and return to mobile view
+                            console.log('🥕 Adding ingredient to existing recipe and returning to mobile view');
+                            
+                            // Add ingredient to the recipe data
+                            if (!this.editingRecipe.ingredients) {
+                                this.editingRecipe.ingredients = [];
+                            }
+                            this.editingRecipe.ingredients.push({
+                                ingredient_id: savedIngredient.id,
+                                quantity: 1,
+                                unit: savedIngredient.default_unit || 'pieces'
+                            });
+                            
+                            // Save the updated recipe
+                            this.saveRecipes();
+                            
+                            // First restore the recipe list view, then show mobile recipe
+                            console.log('🥕 Restoring recipe list before showing mobile recipe');
+                            this.render(); // Restore recipe list
+                            
+                            // Small delay to ensure render is complete, then show mobile recipe
+                            setTimeout(() => {
+                                this.isShowingMobileRecipe = false; // Reset flag
+                                this.showMobileRecipePage(this.editingRecipe);
+                            }, 50);
+                        } else {
+                            // Re-open the recipe form and add the ingredient (for new recipes)
+                            console.log('🥕 Re-opening recipe form and adding ingredient');
+                            this.showRecipeForm(); // Re-open the form
+                            setTimeout(() => {
+                                // Restore form data if we had it
+                                if (savedFormData) {
+                                    this.restoreFormData(savedFormData);
+                                }
+                                
+                                const newIngredientsContainer = document.querySelector('#ingredients-container');
+                                if (newIngredientsContainer) {
+                                    this.addIngredientToRecipeForm(savedIngredient, newIngredientsContainer);
+                                }
+                            }, 100);
+                        }
+                    }, 100);
                 };
-                window.itemsManager.showIngredientForm(null, onSaveCallback);
+                
+                const onCancelCallback = () => {
+                    console.log('🥕 Item creation cancelled, determining return destination');
+                    console.log('🥕 editingFromMobileView:', this.editingFromMobileView);
+                    console.log('🥕 editingRecipe:', !!this.editingRecipe);
+                    
+                    // Switch back to recipes tab
+                    window.app.switchTab('recipes');
+                    
+                    setTimeout(() => {
+                        if (this.editingFromMobileView && this.editingRecipe) {
+                            // Return to mobile recipe view
+                            console.log('🥕 Returning to mobile recipe view after cancel');
+                            
+                            // First restore the recipe list view, then show mobile recipe
+                            this.render(); // Restore recipe list
+                            
+                            // Small delay to ensure render is complete, then show mobile recipe
+                            setTimeout(() => {
+                                this.isShowingMobileRecipe = false; // Reset flag
+                                this.showMobileRecipePage(this.editingRecipe);
+                            }, 50);
+                        } else {
+                            // Re-open the recipe form (for new recipes or desktop editing)
+                            console.log('🥕 Re-opening recipe form');
+                            this.showRecipeForm(); // Re-open the form
+                            setTimeout(() => {
+                                // Restore form data if we had it
+                                if (savedFormData) {
+                                    this.restoreFormData(savedFormData);
+                                }
+                            }, 100);
+                        }
+                    }, 100);
+                };
+                
+                console.log('🥕 Switching to items tab and opening form');
+                // Switch to items tab first
+                window.app.switchTab('items');
+                
+                // Then show the form with both callbacks
+                setTimeout(() => {
+                    window.itemsManager.showIngredientForm(null, onSaveCallback, onCancelCallback);
+                }, 100);
             } else {
-                console.warn('ItemsManager not available');
+                console.error('🥕 ItemsManager or App not available on window object');
+                console.log('🥕 Available on window:', Object.keys(window).filter(k => k.includes('items') || k.includes('Items') || k.includes('app')));
             }
         });
 
@@ -2621,37 +2758,140 @@ class RecipeManager {
         });
     }
 
+    restoreFormData(formData) {
+        console.log('🥕 Restoring form data...');
+        const form = document.querySelector('#fullpage-recipe-form');
+        if (!form) {
+            console.warn('🥕 Form not found for data restoration');
+            return;
+        }
+
+        // Restore basic form fields
+        for (let [key, value] of formData.entries()) {
+            const input = form.querySelector(`[name="${key}"]`);
+            if (input) {
+                if (input.type === 'checkbox') {
+                    input.checked = value === 'on';
+                } else {
+                    input.value = value;
+                }
+            }
+        }
+
+        // Restore ingredients - this is more complex as we need to rebuild the ingredient rows
+        const ingredientsContainer = form.querySelector('#ingredients-container');
+        if (ingredientsContainer) {
+            // Extract ingredient data from FormData
+            const ingredientData = [];
+            let index = 0;
+            while (formData.has(`ingredients[${index}][ingredient_id]`)) {
+                const ingredient = {
+                    ingredient_id: formData.get(`ingredients[${index}][ingredient_id]`),
+                    quantity: formData.get(`ingredients[${index}][quantity]`),
+                    unit: formData.get(`ingredients[${index}][unit]`)
+                };
+                if (ingredient.ingredient_id) { // Only add if ingredient is selected
+                    ingredientData.push(ingredient);
+                }
+                index++;
+            }
+
+            // Rebuild ingredient rows
+            if (ingredientData.length > 0) {
+                console.log('🥕 Restoring', ingredientData.length, 'ingredients');
+                ingredientsContainer.innerHTML = this.renderIngredientRows(ingredientData);
+                
+                // Reattach listeners to ingredient rows
+                ingredientsContainer.querySelectorAll('.ingredient-row').forEach(row => {
+                    this.attachIngredientRowListeners(row);
+                });
+            }
+        }
+
+        console.log('🥕 Form data restoration complete');
+    }
+
     addIngredientToRecipeForm(savedIngredient, ingredientsContainer) {
-        console.log('Adding ingredient to recipe form:', savedIngredient);
+        console.log('🥕 Adding ingredient to recipe form:', savedIngredient);
         
         // Add the new ingredient to the ingredients list (for the select dropdown)
         if (!this.ingredients.find(ing => ing.id === savedIngredient.id)) {
             this.ingredients.push(savedIngredient);
         }
         
-        // Create a new ingredient row with the saved ingredient pre-selected
-        const currentRows = ingredientsContainer.querySelectorAll('.ingredient-row').length;
-        const newIngredientRow = {
-            ingredient_id: savedIngredient.id,
-            name: savedIngredient.name,
-            quantity: '1', // Default quantity
-            unit: savedIngredient.default_unit || 'pieces',
-            notes: ''
-        };
+        // Check if there's an empty row we can use instead of adding a new one
+        const existingRows = ingredientsContainer.querySelectorAll('.ingredient-row');
+        let targetRow = null;
         
-        const newRowHtml = this.renderSingleIngredientRow(newIngredientRow, currentRows, true);
-        ingredientsContainer.insertAdjacentHTML('beforeend', newRowHtml);
-        
-        // Attach listeners to the new row
-        const newRow = ingredientsContainer.lastElementChild;
-        this.attachIngredientRowListeners(newRow);
-        
-        // Focus on the quantity input for easy editing
-        const quantityInput = newRow.querySelector('.ingredient-quantity');
-        if (quantityInput) {
-            quantityInput.focus();
-            quantityInput.select();
+        // Look for an empty row (no ingredient selected)
+        for (const row of existingRows) {
+            const select = row.querySelector('.ingredient-select');
+            if (select && (!select.value || select.value === '')) {
+                targetRow = row;
+                console.log('🥕 Found empty row to populate');
+                break;
+            }
         }
+        
+        // If no empty row found, create a new one
+        if (!targetRow) {
+            console.log('🥕 Creating new ingredient row');
+            const currentRows = existingRows.length;
+            const newIngredientRow = {
+                ingredient_id: savedIngredient.id,
+                name: savedIngredient.name,
+                quantity: '1',
+                unit: savedIngredient.default_unit || 'pieces',
+                notes: ''
+            };
+            
+            const newRowHtml = this.renderSingleIngredientRow(newIngredientRow, currentRows, true);
+            ingredientsContainer.insertAdjacentHTML('beforeend', newRowHtml);
+            targetRow = ingredientsContainer.lastElementChild;
+            this.attachIngredientRowListeners(targetRow);
+        } else {
+            // Populate the existing empty row
+            console.log('🥕 Populating existing empty row');
+            const select = targetRow.querySelector('.ingredient-select');
+            const quantityInput = targetRow.querySelector('.ingredient-quantity');
+            const unitSelect = targetRow.querySelector('.unit-select');
+            
+            if (select) select.value = savedIngredient.id;
+            if (quantityInput) quantityInput.value = '1';
+            if (unitSelect) unitSelect.value = savedIngredient.default_unit || 'pieces';
+        }
+        
+        // Scroll to the Items section
+        setTimeout(() => {
+            // Find the Items heading
+            const headings = document.querySelectorAll('h3');
+            let itemsSection = null;
+            for (const heading of headings) {
+                if (heading.textContent.includes('Items')) {
+                    itemsSection = heading;
+                    break;
+                }
+            }
+            
+            // Fallback to the ingredients container
+            if (!itemsSection) {
+                itemsSection = ingredientsContainer.closest('div');
+            }
+            
+            if (itemsSection) {
+                console.log('🥕 Scrolling to Items section');
+                itemsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            
+            // Focus on the quantity input for easy editing
+            const quantityInput = targetRow.querySelector('.ingredient-quantity');
+            if (quantityInput) {
+                setTimeout(() => {
+                    quantityInput.focus();
+                    quantityInput.select();
+                }, 300); // Wait for scroll to complete
+            }
+        }, 100);
     }
 
 
@@ -2805,26 +3045,26 @@ class RecipeManager {
             
             ingredientRows.forEach((row, index) => {
                 const ingredientSelect = row.querySelector('.ingredient-select');
-                const quantityInput = row.querySelector('.quantity-input');
+                const quantityInput = row.querySelector('.ingredient-quantity');
                 const unitSelect = row.querySelector('.unit-select');
-                const notesInput = row.querySelector('.notes-input');
                 
                 const ingredientId = ingredientSelect?.value;
                 const quantity = parseFloat(quantityInput?.value) || 0;
                 const unit = unitSelect?.value || '';
-                const notes = notesInput?.value?.trim() || '';
+                
+                console.log('🥕 Processing ingredient row:', { ingredientId, quantity, unit });
                 
                 if (ingredientId && quantity > 0) {
                     ingredients.push({
                         ingredient_id: parseInt(ingredientId),
                         quantity: quantity,
-                        unit: unit,
-                        notes: notes
+                        unit: unit
                     });
                 }
             });
 
             recipeData.ingredients = ingredients;
+            console.log('🥕 Final ingredients array:', ingredients);
 
             // Validate required fields
             if (!recipeData.title) {
@@ -2847,12 +3087,30 @@ class RecipeManager {
                 this.showNotification('Recipe created successfully!', 'success');
             }
 
-            // Return to recipe list
-            if (this.previousView) {
-                this.container.innerHTML = this.previousView.container;
-                window.scrollTo(0, this.previousView.scrollPosition || 0);
-                this.attachEventListeners();
-                this.render(); // Refresh to show new/updated recipe
+            // Handle post-save navigation
+            if (this.editingFromMobileView && this.editingRecipe) {
+                console.log('📱 Returning to mobile recipe view after full-page form save');
+                // Update the editing recipe with latest data and return to mobile view
+                this.editingRecipe = savedRecipe;
+                
+                // First restore the recipe list view, then show mobile recipe
+                this.render(); // Restore recipe list
+                
+                // Small delay to ensure render is complete, then show mobile recipe
+                setTimeout(() => {
+                    this.isShowingMobileRecipe = false; // Reset flag
+                    this.showMobileRecipePage(this.editingRecipe);
+                    this.editingFromMobileView = false;
+                    this.editingRecipe = null;
+                }, 50);
+            } else {
+                // Return to recipe list
+                if (this.previousView) {
+                    this.container.innerHTML = this.previousView.container;
+                    window.scrollTo(0, this.previousView.scrollPosition || 0);
+                    this.attachEventListeners();
+                    this.render(); // Refresh to show new/updated recipe
+                }
             }
 
         } catch (error) {

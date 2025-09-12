@@ -50,14 +50,32 @@ beforeEach(() => {
     global.window.mealPlannerSettings = new MockSettingsManager();
     global.window.settingsManager = global.window.mealPlannerSettings;
     
-    // Mock other global dependencies
-    global.window.labelTypes = {
-        getAllPredefinedLabels: () => ['quick', 'healthy', 'vegetarian', 'protein-rich'],
-        getLabelType: (label) => 'general',
-        inferLabelType: (label) => 'general', // Add missing method
-        getMealTypeLabels: () => ['Breakfast', 'Lunch', 'Dinner'],
-        getRecipeTypeLabels: () => ['Recipe Combo']
-    };
+// Mock other global dependencies
+global.window.labelTypes = {
+    getAllPredefinedLabels: () => ['quick', 'healthy', 'vegetarian', 'protein-rich'],
+    getLabelType: (label) => 'general',
+    inferLabelType: (label) => 'general', // Add missing method
+    getMealTypeLabels: () => ['Breakfast', 'Lunch', 'Dinner'],
+    getRecipeTypeLabels: () => ['Recipe Combo'],
+    getColorClasses: (labelType) => {
+        // Mock color classes for different label types
+        const colorMap = {
+            'meal_type': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+            'recipe_type': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
+            'general': 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+        };
+        return colorMap[labelType] || colorMap['general'];
+    },
+    getIcon: (labelType) => {
+        // Mock icons for different label types
+        const iconMap = {
+            'meal_type': '🍽️',
+            'recipe_type': '🍳',
+            'general': '🏷️'
+        };
+        return iconMap[labelType] || iconMap['general'];
+    }
+};
     
     // Mock console methods to reduce test noise
     global.console = {
