@@ -440,20 +440,41 @@ class SettingsManager {
 
     updateDatabaseSourceIndicator() {
         const indicator = document.getElementById('database-source-indicator');
-        if (!indicator) return;
+        const iconElement = document.getElementById('database-source-icon');
+        if (!indicator || !iconElement) return;
 
-        const sourceNames = {
-            'demo': 'Demo Data',
-            'memory': 'Clean Slate',
-            'browser': 'Browser Storage',
-            'local': 'Local File',
-            'github': 'GitHub Sync'
+        const sourceConfig = {
+            'demo': {
+                name: 'Demo Data',
+                icon: `<path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>`
+            },
+            'memory': {
+                name: 'Clean Slate',
+                icon: `<path fill-rule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" clip-rule="evenodd"></path><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>`
+            },
+            'browser': {
+                name: 'Browser Storage',
+                icon: `<path fill-rule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l.123.489.804.804A1 1 0 0113 18H7a1 1 0 01-.707-1.707l.804-.804L7.22 15H5a2 2 0 01-2-2V5zm5.771 7H5V5h10v7H8.771z" clip-rule="evenodd"></path>`
+            },
+            'local': {
+                name: 'Local File',
+                icon: `<path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>`
+            },
+            'github': {
+                name: 'GitHub Sync',
+                icon: `<path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>`
+            }
         };
 
-        const sourceName = sourceNames[this.settings.sourceType] || 'Unknown';
-        indicator.textContent = sourceName;
+        const config = sourceConfig[this.settings.sourceType] || sourceConfig['demo'];
+        
+        // Update the text indicator
+        indicator.textContent = config.name;
+        
+        // Update the icon
+        iconElement.innerHTML = config.icon;
 
-        console.log(`📊 Updated database source indicator: ${sourceName}`);
+        console.log(`📊 Updated database source indicator: ${config.name}`);
     }
 
     // Method for managers to check current database source
@@ -615,10 +636,10 @@ class SettingsManager {
                     window.app.recipeManager.render();
                 }
                 
-                // Reload ingredients manager
-                if (window.app.ingredientsManager) {
-                    await window.app.ingredientsManager.loadIngredients();
-                    window.app.ingredientsManager.render();
+                // Reload items manager
+                if (window.app.itemsManager) {
+                    await window.app.itemsManager.loadIngredients();
+                    window.app.itemsManager.render();
                 }
                 
                 // Reload meal manager

@@ -419,9 +419,9 @@ class SharedBarcodeScanner {
         const existingIngredient = await this.findExistingIngredient(ingredient);
         
         if (!existingIngredient) {
-            // Add to ingredients database
+            // Add to items database
             await this.addIngredientToDatabase(ingredient);
-            console.log(`✅ Added new ingredient to database: ${ingredient.name}`);
+            console.log(`✅ Added new item to database: ${ingredient.name}`);
         } else {
             console.log(`📋 Ingredient already exists in database: ${existingIngredient.name}`);
             // Update the ingredient with the existing ID
@@ -433,9 +433,9 @@ class SharedBarcodeScanner {
 
     async findExistingIngredient(ingredient) {
         // This would normally query the actual database
-        // For now, check the demo data or ingredients manager
-        if (window.ingredientsManager && window.ingredientsManager.ingredients) {
-            return window.ingredientsManager.ingredients.find(existing => 
+        // For now, check the demo data or items manager
+        if (window.itemsManager && window.itemsManager.ingredients) {
+            return window.itemsManager.ingredients.find(existing => 
                 existing.name.toLowerCase() === ingredient.name.toLowerCase() ||
                 (existing.barcode && existing.barcode === ingredient.barcode)
             );
@@ -454,23 +454,23 @@ class SharedBarcodeScanner {
     }
 
     async addIngredientToDatabase(ingredient) {
-        // Add to ingredients manager if available
-        if (window.ingredientsManager) {
+        // Add to items manager if available
+        if (window.itemsManager) {
             // Generate a proper ID
-            const maxId = Math.max(0, ...window.ingredientsManager.ingredients.map(i => i.id || 0));
+            const maxId = Math.max(0, ...window.itemsManager.ingredients.map(i => i.id || 0));
             ingredient.id = maxId + 1;
             
             // Add to the ingredients array
-            window.ingredientsManager.ingredients.push(ingredient);
+            window.itemsManager.ingredients.push(ingredient);
             
-            // Refresh the ingredients view if it's currently displayed
-            if (window.ingredientsManager.container && !window.ingredientsManager.container.classList.contains('hidden')) {
-                window.ingredientsManager.applyFilters();
-                window.ingredientsManager.render();
+            // Refresh the items view if it's currently displayed
+            if (window.itemsManager.container && !window.itemsManager.container.classList.contains('hidden')) {
+                window.itemsManager.applyFilters();
+                window.itemsManager.render();
             }
             
             // Show notification
-            this.showNotification(`Added "${ingredient.name}" to ingredients database`, 'success');
+            this.showNotification(`Added "${ingredient.name}" to items database`, 'success');
         }
         
         // In a real app, this would also save to the backend/database
