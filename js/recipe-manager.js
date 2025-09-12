@@ -475,11 +475,18 @@ class RecipeManager {
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                 </svg>
                             </button>
-                            <button class="text-gray-400 hover:text-green-600 schedule-recipe" data-recipe-id="${recipe.id}" title="Add to planning queue">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                </svg>
-                            </button>
+                            ${this.isRecipeQueued(recipe.id) ? 
+                                `<button class="text-green-600 opacity-50 cursor-not-allowed" disabled title="Already in planning queue">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                </button>` :
+                                `<button class="text-gray-400 hover:text-green-600 schedule-recipe" data-recipe-id="${recipe.id}" title="Add to planning queue">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2 2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                </button>`
+                            }
                         </div>
                     </div>
                     
@@ -518,7 +525,7 @@ class RecipeManager {
                         <div class="text-xs text-gray-400">
                             ${recipe.recipe_type === 'combo' ? 
                                 `${this.getCombinedItemsForCombo(recipe).length} items (from ${recipe.recipes ? recipe.recipes.length : (recipe.combo_recipes ? recipe.combo_recipes.length : 0)} recipes)` : 
-                                `${recipe.ingredients ? recipe.ingredients.length : 0} items`
+                                `${recipe.items ? recipe.items.length : 0} items`
                             }
                         </div>
                     </div>
@@ -838,11 +845,11 @@ class RecipeManager {
         
         recipeRefs.forEach(recipeRef => {
             const recipe = this.recipes.find(r => r.id === parseInt(recipeRef.recipe_id));
-            if (!recipe || !recipe.ingredients) return;
+            if (!recipe || !recipe.items) return;
             
             const portions = recipeRef.servings || 1; // How many portions of this recipe
             
-            recipe.ingredients.forEach(ingredient => {
+            recipe.items.forEach(ingredient => {
                 const ingredientName = this.getIngredientNameById(ingredient.ingredient_id) || 'Unknown item';
                 const key = `${ingredientName}_${ingredient.unit}`;
                 
@@ -1197,7 +1204,7 @@ class RecipeManager {
                         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Items</h3>
                         
                         <div id="ingredients-container" class="space-y-3 mb-4">
-                            ${this.renderIngredientRows(isEdit ? recipe.ingredients : [])}
+                            ${this.renderIngredientRows(isEdit ? recipe.items : [])}
                         </div>
                         
                         <!-- Action buttons below the list -->
@@ -2242,7 +2249,17 @@ class RecipeManager {
             
             // Force mobile navigation to update its state
             if (window.mobileNavigation) {
-                window.mobileNavigation.updateActiveTab('recipes');
+                // Check if we should return to a specific tab
+                const returnTab = previousView.returnTab || 'recipes';
+                if (returnTab === 'plan') {
+                    window.mobileNavigation.updateActiveTab('plan');
+                    // Also switch the main app to the plan tab
+                    if (window.mealPlannerApp) {
+                        window.mealPlannerApp.switchTab('plan');
+                    }
+                } else {
+                    window.mobileNavigation.updateActiveTab('recipes');
+                }
             }
             
             // Only reset mobile flag if we're back to the main list (stack empty)
@@ -2322,7 +2339,7 @@ class RecipeManager {
         if (isCombo) {
             // For combo recipes, show both recipes and additional items
             const recipes = recipe.combo_recipes || recipe.recipes || [];
-            const additionalItems = recipe.ingredients || [];
+            const additionalItems = recipe.items || [];
             const combinedItems = this.getCombinedItemsForCombo(recipe);
             
             console.log('🔍 Mobile view - Recipes:', recipes, 'Additional items:', additionalItems);
@@ -2403,7 +2420,7 @@ class RecipeManager {
             return comboHTML;
         } else {
             // For regular recipes, show ingredients
-            const ingredients = recipe.ingredients || [];
+            const ingredients = recipe.items || [];
             return `
                 <div class="mb-4">
                     <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Items (${ingredients.length})</h3>
@@ -2442,7 +2459,7 @@ class RecipeManager {
         console.log('🎯 Generating COMBO mobile HTML for:', recipe.title);
         
         const recipes = recipe.combo_recipes || recipe.recipes || [];
-        const additionalItems = recipe.ingredients || [];
+        const additionalItems = recipe.items || [];
         const combinedItems = this.getCombinedItemsForCombo(recipe);
         const labels = recipe.labels || [];
         
@@ -2588,7 +2605,7 @@ class RecipeManager {
         const labels = recipe.labels || recipe.tags || [];
         
         // For regular recipes, keep it simple - no complex content generation
-        const ingredients = recipe.ingredients || [];
+        const ingredients = recipe.items || [];
         const itemCount = ingredients.length;
         console.log('📖 Regular recipe ingredients:', itemCount);
         
@@ -3036,7 +3053,7 @@ class RecipeManager {
                             <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Add individual items that don't have their own recipe (e.g., watermelon, bread, etc.)</p>
                             
                             <div id="ingredients-container" class="space-y-3 mb-4">
-                                ${this.renderIngredientRows(isEdit ? recipe.ingredients : [])}
+                                ${this.renderIngredientRows(isEdit ? recipe.items : [])}
                             </div>
                             
                             <!-- Item Action buttons -->
@@ -3057,7 +3074,7 @@ class RecipeManager {
                             <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Items</h3>
                             
                             <div id="ingredients-container" class="space-y-3 mb-4">
-                                ${this.renderIngredientRows(isEdit ? recipe.ingredients : [])}
+                                ${this.renderIngredientRows(isEdit ? recipe.items : [])}
                             </div>
                             
                             <!-- Action buttons below the list -->
@@ -3418,7 +3435,7 @@ class RecipeManager {
                 
                 // Then show the form with both callbacks
                 setTimeout(() => {
-                    window.itemsManager.showIngredientForm(null, onSaveCallback, onCancelCallback);
+                    window.itemsManager.showItemForm(null, onSaveCallback, onCancelCallback);
                 }, 100);
             } else {
                 console.error('🥕 ItemsManager or App not available on window object');
@@ -4066,11 +4083,21 @@ class RecipeManager {
         }
     }
 
+    isRecipeQueued(recipeId) {
+        const pendingRecipes = JSON.parse(localStorage.getItem('mealplanner_pending_recipes') || '[]');
+        return pendingRecipes.findIndex(p => parseInt(p.id) === parseInt(recipeId)) !== -1;
+    }
+
     scheduleRecipe(recipeId) {
         const recipe = this.recipes.find(r => r.id === recipeId);
         if (!recipe) {
             console.error('Recipe not found:', recipeId);
             return;
+        }
+
+        // Check if we're in scheduling context (from itinerary "Add" button)
+        if (window.schedulingContext) {
+            return this.scheduleRecipeForSpecificDate(recipeId, recipe);
         }
 
         // Get or create pending recipes list
@@ -4081,7 +4108,11 @@ class RecipeManager {
         console.log('🔍 Pending recipe IDs:', pendingRecipes.map(p => ({ id: p.id, type: typeof p.id })));
         
         // Check if recipe is already in pending list (ensure type consistency)
-        const existingIndex = pendingRecipes.findIndex(p => parseInt(p.id) === parseInt(recipeId));
+        const existingIndex = pendingRecipes.findIndex(p => {
+            const comparison = parseInt(p.id) === parseInt(recipeId);
+            console.log(`🔍 Comparing: ${p.id} (${typeof p.id}) vs ${recipeId} (${typeof recipeId}) -> ${comparison}`);
+            return comparison;
+        });
         console.log('🔍 Existing index:', existingIndex);
         
         if (existingIndex !== -1) {
@@ -4100,11 +4131,105 @@ class RecipeManager {
         // Save to localStorage
         localStorage.setItem('mealplanner_pending_recipes', JSON.stringify(pendingRecipes));
         
+        // Update the schedule button to show it's queued
+        const scheduleButtons = document.querySelectorAll(`.schedule-recipe[data-recipe-id="${recipeId}"]`);
+        scheduleButtons.forEach(button => {
+            button.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>`;
+            button.disabled = true;
+            button.classList.remove('text-gray-400', 'hover:text-green-600', 'schedule-recipe');
+            button.classList.add('text-green-600', 'opacity-50', 'cursor-not-allowed');
+            button.title = 'Already in planning queue';
+        });
+        
         // Show success notification
         const recipeType = recipe.recipe_type === 'combo' ? 'combo recipe' : 'recipe';
         this.showNotification(`${recipe.title} added to planning queue! Check the Plan tab.`, 'success');
         
+        // Update pending recipes display if it exists
+        if (window.mealPlannerApp && window.mealPlannerApp.updatePendingRecipes) {
+            window.mealPlannerApp.updatePendingRecipes();
+        }
+        
         console.log(`📅 Added ${recipeType} "${recipe.title}" to planning queue`);
+    }
+
+    scheduleRecipeForSpecificDate(recipeId, recipe) {
+        const context = window.schedulingContext;
+        console.log(`📅 Scheduling recipe "${recipe.title}" for specific date:`, context.targetDate);
+        
+        try {
+            // Get current scheduled meals
+            let scheduledMeals = window.mealPlannerSettings?.getAuthoritativeData('scheduledMeals') || [];
+            
+            // Create new scheduled meal
+            const newMeal = {
+                id: Date.now(), // Simple ID generation
+                recipe_id: recipe.id,
+                name: recipe.title,
+                meal_type: context.mealType === 'plan' ? 'dinner' : context.mealType, // Default to dinner for plan tab
+                date: new Date(context.targetDate).toISOString(),
+                created_at: new Date().toISOString()
+            };
+            
+            // Add to scheduled meals
+            scheduledMeals.push(newMeal);
+            
+            // Save back to authoritative source
+            if (window.mealPlannerSettings) {
+                window.mealPlannerSettings.saveAuthoritativeData('scheduledMeals', scheduledMeals);
+            }
+            
+            // Show success notification
+            this.showNotification(`${recipe.title} scheduled for ${new Date(context.targetDate).toLocaleDateString()}!`, 'success');
+            
+            // Remove scheduling banner
+            const banner = document.querySelector('.scheduling-banner');
+            if (banner) {
+                banner.remove();
+            }
+            
+            // Clear scheduling context
+            window.schedulingContext = null;
+            
+            // Switch back to plan tab and refresh itinerary view
+            setTimeout(() => {
+                if (window.mealPlannerApp && window.mealPlannerApp.switchTab) {
+                    window.mealPlannerApp.switchTab('plan');
+                } else {
+                    const planTab = document.querySelector('[data-tab="plan"]');
+                    if (planTab) {
+                        planTab.click();
+                    }
+                }
+                
+                // Force refresh of itinerary views after tab switch
+                setTimeout(() => {
+                    if (window.itineraryViews && window.itineraryViews.plan) {
+                        console.log('🔄 Force refreshing plan itinerary view after scheduling');
+                        window.itineraryViews.plan.forceRefresh();
+                    }
+                }, 200); // Small delay to ensure tab switch is complete
+                
+            }, 1000); // Give time for notification to show
+            
+            // Dispatch event for other components to update
+            window.dispatchEvent(new CustomEvent('mealScheduled', {
+                detail: { 
+                    scheduledMeal: newMeal,
+                    recipe: recipe,
+                    date: context.targetDate,
+                    mealType: context.mealType
+                }
+            }));
+            
+            console.log(`✅ Scheduled "${recipe.title}" for ${context.targetDate}`);
+            
+        } catch (error) {
+            console.error('❌ Error scheduling recipe for specific date:', error);
+            this.showNotification('Error scheduling recipe. Please try again.', 'error');
+        }
     }
 
     toggleFavorite(recipeId) {

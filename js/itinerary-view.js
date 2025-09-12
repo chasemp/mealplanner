@@ -11,7 +11,7 @@ class ItineraryView {
         this.startDate = new Date(today);
         this.startDate.setDate(today.getDate() - today.getDay()); // Start of current week (Sunday)
         
-        this.weeksToShow = 4;
+        this.weeksToShow = 1;
         this.currentView = 'itinerary';
         this.scheduledMeals = [];
         
@@ -23,22 +23,41 @@ class ItineraryView {
         try {
             // Use ScheduleManager if available for consistency
             if (window.scheduleManager) {
-                this.scheduledMeals = window.scheduleManager.getScheduledMealsByType(this.mealType);
+                if (this.mealType === 'plan') {
+                    // For plan tab, show all scheduled meals regardless of type
+                    this.scheduledMeals = window.scheduleManager.scheduledMeals || [];
+                } else {
+                    // For specific meal types, filter by type
+                    this.scheduledMeals = window.scheduleManager.getScheduledMealsByType(this.mealType);
+                }
             } else if (window.app && window.app.getScheduledMeals) {
                 // Fallback to main app
-                this.scheduledMeals = window.app.getScheduledMeals().filter(meal => meal.meal_type === this.mealType);
+                const allMeals = window.app.getScheduledMeals();
+                if (this.mealType === 'plan') {
+                    // For plan tab, show all scheduled meals
+                    this.scheduledMeals = allMeals;
+                } else {
+                    // For specific meal types, filter by type
+                    this.scheduledMeals = allMeals.filter(meal => meal.meal_type === this.mealType);
+                }
             } else {
                 // Final fallback to localStorage
                 const stored = localStorage.getItem('mealplanner_scheduled_meals');
                 if (stored) {
                     const allMeals = JSON.parse(stored);
-                    this.scheduledMeals = allMeals.filter(meal => meal.meal_type === this.mealType);
+                    if (this.mealType === 'plan') {
+                        // For plan tab, show all scheduled meals
+                        this.scheduledMeals = allMeals;
+                    } else {
+                        // For specific meal types, filter by type
+                        this.scheduledMeals = allMeals.filter(meal => meal.meal_type === this.mealType);
+                    }
                 } else {
                     this.scheduledMeals = [];
                 }
             }
             
-            console.log(`📅 Loaded ${this.scheduledMeals.length} ${this.mealType} meals for itinerary:`, this.scheduledMeals);
+            console.log(`📅 Loaded ${this.scheduledMeals.length} ${this.mealType === 'plan' ? 'total' : this.mealType} meals for itinerary:`, this.scheduledMeals);
         } catch (error) {
             console.error('Error loading scheduled meals:', error);
             this.scheduledMeals = [];
@@ -48,21 +67,33 @@ class ItineraryView {
     setupScheduleEventListeners() {
         // Listen for meal scheduling events to refresh the view
         document.addEventListener('mealScheduled', (event) => {
-            if (event.detail.scheduledMeal && event.detail.scheduledMeal.meal_type === this.mealType) {
+            if (this.mealType === 'plan') {
+                // Plan tab shows all meals, so refresh for any meal scheduled
+                console.log(`🔄 Refreshing ${this.mealType} itinerary due to meal scheduled`);
+                this.render();
+            } else if (event.detail.scheduledMeal && event.detail.scheduledMeal.meal_type === this.mealType) {
                 console.log(`🔄 Refreshing ${this.mealType} itinerary due to meal scheduled`);
                 this.render();
             }
         });
 
         document.addEventListener('mealUnscheduled', (event) => {
-            if (event.detail.scheduledMeal && event.detail.scheduledMeal.meal_type === this.mealType) {
+            if (this.mealType === 'plan') {
+                // Plan tab shows all meals, so refresh for any meal unscheduled
+                console.log(`🔄 Refreshing ${this.mealType} itinerary due to meal unscheduled`);
+                this.render();
+            } else if (event.detail.scheduledMeal && event.detail.scheduledMeal.meal_type === this.mealType) {
                 console.log(`🔄 Refreshing ${this.mealType} itinerary due to meal unscheduled`);
                 this.render();
             }
         });
 
         document.addEventListener('mealUpdated', (event) => {
-            if (event.detail.scheduledMeal && event.detail.scheduledMeal.meal_type === this.mealType) {
+            if (this.mealType === 'plan') {
+                // Plan tab shows all meals, so refresh for any meal updated
+                console.log(`🔄 Refreshing ${this.mealType} itinerary due to meal updated`);
+                this.render();
+            } else if (event.detail.scheduledMeal && event.detail.scheduledMeal.meal_type === this.mealType) {
                 console.log(`🔄 Refreshing ${this.mealType} itinerary due to meal updated`);
                 this.render();
             }
@@ -105,26 +136,47 @@ class ItineraryView {
     }
 
     render() {
-        // Load current scheduled meals
-        this.loadScheduledMeals();
-        
-        this.container.innerHTML = `
+        try {
+            // Load current scheduled meals
+            this.loadScheduledMeals();
+            
+            // Debug logging
+            console.log(`🔍 ItineraryView.render() called for ${this.mealType}`);
+            console.log(`🔍 Container:`, this.container);
+            console.log(`🔍 Scheduled meals:`, this.scheduledMeals);
+            console.log(`🔍 Weeks to show:`, this.weeksToShow);
+            
+            if (!this.container) {
+                console.error(`❌ No container found for ${this.mealType} itinerary view`);
+                return;
+            }
+            
+            // Clear any fallback content first
+            const fallbackContent = this.container.querySelector('.fallback-content');
+            if (fallbackContent) {
+                console.log(`🧹 Removing fallback content for ${this.mealType} itinerary view`);
+                fallbackContent.remove();
+            }
+            
+            console.log(`📝 Setting innerHTML for ${this.mealType} itinerary view`);
+            this.container.innerHTML = `
             <div class="itinerary-view">
                 <!-- Header -->
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h3 class="text-lg font-semibold capitalize">${this.mealType} Plan Itinerary</h3>
-                        <p class="text-gray-600 text-sm">
-                            ${this.formatDateRange()} • ${this.weeksToShow} weeks
-                        </p>
-                    </div>
-                    
-                    <div class="flex items-center space-x-3">
-                        <select id="weeks-select-${this.mealType}" class="text-sm border border-gray-300 rounded px-2 py-1">
-                            ${this.renderWeekOptions()}
-                        </select>
-                    </div>
-                </div>
+                   <div class="mb-6">
+                       <div class="flex-1">
+                           <h3 class="text-lg font-semibold">Meals</h3>
+                           <div class="text-gray-600 text-sm">
+                               <div>${this.formatDateRange()}</div>
+                               <div>${this.weeksToShow} weeks</div>
+                           </div>
+                       </div>
+                       
+                       <div class="flex items-center mt-3">
+                           <select id="weeks-select-${this.mealType}" class="text-sm border border-gray-300 rounded px-2 py-1 min-w-0">
+                               ${this.renderWeekOptions()}
+                           </select>
+                       </div>
+                   </div>
 
                 <!-- Planning Summary -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -145,10 +197,29 @@ class ItineraryView {
             </div>
         `;
 
-        this.attachEventListeners();
-        
-        // Listen for meal move events from calendar view
-        this.listenForMealMoves();
+            console.log(`✅ ${this.mealType} itinerary view HTML set successfully`);
+            
+            this.attachEventListeners();
+            
+            // Listen for meal move events from calendar view
+            this.listenForMealMoves();
+            
+            console.log(`✅ ${this.mealType} itinerary view render completed successfully`);
+        } catch (error) {
+            console.error(`❌ Error rendering ${this.mealType} itinerary view:`, error);
+            console.error('Stack trace:', error.stack);
+            
+            // Fallback: show a simple error message
+            if (this.container) {
+                this.container.innerHTML = `
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <h3 class="text-lg font-semibold text-red-800">Error Loading Meals</h3>
+                        <p class="text-red-600">There was an error loading the meals section. Please refresh the page.</p>
+                        <p class="text-sm text-red-500 mt-2">Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
     }
 
     formatDateRange() {
@@ -195,6 +266,7 @@ class ItineraryView {
             weeksToShow: this.weeksToShow,
             totalMeals: this.scheduledMeals.length
         });
+        console.log(`📅 Plan date range: ${this.startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}`);
         
         const filteredMeals = this.scheduledMeals.filter(meal => {
             if (!meal.date) {
@@ -203,7 +275,12 @@ class ItineraryView {
             }
             
             const mealDate = new Date(meal.date);
-            const inRange = mealDate >= this.startDate && mealDate <= endDate;
+            // Normalize dates to avoid timezone issues
+            const mealDateNormalized = new Date(mealDate.getFullYear(), mealDate.getMonth(), mealDate.getDate());
+            const startDateNormalized = new Date(this.startDate.getFullYear(), this.startDate.getMonth(), this.startDate.getDate());
+            const endDateNormalized = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+            
+            const inRange = mealDateNormalized >= startDateNormalized && mealDateNormalized <= endDateNormalized;
             
             console.log(`📅 Meal ${meal.id} (${meal.date}):`, {
                 mealDate: mealDate,
@@ -216,6 +293,17 @@ class ItineraryView {
         });
         
         console.log(`✅ Filtered to ${filteredMeals.length} meals in timeframe:`, filteredMeals);
+        
+        // Debug: Detailed meal analysis
+        console.log(`🔍 DETAILED MEAL ANALYSIS for ${this.mealType}:`);
+        console.log(`📊 Total scheduled meals loaded: ${this.scheduledMeals.length}`);
+        console.log(`📊 Meals in current timeframe: ${filteredMeals.length}`);
+        console.log(`📅 Date range: ${this.startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}`);
+        
+        filteredMeals.forEach((meal, index) => {
+            console.log(`  ${index + 1}. ${meal.name || meal.recipe_name || meal.meal_name || 'Unknown'} on ${new Date(meal.date).toLocaleDateString()} (ID: ${meal.id})`);
+        });
+        
         return filteredMeals;
     }
 
@@ -232,9 +320,9 @@ class ItineraryView {
     }
 
     getRecipeById(recipeId) {
-        // Look up recipe from available sources
-        if (window.demoData && window.demoData.getRecipes) {
-            const recipes = window.demoData.getRecipes();
+        // Look up recipe from authoritative source
+        if (window.mealPlannerSettings) {
+            const recipes = window.mealPlannerSettings.getAuthoritativeData('recipes');
             return recipes.find(recipe => recipe.id === recipeId);
         } else if (window.recipeManager && window.recipeManager.recipes) {
             return window.recipeManager.recipes.find(recipe => recipe.id === recipeId);
@@ -245,14 +333,27 @@ class ItineraryView {
     getScheduledMealForDate(date) {
         // Find a scheduled meal for the given date
         const dateStr = date.toDateString();
-        return this.scheduledMeals.find(meal => {
+        console.log(`🔍 Looking for meal on ${dateStr}`);
+        
+        // Normalize the target date to avoid timezone issues
+        const targetDateNormalized = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        
+        const foundMeal = this.scheduledMeals.find(meal => {
             if (!meal.date) {
                 console.warn(`⚠️ Scheduled meal ${meal.id} missing date property:`, meal);
                 return false;
             }
             const mealDate = new Date(meal.date);
-            return mealDate.toDateString() === dateStr;
+            // Normalize meal date to avoid timezone issues
+            const mealDateNormalized = new Date(mealDate.getFullYear(), mealDate.getMonth(), mealDate.getDate());
+            const matches = mealDateNormalized.getTime() === targetDateNormalized.getTime();
+            
+            console.log(`  Checking meal ${meal.id}: ${mealDate.toDateString()} === ${dateStr} ? ${matches} (normalized comparison)`);
+            return matches;
         }) || null;
+        
+        console.log(`🔍 Found meal for ${dateStr}:`, foundMeal ? `${foundMeal.name || foundMeal.recipe_name || foundMeal.meal_name} (ID: ${foundMeal.id})` : 'None');
+        return foundMeal;
     }
 
     renderWeeks() {
@@ -369,7 +470,11 @@ class ItineraryView {
             const dateStr = date.toDateString();
             
             daysHtml += `
-                <div class="p-4 border-b border-gray-100 last:border-b-0 hover:bg-gray-50">
+                <div class="p-4 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 drop-zone" 
+                     data-date="${dateStr}"
+                     ondragover="event.preventDefault(); this.classList.add('bg-blue-50', 'border-blue-200')"
+                     ondragleave="this.classList.remove('bg-blue-50', 'border-blue-200')"
+                     ondrop="window.itineraryViews['${this.mealType}'].handleDrop(event, '${dateStr}')">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center space-x-3">
                             <div class="text-center">
@@ -378,13 +483,24 @@ class ItineraryView {
                             </div>
                             <div class="flex-1">
                                 ${hasMeal ? `
-                                    <div class="flex items-center space-x-2">
+                                    <div class="flex items-center space-x-2 draggable-meal cursor-move" 
+                                         draggable="true"
+                                         data-meal-id="${scheduledMeal?.id || ''}"
+                                         data-meal-name="${mealName}"
+                                         data-original-date="${dateStr}"
+                                         ondragstart="window.itineraryViews['${this.mealType}'].handleDragStart(event)"
+                                         ondragend="window.itineraryViews['${this.mealType}'].handleDragEnd(event)">
                                         <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
                                             <span class="text-xs">🍽️</span>
                                         </div>
                                         <div>
                                             <div class="font-medium text-gray-900">${mealName}</div>
                                             <div class="text-xs text-gray-500">${mealTiming}</div>
+                                        </div>
+                                        <div class="ml-2 text-gray-400">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
+                                            </svg>
                                         </div>
                                     </div>
                                 ` : `
@@ -394,15 +510,14 @@ class ItineraryView {
                         </div>
                         <div class="flex items-center space-x-2">
                             ${hasMeal ? `
-                                <button class="text-blue-600 hover:text-blue-800 text-sm" onclick="window.itineraryViews['${this.mealType}'].editMeal('${scheduledMeal?.id || ''}', '${dateStr}')">Edit</button>
                                 <button class="text-red-600 hover:text-red-800 text-sm" onclick="window.itineraryViews['${this.mealType}'].removeMeal('${scheduledMeal?.id || ''}', '${dateStr}')" title="Remove meal">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                     </svg>
                                 </button>
                             ` : `
-                                <button class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm" onclick="window.itineraryViews['${this.mealType}'].addMeal('${dateStr}')">
-                                    Add Meal
+                                <button class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm" onclick="window.itineraryViews['${this.mealType}'].addMealForDate('${dateStr}')">
+                                    Add
                                 </button>
                             `}
                         </div>
@@ -453,26 +568,87 @@ class ItineraryView {
     removeMeal(mealId, dateStr) {
         console.log(`🗑️ Removing meal ${mealId} from ${dateStr}`);
         
-        if (window.app && window.app.removeMealFromSchedule) {
-            window.app.removeMealFromSchedule(mealId, dateStr, this.mealType);
-            this.render(); // Re-render to show updated data
-        } else {
-            console.error('❌ App removeMealFromSchedule method not available');
+        try {
+            // Get current scheduled meals from authoritative source
+            let scheduledMeals = window.mealPlannerSettings?.getAuthoritativeData('scheduledMeals') || [];
+            
+            // Find and remove the meal (handle both string and number IDs)
+            console.log(`🔍 Looking for meal ID: ${mealId} (type: ${typeof mealId})`);
+            console.log(`🔍 Available meal IDs:`, scheduledMeals.map(m => ({ id: m.id, type: typeof m.id, name: m.name })));
+            
+            const mealIndex = scheduledMeals.findIndex(meal => {
+                const match = meal.id == mealId || meal.id === parseInt(mealId) || meal.id === String(mealId);
+                console.log(`🔍 Comparing meal ${meal.id} (${typeof meal.id}) with ${mealId} (${typeof mealId}): ${match}`);
+                return match;
+            });
+            
+            if (mealIndex !== -1) {
+                const removedMeal = scheduledMeals[mealIndex];
+                
+                // Debug: Check what properties the meal actually has
+                console.log(`🔍 Removed meal object:`, removedMeal);
+                
+                // Get meal name from available properties (could be name, recipe_name, or meal_name)
+                const mealName = removedMeal.name || removedMeal.recipe_name || removedMeal.meal_name || `meal ${removedMeal.id}`;
+                
+                console.log(`🔍 Before removal - scheduledMeals count: ${scheduledMeals.length}`);
+                scheduledMeals.splice(mealIndex, 1);
+                console.log(`🔍 After removal - scheduledMeals count: ${scheduledMeals.length}`);
+                
+                // Save back to authoritative source
+                if (window.mealPlannerSettings) {
+                    window.mealPlannerSettings.saveAuthoritativeData('scheduledMeals', scheduledMeals);
+                    console.log(`💾 Saved updated scheduledMeals to authoritative source`);
+                    
+                    // Verify the save worked
+                    const verifyData = window.mealPlannerSettings.getAuthoritativeData('scheduledMeals');
+                    console.log(`🔍 Verification - authoritative data now has ${verifyData.length} meals`);
+                }
+                
+                // Force a complete refresh to ensure UI updates
+                this.forceRefresh();
+                
+                // Dispatch event for other components to update
+                window.dispatchEvent(new CustomEvent('mealUnscheduled', {
+                    detail: { 
+                        scheduledMeal: removedMeal,
+                        mealId: mealId,
+                        date: dateStr,
+                        mealType: this.mealType
+                    }
+                }));
+                
+                // Show user notification
+                if (window.mealPlannerApp && window.mealPlannerApp.showNotification) {
+                    window.mealPlannerApp.showNotification(
+                        `Removed "${mealName}" from ${new Date(dateStr).toLocaleDateString()}`, 
+                        'success'
+                    );
+                }
+                
+                console.log(`✅ Removed meal "${mealName}" from ${dateStr}`);
+            } else {
+                console.warn(`⚠️ Meal ${mealId} not found in scheduled meals`);
+            }
+        } catch (error) {
+            console.error('❌ Error removing meal:', error);
         }
     }
 
     editMeal(mealId, dateStr) {
         console.log(`✏️ Editing meal ${mealId} on ${dateStr}`);
         
-        // Find the current meal
-        const currentMeal = window.demoData?.scheduledMeals.find(meal => meal.id === mealId);
+        // Find the current meal from authoritative source
+        const scheduledMeals = window.mealPlannerSettings?.getAuthoritativeData('scheduledMeals') || [];
+        const currentMeal = scheduledMeals.find(meal => meal.id === mealId);
         if (!currentMeal) {
             console.error('Meal not found:', mealId);
             return;
         }
         
         // For now, show a simple confirmation to delete or keep
-        const currentRecipe = window.demoData?.getRecipes().find(r => r.id === currentMeal.recipe_id);
+        const recipes = window.mealPlannerSettings?.getAuthoritativeData('recipes') || [];
+        const currentRecipe = recipes.find(r => r.id === currentMeal.recipe_id);
         const action = confirm(`Current meal: ${currentRecipe?.title || 'Unknown'}\n\nClick OK to delete this meal, or Cancel to keep it.`);
         
         if (action) {
@@ -483,15 +659,23 @@ class ItineraryView {
     deleteMeal(mealId) {
         console.log(`🗑️ Deleting meal ${mealId}`);
         
+        // Get current scheduled meals from authoritative source
+        let scheduledMeals = window.mealPlannerSettings?.getAuthoritativeData('scheduledMeals') || [];
+        
         // Find and remove the meal
-        const mealIndex = window.demoData?.scheduledMeals.findIndex(meal => meal.id === mealId);
+        const mealIndex = scheduledMeals.findIndex(meal => meal.id === mealId);
         if (mealIndex === -1) {
             console.error('Meal not found for deletion:', mealId);
             return;
         }
         
-        const deletedMeal = window.demoData.scheduledMeals[mealIndex];
-        window.demoData.scheduledMeals.splice(mealIndex, 1);
+        const deletedMeal = scheduledMeals[mealIndex];
+        scheduledMeals.splice(mealIndex, 1);
+        
+        // Save back to authoritative source
+        if (window.mealPlannerSettings) {
+            window.mealPlannerSettings.saveAuthoritativeData('scheduledMeals', scheduledMeals);
+        }
         
         // Update the view
         this.render();
@@ -570,9 +754,10 @@ class ItineraryView {
     }
 
     getAvailableRecipes() {
-        // Get recipes from demo data or database
-        if (window.demoData) {
-            return window.demoData.getRecipes().filter(recipe => 
+        // Get recipes from authoritative data source
+        if (window.mealPlannerSettings) {
+            const allRecipes = window.mealPlannerSettings.getAuthoritativeData('recipes') || [];
+            return allRecipes.filter(recipe => 
                 recipe.meal_type === this.mealType || recipe.meal_type === 'any'
             );
         }
@@ -670,8 +855,13 @@ class ItineraryView {
     scheduleMeal(recipeId, dateStr) {
         console.log(`📅 Scheduling meal: Recipe ${recipeId} for ${dateStr} (${this.mealType})`);
         
-        // Get the recipe details
-        const recipe = window.demoData?.getRecipes().find(r => r.id === recipeId);
+        // Get the recipe details from authoritative data source
+        let recipe = null;
+        if (window.mealPlannerSettings) {
+            const allRecipes = window.mealPlannerSettings.getAuthoritativeData('recipes') || [];
+            recipe = allRecipes.find(r => r.id === recipeId);
+        }
+        
         if (!recipe) {
             console.error('Recipe not found:', recipeId);
             return;
@@ -686,9 +876,11 @@ class ItineraryView {
             notes: recipe.title
         };
         
-        // Add to demo data (in a real app, this would save to database)
-        if (window.demoData) {
-            window.demoData.scheduledMeals.push(newMeal);
+        // Save to authoritative data source
+        if (window.mealPlannerSettings) {
+            const currentMeals = window.mealPlannerSettings.getAuthoritativeData('scheduledMeals') || [];
+            currentMeals.push(newMeal);
+            window.mealPlannerSettings.saveAuthoritativeData('scheduledMeals', currentMeals);
         }
         
         // Update the view
@@ -786,6 +978,255 @@ class ItineraryView {
         
         // Re-render with new data
         this.render();
+    }
+
+    // Force a complete refresh of the itinerary view
+    forceRefresh() {
+        console.log(`🔄 Force refreshing ${this.mealType} itinerary view...`);
+        
+        // Clear the container completely
+        if (this.container) {
+            this.container.innerHTML = '<div class="text-center py-4">Loading...</div>';
+        }
+        
+        // Use setTimeout to ensure DOM updates are processed
+        setTimeout(() => {
+            // Reload data from authoritative source
+            this.loadScheduledMeals();
+            
+            // Re-render with fresh data
+            this.render();
+            
+            console.log(`✅ Force refresh completed for ${this.mealType} itinerary view`);
+        }, 50);
+    }
+
+    // Drag and Drop functionality
+    handleDragStart(event) {
+        const mealElement = event.target.closest('.draggable-meal');
+        if (!mealElement) return;
+
+        const mealId = mealElement.dataset.mealId;
+        const mealName = mealElement.dataset.mealName;
+        const originalDate = mealElement.dataset.originalDate;
+
+        console.log(`🖱️ Started dragging meal: ${mealName} (${mealId}) from ${originalDate}`);
+        
+        // Debug: Find the actual meal in scheduledMeals to check its real date
+        const actualMeal = this.scheduledMeals.find(m => m.id == mealId || m.id === parseInt(mealId));
+        if (actualMeal) {
+            console.log(`🔍 Actual meal data:`, {
+                id: actualMeal.id,
+                name: actualMeal.name,
+                date: actualMeal.date,
+                elementDate: originalDate
+            });
+        } else {
+            console.warn(`⚠️ Could not find meal ${mealId} in scheduledMeals during drag start`);
+        }
+
+        // Store drag data
+        event.dataTransfer.setData('text/plain', JSON.stringify({
+            mealId: mealId,
+            mealName: mealName,
+            originalDate: originalDate,
+            mealType: this.mealType
+        }));
+
+        // Add visual feedback
+        mealElement.classList.add('opacity-50');
+    }
+
+    handleDragEnd(event) {
+        const mealElement = event.target.closest('.draggable-meal');
+        if (mealElement) {
+            mealElement.classList.remove('opacity-50');
+        }
+        
+        // Remove drag feedback from all drop zones
+        document.querySelectorAll('.drop-zone').forEach(zone => {
+            zone.classList.remove('bg-blue-50', 'border-blue-200');
+        });
+    }
+
+    handleDrop(event, targetDateStr) {
+        event.preventDefault();
+        
+        try {
+            const dragData = JSON.parse(event.dataTransfer.getData('text/plain'));
+            const { mealId, mealName, originalDate } = dragData;
+            
+            // Don't do anything if dropped on the same date
+            if (originalDate === targetDateStr) {
+                console.log(`📍 Meal dropped on same date, no action needed`);
+                return;
+            }
+            
+            console.log(`📍 Dropping meal: ${mealName} from ${originalDate} to ${targetDateStr}`);
+            
+            // Get current scheduled meals
+            let scheduledMeals = window.mealPlannerSettings?.getAuthoritativeData('scheduledMeals') || [];
+            
+            // Find the meal to move (handle both string and number IDs)
+            console.log(`🔍 Looking for meal ID to move: ${mealId} (type: ${typeof mealId})`);
+            console.log(`🔍 Available meal IDs:`, scheduledMeals.map(m => ({ id: m.id, type: typeof m.id, name: m.name })));
+            
+            const mealIndex = scheduledMeals.findIndex(meal => {
+                const match = meal.id == mealId || meal.id === parseInt(mealId) || meal.id === String(mealId);
+                console.log(`🔍 Comparing meal ${meal.id} (${typeof meal.id}) with ${mealId} (${typeof mealId}): ${match}`);
+                return match;
+            });
+            
+            if (mealIndex === -1) {
+                console.error('Meal not found for moving:', mealId);
+                console.error('Available meals:', scheduledMeals);
+                return;
+            }
+            
+            // Update the meal's date
+            const meal = scheduledMeals[mealIndex];
+            const newDate = new Date(targetDateStr);
+            meal.date = newDate.toISOString();
+            
+            // Save back to authoritative source
+            if (window.mealPlannerSettings) {
+                window.mealPlannerSettings.saveAuthoritativeData('scheduledMeals', scheduledMeals);
+            }
+            
+            // Check if the moved meal is now outside the current viewing range
+            const movedMealDate = new Date(targetDateStr);
+            const currentEndDate = new Date(this.startDate);
+            currentEndDate.setDate(currentEndDate.getDate() + (this.weeksToShow * 7) - 1);
+            
+            // If meal was moved outside current range, expand the view to include it
+            if (movedMealDate > currentEndDate) {
+                // Calculate how many additional weeks we need
+                const daysDiff = Math.ceil((movedMealDate - currentEndDate) / (1000 * 60 * 60 * 24));
+                const additionalWeeks = Math.ceil(daysDiff / 7);
+                this.weeksToShow += additionalWeeks;
+                console.log(`📅 Expanded view to ${this.weeksToShow} weeks to include moved meal`);
+                
+                // Show notification about view expansion
+                if (window.mealPlannerApp && window.mealPlannerApp.showNotification) {
+                    window.mealPlannerApp.showNotification(
+                        `View expanded to ${this.weeksToShow} weeks to show moved meal.`, 
+                        'info'
+                    );
+                }
+            } else if (movedMealDate < this.startDate) {
+                // If meal was moved before current start date, adjust start date
+                const daysDiff = Math.ceil((this.startDate - movedMealDate) / (1000 * 60 * 60 * 24));
+                const weeksBack = Math.ceil(daysDiff / 7);
+                
+                // Move start date back to include the meal
+                this.startDate = new Date(movedMealDate);
+                this.startDate.setDate(this.startDate.getDate() - (this.startDate.getDay())); // Align to Sunday
+                this.weeksToShow += weeksBack;
+                
+                console.log(`📅 Adjusted start date and expanded view to include moved meal`);
+                
+                // Show notification about view adjustment
+                if (window.mealPlannerApp && window.mealPlannerApp.showNotification) {
+                    window.mealPlannerApp.showNotification(
+                        `View adjusted to show moved meal.`, 
+                        'info'
+                    );
+                }
+            }
+            
+            // Force a complete refresh to ensure UI updates
+            this.forceRefresh();
+            
+            // Dispatch event for other components to update
+            window.dispatchEvent(new CustomEvent('mealMoved', {
+                detail: { 
+                    meal: meal,
+                    fromDate: originalDate,
+                    toDate: targetDateStr,
+                    mealType: this.mealType
+                }
+            }));
+            
+            console.log(`✅ Moved meal "${mealName}" from ${originalDate} to ${targetDateStr}`);
+            
+        } catch (error) {
+            console.error('❌ Error handling drop:', error);
+        }
+        
+        // Clean up visual feedback
+        event.target.closest('.drop-zone')?.classList.remove('bg-blue-50', 'border-blue-200');
+    }
+
+    addMealForDate(dateStr) {
+        console.log(`📅 Adding meal for date: ${dateStr}`);
+        
+        // Store the target date and meal type globally for the recipe manager to use
+        window.schedulingContext = {
+            targetDate: dateStr,
+            mealType: this.mealType,
+            returnTab: 'plan'
+        };
+        
+        // Switch to recipes tab
+        if (window.mealPlannerApp && window.mealPlannerApp.switchTab) {
+            window.mealPlannerApp.switchTab('recipes');
+        } else if (window.app && window.app.switchTab) {
+            window.app.switchTab('recipes');
+        } else {
+            // Fallback: trigger mobile navigation
+            const recipesTab = document.querySelector('[data-tab="recipes"]');
+            if (recipesTab) {
+                recipesTab.click();
+            }
+        }
+        
+        // Show scheduling banner in recipes tab
+        this.showSchedulingBanner(dateStr);
+    }
+    
+    showSchedulingBanner(dateStr) {
+        // Wait a moment for tab switch, then add banner
+        setTimeout(() => {
+            const recipesContainer = document.getElementById('recipes-tab');
+            if (!recipesContainer) return;
+            
+            // Remove any existing banner
+            const existingBanner = recipesContainer.querySelector('.scheduling-banner');
+            if (existingBanner) {
+                existingBanner.remove();
+            }
+            
+            // Create new banner
+            const date = new Date(dateStr);
+            const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
+            const monthDay = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            
+            const banner = document.createElement('div');
+            banner.className = 'scheduling-banner bg-blue-100 border-l-4 border-blue-500 p-4 mb-4';
+            banner.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <div>
+                            <p class="text-blue-800 font-medium">📅 Scheduling meal for ${dayName}, ${monthDay}</p>
+                            <p class="text-blue-600 text-sm">Click "Schedule" on any recipe to add it to this day</p>
+                        </div>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove(); window.schedulingContext = null;" class="text-blue-500 hover:text-blue-700">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            `;
+            
+            // Insert banner at the top of recipes content
+            const recipesContent = recipesContainer.querySelector('.recipes-content') || recipesContainer;
+            recipesContent.insertBefore(banner, recipesContent.firstChild);
+            
+        }, 100);
     }
 }
 

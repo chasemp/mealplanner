@@ -90,11 +90,11 @@ describe('Demo Data Validation', () => {
             const allIngredientIds = demoData.ingredients.map(i => i.id);
 
             demoData.recipes.forEach(recipe => {
-                expect(recipe.ingredients).toBeDefined();
-                expect(Array.isArray(recipe.ingredients)).toBe(true);
-                expect(recipe.ingredients.length).toBeGreaterThan(0);
+                expect(recipe.items).toBeDefined();
+                expect(Array.isArray(recipe.items)).toBe(true);
+                expect(recipe.items.length).toBeGreaterThan(0);
 
-                recipe.ingredients.forEach(recipeIngredient => {
+                recipe.items.forEach(recipeIngredient => {
                     expect(recipeIngredient.ingredient_id).toBeDefined();
                     expect(recipeIngredient.quantity).toBeDefined();
                     expect(recipeIngredient.unit).toBeDefined();
@@ -158,15 +158,15 @@ describe('Demo Data Validation', () => {
                 expect(recipe.id).toBeDefined();
                 expect(recipe.title).toBeDefined();
                 expect(recipe.description).toBeDefined();
-                expect(recipe.type).toBeDefined();
-                expect(['basic', 'combo']).toContain(recipe.type);
+                expect(recipe.recipe_type).toBeDefined();
+                expect(['regular', 'combo']).toContain(recipe.recipe_type);
                 // Note: meal_type is now optional and handled via labels system
                 expect(recipe.prep_time).toBeDefined();
                 expect(recipe.cook_time).toBeDefined();
                 expect(recipe.servings).toBeDefined();
                 expect(recipe.labels).toBeDefined();
                 expect(recipe.tags).toBeUndefined(); // tags consolidated to labels
-                expect(recipe.ingredients).toBeDefined();
+                expect(recipe.items).toBeDefined();
                 expect(recipe.instructions).toBeDefined();
 
                 if (recipe.recipe_type === 'combo') {
@@ -199,9 +199,9 @@ describe('Demo Data Validation', () => {
             comboRecipes.forEach(combo => {
                 // Verify combo has both combo_recipes and ingredients
                 expect(combo.combo_recipes).toBeDefined();
-                expect(combo.ingredients).toBeDefined();
+                expect(combo.items).toBeDefined();
                 expect(combo.combo_recipes.length).toBeGreaterThan(0);
-                expect(combo.ingredients.length).toBeGreaterThan(0);
+                expect(combo.items.length).toBeGreaterThan(0);
                 
                 // Verify all referenced recipes exist and are basic
                 combo.combo_recipes.forEach(ref => {
@@ -243,7 +243,11 @@ describe('Demo Data Validation', () => {
                 combo.combo_recipes.forEach(ref => {
                     const referencedRecipe = demoData.recipes.find(r => r.id === ref.recipe_id);
                     // Allow some flexibility - combo can combine different meal types
-                    expect(['breakfast', 'lunch', 'dinner', 'snack']).toContain(referencedRecipe.meal_type);
+                    // Check if recipe has meal type in its labels
+                    const mealTypeLabels = referencedRecipe.labels.filter(label => 
+                        ['breakfast', 'lunch', 'dinner', 'snack'].includes(label.toLowerCase())
+                    );
+                    expect(mealTypeLabels.length).toBeGreaterThan(0);
                 });
             });
         });
@@ -252,7 +256,7 @@ describe('Demo Data Validation', () => {
     describe('Platform-Like Data Quality', () => {
         it('should have realistic ingredient quantities', () => {
             demoData.recipes.forEach(recipe => {
-                recipe.ingredients.forEach(ingredient => {
+                recipe.items.forEach(ingredient => {
                     expect(ingredient.quantity).toBeGreaterThan(0);
                     expect(ingredient.quantity).toBeLessThan(100); // Reasonable upper bound
                 });
@@ -271,7 +275,10 @@ describe('Demo Data Validation', () => {
         it('should have meaningful recipe descriptions and instructions', () => {
             demoData.recipes.forEach(recipe => {
                 expect(recipe.description.length).toBeGreaterThan(10);
-                expect(recipe.instructions.length).toBeGreaterThan(0);
+                // Combo recipes may have empty instructions (they rely on component recipe instructions)
+                if (recipe.recipe_type === 'regular') {
+                    expect(recipe.instructions.length).toBeGreaterThan(0);
+                }
                 expect(recipe.title.length).toBeGreaterThan(3);
                 
                 recipe.instructions.forEach(instruction => {

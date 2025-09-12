@@ -29,14 +29,14 @@ class MockSettingsManager {
     }
 }
 
-// Mock Ingredients Manager
-class MockIngredientsManager {
+// Mock Items Manager
+class MockItemsManager {
     constructor() {
-        mockManagers.initOrder.push('IngredientsManager');
+        mockManagers.initOrder.push('ItemsManager');
         
         // This is the critical check - settings manager must be ready
         if (!global.window.mealPlannerSettings) {
-            throw new Error('Settings Manager not available during Ingredients Manager initialization');
+            throw new Error('Settings Manager not available during Items Manager initialization');
         }
         
         // Try to access authoritative data like the real manager does
@@ -79,7 +79,7 @@ class MockMealPlanner {
         
         this.initializeSettingsManager();
         this.initializeRecipeManager();
-        this.initializeIngredientsManager();
+        this.initializeItemsManager();
         this.initializeGroceryListManager();
     }
     
@@ -89,7 +89,7 @@ class MockMealPlanner {
         mockManagers.settingsManagerReady = false;
         
         this.initializeRecipeManager();
-        this.initializeIngredientsManager();
+        this.initializeItemsManager();
         this.initializeGroceryListManager();
         this.initializeSettingsManager();
     }
@@ -102,8 +102,8 @@ class MockMealPlanner {
         this.managers.recipe = new MockRecipeManager();
     }
     
-    initializeIngredientsManager() {
-        this.managers.ingredients = new MockIngredientsManager();
+    initializeItemsManager() {
+        this.managers.items = new MockItemsManager();
     }
     
     initializeGroceryListManager() {
@@ -147,18 +147,18 @@ describe('Manager Initialization Order', () => {
             expect(mockManagers.initOrder).toEqual([
                 'SettingsManager',
                 'RecipeManager', 
-                'IngredientsManager',
+                'ItemsManager',
                 'GroceryListManager'
             ]);
         });
 
-        it('should allow Ingredients Manager to access authoritative data', () => {
+        it('should allow Items Manager to access authoritative data', () => {
             const app = new MockMealPlanner();
             app.initializeCorrectOrder();
             
-            // Ingredients Manager should have successfully loaded data
-            expect(app.managers.ingredients.ingredients).toBeDefined();
-            expect(Array.isArray(app.managers.ingredients.ingredients)).toBe(true);
+            // Items Manager should have successfully loaded data
+            expect(app.managers.items.ingredients).toBeDefined();
+            expect(Array.isArray(app.managers.items.ingredients)).toBe(true);
         });
     });
 
@@ -171,13 +171,13 @@ describe('Manager Initialization Order', () => {
             }).toThrow('Settings Manager not available during Recipe Manager initialization');
         });
 
-        it('should specifically fail for Ingredients Manager without Settings Manager', () => {
+        it('should specifically fail for Items Manager without Settings Manager', () => {
             const app = new MockMealPlanner();
             
             expect(() => {
-                // Try to initialize Ingredients Manager without Settings Manager
-                app.initializeIngredientsManager();
-            }).toThrow('Settings Manager not available during Ingredients Manager initialization');
+                // Try to initialize Items Manager without Settings Manager
+                app.initializeItemsManager();
+            }).toThrow('Settings Manager not available during Items Manager initialization');
         });
 
         it('should fail for Grocery List Manager without Settings Manager', () => {
@@ -236,7 +236,7 @@ describe('Manager Initialization Order', () => {
             
             // Verify Settings Manager is initialized first
             const settingsIndex = initCode.indexOf('initializeSettingsManager');
-            const ingredientsIndex = initCode.indexOf('initializeIngredientsManager');
+            const ingredientsIndex = initCode.indexOf('initializeItemsManager');
             const groceryIndex = initCode.indexOf('initializeGroceryListManager');
             
             expect(settingsIndex).toBeGreaterThan(-1);

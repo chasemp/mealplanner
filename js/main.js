@@ -4,7 +4,7 @@ class MealPlannerApp {
         this.currentTab = 'recipes';
         this.previousTab = null;
         this.navigationHistory = [];
-        this.version = '2025.09.12.1300';
+        this.version = '2025.09.12.1312';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
@@ -21,14 +21,15 @@ class MealPlannerApp {
         this.currentViews = {
             breakfast: 'itinerary',
             lunch: 'itinerary', 
-            dinner: 'itinerary'
+            dinner: 'itinerary',
+            plan: 'itinerary'
         };
         this.selectedRecipes = {
             breakfast: [],
             lunch: [],
             dinner: []
         };
-        this.favoriteRecipes = this.loadFavoriteRecipes();
+        this.favoriteRecipes = [];
         this.showFavoritesOnly = false;
         this.init();
     }
@@ -42,7 +43,7 @@ class MealPlannerApp {
         this.updateVersionDisplay();
         
         // Hide loading and show app
-        setTimeout(() => {
+        setTimeout(async () => {
             const loading = document.getElementById('loading');
             const mainApp = document.getElementById('main-app');
             
@@ -53,12 +54,37 @@ class MealPlannerApp {
             this.initializeTheme();
             
             // Initialize managers with delay to ensure all scripts are loaded
-            this.initializeManagers();
+            await this.initializeManagers();
+            
+            // Load favorite recipes after managers are initialized
+            this.favoriteRecipes = this.loadFavoriteRecipes();
+            
+            // Test if critical classes are available
+            console.log('🧪 Testing class availability...');
+            console.log('ItineraryView available:', typeof ItineraryView !== 'undefined');
+            console.log('CalendarView available:', typeof CalendarView !== 'undefined');
             
             this.initializeServiceWorker();
             this.initializePWAFeatures();
-            this.initializeItineraryViews();
-            this.initializeMealPlanningControls();
+            
+            try {
+                console.log('🔄 About to initialize itinerary views...');
+                this.initializeItineraryViews();
+                console.log('✅ Itinerary views initialized successfully');
+            } catch (error) {
+                console.error('❌ Error initializing itinerary views:', error);
+                console.error('Stack trace:', error.stack);
+            }
+            
+            try {
+                console.log('🔄 About to initialize meal planning controls...');
+                this.initializeMealPlanningControls();
+                console.log('✅ Meal planning controls initialized successfully');
+            } catch (error) {
+                console.error('❌ Error initializing meal planning controls:', error);
+                console.error('Stack trace:', error.stack);
+            }
+            
             this.generateCalendarDays();
             
             console.log(`✅ MealPlanner v${this.version} initialized successfully!`);
@@ -108,8 +134,8 @@ class MealPlannerApp {
             this.toggleView('lunch');
         });
 
-        document.getElementById('view-toggle-dinner')?.addEventListener('click', () => {
-            this.toggleView('dinner');
+        document.getElementById('view-toggle-plan')?.addEventListener('click', () => {
+            this.toggleView('plan');
         });
 
         // Theme toggle button
@@ -178,8 +204,8 @@ class MealPlannerApp {
             activeTab.classList.remove('border-transparent', 'text-gray-500');
         }
 
-        // Show selected tab (handle scheduled tab mapping)
-        const tabId = tabName === 'scheduled' ? 'scheduled-tab' : `${tabName}-tab`;
+        // Show selected tab (handle menu tab mapping)
+        const tabId = tabName === 'menu' ? 'menu-tab' : `${tabName}-tab`;
         const tabElement = document.getElementById(tabId);
         if (tabElement) {
             tabElement.classList.remove('hidden');
@@ -191,8 +217,8 @@ class MealPlannerApp {
             window.mobileNavigation.onTabChange(tabName);
         }
 
-        // Update pending recipes if switching to dinner/plan tab
-        if (tabName === 'dinner') {
+        // Update pending recipes if switching to plan tab
+        if (tabName === 'plan') {
             this.updatePendingRecipes();
         }
 
@@ -235,23 +261,15 @@ class MealPlannerApp {
             const isCombo = pending.recipe_type === 'combo';
             
             return `
-                <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <div class="flex items-center space-x-3">
-                        ${isCombo ? `
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
-                                COMBO
-                            </span>
-                        ` : ''}
+                <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors ${isCombo ? 'border-l-4 border-purple-500' : ''}" data-recipe-id="${pending.id}">
+                    <div class="flex items-center space-x-3 flex-1 view-pending-recipe" data-recipe-id="${pending.id}">
                         <div>
                             <h4 class="font-medium text-gray-900 dark:text-white">${pending.title}</h4>
                             <p class="text-xs text-gray-500 dark:text-gray-400">Added ${addedDate}</p>
                         </div>
                     </div>
                     <div class="flex items-center space-x-2">
-                        <button class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium view-pending-recipe" data-recipe-id="${pending.id}">
-                            View
-                        </button>
-                        <button class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium remove-pending-recipe" data-recipe-id="${pending.id}">
+                        <button class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium remove-pending-recipe" data-recipe-id="${pending.id}" onclick="event.stopPropagation()">
                             Remove
                         </button>
                     </div>
@@ -261,6 +279,29 @@ class MealPlannerApp {
 
         // Attach event listeners for pending recipe actions
         this.attachPendingRecipeListeners();
+
+        // Update planning queue info bar
+        this.updatePlanningQueueInfo(pendingRecipes);
+    }
+
+    updatePlanningQueueInfo(pendingRecipes) {
+        const queueCountEl = document.getElementById('queue-count');
+        const comboCountEl = document.getElementById('combo-count');
+        const planningQueueCountEl = document.getElementById('planning-queue-count');
+        
+        if (!queueCountEl || !comboCountEl) return;
+        
+        const totalCount = pendingRecipes.length;
+        const comboCount = pendingRecipes.filter(recipe => recipe.recipe_type === 'combo').length;
+        
+        // Update info bar counts
+        queueCountEl.innerHTML = `<strong>${totalCount}</strong> recipe${totalCount !== 1 ? 's' : ''} queued`;
+        comboCountEl.innerHTML = `<strong>${comboCount}</strong> combo${comboCount !== 1 ? 's' : ''}`;
+        
+        // Update Planning Queue header count
+        if (planningQueueCountEl) {
+            planningQueueCountEl.textContent = `(${totalCount})`;
+        }
     }
 
     attachPendingRecipeListeners() {
@@ -277,6 +318,22 @@ class MealPlannerApp {
             btn.addEventListener('click', (e) => {
                 const recipeId = parseInt(btn.dataset.recipeId);
                 if (window.recipeManager) {
+                    // Set up navigation to return to Plan tab instead of Recipes tab
+                    if (window.recipeManager.navigationStack) {
+                        // Clear any existing navigation stack to ensure clean return
+                        window.recipeManager.navigationStack = [];
+                    }
+                    
+                    // Store current Plan tab state for return navigation
+                    const currentPlanContent = document.getElementById('plan-tab').innerHTML;
+                    if (window.recipeManager.navigationStack) {
+                        window.recipeManager.navigationStack.push({
+                            container: currentPlanContent,
+                            scrollPosition: window.scrollY,
+                            returnTab: 'plan' // Custom property to indicate return destination
+                        });
+                    }
+                    
                     window.recipeManager.showRecipeDetail(recipeId);
                 }
             });
@@ -341,7 +398,7 @@ class MealPlannerApp {
         const managersAvailable = {
             RecipeManager: typeof RecipeManager !== 'undefined',
             MealManager: typeof MealManager !== 'undefined',
-            ItemsManager: typeof ItemsManager !== 'undefined' || typeof IngredientsManager !== 'undefined',
+            ItemsManager: typeof ItemsManager !== 'undefined',
             GroceryListManager: typeof GroceryListManager !== 'undefined',
             SettingsManager: typeof SettingsManager !== 'undefined',
             GoogleCalendarIntegration: typeof GoogleCalendarIntegration !== 'undefined',
@@ -398,9 +455,9 @@ class MealPlannerApp {
     initializeItemsManager() {
         console.log('🥕 Initializing items manager...');
         
-        const container = document.getElementById('ingredients-manager-container');
+        const container = document.getElementById('items-manager-container');
         if (container) {
-            this.itemsManager = new (typeof ItemsManager !== 'undefined' ? ItemsManager : IngredientsManager)(container);
+            this.itemsManager = new ItemsManager(container);
             window.itemsManager = this.itemsManager;
             console.log('✅ Items manager initialized');
         }
@@ -458,9 +515,9 @@ class MealPlannerApp {
             this.mealRotationEngine = new MealRotationEngine();
             
             // Initialize with current recipes and user preferences
-            const recipes = this.getMockRecipes();
+            const recipes = window.mealPlannerSettings?.getAuthoritativeData('recipes') || [];
             const userPreferences = JSON.parse(localStorage.getItem('mealPreferences') || '{}');
-            const pantryItems = this.getMockPantryItems();
+            const pantryItems = window.mealPlannerSettings?.getAuthoritativeData('items') || [];
             
             this.mealRotationEngine.initialize(recipes, userPreferences, pantryItems);
             
@@ -752,25 +809,44 @@ class MealPlannerApp {
 
     initializeItineraryViews() {
         console.log('🍽️ Initializing meal planning views...');
+        console.log('🔍 ItineraryView class available:', typeof ItineraryView);
+        console.log('🔍 CalendarView class available:', typeof CalendarView);
+        
+        // Check if required classes are available
+        if (typeof ItineraryView === 'undefined') {
+            console.error('❌ ItineraryView class not found! Script may not have loaded properly.');
+            return;
+        }
+        if (typeof CalendarView === 'undefined') {
+            console.error('❌ CalendarView class not found! Script may not have loaded properly.');
+            return;
+        }
         
         // Initialize both itinerary and calendar views for each meal type
-        const mealTypes = ['breakfast', 'lunch', 'dinner'];
+        const mealTypes = ['breakfast', 'lunch', 'plan'];
         
         // Initialize calendar views registry
         this.calendarViews = {};
         window.calendarViews = window.calendarViews || {};
         
+        console.log('🔧 Starting to initialize views for meal types:', mealTypes);
+        
         mealTypes.forEach(mealType => {
             // Initialize itinerary view
             const itineraryContainer = document.getElementById(`${mealType}-itinerary`);
+            console.log(`🔍 Looking for ${mealType}-itinerary container:`, !!itineraryContainer);
             if (itineraryContainer) {
+                console.log(`🔧 Creating ItineraryView for ${mealType}`);
                 this.itineraryViews[mealType] = new ItineraryView(itineraryContainer, mealType);
+                console.log(`🎨 Rendering ${mealType} itinerary view`);
                 this.itineraryViews[mealType].render();
                 
                 // Store in global registry for onclick handlers
                 window.itineraryViews[mealType] = this.itineraryViews[mealType];
                 
-                console.log(`✅ ${mealType} itinerary view initialized`);
+                console.log(`✅ ${mealType} itinerary view initialized and rendered`);
+            } else {
+                console.error(`❌ ${mealType}-itinerary container not found in DOM`);
             }
             
             // Initialize calendar view
@@ -1410,9 +1486,8 @@ class MealPlannerApp {
     async getSelectedRecipesData(recipeIds) {
         const recipes = [];
         
-        if (window.DemoDataManager) {
-            const demoData = new window.DemoDataManager();
-            const allRecipes = demoData.getRecipes();
+        if (window.mealPlannerSettings) {
+            const allRecipes = window.mealPlannerSettings.getAuthoritativeData('recipes');
             
             recipeIds.forEach(id => {
                 const recipe = allRecipes.find(r => r.id === id);
@@ -1519,7 +1594,17 @@ class MealPlannerApp {
         if (itineraryContainer && window.ItineraryView) {
             // Re-initialize the itinerary view with new data
             const itineraryView = new window.ItineraryView(itineraryContainer, mealType);
+            
+            // Update the stored reference
+            this.itineraryViews[mealType] = itineraryView;
+            window.itineraryViews[mealType] = itineraryView;
+            
+            // Render the view
             itineraryView.render();
+            
+            console.log(`🔄 Refreshed ${mealType} itinerary view`);
+        } else {
+            console.warn(`⚠️ Could not refresh ${mealType} itinerary view - container or ItineraryView not found`);
         }
     }
 
@@ -1559,20 +1644,223 @@ class MealPlannerApp {
         console.log('🍽️ Initializing meal planning controls...');
         
         // Initialize controls for each meal type
-        ['breakfast', 'lunch', 'dinner'].forEach(mealType => {
+        ['breakfast', 'lunch', 'plan'].forEach(mealType => {
             this.initializeMealTypeControls(mealType);
         });
         
+        // Add a delayed retry for the plan button specifically (in case of timing issues)
+        setTimeout(() => {
+            const planBtn = document.getElementById('auto-plan-plan');
+            console.log('🔍 Delayed check for auto-plan-plan button:', !!planBtn);
+            if (planBtn && !planBtn.hasAttribute('data-listener-attached')) {
+                console.log('🔧 Adding delayed click listener to auto-plan-plan button');
+                planBtn.addEventListener('click', () => {
+                    console.log('🖱️ Auto Plan button clicked (delayed listener)');
+                    this.handleAutoPlan('plan');
+                });
+                planBtn.setAttribute('data-listener-attached', 'true');
+            }
+        }, 1000);
+        
+        // Initialize update menu button
+        this.initializeUpdateMenuButton();
+        
         console.log('✅ Meal planning controls initialized');
+    }
+
+    initializeUpdateMenuButton() {
+        const updateMenuBtn = document.getElementById('update-menu-btn');
+        if (updateMenuBtn) {
+            updateMenuBtn.addEventListener('click', () => {
+                this.handleUpdateMenu();
+            });
+            console.log('✅ Update Menu button initialized');
+        }
+        
+        // Initialize Menu tab week selector
+        this.initializeMenuWeekSelector();
+    }
+    
+    initializeMenuWeekSelector() {
+        const weekSelector = document.getElementById('menu-week-selector');
+        if (weekSelector) {
+            // Generate formatted dropdown options like Plan tab
+            this.populateMenuWeekOptions(weekSelector);
+            
+            weekSelector.addEventListener('change', () => {
+                this.updateMenuMealsDisplay();
+            });
+            
+            // Initial load
+            this.updateMenuMealsDisplay();
+            console.log('✅ Menu week selector initialized');
+        }
+    }
+    
+    populateMenuWeekOptions(weekSelector) {
+        const today = new Date();
+        
+        // Calculate the start of the current week (Sunday)
+        const currentWeekStart = new Date(today);
+        currentWeekStart.setDate(today.getDate() - today.getDay());
+        
+        // Generate options for different week ranges (same as Plan tab)
+        const weekRanges = [
+            { weeks: 1, label: 'This Week' },
+            { weeks: 2, label: '2 Weeks' },
+            { weeks: 4, label: '4 Weeks' },
+            { weeks: 8, label: '8 Weeks' }
+        ];
+        
+        const options = [];
+        weekRanges.forEach(range => {
+            const endDate = new Date(currentWeekStart);
+            endDate.setDate(currentWeekStart.getDate() + (range.weeks * 7) - 1);
+            
+            const startStr = currentWeekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const endStr = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            
+            options.push(`
+                <option value="${range.weeks}">
+                    ${range.label} (${startStr} - ${endStr})
+                </option>
+            `);
+        });
+        
+        weekSelector.innerHTML = options.join('');
+        
+        // Set default selection to "This Week" (1 week) to match Plan tab
+        weekSelector.value = '1';
+        
+        console.log('✅ Menu week selector options populated with formatted dates, default: This Week');
+    }
+    
+    updateMenuMealsDisplay() {
+        const weekSelector = document.getElementById('menu-week-selector');
+        const mealsContainer = document.getElementById('menu-meals-container');
+        
+        if (!weekSelector || !mealsContainer) return;
+        
+        const weeks = parseInt(weekSelector.value);
+        
+        // Use same start date calculation as Plan tab (Sunday of current week)
+        const today = new Date();
+        const startDate = new Date(today);
+        startDate.setDate(today.getDate() - today.getDay()); // Start of current week (Sunday)
+        
+        const endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + (weeks * 7) - 1);
+        
+        // Get scheduled meals for the selected timeframe
+        let scheduledMeals = [];
+        if (window.mealPlannerSettings) {
+            const allMeals = window.mealPlannerSettings.getAuthoritativeData('scheduledMeals') || [];
+            scheduledMeals = allMeals.filter(meal => {
+                const mealDate = new Date(meal.date);
+                // Normalize dates to avoid timezone issues
+                const mealDateNormalized = new Date(mealDate.getFullYear(), mealDate.getMonth(), mealDate.getDate());
+                const startDateNormalized = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+                const endDateNormalized = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+                
+                return mealDateNormalized >= startDateNormalized && mealDateNormalized <= endDateNormalized;
+            });
+        }
+        
+        // Update grocery list with the same date range
+        if (window.groceryListManager && window.groceryListManager.updateDateRange) {
+            window.groceryListManager.updateDateRange(startDate, endDate);
+        }
+        
+        if (scheduledMeals.length === 0) {
+            mealsContainer.innerHTML = `
+                <div class="text-gray-500 dark:text-gray-400 text-center py-4">
+                    No meals scheduled for this timeframe. Use the Plan tab to schedule meals.
+                </div>
+            `;
+            return;
+        }
+        
+        // Group meals by date
+        const mealsByDate = {};
+        scheduledMeals.forEach(meal => {
+            const dateKey = meal.date;
+            if (!mealsByDate[dateKey]) {
+                mealsByDate[dateKey] = [];
+            }
+            mealsByDate[dateKey].push(meal);
+        });
+        
+        // Generate HTML for meals
+        let mealsHTML = '';
+        Object.keys(mealsByDate).sort().forEach(date => {
+            const meals = mealsByDate[date];
+            const dateObj = new Date(date);
+            const dateStr = dateObj.toLocaleDateString('en-US', { 
+                weekday: 'short', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+            
+            mealsHTML += `
+                <div class="mb-4">
+                    <h4 class="font-medium text-gray-900 dark:text-white mb-2">${dateStr}</h4>
+                    <div class="space-y-2">
+            `;
+            
+            meals.forEach(meal => {
+                mealsHTML += `
+                    <div class="flex items-center justify-between bg-white dark:bg-gray-600 rounded p-3 border border-gray-200 dark:border-gray-500">
+                        <div>
+                            <div class="font-medium text-gray-900 dark:text-white">${meal.recipe_name || 'Unknown Recipe'}</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">${meal.meal_type} • ${meal.servings || 4} servings</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            mealsHTML += `
+                    </div>
+                </div>
+            `;
+        });
+        
+        mealsContainer.innerHTML = mealsHTML;
+        console.log(`📅 Updated Menu tab with ${scheduledMeals.length} meals for ${weeks} week(s)`);
+        console.log(`📅 Menu date range: ${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}`);
+        
+        // Debug: Detailed Menu tab meal analysis
+        console.log(`🔍 DETAILED MENU TAB ANALYSIS:`);
+        console.log(`📊 Total meals found in Menu tab: ${scheduledMeals.length}`);
+        scheduledMeals.forEach((meal, index) => {
+            console.log(`  ${index + 1}. ${meal.name || meal.recipe_name || meal.meal_name || 'Unknown'} on ${new Date(meal.date).toLocaleDateString()} (ID: ${meal.id})`);
+        });
+        
+        // Debug: Compare with Plan tab data for verification
+        if (window.itineraryViews && window.itineraryViews.plan) {
+            const planMeals = window.itineraryViews.plan.getScheduledMealsInTimeframe();
+            console.log(`🔍 Data sync check - Plan tab has ${planMeals.length} meals, Menu tab has ${scheduledMeals.length} meals`);
+            if (planMeals.length !== scheduledMeals.length) {
+                console.warn('⚠️ Data mismatch between Plan and Menu tabs!');
+                console.log('Plan tab meals:', planMeals.map(m => ({ name: m.name || m.recipe_name, date: m.date, id: m.id })));
+                console.log('Menu tab meals:', scheduledMeals.map(m => ({ name: m.name || m.recipe_name, date: m.date, id: m.id })));
+            } else {
+                console.log('✅ Plan and Menu tabs show identical meal counts');
+            }
+        }
     }
 
     initializeMealTypeControls(mealType) {
         // Auto Plan button
         const autoPlanBtn = document.getElementById(`auto-plan-${mealType}`);
+        console.log(`🔍 Looking for auto-plan-${mealType} button:`, !!autoPlanBtn);
         if (autoPlanBtn) {
+            console.log(`✅ Adding click listener to auto-plan-${mealType} button`);
             autoPlanBtn.addEventListener('click', () => {
+                console.log(`🖱️ Auto Plan button clicked for ${mealType}`);
                 this.handleAutoPlan(mealType);
             });
+        } else {
+            console.error(`❌ auto-plan-${mealType} button not found in DOM`);
         }
 
         // Clear Plan button
@@ -1586,6 +1874,9 @@ class MealPlannerApp {
 
     handleAutoPlan(mealType) {
         console.log(`🤖 Auto planning ${mealType} meals...`);
+        console.log(`🔍 Meal rotation engine available:`, !!this.mealRotationEngine);
+        console.log(`🔍 Itinerary views:`, Object.keys(this.itineraryViews));
+        console.log(`🔍 Looking for itinerary view:`, mealType);
         
         // Check if meal rotation engine is available
         if (!this.mealRotationEngine) {
@@ -1596,26 +1887,25 @@ class MealPlannerApp {
 
         // Get the current itinerary view for this meal type
         const itineraryView = this.itineraryViews[mealType];
+        console.log(`🔍 Found itinerary view for ${mealType}:`, !!itineraryView);
         if (!itineraryView) {
+            console.error(`❌ No itinerary view found for ${mealType}`);
             this.showNotification('Meal planning view not available. Please try again.', 'error');
             return;
         }
 
-        // Check if any recipes are selected
-        const selectedRecipeIds = this.selectedRecipes[mealType] || [];
-        if (selectedRecipeIds.length === 0) {
-            this.showNotification(`Please select some recipes for ${mealType} planning first.`, 'warning');
+        // Get pending recipes from the planning queue
+        const pendingRecipes = JSON.parse(localStorage.getItem('mealplanner_pending_recipes') || '[]');
+        if (pendingRecipes.length === 0) {
+            this.showNotification('Please add some recipes to the planning queue first using the 📅 button on recipe cards.', 'warning');
             return;
         }
 
         try {
-            // Get selected recipes from demo data
-            let selectedRecipes = [];
-            if (window.DemoDataManager) {
-                const demoData = new window.DemoDataManager();
-                const allRecipes = demoData.getRecipes();
-                selectedRecipes = allRecipes.filter(recipe => selectedRecipeIds.includes(recipe.id));
-            }
+            // Use pending recipes for auto planning
+            let selectedRecipes = pendingRecipes;
+            const selectedRecipeIds = pendingRecipes.map(recipe => recipe.id);
+            console.log(`🤖 Using ${selectedRecipes.length} recipes from planning queue for auto planning`);
 
             if (selectedRecipes.length === 0) {
                 this.showNotification('Selected recipes could not be found. Please try again.', 'error');
@@ -1632,14 +1922,20 @@ class MealPlannerApp {
                 weeksToShow, 
                 mealType, 
                 { 
-                    forceRecipes: selectedRecipeIds,
+                    forceInclude: selectedRecipeIds,
                     availableRecipes: selectedRecipes
                 }
             );
             
             if (rotation && rotation.meals && rotation.meals.length > 0) {
+                console.log(`🎯 Auto plan generated ${rotation.meals.length} meals:`, rotation.meals);
+                
                 // Apply the generated plan to the itinerary view
                 this.applyGeneratedPlan(mealType, rotation.meals);
+                
+                // Clear the pending recipes queue since they've been scheduled
+                localStorage.removeItem('mealplanner_pending_recipes');
+                this.updatePendingRecipes();
                 
                 // Show success notification with stats
                 const message = `${mealType.charAt(0).toUpperCase() + mealType.slice(1)} plan generated! ${rotation.meals.length} meals planned using ${selectedRecipes.length} selected recipes.`;
@@ -1653,6 +1949,67 @@ class MealPlannerApp {
         } catch (error) {
             console.error('Error generating meal plan:', error);
             this.showNotification('Error generating meal plan. Please try again.', 'error');
+        }
+    }
+
+    handleUpdateMenu() {
+        console.log('🍽️ Updating Menu from Plan tab scheduled meals...');
+        
+        try {
+            // Get the current timeframe from the active itinerary view
+            const activeItineraryView = this.itineraryViews?.dinner; // Default to dinner
+            if (!activeItineraryView) {
+                this.showNotification('Plan view not available. Please try again.', 'error');
+                return;
+            }
+            
+            // Get scheduled meals for the current timeframe only
+            const mealsInTimeframe = activeItineraryView.getScheduledMealsInTimeframe();
+            console.log(`📅 Found ${mealsInTimeframe.length} meals in current timeframe:`, mealsInTimeframe);
+            
+            // Get all scheduled meals from the same source the itinerary views use
+            let allScheduledMeals = [];
+            
+            if (window.scheduleManager) {
+                // Use schedule manager (which reads from authoritative data)
+                allScheduledMeals = window.scheduleManager.scheduledMeals || [];
+                console.log(`📅 Got ${allScheduledMeals.length} total meals from schedule manager`);
+            } else {
+                // Fallback to main app method
+                allScheduledMeals = this.getScheduledMeals();
+                console.log(`📅 Got ${allScheduledMeals.length} total meals from main app method`);
+            }
+            
+            if (mealsInTimeframe.length === 0) {
+                this.showNotification('No scheduled meals found in current timeframe. Please use Auto Plan or manually schedule meals first.', 'warning');
+                return;
+            }
+            
+            // The scheduled meals are already in the authoritative data source if using schedule manager
+            // But ensure they're also saved to authoritative data for consistency
+            if (window.mealPlannerSettings) {
+                window.mealPlannerSettings.saveAuthoritativeData('scheduledMeals', allScheduledMeals);
+                console.log(`📅 Ensured ${allScheduledMeals.length} meals are in authoritative data source`);
+            }
+            
+            // Refresh the grocery list manager to reflect the scheduled meals
+            if (this.groceryListManager && this.groceryListManager.generateFromScheduledMeals) {
+                this.groceryListManager.generateFromScheduledMeals();
+                console.log('🛒 Grocery list updated from scheduled meals');
+            }
+            
+            // Refresh the Menu tab meals display
+            this.updateMenuMealsDisplay();
+            
+            // Show success notification with timeframe-specific count
+            const timeframeName = activeItineraryView.weeksToShow === 1 ? 'This week' : `${activeItineraryView.weeksToShow} weeks`;
+            this.showNotification(`Menu updated! ${mealsInTimeframe.length} scheduled meals from ${timeframeName} synced to grocery list.`, 'success');
+            
+            console.log(`✅ Menu update completed with ${mealsInTimeframe.length} meals from current timeframe`);
+            
+        } catch (error) {
+            console.error('❌ Error updating menu:', error);
+            this.showNotification('Error updating menu. Please try again.', 'error');
         }
     }
 
@@ -1697,34 +2054,74 @@ class MealPlannerApp {
         console.log(`📅 Applying ${meals.length} ${mealType} meals to plan...`);
         
         try {
-            // Get current scheduled meals
-            let scheduledMeals = this.getScheduledMeals();
+            // Get current scheduled meals from the authoritative source (same place itinerary view reads from)
+            let scheduledMeals = [];
+            if (window.mealPlannerSettings) {
+                scheduledMeals = window.mealPlannerSettings.getAuthoritativeData('scheduledMeals') || [];
+                console.log(`📖 Reading ${scheduledMeals.length} existing scheduled meals from authoritative source`);
+            }
             
             // Remove existing meals of this type (to avoid duplicates)
             scheduledMeals = scheduledMeals.filter(meal => meal.meal_type !== mealType);
             
             // Convert generated meals to proper scheduled meal format
-            const newScheduledMeals = meals.map((meal, index) => ({
-                id: `${mealType}-${Date.now()}-${index}`,
-                recipe_id: meal.recipe_id || meal.id,
-                recipe_name: meal.recipe_name || meal.name || meal.title,
-                meal_type: mealType,
-                date: meal.date, // Standardized on 'date' property only
-                servings: meal.servings || 4,
-                ingredients: meal.ingredients || [],
-                created_at: new Date().toISOString()
-            }));
+            const newScheduledMeals = meals.map((meal, index) => {
+                // Handle meal rotation engine format where recipe is nested in meal.recipe
+                const recipe = meal.recipe || meal;
+                const recipeId = recipe.id || meal.recipe_id || meal.id;
+                const recipeName = recipe.title || recipe.name || meal.recipe_name || meal.name || meal.title;
+                
+                const scheduledMeal = {
+                    id: `${mealType}-${Date.now()}-${index}`,
+                    recipe_id: recipeId,
+                    recipe_name: recipeName,
+                    meal_type: mealType,
+                    date: meal.date instanceof Date ? meal.date.toISOString().split('T')[0] : meal.date,
+                    servings: meal.servings || recipe.servings || 4,
+                    items: meal.items || recipe.items || [],
+                    created_at: new Date().toISOString()
+                };
+                
+                console.log(`📅 Creating scheduled meal ${index + 1}:`, {
+                    originalMeal: meal,
+                    extractedRecipe: recipe,
+                    finalScheduledMeal: scheduledMeal
+                });
+                return scheduledMeal;
+            });
             
             // Add new meals to the schedule
             scheduledMeals.push(...newScheduledMeals);
             
-            // Save to storage
-            this.saveScheduledMeals(scheduledMeals);
+            // Save to the authoritative data source (the single source of truth)
+            if (window.mealPlannerSettings) {
+                window.mealPlannerSettings.saveAuthoritativeData('scheduledMeals', scheduledMeals);
+                console.log(`💾 Saved ${scheduledMeals.length} meals to authoritative data source`);
+            } else {
+                console.error('❌ Cannot save scheduled meals - settings manager not available');
+                throw new Error('Settings manager not available for saving scheduled meals');
+            }
             
             console.log(`✅ Applied ${newScheduledMeals.length} ${mealType} meals to schedule`);
+            console.log(`📊 Total scheduled meals after save:`, scheduledMeals.length);
+            console.log(`📊 Scheduled meals data:`, scheduledMeals);
+            
+            // Notify schedule manager if available to reload from the updated authoritative data
+            if (window.scheduleManager && window.scheduleManager.loadScheduledMeals) {
+                window.scheduleManager.loadScheduledMeals();
+                console.log(`🔄 Notified schedule manager to reload data`);
+                console.log(`📊 Schedule manager now has ${window.scheduleManager.scheduledMeals.length} total meals`);
+            }
             
             // Refresh views to show the new meals
             this.refreshMealPlanViews();
+            
+            // Force refresh the plan itinerary view specifically
+            if (this.itineraryViews['plan']) {
+                console.log('🔄 Force refreshing plan itinerary view');
+                this.itineraryViews['plan'].loadScheduledMeals();
+                this.itineraryViews['plan'].render();
+            }
             
             // Show success notification
             this.showNotification(`${mealType.charAt(0).toUpperCase() + mealType.slice(1)} meal plan generated successfully!`, 'success');
@@ -1833,24 +2230,13 @@ class MealPlannerApp {
         }
     }
 
-    // Get scheduled meals from localStorage or demo data
+    // Get scheduled meals from authoritative source
     getScheduledMeals() {
-        try {
-            // Try to get from localStorage first
-            const stored = localStorage.getItem('mealplanner_scheduled_meals');
-            if (stored) {
-                return JSON.parse(stored);
-            }
-        } catch (error) {
-            console.warn('Error loading from localStorage:', error);
+        if (window.mealPlannerSettings) {
+            return window.mealPlannerSettings.getAuthoritativeData('scheduledMeals');
         }
         
-        // Fallback to demo data
-        if (window.DemoDataManager) {
-            const demoData = new window.DemoDataManager();
-            return demoData.getScheduledMeals();
-        }
-        
+        console.warn('⚠️ Settings manager not available, returning empty scheduled meals');
         return [];
     }
 
@@ -1903,19 +2289,29 @@ class MealPlannerApp {
 
     // Refresh all meal plan related views
     refreshMealPlanViews() {
+        console.log('🔄 Refreshing all meal plan views...');
+        
         // Refresh itinerary views
-        Object.values(this.itineraryViews).forEach(view => {
+        Object.entries(this.itineraryViews).forEach(([mealType, view]) => {
             if (view && view.render) {
+                console.log(`🔄 Refreshing ${mealType} itinerary view`);
                 view.render();
+            } else {
+                console.warn(`⚠️ ${mealType} itinerary view not available for refresh`);
             }
         });
         
         // Refresh calendar views
-        Object.values(this.calendarViews).forEach(view => {
+        Object.entries(this.calendarViews).forEach(([mealType, view]) => {
             if (view && view.render) {
+                console.log(`🔄 Refreshing ${mealType} calendar view`);
                 view.render();
+            } else {
+                console.warn(`⚠️ ${mealType} calendar view not available for refresh`);
             }
         });
+        
+        console.log('✅ Meal plan views refresh completed');
         
         // Refresh grocery list to reflect scheduled meal changes
         if (this.groceryListManager && this.groceryListManager.generateFromScheduledMeals) {
@@ -1948,7 +2344,7 @@ class MealPlannerApp {
         // Update current view state
         this.currentViews[mealType] = newView;
         
-        console.log(`Switched ${mealType} to ${newView} view`);
+        console.log(`Switched plan to ${newView} view`);
     }
 
     handleGoogleCalendarAction() {
@@ -2168,6 +2564,11 @@ class MealPlannerApp {
     loadDemoData() {
         console.log('📊 Loading demo data...');
         
+        // Ensure demo data is initialized
+        if (this.settingsManager) {
+            this.settingsManager.initializeDemoData();
+        }
+        
         // Show notification
         this.showNotification('Demo data loaded! This includes sample recipes, ingredients, and meal plans.', 'success');
         
@@ -2352,7 +2753,7 @@ class MealPlannerApp {
             version: this.version,
             exported: new Date().toISOString(),
             recipes: [],
-            ingredients: [],
+            items: [],
             meal_plans: [],
             pantry_items: []
         });
@@ -2503,80 +2904,6 @@ class MealPlannerApp {
         }
     }
 
-    // Mock data methods for meal rotation engine
-    getMockRecipes() {
-        return [
-            {
-                id: 'recipe-1',
-                name: 'Spaghetti Carbonara',
-                ingredients: [
-                    { ingredientId: 'ing-1', name: 'Spaghetti', quantity: 1 },
-                    { ingredientId: 'ing-2', name: 'Eggs', quantity: 3 },
-                    { ingredientId: 'ing-3', name: 'Parmesan Cheese', quantity: 1 },
-                    { ingredientId: 'ing-4', name: 'Bacon', quantity: 200 }
-                ],
-                prepTime: 30,
-                instructions: 'Cook pasta, mix with eggs and cheese, add bacon'
-            },
-            {
-                id: 'recipe-2',
-                name: 'Chicken Stir Fry',
-                ingredients: [
-                    { ingredientId: 'ing-5', name: 'Chicken Breast', quantity: 500 },
-                    { ingredientId: 'ing-6', name: 'Mixed Vegetables', quantity: 300 },
-                    { ingredientId: 'ing-7', name: 'Soy Sauce', quantity: 2 },
-                    { ingredientId: 'ing-8', name: 'Rice', quantity: 200 }
-                ],
-                prepTime: 25,
-                instructions: 'Stir fry chicken and vegetables, serve with rice'
-            },
-            {
-                id: 'recipe-3',
-                name: 'Vegetarian Curry',
-                ingredients: [
-                    { ingredientId: 'ing-9', name: 'Mixed Vegetables', quantity: 400 },
-                    { ingredientId: 'ing-10', name: 'Coconut Milk', quantity: 1 },
-                    { ingredientId: 'ing-11', name: 'Curry Powder', quantity: 2 },
-                    { ingredientId: 'ing-8', name: 'Rice', quantity: 200 }
-                ],
-                prepTime: 35,
-                instructions: 'Simmer vegetables in coconut milk with curry spices'
-            },
-            {
-                id: 'recipe-4',
-                name: 'Grilled Salmon',
-                ingredients: [
-                    { ingredientId: 'ing-12', name: 'Salmon Fillet', quantity: 600 },
-                    { ingredientId: 'ing-13', name: 'Asparagus', quantity: 300 },
-                    { ingredientId: 'ing-14', name: 'Lemon', quantity: 1 },
-                    { ingredientId: 'ing-15', name: 'Olive Oil', quantity: 2 }
-                ],
-                prepTime: 20,
-                instructions: 'Grill salmon and asparagus, finish with lemon'
-            },
-            {
-                id: 'recipe-5',
-                name: 'Beef Tacos',
-                ingredients: [
-                    { ingredientId: 'ing-16', name: 'Ground Beef', quantity: 500 },
-                    { ingredientId: 'ing-17', name: 'Taco Shells', quantity: 8 },
-                    { ingredientId: 'ing-18', name: 'Lettuce', quantity: 1 },
-                    { ingredientId: 'ing-19', name: 'Tomatoes', quantity: 2 }
-                ],
-                prepTime: 15,
-                instructions: 'Cook beef, assemble tacos with fresh toppings'
-            }
-        ];
-    }
-
-    getMockPantryItems() {
-        return [
-            { ingredientId: 'ing-8', quantity: 5 }, // Rice
-            { ingredientId: 'ing-15', quantity: 1 }, // Olive Oil
-            { ingredientId: 'ing-7', quantity: 1 }, // Soy Sauce
-            { ingredientId: 'ing-11', quantity: 1 } // Curry Powder
-        ];
-    }
 
     // ===== FAVORITES SYSTEM =====
     
@@ -2636,10 +2963,9 @@ class MealPlannerApp {
     }
     
     getFavoriteRecipes() {
-        if (!window.DemoDataManager) return [];
+        if (!window.mealPlannerSettings) return [];
         
-        const demoData = new window.DemoDataManager();
-        const allRecipes = demoData.getRecipes();
+        const allRecipes = window.mealPlannerSettings.getAuthoritativeData('recipes');
         
         return allRecipes.filter(recipe => this.favoriteRecipes.includes(recipe.id));
     }

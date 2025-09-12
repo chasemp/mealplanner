@@ -7,7 +7,7 @@ class GroceryListManager {
         this.pantryItems = [];
         this.scheduledMeals = [];
         this.recipes = [];
-        this.ingredients = [];
+        this.items = [];
         this.currentWeek = this.getCurrentWeek();
         this.init();
     }
@@ -21,24 +21,24 @@ class GroceryListManager {
 
     async loadData() {
         // Mock data - in real app this would query the database
-        await this.loadIngredients();
+        await this.loadItems();
         await this.loadRecipes();
         await this.loadScheduledMeals();
         await this.loadPantryItems();
         await this.loadGroceryLists();
     }
 
-    async loadIngredients() {
-        console.log('📱 Grocery List Manager loading ingredients from authoritative data source...');
+    async loadItems() {
+        console.log('📱 Grocery List Manager loading items from authoritative data source...');
         
         // Get data from centralized authority
         if (window.mealPlannerSettings) {
-            this.ingredients = window.mealPlannerSettings.getAuthoritativeData('ingredients');
-            console.log(`✅ Grocery List Manager loaded ${this.ingredients.length} ingredients from authoritative source`);
+            this.items = window.mealPlannerSettings.getAuthoritativeData('items');
+            console.log(`✅ Grocery List Manager loaded ${this.items.length} items from authoritative source`);
         } else {
             // Fallback if settings not available
-            console.warn('⚠️ Settings manager not available, using empty ingredients');
-            this.ingredients = [];
+            console.warn('⚠️ Settings manager not available, using empty items');
+            this.items = [];
         }
     }
 
@@ -61,8 +61,24 @@ class GroceryListManager {
         
         // Get data from centralized authority
         if (window.mealPlannerSettings) {
-            this.scheduledMeals = window.mealPlannerSettings.getAuthoritativeData('scheduledMeals');
-            console.log(`✅ Grocery List Manager loaded ${this.scheduledMeals.length} scheduled meals from authoritative source`);
+            const allMeals = window.mealPlannerSettings.getAuthoritativeData('scheduledMeals');
+            
+            // Filter meals by date range if endDate is set (from unified selector)
+            if (this.endDate) {
+                this.scheduledMeals = allMeals.filter(meal => {
+                    const mealDate = new Date(meal.date);
+                    return mealDate >= this.currentWeek && mealDate <= this.endDate;
+                });
+                console.log(`✅ Grocery List Manager loaded ${this.scheduledMeals.length} scheduled meals (filtered by date range) from authoritative source`);
+            } else {
+                // Default to current week if no range specified
+                const weekEnd = this.addDays(this.currentWeek, 6);
+                this.scheduledMeals = allMeals.filter(meal => {
+                    const mealDate = new Date(meal.date);
+                    return mealDate >= this.currentWeek && mealDate <= weekEnd;
+                });
+                console.log(`✅ Grocery List Manager loaded ${this.scheduledMeals.length} scheduled meals (current week) from authoritative source`);
+            }
         } else {
             // Fallback if settings not available
             console.warn('⚠️ Settings manager not available, using empty scheduled meals');
@@ -127,10 +143,6 @@ class GroceryListManager {
                     </div>
                     
                     <div class="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
-                        <select id="week-selector" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 w-full sm:w-auto">
-                            ${this.renderWeekOptions()}
-                        </select>
-                        
                         <!-- Export Actions -->
                         <div class="flex items-center space-x-2">
                             <button id="copy-list-btn" class="btn-secondary flex items-center justify-center space-x-2 flex-1 sm:flex-none" title="Copy to clipboard">
@@ -217,7 +229,26 @@ class GroceryListManager {
         `;
     }
 
+    // Method called by unified Menu tab date selector
+    updateDateRange(startDate, endDate) {
+        console.log(`🛒 Grocery list updating date range: ${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}`);
+        
+        // Update the current week to match the start date
+        this.currentWeek = new Date(startDate);
+        
+        // Store the end date for filtering
+        this.endDate = new Date(endDate);
+        
+        // Reload data and re-render
+        this.loadScheduledMeals().then(() => {
+            this.render();
+            console.log('🛒 Grocery list updated with new date range');
+        });
+    }
+
     renderWeekOptions() {
+        // This method is no longer used since we removed the week selector
+        // Keeping it for backward compatibility but it won't be called
         const options = [];
         for (let i = -1; i <= 3; i++) {
             const weekStart = this.addDays(this.currentWeek, i * 7);
@@ -258,7 +289,7 @@ class GroceryListManager {
                         ${date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                     </div>
                     <div class="text-xs text-gray-400 mt-1">
-                        ${recipe.ingredients.length} ingredients
+                        ${recipe.items.length} items
                     </div>
                 </div>
             `;
@@ -371,11 +402,11 @@ class GroceryListManager {
             const recipe = this.recipes.find(r => r.id === meal.recipe_id);
             if (!recipe) return;
 
-            recipe.ingredients.forEach(ingredient => {
+            recipe.items.forEach(ingredient => {
                 const key = `${ingredient.ingredient_id}-${ingredient.unit}`;
                 if (!ingredientTotals[key]) {
-                    // Look up ingredient name from ingredients database
-                    const ingredientData = this.ingredients.find(i => i.id === ingredient.ingredient_id);
+                    // Look up ingredient name from items database
+                    const ingredientData = this.items.find(i => i.id === ingredient.ingredient_id);
                     const ingredientName = ingredientData ? ingredientData.name : ingredient.name || 'Unknown Ingredient';
                     
                     ingredientTotals[key] = {
@@ -416,7 +447,7 @@ class GroceryListManager {
     }
 
     getIngredientCategory(ingredientId) {
-        const ingredient = this.ingredients.find(i => i.id === ingredientId);
+        const ingredient = this.items.find(i => i.id === ingredientId);
         return ingredient ? ingredient.category : 'other';
     }
 
@@ -483,14 +514,7 @@ class GroceryListManager {
             });
         }
 
-        // Week selector
-        const weekSelector = this.container.querySelector('#week-selector');
-        if (weekSelector) {
-            weekSelector.addEventListener('change', (e) => {
-                this.currentWeek = new Date(e.target.value);
-                this.loadScheduledMeals().then(() => this.render());
-            });
-        }
+        // Note: Week selector removed - now controlled by unified Menu tab selector
 
         // Export and print buttons
         const exportBtn2 = this.container.querySelector('#export-list-btn');

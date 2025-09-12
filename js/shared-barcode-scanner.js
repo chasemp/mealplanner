@@ -432,25 +432,17 @@ class SharedBarcodeScanner {
     }
 
     async findExistingIngredient(ingredient) {
-        // This would normally query the actual database
-        // For now, check the demo data or items manager
-        if (window.itemsManager && window.itemsManager.ingredients) {
-            return window.itemsManager.ingredients.find(existing => 
-                existing.name.toLowerCase() === ingredient.name.toLowerCase() ||
-                (existing.barcode && existing.barcode === ingredient.barcode)
-            );
+        // Get ingredients from authoritative data source
+        if (!window.mealPlannerSettings) {
+            console.error('❌ Settings manager not available - cannot find existing ingredient');
+            return null;
         }
         
-        // Check demo data
-        if (window.DemoDataManager) {
-            const demoData = new window.DemoDataManager();
-            const demoIngredients = demoData.getIngredients();
-            return demoIngredients.find(existing => 
-                existing.name.toLowerCase() === ingredient.name.toLowerCase()
-            );
-        }
-        
-        return null;
+        const ingredients = window.mealPlannerSettings.getAuthoritativeData('ingredients') || [];
+        return ingredients.find(existing => 
+            existing.name.toLowerCase() === ingredient.name.toLowerCase() ||
+            (existing.barcode && existing.barcode === ingredient.barcode)
+        );
     }
 
     async addIngredientToDatabase(ingredient) {

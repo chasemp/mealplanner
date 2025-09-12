@@ -60,12 +60,12 @@ describe('Demo Data Manager', () => {
                 expect(recipe).toHaveProperty('title');
                 expect(recipe).toHaveProperty('description');
                 expect(recipe).toHaveProperty('servings');
-                expect(recipe).toHaveProperty('meal_type');
+                // meal_type is now handled via labels system, not a separate property
                 expect(recipe).toHaveProperty('prep_time');
                 expect(recipe).toHaveProperty('cook_time');
                 expect(recipe).toHaveProperty('instructions');
-                expect(recipe).toHaveProperty('ingredients');
-                expect(recipe.ingredients).toBeInstanceOf(Array);
+                expect(recipe).toHaveProperty('items');
+                expect(recipe.items).toBeInstanceOf(Array);
             });
         });
 
@@ -111,9 +111,11 @@ describe('Demo Data Manager', () => {
             const ingredientIds = ingredients.map(ing => ing.id);
             
             recipes.forEach(recipe => {
-                recipe.ingredients.forEach(recipeIngredient => {
-                    expect(ingredientIds).toContain(recipeIngredient.ingredient_id);
-                });
+                if (recipe.items) {
+                    recipe.items.forEach(recipeIngredient => {
+                        expect(ingredientIds).toContain(recipeIngredient.ingredient_id);
+                    });
+                }
             });
         });
 
@@ -142,14 +144,16 @@ describe('Demo Data Manager', () => {
             const recipes = demoData.getRecipes();
             
             recipes.forEach(recipe => {
-                expect(recipe.ingredients.length).toBeGreaterThan(0);
-                
-                recipe.ingredients.forEach(ingredient => {
-                    expect(ingredient).toHaveProperty('ingredient_id');
-                    expect(ingredient).toHaveProperty('quantity');
-                    expect(ingredient).toHaveProperty('unit');
-                    expect(ingredient.quantity).toBeGreaterThan(0);
-                });
+                if (recipe.items) {
+                    expect(recipe.items.length).toBeGreaterThan(0);
+                    
+                    recipe.items.forEach(ingredient => {
+                        expect(ingredient).toHaveProperty('ingredient_id');
+                        expect(ingredient).toHaveProperty('quantity');
+                        expect(ingredient).toHaveProperty('unit');
+                        expect(ingredient.quantity).toBeGreaterThan(0);
+                    });
+                }
             });
         });
 

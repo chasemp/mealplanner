@@ -557,9 +557,9 @@ class DemoDataGenerator {
             // Select recipes that match the meal type when possible
             let availableRecipes = recipesByMealType[template.preferredMealType] || [];
             
-            // If not enough recipes of preferred type, use all recipes
+            // If not enough recipes of preferred type, use all regular recipes (not combos)
             if (availableRecipes.length < recipeCount) {
-                availableRecipes = [...recipes];
+                availableRecipes = recipes.filter(r => r.recipe_type === 'regular');
             }
             
             // Ensure we don't reuse recipes within the same meal
@@ -588,6 +588,31 @@ class DemoDataGenerator {
             
             const maxServings = Math.max(...selectedRecipes.map(r => r.servings));
             
+            // Aggregate items from component recipes
+            const aggregatedItems = [];
+            const itemMap = new Map();
+            
+            selectedRecipes.forEach(sr => {
+                const recipe = recipes.find(r => r.id === sr.recipeId);
+                if (recipe && recipe.items) {
+                    recipe.items.forEach(item => {
+                        const key = `${item.ingredient_id}_${item.unit}`;
+                        const multiplier = sr.servings / recipe.servings || 1;
+                        if (itemMap.has(key)) {
+                            itemMap.get(key).quantity += item.quantity * multiplier;
+                        } else {
+                            itemMap.set(key, {
+                                ingredient_id: item.ingredient_id,
+                                quantity: item.quantity * multiplier,
+                                unit: item.unit
+                            });
+                        }
+                    });
+                }
+            });
+            
+            aggregatedItems.push(...itemMap.values());
+            
             // Convert meal to combo recipe format
             const comboRecipeId = recipes.length + i + 1; // Ensure unique ID after regular recipes
             
@@ -610,9 +635,10 @@ class DemoDataGenerator {
                 ],
                 combo_recipes: selectedRecipes.map(sr => ({
                     recipe_id: sr.recipeId,
-                    servings: sr.servings
+                    servings: sr.servings,
+                    servings_multiplier: 1.0
                 })),
-                ingredients: [], // Additional individual ingredients (empty for now)
+                items: aggregatedItems,
                 favorite: Math.random() > 0.7 // 30% chance of being favorite
             });
         }
@@ -645,11 +671,14 @@ class DemoDataGenerator {
             
             do {
                 const daysFromNow = Math.floor(Math.random() * 21); // 3 weeks
-                scheduledDate = new Date(today);
-                scheduledDate.setDate(today.getDate() + daysFromNow);
+                // Create timezone-neutral date to avoid parsing issues
+                const baseDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                scheduledDate = new Date(baseDate);
+                scheduledDate.setDate(baseDate.getDate() + daysFromNow);
                 attempts++;
             } while (usedDates.has(scheduledDate.toISOString().split('T')[0]) && attempts < 50);
             
+            // Create timezone-neutral ISO date string
             const dateString = scheduledDate.toISOString().split('T')[0];
             usedDates.add(dateString);
             
@@ -693,6 +722,8 @@ class DemoDataGenerator {
                     notes: `Scheduled ${meal.name}`,
                     recipes: validRecipes, // Only include valid recipes
                     recipe_id: validRecipes[0]?.recipeId, // For backward compatibility
+                    recipe_name: meal.name, // Add recipe name for Menu tab
+                    meal_type: mealType,
                     total_time: meal.estimatedTime,
                     created_at: new Date().toISOString()
                 });
@@ -716,6 +747,8 @@ class DemoDataGenerator {
                     servings: recipe.servings,
                     notes: `Scheduled ${recipe.title}`,
                     recipes: [{ recipeId: recipe.id, servings: recipe.servings }],
+                    recipe_name: recipe.title, // Add recipe name for Menu tab
+                    meal_type: mealType || 'dinner',
                     total_time: (recipe.prep_time || 0) + (recipe.cook_time || 0),
                     created_at: new Date().toISOString()
                 });
@@ -760,19 +793,21 @@ class DemoDataGenerator {
             .replace('{vegetable}', vegetable.toLowerCase())
             .replace('{side}', side.toLowerCase());
         
+        const labels = [...template.labels, ...this.generateRecipeLabels()];
         const recipe = {
             id,
             title,
             description,
             recipe_type: 'regular',
+            meal_type: this.getMealTypeFromLabels(labels),
             image_url: this.generateImageUrl(),
             servings: this.getRandomElement(template.servings),
             prep_time: this.getRandomElement(template.prep_time),
             cook_time: this.getRandomElement(template.cook_time),
             created_at: '', // Will be set by caller
             instructions: this.generateInstructions(template, selectedIngredients),
-            labels: [...template.labels, ...this.generateRecipeLabels()],
-            ingredients: this.generateRecipeIngredients(selectedIngredients),
+            labels: labels,
+            items: this.generateRecipeIngredients(selectedIngredients),
             favorite: this.shouldBeFavorite(template.title)
         };
         
@@ -866,7 +901,8 @@ class DemoDataGenerator {
                 usedRecipeIds.add(recipe.id);
                 selectedRecipes.push({
                     recipe_id: recipe.id,
-                    servings_multiplier: 1
+                    servings: recipe.servings || 4,
+                    servings_multiplier: 1.0
                 });
             }
         }
@@ -875,17 +911,18 @@ class DemoDataGenerator {
         const aggregatedIngredients = [];
         const ingredientMap = new Map();
         
-        selectedRecipes.forEach(comboRecipe => {
+                selectedRecipes.forEach(comboRecipe => {
             const recipe = basicRecipes.find(r => r.id === comboRecipe.recipe_id);
-            if (recipe && recipe.ingredients) {
-                recipe.ingredients.forEach(ing => {
+            if (recipe && recipe.items) {
+                recipe.items.forEach(ing => {
                     const key = `${ing.ingredient_id}_${ing.unit}`;
+                    const multiplier = comboRecipe.servings / recipe.servings || 1;
                     if (ingredientMap.has(key)) {
-                        ingredientMap.get(key).quantity += ing.quantity * comboRecipe.servings_multiplier;
+                        ingredientMap.get(key).quantity += ing.quantity * multiplier;
                     } else {
                         ingredientMap.set(key, {
                             ingredient_id: ing.ingredient_id,
-                            quantity: ing.quantity * comboRecipe.servings_multiplier,
+                            quantity: ing.quantity * multiplier,
                             unit: ing.unit
                         });
                     }
@@ -911,11 +948,13 @@ class DemoDataGenerator {
             return recipe ? recipe.servings : 4;
         }));
         
+        const labels = template.labels || [];
         return {
             id,
             title: template.name,
             description: template.description,
             recipe_type: 'combo',
+            meal_type: this.getMealTypeFromLabels(labels),
             image_url: this.generateImageUrl(),
             servings: maxServings,
             prep_time: totalPrepTime,
@@ -926,9 +965,9 @@ class DemoDataGenerator {
                 'Coordinate cooking times to serve everything together',
                 'Plate and serve as a complete meal'
             ],
-            labels: template.labels,
+            labels: labels,
             combo_recipes: selectedRecipes,
-            ingredients: aggregatedIngredients
+            items: aggregatedIngredients
         };
     }
     
@@ -1132,8 +1171,8 @@ class DemoDataGenerator {
         
         // Count usage in recipes and calculate quantities
         recipes.forEach(recipe => {
-            if (recipe.ingredients) {
-                recipe.ingredients.forEach(recipeIngredient => {
+            if (recipe.items) {
+                recipe.items.forEach(recipeIngredient => {
                     const ingredient = ingredients.find(ing => ing.id === recipeIngredient.ingredient_id);
                     if (ingredient) {
                         ingredient.recipe_count++;
@@ -1216,7 +1255,7 @@ class DemoDataGenerator {
             if (!recipe.description || !recipe.recipe_type || !recipe.prep_time || recipe.cook_time === undefined || !recipe.servings) {
                 errors.push(`Recipe ${index}: Missing required fields (description, recipe_type, prep_time, cook_time, servings)`);
             }
-            if (!recipe.labels || !recipe.ingredients || !recipe.instructions) {
+            if (!recipe.labels || !recipe.items || !recipe.instructions) {
                 errors.push(`Recipe ${index}: Missing required fields (labels, ingredients, instructions)`);
             }
             
@@ -1266,8 +1305,8 @@ class DemoDataGenerator {
             }
             
             // Validate ingredient references
-            if (recipe.ingredients) {
-                recipe.ingredients.forEach((recipeIng, ingIndex) => {
+            if (recipe.items) {
+                recipe.items.forEach((recipeIng, ingIndex) => {
                     const ingredient = ingredients.find(ing => ing.id === recipeIng.ingredient_id);
                     if (!ingredient) {
                         errors.push(`Recipe ${index}: References non-existent ingredient ${recipeIng.ingredient_id} at index ${ingIndex}`);
@@ -1331,6 +1370,43 @@ class DemoDataGenerator {
         });
         
         return errors;
+    }
+
+    // Schema validation to ensure data types match application expectations
+    validateApplicationSchema(ingredients, recipes, meals = [], scheduledMeals = []) {
+        const issues = [];
+        
+        // Expected data types that the application should be able to load/save
+        const expectedDataTypes = ['items', 'recipes', 'scheduledMeals', 'pantryItems', 'meals'];
+        
+        // Check if our generated data matches expected schema
+        const generatedDataTypes = {
+            items: ingredients,
+            recipes: recipes,
+            scheduledMeals: scheduledMeals,
+            pantryItems: [], // Empty array for now - pantry items are optional
+            meals: meals || []
+        };
+        
+        expectedDataTypes.forEach(dataType => {
+            if (!generatedDataTypes[dataType]) {
+                issues.push('Missing expected data type: ' + dataType);
+            } else if (!Array.isArray(generatedDataTypes[dataType])) {
+                issues.push('Data type ' + dataType + ' should be an array, got ' + typeof generatedDataTypes[dataType]);
+            }
+        });
+        
+        // Validate that recipes use 'items' not 'ingredients'
+        recipes.forEach((recipe, index) => {
+            if (recipe.ingredients && !recipe.items) {
+                issues.push('Recipe ' + index + ' uses deprecated \'ingredients\' field instead of \'items\'');
+            }
+            if (!recipe.items) {
+                issues.push('Recipe ' + index + ' missing required \'items\' field');
+            }
+        });
+        
+        return issues;
     }
     
     generateFileContent(ingredients, recipes, meals = [], scheduledMeals = []) {
@@ -1412,8 +1488,8 @@ class DemoDataManager {
         
         // Check recipe-ingredient references
         this.recipes.forEach(recipe => {
-            if (recipe.ingredients) {
-                recipe.ingredients.forEach(recipeIng => {
+            if (recipe.items) {
+                recipe.items.forEach(recipeIng => {
                     const ingredient = this.ingredients.find(ing => ing.id === recipeIng.ingredient_id);
                     if (!ingredient) {
                         issues.push(\`Recipe "\${recipe.title}" references non-existent ingredient ID \${recipeIng.ingredient_id}\`);
@@ -1455,9 +1531,11 @@ class DemoDataManager {
     
     // Utility method for generating date strings (test compatibility)
     getDateString(daysFromToday = 0) {
-        const date = new Date();
-        date.setDate(date.getDate() + daysFromToday);
-        return date.toISOString().split('T')[0];
+        const today = new Date();
+        // Create timezone-neutral date to avoid parsing issues
+        const baseDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        baseDate.setDate(baseDate.getDate() + daysFromToday);
+        return baseDate.toISOString().split('T')[0];
     }
 }
 
@@ -1574,10 +1652,19 @@ function main() {
     // Validate if requested
     if (options.validate) {
         console.log('🔍 Validating generated data...');
-        const errors = generator.validateData(ingredients, recipes, [], scheduledMeals);
         
+        // Schema validation
+        const schemaErrors = generator.validateApplicationSchema(ingredients, recipes, [], scheduledMeals);
+        if (schemaErrors.length > 0) {
+            console.error('❌ Schema validation errors:');
+            schemaErrors.forEach(error => console.error(`  - ${error}`));
+            process.exit(1);
+        }
+        
+        // Data consistency validation
+        const errors = generator.validateData(ingredients, recipes, [], scheduledMeals);
         if (errors.length > 0) {
-            console.error('❌ Validation errors:');
+            console.error('❌ Data validation errors:');
             errors.forEach(error => console.error(`  - ${error}`));
             process.exit(1);
         } else {

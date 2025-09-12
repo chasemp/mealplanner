@@ -19,8 +19,8 @@ const dom = new JSDOM(`
             <div id="lunch-calendar"></div>
         </div>
         <div id="dinner-tab" class="tab-content">
-            <button id="auto-plan-dinner">Auto Plan</button>
-            <button id="clear-plan-dinner">Clear</button>
+            <button id="auto-plan-plan">Auto Plan</button>
+            <button id="clear-plan-plan">Clear</button>
             <div id="dinner-itinerary"></div>
             <div id="dinner-calendar"></div>
         </div>
@@ -117,8 +117,8 @@ describe('Meal Planning Controls', () => {
                 <div id="lunch-calendar"></div>
             </div>
             <div id="dinner-tab" class="tab-content">
-                <button id="auto-plan-dinner">Auto Plan</button>
-                <button id="clear-plan-dinner">Clear</button>
+                <button id="auto-plan-plan">Auto Plan</button>
+                <button id="clear-plan-plan">Clear</button>
                 <div id="dinner-itinerary"></div>
                 <div id="dinner-calendar"></div>
             </div>
@@ -198,7 +198,7 @@ describe('Meal Planning Controls', () => {
         it('should attach event listeners to Auto Plan buttons', () => {
             const breakfastBtn = document.getElementById('auto-plan-breakfast');
             const lunchBtn = document.getElementById('auto-plan-lunch');
-            const dinnerBtn = document.getElementById('auto-plan-dinner');
+            const dinnerBtn = document.getElementById('auto-plan-plan');
             
             expect(breakfastBtn).toBeTruthy();
             expect(lunchBtn).toBeTruthy();
@@ -214,13 +214,13 @@ describe('Meal Planning Controls', () => {
             expect(handleAutoPlanSpy).toHaveBeenCalledWith('lunch');
             
             dinnerBtn.click();
-            expect(handleAutoPlanSpy).toHaveBeenCalledWith('dinner');
+            expect(handleAutoPlanSpy).toHaveBeenCalledWith('plan');
         });
 
         it('should attach event listeners to Clear Plan buttons', () => {
             const breakfastBtn = document.getElementById('clear-plan-breakfast');
             const lunchBtn = document.getElementById('clear-plan-lunch');
-            const dinnerBtn = document.getElementById('clear-plan-dinner');
+            const dinnerBtn = document.getElementById('clear-plan-plan');
             
             expect(breakfastBtn).toBeTruthy();
             expect(lunchBtn).toBeTruthy();
@@ -236,7 +236,7 @@ describe('Meal Planning Controls', () => {
             expect(handleClearPlanSpy).toHaveBeenCalledWith('lunch');
             
             dinnerBtn.click();
-            expect(handleClearPlanSpy).toHaveBeenCalledWith('dinner');
+            expect(handleClearPlanSpy).toHaveBeenCalledWith('plan');
         });
     });
 
