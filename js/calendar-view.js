@@ -6,7 +6,44 @@ class CalendarView {
         this.mealPlanData = mealPlanData;
         this.currentDate = new Date();
         this.viewDate = new Date(); // Date being viewed in calendar
-        this.scheduledMeals = this.getMockScheduledMeals();
+        this.scheduledMeals = [];
+        this.loadScheduledMeals();
+    }
+    
+    loadScheduledMeals() {
+        try {
+            // Use the same data loading logic as itinerary view for consistency
+            if (window.mealPlannerSettings) {
+                const allMeals = window.mealPlannerSettings.getAuthoritativeData('scheduledMeals') || [];
+                if (this.mealType === 'plan') {
+                    // For plan tab, show all scheduled meals regardless of type
+                    this.scheduledMeals = allMeals;
+                } else {
+                    // For specific meal types, filter by type
+                    this.scheduledMeals = allMeals.filter(meal => meal.meal_type === this.mealType);
+                }
+            } else {
+                // Fallback to localStorage
+                const stored = localStorage.getItem('mealplanner_scheduled_meals');
+                if (stored) {
+                    const allMeals = JSON.parse(stored);
+                    if (this.mealType === 'plan') {
+                        // For plan tab, show all scheduled meals
+                        this.scheduledMeals = allMeals;
+                    } else {
+                        // For specific meal types, filter by type
+                        this.scheduledMeals = allMeals.filter(meal => meal.meal_type === this.mealType);
+                    }
+                } else {
+                    this.scheduledMeals = [];
+                }
+            }
+            
+            console.log(`📅 Calendar view loaded ${this.scheduledMeals.length} ${this.mealType === 'plan' ? 'total' : this.mealType} meals:`, this.scheduledMeals);
+        } catch (error) {
+            console.error('Error loading scheduled meals for calendar view:', error);
+            this.scheduledMeals = [];
+        }
     }
 
     render() {
@@ -183,7 +220,7 @@ class CalendarView {
         const dateKey = this.formatDateKey(date);
         return this.scheduledMeals.filter(meal => 
             this.formatDateKey(meal.date) === dateKey && 
-            meal.mealType === this.mealType
+            meal.meal_type === this.mealType
         );
     }
 
@@ -195,7 +232,7 @@ class CalendarView {
             const mealDate = new Date(meal.date);
             return mealDate.getFullYear() === year && 
                    mealDate.getMonth() === month &&
-                   meal.mealType === this.mealType;
+                   meal.meal_type === this.mealType;
         });
     }
 
@@ -248,11 +285,32 @@ class CalendarView {
     }
 
     formatDateKey(date) {
-        return date.toISOString().split('T')[0];
+        // Handle both Date objects and date strings
+        if (typeof date === 'string') {
+            // If it's already a string, try to parse it first
+            const parsed = new Date(date);
+            return parsed.toISOString().split('T')[0];
+        } else if (date instanceof Date) {
+            return date.toISOString().split('T')[0];
+        } else {
+            console.error('formatDateKey received invalid date:', date);
+            return new Date().toISOString().split('T')[0]; // fallback to today
+        }
     }
 
     formatDate(date) {
-        return date.toLocaleDateString('en-US', { 
+        // Handle both Date objects and date strings
+        let dateObj;
+        if (typeof date === 'string') {
+            dateObj = new Date(date);
+        } else if (date instanceof Date) {
+            dateObj = date;
+        } else {
+            console.error('formatDate received invalid date:', date);
+            dateObj = new Date(); // fallback to today
+        }
+        
+        return dateObj.toLocaleDateString('en-US', { 
             month: 'short', 
             day: 'numeric' 
         });
