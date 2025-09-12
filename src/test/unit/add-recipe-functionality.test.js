@@ -298,7 +298,7 @@ describe('Add Recipe Functionality', () => {
             // Should have placeholder + all ingredients
             expect(options.length).toBeGreaterThan(1);
             expect(options[0].value).toBe(''); // Placeholder
-            expect(options[0].textContent).toContain('Select ingredient');
+            expect(options[0].textContent).toContain('Select item');
         });
     });
 

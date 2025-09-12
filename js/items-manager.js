@@ -2,7 +2,7 @@
 class ItemsManager {
     constructor(container) {
         this.container = container;
-        this.ingredients = [];
+        this.items = [];
         this.filteredIngredients = [];
         this.currentFilter = { search: '', category: '', label: '' };
         this.init();
@@ -20,37 +20,37 @@ class ItemsManager {
         
         // Get data from centralized authority
         if (window.mealPlannerSettings) {
-            this.ingredients = window.mealPlannerSettings.getAuthoritativeData('ingredients');
-            console.log(`✅ Items Manager loaded ${this.ingredients.length} items from authoritative source`);
-            if (this.ingredients.length > 0) {
-                console.log('📱 First item:', this.ingredients[0]);
+            this.items = window.mealPlannerSettings.getAuthoritativeData('items');
+            console.log(`✅ Items Manager loaded ${this.items.length} items from authoritative source`);
+            if (this.items.length > 0) {
+                console.log('📱 First item:', this.items[0]);
             }
         } else {
             // Fallback if settings not available
             console.warn('⚠️ Settings manager not available, using empty items');
-            this.ingredients = [];
+            this.items = [];
         }
         
-        console.log('📱 Final items count:', this.ingredients.length);
+        console.log('📱 Final items count:', this.items.length);
         this.applyFilters();
     }
 
     applyFilters() {
         console.log('🔍 Applying filters:', this.currentFilter);
-        console.log('📦 Total items:', this.ingredients.length);
+        console.log('📦 Total items:', this.items.length);
         
-        this.filteredIngredients = this.ingredients.filter(ingredient => {
+        this.filteredIngredients = this.items.filter(item => {
             const matchesSearch = !this.currentFilter.search || 
-                ingredient.name.toLowerCase().includes(this.currentFilter.search.toLowerCase());
+                item.name.toLowerCase().includes(this.currentFilter.search.toLowerCase());
             const matchesCategory = !this.currentFilter.category || 
-                ingredient.category === this.currentFilter.category;
+                item.category === this.currentFilter.category;
             const matchesLabel = !this.currentFilter.label || 
-                (ingredient.labels && Array.isArray(ingredient.labels) && ingredient.labels.includes(this.currentFilter.label));
+                (item.labels && Array.isArray(item.labels) && item.labels.includes(this.currentFilter.label));
             
             const matches = matchesSearch && matchesCategory && matchesLabel;
             
             if (this.currentFilter.search) {
-                console.log(`🔍 "${ingredient.name}" matches search "${this.currentFilter.search}": ${matchesSearch}`);
+                console.log(`🔍 "${item.name}" matches search "${this.currentFilter.search}": ${matchesSearch}`);
             }
             
             return matches;
@@ -61,16 +61,16 @@ class ItemsManager {
 
     getAllLabels() {
         const allLabels = new Set();
-        this.ingredients.forEach(ingredient => {
-            if (ingredient.labels && Array.isArray(ingredient.labels)) {
-                ingredient.labels.forEach(label => allLabels.add(label));
+        this.items.forEach(item => {
+            if (item.labels && Array.isArray(item.labels)) {
+                item.labels.forEach(label => allLabels.add(label));
             }
         });
         return Array.from(allLabels).sort();
     }
 
     render() {
-        const categories = [...new Set(this.ingredients.map(i => i.category))];
+        const categories = [...new Set(this.items.map(i => i.category))];
         
         this.container.innerHTML = `
             <div class="space-y-6">
@@ -78,7 +78,7 @@ class ItemsManager {
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Items</h2>
                     <div class="flex flex-wrap gap-3">
-                        <button id="add-ingredient-btn" class="btn-primary flex items-center space-x-2">
+                        <button id="add-item-btn" class="btn-primary flex items-center space-x-2">
                             <span>Add Item</span>
                             <span>🥕</span>
                         </button>
@@ -89,10 +89,10 @@ class ItemsManager {
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
-                            <label for="ingredient-search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <label for="item-search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Search Items
                             </label>
-                            <input type="text" id="ingredient-search" 
+                            <input type="text" id="item-search" 
                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                                    placeholder="Search by name..."
                                    value="${this.currentFilter.search}">
@@ -114,10 +114,10 @@ class ItemsManager {
                         </div>
                         
                         <div>
-                            <label for="ingredient-label-filter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <label for="item-label-filter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Filter by Label
                             </label>
-                            <select id="ingredient-label-filter" 
+                            <select id="item-label-filter" 
                                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
                                 <option value="">All Labels</option>
                                 ${this.getAllLabels().map(label => `
@@ -151,7 +151,7 @@ class ItemsManager {
                 <!-- Items Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     ${this.filteredIngredients.length > 0 ? 
-                        this.filteredIngredients.map(ingredient => this.createIngredientCard(ingredient)).join('') :
+                        this.filteredIngredients.map(item => this.createItemCard(item)).join('') :
                         '<div class="col-span-full text-center py-12"><p class="text-gray-500 dark:text-gray-400">No items found matching your criteria.</p></div>'
                     }
                 </div>
@@ -231,27 +231,27 @@ class ItemsManager {
         }
     }
 
-    createIngredientCard(ingredient) {
-        const nutrition = typeof ingredient.nutrition_per_100g === 'string' ? 
-            JSON.parse(ingredient.nutrition_per_100g) : ingredient.nutrition_per_100g;
+    createItemCard(item) {
+        const nutrition = typeof item.nutrition_per_100g === 'string' ? 
+            JSON.parse(item.nutrition_per_100g) : item.nutrition_per_100g;
         
         // Calculate recipe usage
-        const recipeUsage = this.getIngredientRecipeUsage(ingredient.id);
+        const recipeUsage = this.getItemRecipeUsage(item.id);
         
         return `
-            <div class="ingredient-card bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow p-6" data-ingredient-id="${ingredient.id}">
+            <div class="item-card bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow p-6" data-item-id="${item.id}">
                 <div class="flex justify-between items-start mb-4">
                     <div>
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">${ingredient.name}</h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 capitalize">${ingredient.category}</p>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">${item.name}</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 capitalize">${item.category}</p>
                     </div>
                     <div class="flex space-x-2">
-                        <button class="edit-ingredient text-blue-600 hover:text-blue-800 p-1" data-ingredient-id="${ingredient.id}" title="Edit">
+                        <button class="edit-item text-blue-600 hover:text-blue-800 p-1" data-item-id="${item.id}" title="Edit">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                             </svg>
                         </button>
-                        <button class="delete-ingredient text-red-600 hover:text-red-800 p-1" data-ingredient-id="${ingredient.id}" title="Delete">
+                        <button class="delete-item text-red-600 hover:text-red-800 p-1" data-item-id="${item.id}" title="Delete">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                             </svg>
@@ -262,13 +262,13 @@ class ItemsManager {
                 <div class="space-y-3">
                     <div class="flex justify-between text-sm">
                         <span class="text-gray-600 dark:text-gray-400">Default Unit:</span>
-                        <span class="font-medium text-gray-900 dark:text-white">${ingredient.default_unit}</span>
+                        <span class="font-medium text-gray-900 dark:text-white">${item.default_unit}</span>
                     </div>
                     
                     
                     <div class="flex justify-between text-sm">
                         <span class="text-gray-600 dark:text-gray-400">Used in Recipes:</span>
-                        <span class="font-medium text-gray-900 dark:text-white">${ingredient.recipe_count || 0}</span>
+                        <span class="font-medium text-gray-900 dark:text-white">${item.recipe_count || 0}</span>
                     </div>
                     
                     ${nutrition && nutrition.calories ? `
@@ -283,10 +283,10 @@ class ItemsManager {
                         </div>
                     ` : ''}
                     
-                    ${ingredient.storage_notes ? `
+                    ${item.storage_notes ? `
                         <div class="pt-2 border-t border-gray-200 dark:border-gray-700">
                             <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Storage:</p>
-                            <p class="text-xs text-gray-700 dark:text-gray-300">${ingredient.storage_notes}</p>
+                            <p class="text-xs text-gray-700 dark:text-gray-300">${item.storage_notes}</p>
                         </div>
                     ` : ''}
                     
@@ -314,12 +314,12 @@ class ItemsManager {
                     `}
                     
                     <!-- Labels Section -->
-                    ${ingredient.labels && Array.isArray(ingredient.labels) && ingredient.labels.length > 0 ? `
+                    ${item.labels && Array.isArray(item.labels) && item.labels.length > 0 ? `
                         <div class="pt-2 border-t border-gray-200 dark:border-gray-700">
                             <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Labels:</p>
                             <div class="flex flex-wrap gap-1">
-                                ${ingredient.labels.map(label => `
-                                    <span class="ingredient-label inline-block bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded-full text-xs cursor-pointer hover:bg-green-200 dark:hover:bg-green-800 transition-colors" data-label="${label}">
+                                ${item.labels.map(label => `
+                                    <span class="item-label inline-block bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded-full text-xs cursor-pointer hover:bg-green-200 dark:hover:bg-green-800 transition-colors" data-label="${label}">
                                         ${label}
                                     </span>
                                 `).join('')}
@@ -332,41 +332,39 @@ class ItemsManager {
     }
 
     getActiveIngredients() {
-        return this.ingredients.filter(i => (i.recipe_count || 0) > 0).length;
+        return this.items.filter(i => (i.recipe_count || 0) > 0).length;
     }
 
     getTotalIngredients() {
-        return this.ingredients.length;
+        return this.items.length;
     }
 
-    getIngredientRecipeUsage(ingredientId) {
+    getItemRecipeUsage(itemId) {
         const recipes = [];
         
-        // Get recipes from recipe manager or demo data
-        let allRecipes = [];
+        // Get recipes from authoritative data source
+        const allRecipes = window.mealPlannerSettings?.getAuthoritativeData('recipes') || [];
         
-        if (window.recipeManager && window.recipeManager.recipes) {
-            allRecipes = window.recipeManager.recipes;
-        } else if (window.DemoDataManager) {
-            const demoData = new window.DemoDataManager();
-            allRecipes = demoData.getRecipes();
+        if (!window.mealPlannerSettings) {
+            console.error('❌ Settings manager not available - cannot get recipes');
+            return recipes;
         }
         
-        // Find recipes that use this ingredient
+        // Find recipes that use this item
         allRecipes.forEach(recipe => {
-            if (recipe.ingredients && Array.isArray(recipe.ingredients)) {
-                const ingredientUsage = recipe.ingredients.find(ing => {
+            if (recipe.items && Array.isArray(recipe.items)) {
+                const itemUsage = recipe.items.find(ing => {
                     // Match by ID or name (for flexibility)
-                    return ing.ingredient_id === ingredientId || 
-                           (ing.name && ing.name.toLowerCase() === this.getIngredientName(ingredientId).toLowerCase());
+                    return ing.item_id === itemId || 
+                           (ing.name && ing.name.toLowerCase() === this.getIngredientName(itemId).toLowerCase());
                 });
                 
-                if (ingredientUsage) {
+                if (itemUsage) {
                     recipes.push({
                         recipeId: recipe.id,
                         recipeName: recipe.title || recipe.name,
-                        quantity: ingredientUsage.quantity || 0,
-                        unit: ingredientUsage.unit || 'units',
+                        quantity: itemUsage.quantity || 0,
+                        unit: itemUsage.unit || 'units',
                         mealType: recipe.meal_type || 'unknown'
                     });
                 }
@@ -380,14 +378,14 @@ class ItemsManager {
         };
     }
 
-    getIngredientName(ingredientId) {
-        const ingredient = this.ingredients.find(ing => ing.id === ingredientId);
-        return ingredient ? ingredient.name : '';
+    getIngredientName(itemId) {
+        const item = this.items.find(ing => ing.id === itemId);
+        return item ? item.name : '';
     }
 
     attachEventListeners() {
         // Search input with debouncing
-        const searchInput = this.container.querySelector('#ingredient-search');
+        const searchInput = this.container.querySelector('#item-search');
         if (searchInput) {
             let searchTimeout;
             searchInput.addEventListener('input', (e) => {
@@ -416,7 +414,7 @@ class ItemsManager {
         }
 
         // Label filter
-        const labelFilter = this.container.querySelector('#ingredient-label-filter');
+        const labelFilter = this.container.querySelector('#item-label-filter');
         if (labelFilter) {
             labelFilter.addEventListener('change', (e) => {
                 this.currentFilter.label = e.target.value;
@@ -426,7 +424,7 @@ class ItemsManager {
         }
 
         // Clickable labels
-        this.container.querySelectorAll('.ingredient-label').forEach(labelSpan => {
+        this.container.querySelectorAll('.item-label').forEach(labelSpan => {
             labelSpan.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const label = labelSpan.dataset.label;
@@ -455,209 +453,45 @@ class ItemsManager {
             clearFiltersBtn.addEventListener('click', clearHandler);
         }
 
-        // Add ingredient button
-        const addBtn = this.container.querySelector('#add-ingredient-btn');
+        // Add item button
+        const addBtn = this.container.querySelector('#add-item-btn');
         if (addBtn) {
             addBtn.addEventListener('click', () => {
-                this.showIngredientForm();
+                this.showItemForm();
             });
         }
 
-        // Edit ingredient buttons
-        this.container.querySelectorAll('.edit-ingredient').forEach(btn => {
+        // Edit item buttons
+        this.container.querySelectorAll('.edit-item').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const ingredientId = parseInt(btn.dataset.ingredientId);
-                this.editIngredient(ingredientId);
+                const itemId = parseInt(btn.dataset.itemId);
+                this.editItem(itemId);
             });
         });
 
-        // Delete ingredient buttons
-        this.container.querySelectorAll('.delete-ingredient').forEach(btn => {
+        // Delete item buttons
+        this.container.querySelectorAll('.delete-item').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const ingredientId = parseInt(btn.dataset.ingredientId);
-                this.deleteIngredient(ingredientId);
+                const itemId = parseInt(btn.dataset.itemId);
+                this.deleteItem(itemId);
             });
         });
     }
 
-    showIngredientForm(ingredient = null, onSaveCallback = null, onCancelCallback = null) {
-        console.log('Opening ingredient form...', ingredient ? 'Edit mode' : 'Add mode');
+    showItemForm(item = null, onSaveCallback = null, onCancelCallback = null) {
+        console.log('Opening item form...', item ? 'Edit mode' : 'Add mode');
         
-        // Use full-page form for better mobile experience
-        this.showFullPageIngredientForm(ingredient, onSaveCallback, onCancelCallback);
-        return;
-        
-        const isEdit = ingredient !== null;
-        const modalId = 'ingredient-form-modal';
-        
-        // Remove existing modal if present
-        const existingModal = document.getElementById(modalId);
-        if (existingModal) {
-            existingModal.remove();
-        }
-        
-        // Create modal HTML
-        const modal = document.createElement('div');
-        modal.id = modalId;
-        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
-        modal.innerHTML = `
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
-                    <div class="flex items-center justify-between">
-                        <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-                            ${isEdit ? 'Edit Item' : 'Add New Item'}
-                        </h2>
-                        <button id="close-ingredient-form" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-                
-                <form id="ingredient-form" class="p-6 space-y-6">
-                    <!-- Basic Information -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="md:col-span-2">
-                            <label for="ingredient-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Ingredient Name *
-                            </label>
-                            <input type="text" id="ingredient-name" name="name" required
-                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                                   placeholder="Enter ingredient name"
-                                   value="${isEdit ? ingredient.name : ''}">
-                        </div>
-                        
-                        <div>
-                            <label for="ingredient-category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Category *
-                            </label>
-                            <select id="ingredient-category" name="category" required
-                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
-                                <option value="">Select category...</option>
-                                <option value="produce" ${isEdit && ingredient.category === 'produce' ? 'selected' : ''}>Produce</option>
-                                <option value="meat" ${isEdit && ingredient.category === 'meat' ? 'selected' : ''}>Meat</option>
-                                <option value="dairy" ${isEdit && ingredient.category === 'dairy' ? 'selected' : ''}>Dairy</option>
-                                <option value="pantry" ${isEdit && ingredient.category === 'pantry' ? 'selected' : ''}>Pantry</option>
-                                <option value="grains" ${isEdit && ingredient.category === 'grains' ? 'selected' : ''}>Grains</option>
-                                <option value="spices" ${isEdit && ingredient.category === 'spices' ? 'selected' : ''}>Spices</option>
-                                <option value="beverages" ${isEdit && ingredient.category === 'beverages' ? 'selected' : ''}>Beverages</option>
-                                <option value="frozen" ${isEdit && ingredient.category === 'frozen' ? 'selected' : ''}>Frozen</option>
-                                <option value="other" ${isEdit && ingredient.category === 'other' ? 'selected' : ''}>Other</option>
-                            </select>
-                        </div>
-                        
-                        <div>
-                            <label for="ingredient-unit" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Default Unit *
-                            </label>
-                            <select id="ingredient-unit" name="default_unit" required
-                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
-                                <option value="">Select unit...</option>
-                                <option value="pieces" ${isEdit && ingredient.default_unit === 'pieces' ? 'selected' : ''}>pieces</option>
-                                <option value="cups" ${isEdit && ingredient.default_unit === 'cups' ? 'selected' : ''}>cups</option>
-                                <option value="tbsp" ${isEdit && ingredient.default_unit === 'tbsp' ? 'selected' : ''}>tbsp</option>
-                                <option value="tsp" ${isEdit && ingredient.default_unit === 'tsp' ? 'selected' : ''}>tsp</option>
-                                <option value="lbs" ${isEdit && ingredient.default_unit === 'lbs' ? 'selected' : ''}>lbs</option>
-                                <option value="oz" ${isEdit && ingredient.default_unit === 'oz' ? 'selected' : ''}>oz</option>
-                                <option value="cloves" ${isEdit && ingredient.default_unit === 'cloves' ? 'selected' : ''}>cloves</option>
-                                <option value="slices" ${isEdit && ingredient.default_unit === 'slices' ? 'selected' : ''}>slices</option>
-                                <option value="grams" ${isEdit && ingredient.default_unit === 'grams' ? 'selected' : ''}>grams</option>
-                                <option value="ml" ${isEdit && ingredient.default_unit === 'ml' ? 'selected' : ''}>ml</option>
-                            </select>
-                        </div>
-                        
-                        
-                        <div>
-                            <label for="ingredient-storage" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Storage Notes
-                            </label>
-                            <input type="text" id="ingredient-storage" name="storage_notes"
-                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                                   placeholder="Storage instructions"
-                                   value="${isEdit ? ingredient.storage_notes || '' : ''}">
-                        </div>
-                    </div>
-                    
-                    <!-- Nutritional Information -->
-                    <div>
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Nutritional Information (per 100g)</h3>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div>
-                                <label for="nutrition-calories" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Calories
-                                </label>
-                                <input type="number" id="nutrition-calories" name="calories" min="0"
-                                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                                       placeholder="0"
-                                       value="${isEdit && ingredient.nutrition_per_100g?.calories ? ingredient.nutrition_per_100g.calories : ''}">
-                            </div>
-                            
-                            <div>
-                                <label for="nutrition-protein" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Protein (g)
-                                </label>
-                                <input type="number" id="nutrition-protein" name="protein" step="0.1" min="0"
-                                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                                       placeholder="0.0"
-                                       value="${isEdit && ingredient.nutrition_per_100g?.protein ? ingredient.nutrition_per_100g.protein : ''}">
-                            </div>
-                            
-                            <div>
-                                <label for="nutrition-carbs" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Carbs (g)
-                                </label>
-                                <input type="number" id="nutrition-carbs" name="carbs" step="0.1" min="0"
-                                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                                       placeholder="0.0"
-                                       value="${isEdit && ingredient.nutrition_per_100g?.carbs ? ingredient.nutrition_per_100g.carbs : ''}">
-                            </div>
-                            
-                            <div>
-                                <label for="nutrition-fat" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Fat (g)
-                                </label>
-                                <input type="number" id="nutrition-fat" name="fat" step="0.1" min="0"
-                                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                                       placeholder="0.0"
-                                       value="${isEdit && ingredient.nutrition_per_100g?.fat ? ingredient.nutrition_per_100g.fat : ''}">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Form Actions -->
-                    <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200 dark:border-gray-700">
-                        <button type="button" id="cancel-ingredient-form" class="btn-secondary">
-                            Cancel
-                        </button>
-                        <button type="submit" class="btn-primary">
-                            ${isEdit ? 'Update Ingredient' : 'Save Ingredient'}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        `;
-        
-        // Add modal to page
-        document.body.appendChild(modal);
-        
-        // Attach event listeners
-        this.attachIngredientFormListeners(modal, ingredient);
-        
-        // Focus on name input
-        setTimeout(() => {
-            const nameInput = modal.querySelector('#ingredient-name');
-            if (nameInput) nameInput.focus();
-        }, 100);
+        // Use full-page form for consistency across desktop and mobile
+        this.showFullPageItemForm(item, onSaveCallback, onCancelCallback);
     }
 
-    showFullPageIngredientForm(ingredient = null, onSaveCallback = null, onCancelCallback = null) {
-        console.log('🥕 showFullPageIngredientForm called', { ingredient, hasCallback: !!onSaveCallback, hasCancelCallback: !!onCancelCallback });
+    showFullPageItemForm(item = null, onSaveCallback = null, onCancelCallback = null) {
+        console.log('🥕 showFullPageItemForm called', { item, hasCallback: !!onSaveCallback, hasCancelCallback: !!onCancelCallback });
         console.log('🥕 ItemsManager container:', this.container);
         
-        const isEdit = ingredient !== null;
+        const isEdit = item !== null;
         
         // Store previous view for navigation and callbacks
         this.previousView = {
@@ -671,22 +505,22 @@ class ItemsManager {
         
         // Generate full-page form HTML
         console.log('🥕 Setting container innerHTML...');
-        this.container.innerHTML = this.generateFullPageIngredientFormHTML(ingredient);
+        this.container.innerHTML = this.generateFullPageItemFormHTML(item);
         console.log('🥕 Container innerHTML set, new length:', this.container.innerHTML.length);
         
         // Attach event listeners
         console.log('🥕 Attaching form listeners...');
-        this.attachFullPageIngredientFormListeners(ingredient);
+        this.attachFullPageItemFormListeners(item);
         
         // Focus on name input
         setTimeout(() => {
-            const nameInput = document.querySelector('#ingredient-name');
+            const nameInput = document.querySelector('#item-name');
             if (nameInput) nameInput.focus();
         }, 100);
     }
 
-    generateFullPageIngredientFormHTML(ingredient = null) {
-        const isEdit = ingredient !== null;
+    generateFullPageItemFormHTML(item = null) {
+        const isEdit = item !== null;
         
         return `
             <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -705,10 +539,10 @@ class ItemsManager {
                                 </h1>
                             </div>
                             <div class="flex items-center space-x-3">
-                                <button type="button" id="cancel-fullpage-ingredient-form" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 px-4 py-2 transition-colors">
+                                <button type="button" id="cancel-fullpage-item-form" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 px-4 py-2 transition-colors">
                                     Cancel
                                 </button>
-                                <button type="submit" form="fullpage-ingredient-form" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium">
+                                <button type="submit" form="fullpage-item-form" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium">
                                     ${isEdit ? 'Update Item' : 'Save Item'}
                                 </button>
                             </div>
@@ -718,58 +552,58 @@ class ItemsManager {
 
                 <!-- Form Content -->
                 <div class="max-w-4xl mx-auto px-4 py-6">
-                    <form id="fullpage-ingredient-form" class="space-y-6">
+                    <form id="fullpage-item-form" class="space-y-6">
                         <!-- Basic Information -->
                         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                             <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Basic Information</h2>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div class="md:col-span-2">
-                                    <label for="ingredient-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    <label for="item-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                         Item Name *
                                     </label>
-                                    <input type="text" id="ingredient-name" name="name" required
+                                    <input type="text" id="item-name" name="name" required
                                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                                            placeholder="Enter item name"
-                                           value="${isEdit ? ingredient.name || '' : ''}">
+                                           value="${isEdit ? item.name || '' : ''}">
                                 </div>
                                 
                                 <div>
-                                    <label for="ingredient-category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    <label for="item-category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                         Category
                                     </label>
-                                    <select id="ingredient-category" name="category"
+                                    <select id="item-category" name="category"
                                             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
                                         <option value="">Select category</option>
-                                        <option value="produce" ${isEdit && ingredient.category === 'produce' ? 'selected' : ''}>Produce</option>
-                                        <option value="dairy" ${isEdit && ingredient.category === 'dairy' ? 'selected' : ''}>Dairy</option>
-                                        <option value="meat" ${isEdit && ingredient.category === 'meat' ? 'selected' : ''}>Meat & Poultry</option>
-                                        <option value="seafood" ${isEdit && ingredient.category === 'seafood' ? 'selected' : ''}>Seafood</option>
-                                        <option value="pantry" ${isEdit && ingredient.category === 'pantry' ? 'selected' : ''}>Pantry</option>
-                                        <option value="spices" ${isEdit && ingredient.category === 'spices' ? 'selected' : ''}>Spices & Herbs</option>
-                                        <option value="beverages" ${isEdit && ingredient.category === 'beverages' ? 'selected' : ''}>Beverages</option>
-                                        <option value="frozen" ${isEdit && ingredient.category === 'frozen' ? 'selected' : ''}>Frozen</option>
-                                        <option value="bakery" ${isEdit && ingredient.category === 'bakery' ? 'selected' : ''}>Bakery</option>
-                                        <option value="other" ${isEdit && ingredient.category === 'other' ? 'selected' : ''}>Other</option>
+                                        <option value="produce" ${isEdit && item.category === 'produce' ? 'selected' : ''}>Produce</option>
+                                        <option value="dairy" ${isEdit && item.category === 'dairy' ? 'selected' : ''}>Dairy</option>
+                                        <option value="meat" ${isEdit && item.category === 'meat' ? 'selected' : ''}>Meat & Poultry</option>
+                                        <option value="seafood" ${isEdit && item.category === 'seafood' ? 'selected' : ''}>Seafood</option>
+                                        <option value="pantry" ${isEdit && item.category === 'pantry' ? 'selected' : ''}>Pantry</option>
+                                        <option value="spices" ${isEdit && item.category === 'spices' ? 'selected' : ''}>Spices & Herbs</option>
+                                        <option value="beverages" ${isEdit && item.category === 'beverages' ? 'selected' : ''}>Beverages</option>
+                                        <option value="frozen" ${isEdit && item.category === 'frozen' ? 'selected' : ''}>Frozen</option>
+                                        <option value="bakery" ${isEdit && item.category === 'bakery' ? 'selected' : ''}>Bakery</option>
+                                        <option value="other" ${isEdit && item.category === 'other' ? 'selected' : ''}>Other</option>
                                     </select>
                                 </div>
                                 
                                 <div>
-                                    <label for="ingredient-default-unit" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    <label for="item-default-unit" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                         Default Unit
                                     </label>
-                                    <select id="ingredient-default-unit" name="default_unit"
+                                    <select id="item-default-unit" name="default_unit"
                                             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
                                         <option value="">Select unit</option>
-                                        <option value="pieces" ${isEdit && ingredient.default_unit === 'pieces' ? 'selected' : ''}>Pieces</option>
-                                        <option value="cups" ${isEdit && ingredient.default_unit === 'cups' ? 'selected' : ''}>Cups</option>
-                                        <option value="tablespoons" ${isEdit && ingredient.default_unit === 'tablespoons' ? 'selected' : ''}>Tablespoons</option>
-                                        <option value="teaspoons" ${isEdit && ingredient.default_unit === 'teaspoons' ? 'selected' : ''}>Teaspoons</option>
-                                        <option value="pounds" ${isEdit && ingredient.default_unit === 'pounds' ? 'selected' : ''}>Pounds</option>
-                                        <option value="ounces" ${isEdit && ingredient.default_unit === 'ounces' ? 'selected' : ''}>Ounces</option>
-                                        <option value="grams" ${isEdit && ingredient.default_unit === 'grams' ? 'selected' : ''}>Grams</option>
-                                        <option value="kilograms" ${isEdit && ingredient.default_unit === 'kilograms' ? 'selected' : ''}>Kilograms</option>
-                                        <option value="liters" ${isEdit && ingredient.default_unit === 'liters' ? 'selected' : ''}>Liters</option>
-                                        <option value="milliliters" ${isEdit && ingredient.default_unit === 'milliliters' ? 'selected' : ''}>Milliliters</option>
+                                        <option value="pieces" ${isEdit && item.default_unit === 'pieces' ? 'selected' : ''}>Pieces</option>
+                                        <option value="cups" ${isEdit && item.default_unit === 'cups' ? 'selected' : ''}>Cups</option>
+                                        <option value="tablespoons" ${isEdit && item.default_unit === 'tablespoons' ? 'selected' : ''}>Tablespoons</option>
+                                        <option value="teaspoons" ${isEdit && item.default_unit === 'teaspoons' ? 'selected' : ''}>Teaspoons</option>
+                                        <option value="pounds" ${isEdit && item.default_unit === 'pounds' ? 'selected' : ''}>Pounds</option>
+                                        <option value="ounces" ${isEdit && item.default_unit === 'ounces' ? 'selected' : ''}>Ounces</option>
+                                        <option value="grams" ${isEdit && item.default_unit === 'grams' ? 'selected' : ''}>Grams</option>
+                                        <option value="kilograms" ${isEdit && item.default_unit === 'kilograms' ? 'selected' : ''}>Kilograms</option>
+                                        <option value="liters" ${isEdit && item.default_unit === 'liters' ? 'selected' : ''}>Liters</option>
+                                        <option value="milliliters" ${isEdit && item.default_unit === 'milliliters' ? 'selected' : ''}>Milliliters</option>
                                     </select>
                                 </div>
                             </div>
@@ -786,7 +620,7 @@ class ItemsManager {
                                     <input type="number" id="nutrition-calories" name="calories" step="0.1" min="0"
                                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                                            placeholder="0.0"
-                                           value="${isEdit && ingredient.nutrition_per_100g?.calories ? ingredient.nutrition_per_100g.calories : ''}">
+                                           value="${isEdit && item.nutrition_per_100g?.calories ? item.nutrition_per_100g.calories : ''}">
                                 </div>
                                 
                                 <div>
@@ -796,7 +630,7 @@ class ItemsManager {
                                     <input type="number" id="nutrition-protein" name="protein" step="0.1" min="0"
                                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                                            placeholder="0.0"
-                                           value="${isEdit && ingredient.nutrition_per_100g?.protein ? ingredient.nutrition_per_100g.protein : ''}">
+                                           value="${isEdit && item.nutrition_per_100g?.protein ? item.nutrition_per_100g.protein : ''}">
                                 </div>
                                 
                                 <div>
@@ -806,7 +640,7 @@ class ItemsManager {
                                     <input type="number" id="nutrition-carbs" name="carbs" step="0.1" min="0"
                                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                                            placeholder="0.0"
-                                           value="${isEdit && ingredient.nutrition_per_100g?.carbs ? ingredient.nutrition_per_100g.carbs : ''}">
+                                           value="${isEdit && item.nutrition_per_100g?.carbs ? item.nutrition_per_100g.carbs : ''}">
                                 </div>
                                 
                                 <div>
@@ -816,7 +650,7 @@ class ItemsManager {
                                     <input type="number" id="nutrition-fat" name="fat" step="0.1" min="0"
                                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                                            placeholder="0.0"
-                                           value="${isEdit && ingredient.nutrition_per_100g?.fat ? ingredient.nutrition_per_100g.fat : ''}">
+                                           value="${isEdit && item.nutrition_per_100g?.fat ? item.nutrition_per_100g.fat : ''}">
                                 </div>
                             </div>
                         </div>
@@ -826,7 +660,7 @@ class ItemsManager {
         `;
     }
 
-    attachSharedIngredientFormListeners(ingredient, config) {
+    attachSharedItemFormListeners(item, config) {
         const form = document.querySelector(config.form);
         const backBtn = document.querySelector(config.backBtn);
         const cancelBtn = document.querySelector(config.cancelBtn);
@@ -922,59 +756,94 @@ class ItemsManager {
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             if (config.isFullPage) {
-                this.handleFullPageIngredientFormSubmit(form, ingredient);
+                this.handleFullPageItemFormSubmit(form, item);
             } else {
-                this.handleIngredientFormSubmit(form, ingredient);
+                this.handleItemFormSubmit(form, item);
             }
         });
     }
 
-    attachFullPageIngredientFormListeners(ingredient) {
+    attachFullPageItemFormListeners(item) {
         // Use shared form logic with full-page specific selectors
-        this.attachSharedIngredientFormListeners(ingredient, {
-            form: '#fullpage-ingredient-form',
+        this.attachSharedItemFormListeners(item, {
+            form: '#fullpage-item-form',
             backBtn: '#back-to-items',
-            cancelBtn: '#cancel-fullpage-ingredient-form',
+            cancelBtn: '#cancel-fullpage-item-form',
             isFullPage: true
         });
     }
 
-    async handleFullPageIngredientFormSubmit(form, existingIngredient) {
+    async handleFullPageItemFormSubmit(form, existingItem) {
         try {
             const formData = new FormData(form);
             
-            const ingredientData = {
-                name: formData.get('name'),
-                category: formData.get('category') || 'other',
-                default_unit: formData.get('default_unit') || 'pieces',
+            const itemData = {
+                name: formData.get('name').trim(),
+                category: formData.get('category'),
+                default_unit: formData.get('default_unit'),
+                storage_notes: formData.get('storage_notes')?.trim() || null,
                 nutrition_per_100g: {
-                    calories: parseFloat(formData.get('calories')) || 0,
-                    protein: parseFloat(formData.get('protein')) || 0,
-                    carbs: parseFloat(formData.get('carbs')) || 0,
-                    fat: parseFloat(formData.get('fat')) || 0
+                    calories: parseInt(formData.get('calories')) || null,
+                    protein: parseFloat(formData.get('protein')) || null,
+                    carbs: parseFloat(formData.get('carbs')) || null,
+                    fat: parseFloat(formData.get('fat')) || null
                 }
             };
 
+            // Validate required fields
+            if (!itemData.name) {
+                this.showNotification('Ingredient name is required', 'error');
+                return;
+            }
+
+            if (!itemData.category) {
+                this.showNotification('Category is required', 'error');
+                return;
+            }
+
+            if (!itemData.default_unit) {
+                this.showNotification('Default unit is required', 'error');
+                return;
+            }
+
+            // Check for duplicate names (excluding current item when editing)
+            const duplicateIngredient = this.items.find(ing => 
+                ing.name.toLowerCase() === itemData.name.toLowerCase() && 
+                (!existingItem || ing.id !== existingItem.id)
+            );
+
+            if (duplicateIngredient) {
+                this.showNotification('An ingredient with this name already exists', 'error');
+                return;
+            }
+
             let savedIngredient;
-            if (existingIngredient) {
-                // Update existing ingredient
-                ingredientData.id = existingIngredient.id;
-                const index = this.ingredients.findIndex(ing => ing.id === existingIngredient.id);
+            if (existingItem) {
+                // Update existing item
+                itemData.id = existingItem.id;
+                const index = this.items.findIndex(ing => ing.id === existingItem.id);
                 if (index !== -1) {
-                    this.ingredients[index] = { ...this.ingredients[index], ...ingredientData };
-                    savedIngredient = this.ingredients[index];
+                    this.items[index] = { ...this.items[index], ...itemData };
+                    savedIngredient = this.items[index];
                 }
             } else {
-                // Add new ingredient
-                ingredientData.id = Math.max(0, ...this.ingredients.map(ing => ing.id)) + 1;
-                ingredientData.recipe_count = 0;
-                ingredientData.avg_quantity = 0;
-                this.ingredients.push(ingredientData);
-                savedIngredient = ingredientData;
+                // Add new item
+                itemData.id = Math.max(0, ...this.items.map(ing => ing.id)) + 1;
+                itemData.recipe_count = 0;
+                itemData.avg_quantity = 0;
+                this.items.push(itemData);
+                savedIngredient = itemData;
             }
 
             // Save to persistent storage
-            this.saveIngredients();
+            this.saveItems();
+
+            // Show success notification
+            if (existingItem) {
+                this.showNotification(`"${savedIngredient.name}" has been updated!`, 'success');
+            } else {
+                this.showNotification(`"${savedIngredient.name}" has been added to your ingredients!`, 'success');
+            }
 
             // Call the callback if provided (e.g., to add to recipe)
             if (this.onSaveCallback && savedIngredient) {
@@ -991,26 +860,26 @@ class ItemsManager {
             // Clear callback
             this.onSaveCallback = null;
         } catch (error) {
-            console.error('Error saving ingredient:', error);
-            alert('Error saving ingredient. Please try again.');
+            console.error('Error saving item:', error);
+            this.showNotification('Error saving item. Please try again.', 'error');
         }
     }
 
-    attachIngredientFormListeners(modal, ingredient) {
+    attachItemFormListeners(modal, item) {
         // Use shared form logic with modal specific selectors
-        this.attachSharedIngredientFormListeners(ingredient, {
-            form: '#ingredient-form',
-            closeBtn: '#close-ingredient-form',
-            cancelBtn: '#cancel-ingredient-form',
+        this.attachSharedItemFormListeners(item, {
+            form: '#item-form',
+            closeBtn: '#close-item-form',
+            cancelBtn: '#cancel-item-form',
             isFullPage: false
         });
     }
 
-    async handleIngredientFormSubmit(form, existingIngredient) {
+    async handleItemFormSubmit(form, existingItem) {
         try {
             // Collect form data
             const formData = new FormData(form);
-            const ingredientData = {
+            const itemData = {
                 name: formData.get('name').trim(),
                 category: formData.get('category'),
                 default_unit: formData.get('default_unit'),
@@ -1024,93 +893,93 @@ class ItemsManager {
             };
 
             // Validate required fields
-            if (!ingredientData.name) {
+            if (!itemData.name) {
                 this.showNotification('Ingredient name is required', 'error');
                 return;
             }
 
-            if (!ingredientData.category) {
+            if (!itemData.category) {
                 this.showNotification('Category is required', 'error');
                 return;
             }
 
-            if (!ingredientData.default_unit) {
+            if (!itemData.default_unit) {
                 this.showNotification('Default unit is required', 'error');
                 return;
             }
 
-            // Check for duplicate names (excluding current ingredient when editing)
-            const duplicateIngredient = this.ingredients.find(ing => 
-                ing.name.toLowerCase() === ingredientData.name.toLowerCase() && 
+            // Check for duplicate names (excluding current item when editing)
+            const duplicateIngredient = this.items.find(ing => 
+                ing.name.toLowerCase() === itemData.name.toLowerCase() && 
                 (!existingIngredient || ing.id !== existingIngredient.id)
             );
 
             if (duplicateIngredient) {
-                this.showNotification('An ingredient with this name already exists', 'error');
+                this.showNotification('An item with this name already exists', 'error');
                 return;
             }
 
-            // Save ingredient
+            // Save item
             if (existingIngredient) {
-                // Update existing ingredient
-                ingredientData.id = existingIngredient.id;
-                const index = this.ingredients.findIndex(ing => ing.id === existingIngredient.id);
+                // Update existing item
+                itemData.id = existingIngredient.id;
+                const index = this.items.findIndex(ing => ing.id === existingIngredient.id);
                 if (index !== -1) {
-                    this.ingredients[index] = { ...this.ingredients[index], ...ingredientData };
+                    this.items[index] = { ...this.items[index], ...itemData };
                 }
-                this.showNotification(`"${ingredientData.name}" has been updated!`, 'success');
+                this.showNotification(`"${itemData.name}" has been updated!`, 'success');
             } else {
-                // Add new ingredient
-                ingredientData.id = Math.max(0, ...this.ingredients.map(ing => ing.id)) + 1;
-                ingredientData.recipe_count = 0;
-                ingredientData.avg_quantity = 0;
-                this.ingredients.push(ingredientData);
-                this.showNotification(`"${ingredientData.name}" has been added!`, 'success');
+                // Add new item
+                itemData.id = Math.max(0, ...this.items.map(ing => ing.id)) + 1;
+                itemData.recipe_count = 0;
+                itemData.avg_quantity = 0;
+                this.items.push(itemData);
+                this.showNotification(`"${itemData.name}" has been added!`, 'success');
             }
 
             // Save to persistent storage
-            this.saveIngredients();
+            this.saveItems();
             
             // Close modal and refresh view
-            document.getElementById('ingredient-form-modal')?.remove();
+            // Form is now full-page, so we clear the container instead
             this.applyFilters();
             this.render();
 
         } catch (error) {
-            console.error('Error saving ingredient:', error);
-            this.showNotification('Error saving ingredient. Please try again.', 'error');
+            console.error('Error saving item:', error);
+            this.showNotification('Error saving item. Please try again.', 'error');
         }
     }
 
-    saveIngredients() {
-        // Save ingredients using the centralized data authority
+    saveItems() {
+        // Save items using the centralized data authority
         if (window.mealPlannerSettings) {
-            window.mealPlannerSettings.saveAuthoritativeData('ingredients', this.ingredients);
+            window.mealPlannerSettings.saveAuthoritativeData('items', this.items);
         } else {
             console.warn('⚠️ Settings manager not available, falling back to localStorage');
-            localStorage.setItem('mealplanner_ingredients', JSON.stringify(this.ingredients));
+            localStorage.setItem('mealplanner_items', JSON.stringify(this.items));
         }
     }
 
-    editIngredient(ingredientId) {
-        const ingredient = this.ingredients.find(ing => ing.id === ingredientId);
-        if (ingredient) {
-            this.showIngredientForm(ingredient);
+    editItem(itemId) {
+        const item = this.items.find(ing => ing.id === itemId);
+        if (item) {
+            this.showItemForm(item);
         }
     }
 
-    async deleteIngredient(ingredientId) {
-        const ingredient = this.ingredients.find(ing => ing.id === ingredientId);
-        if (ingredient && confirm(`Are you sure you want to delete "${ingredient.name}"?`)) {
-            // Remove from ingredients array
-            this.ingredients = this.ingredients.filter(ing => ing.id !== ingredientId);
+    async deleteItem(itemId) {
+        const item = this.items.find(ing => ing.id === itemId);
+        if (item && confirm(`Are you sure you want to delete "${item.name}"?`)) {
+            // Remove from items array
+            this.items = this.items.filter(ing => ing.id !== itemId);
             
             // Save to persistent storage
-            this.saveIngredients();
+            this.saveItems();
             
             this.applyFilters();
             this.render();
-            this.showNotification(`"${ingredient.name}" has been deleted`, 'success');
+            this.showNotification(`"${item.name}" has been deleted`, 'success');
         }
     }
 
@@ -1122,12 +991,12 @@ class ItemsManager {
             return;
         }
 
-        // Show the scanner with ingredients context
-        sharedScanner.show('ingredients', 
-            (ingredient, context) => {
-                console.log('Product scanned for ingredients:', ingredient);
-                this.showNotification(`Added "${ingredient.name}" to ingredients`, 'success');
-                // Refresh the ingredients view
+        // Show the scanner with items context
+        sharedScanner.show('items', 
+            (item, context) => {
+                console.log('Product scanned for items:', item);
+                this.showNotification(`Added "${item.name}" to items`, 'success');
+                // Refresh the items view
                 this.applyFilters();
                 this.render();
             },
@@ -1171,8 +1040,8 @@ class ItemsManager {
     }
 
     async clearAllData() {
-        console.log('🗑️ Clearing all ingredients data...');
-        this.ingredients = [];
+        console.log('🗑️ Clearing all items data...');
+        this.items = [];
         this.filteredIngredients = [];
         this.currentFilter = {
             search: '',
@@ -1181,12 +1050,12 @@ class ItemsManager {
         };
         
         // Clear from localStorage
-        localStorage.removeItem('mealplanner_ingredients');
+        localStorage.removeItem('mealplanner_items');
         
         // Re-render to show empty state
         this.render();
         
-        console.log('✅ All ingredients data cleared');
+        console.log('✅ All items data cleared');
     }
 }
 
@@ -1202,5 +1071,5 @@ if (typeof global !== 'undefined') {
     global.IngredientsManager = ItemsManager;
 }
 
-// Global registry for ingredients manager
-window.ingredientsManager = null;
+// Global registry for items manager
+window.itemsManager = null;

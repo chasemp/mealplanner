@@ -1870,4 +1870,221 @@ showForm(formType) {
 
 ---
 
-*This document captures the lessons learned from building the MealPlanner PWA, emphasizing the importance of the static PWA sweet spot: modular organization without build complexity, enhanced with intelligent development tooling, schema-driven demo data generation, holistic data consistency management, explicit cross-platform UI styling, systematic debugging approaches for complex UI state management, and critical mobile-first design patterns that prioritize full-page experiences over constrained modal interactions.*
+## 🎯 **Single Authoritative Data Source Architecture**
+
+**Lesson**: Eliminate data source inconsistencies by establishing one authoritative source for all data access.
+
+**Problem**: Multiple data access patterns created phantom data and inconsistent state:
+- `window.demoData.getRecipes()` (static demo data)
+- `new DemoDataManager().getRecipes()` (fresh instances)
+- `localStorage.getItem('mealplanner_recipes')` (direct storage access)
+- `window.recipeManager.recipes` (manager-specific cache)
+
+**Root Cause**: Different components accessed data through different paths, leading to:
+- Calendar view showing meals that didn't exist in itinerary view
+- Auto plan counts not matching actual scheduled meals
+- Demo data changes not reflecting across all components
+
+**Solution**: Single Authoritative Data Source Pattern:
+```javascript
+// ❌ BAD - Multiple data access paths
+if (window.recipeManager && window.recipeManager.recipes) {
+    recipes = window.recipeManager.recipes;  // Path 1
+} else if (window.demoData) {
+    recipes = window.demoData.getRecipes();  // Path 2
+} else {
+    recipes = JSON.parse(localStorage.getItem('recipes')); // Path 3
+}
+
+// ✅ GOOD - Single authoritative source
+const recipes = window.mealPlannerSettings?.getAuthoritativeData('recipes') || [];
+if (!window.mealPlannerSettings) {
+    console.error('❌ Settings manager not available');
+    return [];
+}
+```
+
+**Implementation Strategy**:
+1. **Centralized Data Authority**: All data access goes through `SettingsManager.getAuthoritativeData()`
+2. **Fail Fast**: If settings manager isn't available, log error and return empty data
+3. **No Fallbacks**: Eliminate multiple data access paths that create inconsistency
+4. **Source-Agnostic**: The authoritative source handles demo/local/remote switching internally
+
+**Key Benefits**:
+- Eliminates phantom data issues
+- Consistent state across all components
+- Predictable data flow for debugging
+- Single point of control for data source switching
+
+---
+
+## 📊 **Demo Data Initialization Strategy**
+
+**Lesson**: Demo data should seed localStorage once on startup, then behave identically to local storage.
+
+**Problem**: Demo data was treated as a special case throughout the application:
+- Components had different logic for demo vs local data
+- Demo data changes weren't persisted within sessions
+- Data source switching created inconsistent behavior
+
+**Root Cause**: Demo data was accessed directly through `DemoDataManager` instances instead of being treated as initial seed data.
+
+**Solution**: Demo Data as Seed Pattern:
+```javascript
+// ✅ Demo data initialization (once on startup)
+initializeDemoData() {
+    if (this.settings.sourceType === 'demo') {
+        // Seed localStorage with demo data if empty
+        const demoData = new DemoDataManager();
+        if (!localStorage.getItem('mealplanner_recipes')) {
+            localStorage.setItem('mealplanner_recipes', 
+                JSON.stringify(demoData.getRecipes()));
+        }
+        // After seeding, demo source behaves like local storage
+    }
+}
+
+// ✅ Unified data access (no special demo handling)
+getDemoData(dataType) {
+    // Demo data is seeded to localStorage, so just read from localStorage
+    return this.getLocalData(dataType);
+}
+```
+
+**Architecture Benefits**:
+1. **Consistent Behavior**: Demo source behaves identically to local storage after initialization
+2. **Session Persistence**: Demo data changes persist within the session
+3. **Simplified Logic**: No special demo data handling in components
+4. **Predictable State**: Same data access patterns regardless of source type
+
+**Implementation Pattern**:
+```javascript
+// ❌ BAD - Special demo handling everywhere
+if (sourceType === 'demo') {
+    data = new DemoDataManager().getRecipes();
+} else {
+    data = JSON.parse(localStorage.getItem('recipes'));
+}
+
+// ✅ GOOD - Unified access pattern
+data = window.mealPlannerSettings.getAuthoritativeData('recipes');
+```
+
+---
+
+## 🔄 **Data Source Switching Without Fallbacks**
+
+**Lesson**: Eliminate fallback patterns that create multiple code paths and inconsistent behavior.
+
+**Problem**: Fallback patterns created unpredictable data access:
+```javascript
+// ❌ BAD - Multiple fallback paths
+if (window.recipeManager?.recipes) {
+    return window.recipeManager.recipes;
+} else if (window.mealPlannerSettings) {
+    return window.mealPlannerSettings.getAuthoritativeData('recipes');
+} else if (window.demoData) {
+    return window.demoData.getRecipes();
+} else {
+    return [];
+}
+```
+
+**Root Cause**: Fallbacks created multiple success paths, making it impossible to predict which data source would be used.
+
+**Solution**: Deterministic Single Path Pattern:
+```javascript
+// ✅ GOOD - Single deterministic path
+const recipes = window.mealPlannerSettings?.getAuthoritativeData('recipes') || [];
+
+if (!window.mealPlannerSettings) {
+    console.error('❌ Critical: Settings manager not available');
+    // Fail fast - don't try to continue with inconsistent state
+    return [];
+}
+```
+
+**Key Principles**:
+1. **One Success Path**: Only one way to get data successfully
+2. **Fail Fast**: If the authoritative source isn't available, that's a critical error
+3. **No Silent Fallbacks**: Don't mask system failures with fallback data
+4. **Explicit Dependencies**: Make data dependencies explicit and required
+
+**Benefits**:
+- Predictable data flow
+- Easier debugging (only one path to trace)
+- Forces proper initialization order
+- Eliminates phantom data from stale fallback sources
+
+---
+
+## 🏗️ **PWA Data Architecture Lessons**
+
+### **Critical Architectural Decisions**
+
+**1. Single Source of Truth**
+- Establish one authoritative data access point
+- Eliminate multiple data access patterns
+- Make data dependencies explicit
+
+**2. Demo Data as Seed, Not Special Case**
+- Initialize demo data to localStorage once
+- Treat demo source identically to local storage after seeding
+- Avoid special demo data handling in components
+
+**3. Fail Fast on Missing Dependencies**
+- Don't mask critical system failures with fallbacks
+- Log errors explicitly when required services aren't available
+- Make initialization order dependencies clear
+
+**4. Consistent Data Flow Patterns**
+- Use the same data access pattern regardless of source type
+- Centralize data source switching logic
+- Avoid conditional data access patterns in components
+
+### **Implementation Checklist**
+
+**✅ Data Access Audit**
+- [ ] All components use single authoritative data source
+- [ ] No direct localStorage access outside of settings manager
+- [ ] No fallback data access patterns
+- [ ] Explicit error handling for missing dependencies
+
+**✅ Demo Data Integration**
+- [ ] Demo data seeds localStorage on initialization
+- [ ] Demo source behaves identically to local storage
+- [ ] No special demo data handling in components
+- [ ] Demo data changes persist within session
+
+**✅ Data Source Switching**
+- [ ] Single point of control for data source selection
+- [ ] Consistent behavior across all source types
+- [ ] No conditional logic based on source type in components
+- [ ] Clear separation between data source and data access
+
+### **Future PWA Development Guidelines**
+
+**Start with Single Source Pattern**:
+- Design data access through one authoritative interface from the beginning
+- Avoid creating multiple data access patterns "for flexibility"
+- Establish clear data flow architecture before building components
+
+**Treat Demo Data as Seed Data**:
+- Demo data should initialize the same storage system used by production
+- Avoid creating separate demo data access patterns
+- Test demo data behavior matches production data behavior
+
+**Design for Deterministic Data Flow**:
+- Eliminate fallback patterns that create multiple success paths
+- Make data dependencies explicit and required
+- Fail fast when required services aren't available
+
+### **Critical Takeaway**
+
+**Data consistency issues in PWAs often stem from multiple data access patterns rather than data corruption.** Establishing a single authoritative data source and treating demo data as seed data (not a special case) eliminates phantom data issues and creates predictable, debuggable data flow.
+
+**The Rule**: Every piece of data should have exactly one authoritative source and one access pattern. If you find yourself writing fallback data access logic, you're creating the conditions for phantom data and inconsistent state.
+
+---
+
+*This document captures the lessons learned from building the MealPlanner PWA, emphasizing the importance of the static PWA sweet spot: modular organization without build complexity, enhanced with intelligent development tooling, schema-driven demo data generation, holistic data consistency management through single authoritative data sources, explicit cross-platform UI styling, systematic debugging approaches for complex UI state management, and critical mobile-first design patterns that prioritize full-page experiences over constrained modal interactions.*

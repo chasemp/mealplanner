@@ -143,8 +143,13 @@ class AdvancedPlanningManager {
     }
 
     findRecipesMatchingCriteria(criteria) {
-        // This would integrate with the recipe manager
-        let recipes = window.DemoDataManager ? new window.DemoDataManager().getRecipes() : [];
+        // Get recipes from authoritative data source
+        if (!window.mealPlannerSettings) {
+            console.error('❌ Settings manager not available - cannot find recipes');
+            return [];
+        }
+        
+        let recipes = window.mealPlannerSettings.getAuthoritativeData('recipes') || [];
 
         // Apply criteria filters
         if (criteria.maxPrepTime) {

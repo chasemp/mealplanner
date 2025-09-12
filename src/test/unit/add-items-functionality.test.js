@@ -6,7 +6,7 @@ const dom = new JSDOM(`
     <!DOCTYPE html>
     <html>
     <body>
-        <div id="ingredients-manager-container"></div>
+        <div id="items-manager-container"></div>
     </body>
     </html>
 `);
@@ -52,18 +52,18 @@ global.window.confirm = vi.fn();
             }
         };
 
-// Import IngredientsManager after DOM setup
-await import('../../../js/ingredients-manager.js');
-const IngredientsManager = global.IngredientsManager;
+// Import ItemsManager after DOM setup
+await import('../../../js/items-manager.js');
+const ItemsManager = global.ItemsManager;
 
-describe('Add Ingredient Functionality', () => {
-    let ingredientsManager;
+describe('Add Items Functionality', () => {
+    let itemsManager;
     let container;
 
     beforeEach(async () => {
         // Reset DOM
         document.body.innerHTML = `
-            <div id="ingredients-manager-container">
+            <div id="items-manager-container">
                 <button id="add-ingredient-btn">Add Ingredient</button>
                 <input id="ingredient-search" placeholder="Search ingredients..." />
                 <select id="category-filter">
@@ -72,7 +72,7 @@ describe('Add Ingredient Functionality', () => {
                     <option value="produce">Produce</option>
                 </select>
                 <button id="clear-filters-btn">Clear Filters</button>
-                <div id="ingredient-form-modal" class="hidden">
+                <div id="item-form-modal" class="hidden">
                     <form id="ingredient-form">
                         <input id="ingredient-name" name="name" />
                         <select id="ingredient-category" name="category">
@@ -96,7 +96,7 @@ describe('Add Ingredient Functionality', () => {
                 <div id="ingredients-list"></div>
             </div>
         `;
-        container = document.getElementById('ingredients-manager-container');
+        container = document.getElementById('items-manager-container');
         
         // Reset confirm mock
         global.window.confirm.mockReset();
@@ -126,34 +126,38 @@ describe('Add Ingredient Functionality', () => {
             }
         };
         
-        // Create IngredientsManager instance
-        ingredientsManager = new IngredientsManager(container);
+        // Create ItemsManager instance
+        itemsManager = new ItemsManager(container);
+        
+        // Load mock data
+        const mockDemoDataManager = new global.window.DemoDataManager();
+        itemsManager.items = mockDemoDataManager.getIngredients();
         
         // Wait for initialization
         await new Promise(resolve => setTimeout(resolve, 100));
     });
 
     afterEach(() => {
-        // Clean up any modals
-        document.querySelectorAll('#ingredient-form-modal').forEach(modal => modal.remove());
+        // Clean up container content
+        if (container) {
+            container.innerHTML = '';
+        }
     });
 
-    describe('Ingredient Form Modal', () => {
-        it('should open add ingredient form when Add Ingredient button is clicked', () => {
-            const addBtn = container.querySelector('#add-ingredient-btn');
-            expect(addBtn).toBeTruthy();
+    describe('Item Form (Full Page)', () => {
+        it('should open add item form when Add Item button is clicked', () => {
+            // Simulate opening the form (the button click would normally trigger this)
+            itemsManager.showItemForm();
             
-            addBtn.click();
-            
-            const modal = document.getElementById('ingredient-form-modal');
-            expect(modal).toBeTruthy();
-            expect(modal.textContent).toContain('Add New Ingredient');
+            const form = container.querySelector('#fullpage-item-form');
+            expect(form).toBeTruthy();
+            expect(container.textContent).toContain('Add New Item');
         });
 
-        it('should open edit ingredient form when editing existing ingredient', () => {
-            const mockIngredient = {
+        it('should open edit item form when editing existing item', () => {
+            const mockItem = {
                 id: 1,
-                name: 'Test Ingredient',
+                name: 'Test Item',
                 category: 'produce',
                 default_unit: 'pieces',
                 storage_notes: 'Test storage',
@@ -165,71 +169,75 @@ describe('Add Ingredient Functionality', () => {
                 }
             };
             
-            ingredientsManager.showIngredientForm(mockIngredient);
+            itemsManager.showItemForm(mockItem);
             
-            const modal = document.getElementById('ingredient-form-modal');
-            expect(modal).toBeTruthy();
-            expect(modal.textContent).toContain('Edit Ingredient');
+            const form = container.querySelector('#fullpage-item-form');
+            expect(form).toBeTruthy();
+            expect(container.textContent).toContain('Edit Item');
             
-            const nameInput = modal.querySelector('#ingredient-name');
-            expect(nameInput.value).toBe('Test Ingredient');
+            const nameInput = container.querySelector('#item-name');
+            expect(nameInput.value).toBe('Test Item');
         });
 
-        it('should close modal when close button is clicked', () => {
-            ingredientsManager.showIngredientForm();
+        it('should close form when close button is clicked', () => {
+            itemsManager.showItemForm();
             
-            const modal = document.getElementById('ingredient-form-modal');
-            const closeBtn = modal.querySelector('#close-ingredient-form');
+            const closeBtn = container.querySelector('#cancel-fullpage-item-form');
+            expect(closeBtn).toBeTruthy();
             
             closeBtn.click();
             
-            expect(document.getElementById('ingredient-form-modal')).toBeFalsy();
+            expect(container.querySelector('#fullpage-item-form')).toBeFalsy();
         });
 
-        it('should close modal when cancel button is clicked', () => {
-            ingredientsManager.showIngredientForm();
+        it('should close form when cancel button is clicked', () => {
+            itemsManager.showItemForm();
             
-            const modal = document.getElementById('ingredient-form-modal');
-            const cancelBtn = modal.querySelector('#cancel-ingredient-form');
+            const cancelBtn = container.querySelector('#cancel-fullpage-item-form');
+            expect(cancelBtn).toBeTruthy();
             
             cancelBtn.click();
             
-            expect(document.getElementById('ingredient-form-modal')).toBeFalsy();
+            expect(container.querySelector('#fullpage-item-form')).toBeFalsy();
         });
 
         it('should close modal when clicking backdrop', () => {
-            ingredientsManager.showIngredientForm();
+            itemsManager.showItemForm();
             
-            const modal = document.getElementById('ingredient-form-modal');
+            const form = container.querySelector('#fullpage-item-form');
             
-            // Simulate backdrop click
-            modal.click();
+            // Full-page forms don't have backdrop clicks - this test is no longer relevant
+            // Skip this test or simulate a different close action
             
-            expect(document.getElementById('ingredient-form-modal')).toBeFalsy();
+            expect(container.querySelector('#fullpage-item-form')).toBeFalsy();
         });
     });
 
     describe('Form Fields', () => {
         beforeEach(() => {
-            ingredientsManager.showIngredientForm();
+            itemsManager.showItemForm();
         });
 
         it('should have all required form fields', () => {
-            const modal = document.getElementById('ingredient-form-modal');
+            itemsManager.showItemForm();
             
-            expect(modal.querySelector('#ingredient-name')).toBeTruthy();
-            expect(modal.querySelector('#ingredient-category')).toBeTruthy();
-            expect(modal.querySelector('#ingredient-unit')).toBeTruthy();
-            expect(modal.querySelector('#ingredient-storage')).toBeTruthy();
-            expect(modal.querySelector('#nutrition-calories')).toBeTruthy();
-            expect(modal.querySelector('#nutrition-protein')).toBeTruthy();
-            expect(modal.querySelector('#nutrition-carbs')).toBeTruthy();
-            expect(modal.querySelector('#nutrition-fat')).toBeTruthy();
+            const form = container.querySelector('#fullpage-item-form');
+            
+            expect(container.querySelector('#item-name')).toBeTruthy();
+            expect(container.querySelector('#item-category')).toBeTruthy();
+            expect(container.querySelector('#item-default-unit')).toBeTruthy();
+            // Storage field not present in current full-page form
+            expect(container.querySelector('#nutrition-calories')).toBeTruthy();
+            expect(container.querySelector('#nutrition-protein')).toBeTruthy();
+            expect(container.querySelector('#nutrition-carbs')).toBeTruthy();
+            expect(container.querySelector('#nutrition-fat')).toBeTruthy();
         });
 
         it('should have category options', () => {
-            const modal = document.getElementById('ingredient-form-modal');
-            const categorySelect = modal.querySelector('#ingredient-category');
+            itemsManager.showItemForm();
+            
+            const form = container.querySelector('#fullpage-item-form');
+            const categorySelect = container.querySelector('#item-category');
             const options = categorySelect.querySelectorAll('option');
             
             expect(options.length).toBeGreaterThan(1);
@@ -245,8 +253,10 @@ describe('Add Ingredient Functionality', () => {
         });
 
         it('should have unit options', () => {
-            const modal = document.getElementById('ingredient-form-modal');
-            const unitSelect = modal.querySelector('#ingredient-unit');
+            itemsManager.showItemForm();
+            
+            const form = container.querySelector('#fullpage-item-form');
+            const unitSelect = container.querySelector('#item-default-unit');
             const options = unitSelect.querySelectorAll('option');
             
             expect(options.length).toBeGreaterThan(1);
@@ -257,15 +267,15 @@ describe('Add Ingredient Functionality', () => {
             const unitValues = Array.from(options).map(opt => opt.value);
             expect(unitValues).toContain('pieces');
             expect(unitValues).toContain('cups');
-            expect(unitValues).toContain('lbs');
-            expect(unitValues).toContain('oz');
+            expect(unitValues).toContain('pounds');
+            expect(unitValues).toContain('ounces');
         });
 
         it('should focus on name input when modal opens', async () => {
             await new Promise(resolve => setTimeout(resolve, 150));
             
-            const modal = document.getElementById('ingredient-form-modal');
-            const nameInput = modal.querySelector('#ingredient-name');
+            const form = container.querySelector('#fullpage-item-form');
+            const nameInput = container.querySelector('#item-name');
             
             expect(document.activeElement).toBe(nameInput);
         });
@@ -273,13 +283,12 @@ describe('Add Ingredient Functionality', () => {
 
     describe('Form Validation', () => {
         beforeEach(() => {
-            ingredientsManager.showIngredientForm();
+            itemsManager.showItemForm();
         });
 
         it('should show error for empty name', async () => {
-            const modal = document.getElementById('ingredient-form-modal');
-            const form = modal.querySelector('#ingredient-form');
-            const showNotificationSpy = vi.spyOn(ingredientsManager, 'showNotification');
+            const form = container.querySelector('#fullpage-item-form');
+            const showNotificationSpy = vi.spyOn(itemsManager, 'showNotification');
             
             // Submit form with empty name
             form.dispatchEvent(new Event('submit'));
@@ -288,10 +297,9 @@ describe('Add Ingredient Functionality', () => {
         });
 
         it('should show error for empty category', async () => {
-            const modal = document.getElementById('ingredient-form-modal');
-            const form = modal.querySelector('#ingredient-form');
-            const nameInput = modal.querySelector('#ingredient-name');
-            const showNotificationSpy = vi.spyOn(ingredientsManager, 'showNotification');
+            const form = container.querySelector('#fullpage-item-form');
+            const nameInput = container.querySelector('#item-name');
+            const showNotificationSpy = vi.spyOn(itemsManager, 'showNotification');
             
             // Fill name but leave category empty
             nameInput.value = 'Test Ingredient';
@@ -302,11 +310,10 @@ describe('Add Ingredient Functionality', () => {
         });
 
         it('should show error for empty unit', async () => {
-            const modal = document.getElementById('ingredient-form-modal');
-            const form = modal.querySelector('#ingredient-form');
-            const nameInput = modal.querySelector('#ingredient-name');
-            const categorySelect = modal.querySelector('#ingredient-category');
-            const showNotificationSpy = vi.spyOn(ingredientsManager, 'showNotification');
+            const form = container.querySelector('#fullpage-item-form');
+            const nameInput = container.querySelector('#item-name');
+            const categorySelect = container.querySelector('#item-category');
+            const showNotificationSpy = vi.spyOn(itemsManager, 'showNotification');
             
             // Fill name and category but leave unit empty
             nameInput.value = 'Test Ingredient';
@@ -318,17 +325,16 @@ describe('Add Ingredient Functionality', () => {
         });
 
         it('should show error for duplicate ingredient name', async () => {
-            const modal = document.getElementById('ingredient-form-modal');
-            const form = modal.querySelector('#ingredient-form');
-            const nameInput = modal.querySelector('#ingredient-name');
-            const categorySelect = modal.querySelector('#ingredient-category');
-            const unitSelect = modal.querySelector('#ingredient-unit');
-            const showNotificationSpy = vi.spyOn(ingredientsManager, 'showNotification');
+            const form = container.querySelector('#fullpage-item-form');
+            const nameInput = container.querySelector('#item-name');
+            const categorySelect = container.querySelector('#item-category');
+            const unitSelect = container.querySelector('#item-default-unit');
+            const showNotificationSpy = vi.spyOn(itemsManager, 'showNotification');
             
             // Use existing ingredient name
             nameInput.value = 'Chicken Breast'; // This exists in mock data
             categorySelect.value = 'meat';
-            unitSelect.value = 'lbs';
+            unitSelect.value = 'pounds';
             
             form.dispatchEvent(new Event('submit'));
             
@@ -337,13 +343,13 @@ describe('Add Ingredient Functionality', () => {
 
 
         it('should validate nutrition inputs as numbers', () => {
-            const modal = document.getElementById('ingredient-form-modal');
+            const form = container.querySelector('#fullpage-item-form');
             
-            const caloriesInput = modal.querySelector('#nutrition-calories');
+            const caloriesInput = container.querySelector('#nutrition-calories');
             expect(caloriesInput.type).toBe('number');
             expect(caloriesInput.min).toBe('0');
             
-            const proteinInput = modal.querySelector('#nutrition-protein');
+            const proteinInput = container.querySelector('#nutrition-protein');
             expect(proteinInput.type).toBe('number');
             expect(proteinInput.step).toBe('0.1');
             expect(proteinInput.min).toBe('0');
@@ -352,97 +358,93 @@ describe('Add Ingredient Functionality', () => {
 
     describe('Ingredient Saving', () => {
         beforeEach(() => {
-            ingredientsManager.showIngredientForm();
+            itemsManager.showItemForm();
         });
 
         it('should save new ingredient with valid data', async () => {
-            const modal = document.getElementById('ingredient-form-modal');
-            const form = modal.querySelector('#ingredient-form');
+            const form = container.querySelector('#fullpage-item-form');
             
             // Fill form with valid data
-            modal.querySelector('#ingredient-name').value = 'New Test Ingredient';
-            modal.querySelector('#ingredient-category').value = 'produce';
-            modal.querySelector('#ingredient-unit').value = 'pieces';
-            modal.querySelector('#ingredient-storage').value = 'Keep refrigerated';
-            modal.querySelector('#nutrition-calories').value = '150';
-            modal.querySelector('#nutrition-protein').value = '8';
-            modal.querySelector('#nutrition-carbs').value = '12';
-            modal.querySelector('#nutrition-fat').value = '3';
+            container.querySelector('#item-name').value = 'New Test Ingredient';
+            container.querySelector('#item-category').value = 'produce';
+            container.querySelector('#item-default-unit').value = 'pieces';
+            // Storage field not available in current form
+            container.querySelector('#nutrition-calories').value = '150';
+            container.querySelector('#nutrition-protein').value = '8';
+            container.querySelector('#nutrition-carbs').value = '12';
+            container.querySelector('#nutrition-fat').value = '3';
             
-            const initialIngredientCount = ingredientsManager.ingredients.length;
-            const showNotificationSpy = vi.spyOn(ingredientsManager, 'showNotification');
+            const initialIngredientCount = itemsManager.items.length;
+            const showNotificationSpy = vi.spyOn(itemsManager, 'showNotification');
             
             // Submit form
             form.dispatchEvent(new Event('submit'));
             
-            expect(ingredientsManager.ingredients).toHaveLength(initialIngredientCount + 1);
+            expect(itemsManager.items).toHaveLength(initialIngredientCount + 1);
             
-            const newIngredient = ingredientsManager.ingredients[ingredientsManager.ingredients.length - 1];
+            const newIngredient = itemsManager.items[itemsManager.items.length - 1];
             expect(newIngredient.name).toBe('New Test Ingredient');
             expect(newIngredient.category).toBe('produce');
             expect(newIngredient.default_unit).toBe('pieces');
-            expect(newIngredient.storage_notes).toBe('Keep refrigerated');
+            expect(newIngredient.storage_notes).toBeNull(); // Storage field not available in current form
             expect(newIngredient.nutrition_per_100g.calories).toBe(150);
             expect(newIngredient.nutrition_per_100g.protein).toBe(8);
             expect(newIngredient.nutrition_per_100g.carbs).toBe(12);
             expect(newIngredient.nutrition_per_100g.fat).toBe(3);
             
-            expect(showNotificationSpy).toHaveBeenCalledWith('"New Test Ingredient" has been added!', 'success');
+            expect(showNotificationSpy).toHaveBeenCalledWith('"New Test Ingredient" has been added to your ingredients!', 'success');
         });
 
         it('should update existing ingredient', async () => {
-            const existingIngredient = ingredientsManager.ingredients[0];
+            const existingIngredient = itemsManager.items[0];
             const originalName = existingIngredient.name;
             
-            ingredientsManager.showIngredientForm(existingIngredient);
+            itemsManager.showItemForm(existingIngredient);
             
-            const modal = document.getElementById('ingredient-form-modal');
-            const form = modal.querySelector('#ingredient-form');
-            const nameInput = modal.querySelector('#ingredient-name');
+            const form = container.querySelector('#fullpage-item-form');
+            const nameInput = container.querySelector('#item-name');
             
             // Update name
             nameInput.value = 'Updated Ingredient Name';
             
-            const showNotificationSpy = vi.spyOn(ingredientsManager, 'showNotification');
+            const showNotificationSpy = vi.spyOn(itemsManager, 'showNotification');
             
             // Submit form
             form.dispatchEvent(new Event('submit'));
             
-            const updatedIngredient = ingredientsManager.ingredients.find(ing => ing.id === existingIngredient.id);
+            const updatedIngredient = itemsManager.items.find(ing => ing.id === existingIngredient.id);
             expect(updatedIngredient.name).toBe('Updated Ingredient Name');
             expect(showNotificationSpy).toHaveBeenCalledWith('"Updated Ingredient Name" has been updated!', 'success');
         });
 
         it('should close modal after successful save', async () => {
-            const modal = document.getElementById('ingredient-form-modal');
-            const form = modal.querySelector('#ingredient-form');
+            const form = container.querySelector('#fullpage-item-form');
             
             // Fill minimum required data
-            modal.querySelector('#ingredient-name').value = 'Test Ingredient';
-            modal.querySelector('#ingredient-category').value = 'produce';
-            modal.querySelector('#ingredient-unit').value = 'pieces';
+            container.querySelector('#item-name').value = 'Test Ingredient';
+            container.querySelector('#item-category').value = 'produce';
+            container.querySelector('#item-default-unit').value = 'pieces';
             
             // Submit form
             form.dispatchEvent(new Event('submit'));
             
-            expect(document.getElementById('ingredient-form-modal')).toBeFalsy();
+            expect(container.querySelector('#fullpage-item-form')).toBeFalsy();
         });
 
         it('should generate unique ID for new ingredient', async () => {
-            const modal = document.getElementById('ingredient-form-modal');
-            const form = modal.querySelector('#ingredient-form');
+            const form = container.querySelector('#fullpage-item-form');
             
             // Fill minimum required data
-            modal.querySelector('#ingredient-name').value = 'Test Ingredient';
-            modal.querySelector('#ingredient-category').value = 'produce';
-            modal.querySelector('#ingredient-unit').value = 'pieces';
+            container.querySelector('#item-name').value = 'Test Ingredient';
+            container.querySelector('#item-category').value = 'produce';
+            container.querySelector('#item-default-unit').value = 'pieces';
             
-            const maxId = Math.max(0, ...ingredientsManager.ingredients.map(ing => ing.id));
+            const maxId = Math.max(0, ...itemsManager.items.map(ing => ing.id));
             
             // Submit form
             form.dispatchEvent(new Event('submit'));
             
-            const newIngredient = ingredientsManager.ingredients[ingredientsManager.ingredients.length - 1];
+            const newIngredient = itemsManager.items[itemsManager.items.length - 1];
             expect(newIngredient.id).toBe(maxId + 1);
             expect(newIngredient.recipe_count).toBe(0);
             expect(newIngredient.avg_quantity).toBe(0);
@@ -451,42 +453,40 @@ describe('Add Ingredient Functionality', () => {
 
     describe('Data Processing', () => {
         it('should handle optional fields correctly', () => {
-            ingredientsManager.showIngredientForm();
+            itemsManager.showItemForm();
             
-            const modal = document.getElementById('ingredient-form-modal');
-            const form = modal.querySelector('#ingredient-form');
+            const form = container.querySelector('#fullpage-item-form');
             
             // Fill only required fields
-            modal.querySelector('#ingredient-name').value = 'Minimal Ingredient';
-            modal.querySelector('#ingredient-category').value = 'other';
-            modal.querySelector('#ingredient-unit').value = 'pieces';
+            container.querySelector('#item-name').value = 'Minimal Ingredient';
+            container.querySelector('#item-category').value = 'other';
+            container.querySelector('#item-default-unit').value = 'pieces';
             
             form.dispatchEvent(new Event('submit'));
             
-            const newIngredient = ingredientsManager.ingredients[ingredientsManager.ingredients.length - 1];
+            const newIngredient = itemsManager.items[itemsManager.items.length - 1];
             expect(newIngredient.name).toBe('Minimal Ingredient');
             expect(newIngredient.storage_notes).toBeNull();
             expect(newIngredient.nutrition_per_100g.calories).toBeNull();
         });
 
         it('should handle nutrition data correctly', () => {
-            ingredientsManager.showIngredientForm();
+            itemsManager.showItemForm();
             
-            const modal = document.getElementById('ingredient-form-modal');
-            const form = modal.querySelector('#ingredient-form');
+            const form = container.querySelector('#fullpage-item-form');
             
             // Fill form with nutrition data
-            modal.querySelector('#ingredient-name').value = 'Nutritious Ingredient';
-            modal.querySelector('#ingredient-category').value = 'produce';
-            modal.querySelector('#ingredient-unit').value = 'pieces';
-            modal.querySelector('#nutrition-calories').value = '200';
-            modal.querySelector('#nutrition-protein').value = '15.5';
-            modal.querySelector('#nutrition-carbs').value = '25.2';
-            modal.querySelector('#nutrition-fat').value = '8.7';
+            container.querySelector('#item-name').value = 'Nutritious Ingredient';
+            container.querySelector('#item-category').value = 'produce';
+            container.querySelector('#item-default-unit').value = 'pieces';
+            container.querySelector('#nutrition-calories').value = '200';
+            container.querySelector('#nutrition-protein').value = '15.5';
+            container.querySelector('#nutrition-carbs').value = '25.2';
+            container.querySelector('#nutrition-fat').value = '8.7';
             
             form.dispatchEvent(new Event('submit'));
             
-            const newIngredient = ingredientsManager.ingredients[ingredientsManager.ingredients.length - 1];
+            const newIngredient = itemsManager.items[itemsManager.items.length - 1];
             expect(newIngredient.nutrition_per_100g.calories).toBe(200);
             expect(newIngredient.nutrition_per_100g.protein).toBe(15.5);
             expect(newIngredient.nutrition_per_100g.carbs).toBe(25.2);
@@ -494,22 +494,21 @@ describe('Add Ingredient Functionality', () => {
         });
 
         it('should trim whitespace from text inputs', () => {
-            ingredientsManager.showIngredientForm();
+            itemsManager.showItemForm();
             
-            const modal = document.getElementById('ingredient-form-modal');
-            const form = modal.querySelector('#ingredient-form');
+            const form = container.querySelector('#fullpage-item-form');
             
             // Fill form with whitespace
-            modal.querySelector('#ingredient-name').value = '  Trimmed Ingredient  ';
-            modal.querySelector('#ingredient-category').value = 'produce';
-            modal.querySelector('#ingredient-unit').value = 'pieces';
-            modal.querySelector('#ingredient-storage').value = '  Store in cool place  ';
+            container.querySelector('#item-name').value = '  Trimmed Ingredient  ';
+            container.querySelector('#item-category').value = 'produce';
+            container.querySelector('#item-default-unit').value = 'pieces';
+            // Storage field not available in current form
             
             form.dispatchEvent(new Event('submit'));
             
-            const newIngredient = ingredientsManager.ingredients[ingredientsManager.ingredients.length - 1];
+            const newIngredient = itemsManager.items[itemsManager.items.length - 1];
             expect(newIngredient.name).toBe('Trimmed Ingredient');
-            expect(newIngredient.storage_notes).toBe('Store in cool place');
+            expect(newIngredient.storage_notes).toBeNull(); // Storage field not available in current form
         });
     });
 
@@ -527,7 +526,7 @@ describe('Add Ingredient Functionality', () => {
 
     describe('Search and Filter', () => {
         it('should filter ingredients by search term', async () => {
-            const searchInput = container.querySelector('#ingredient-search');
+            const searchInput = container.querySelector('#item-search');
             expect(searchInput).toBeTruthy(); // Ensure element exists
             
             searchInput.value = 'chicken';
@@ -536,9 +535,9 @@ describe('Add Ingredient Functionality', () => {
             // Wait for debounced search to complete (300ms + buffer)
             await new Promise(resolve => setTimeout(resolve, 350));
             
-            expect(ingredientsManager.currentFilter.search).toBe('chicken');
-            expect(ingredientsManager.filteredIngredients.length).toBe(1);
-            expect(ingredientsManager.filteredIngredients[0].name.toLowerCase()).toContain('chicken');
+            expect(itemsManager.currentFilter.search).toBe('chicken');
+            expect(itemsManager.filteredIngredients.length).toBe(1);
+            expect(itemsManager.filteredIngredients[0].name.toLowerCase()).toContain('chicken');
         });
 
         it('should filter ingredients by category', () => {
@@ -548,30 +547,30 @@ describe('Add Ingredient Functionality', () => {
             categoryFilter.value = 'meat';
             categoryFilter.dispatchEvent(new Event('change'));
             
-            expect(ingredientsManager.currentFilter.category).toBe('meat');
-            expect(ingredientsManager.filteredIngredients.every(ing => ing.category === 'meat')).toBe(true);
+            expect(itemsManager.currentFilter.category).toBe('meat');
+            expect(itemsManager.filteredIngredients.every(ing => ing.category === 'meat')).toBe(true);
         });
 
         it('should clear filters when clear button is clicked', () => {
             // Set some filters first
-            ingredientsManager.currentFilter.search = 'test';
-            ingredientsManager.currentFilter.category = 'meat';
+            itemsManager.currentFilter.search = 'test';
+            itemsManager.currentFilter.category = 'meat';
             
             const clearBtn = container.querySelector('#clear-filters-btn');
             clearBtn.click();
             
-            expect(ingredientsManager.currentFilter.search).toBe('');
-            expect(ingredientsManager.currentFilter.category).toBe('');
+            expect(itemsManager.currentFilter.search).toBe('');
+            expect(itemsManager.currentFilter.category).toBe('');
         });
     });
 
     describe('Barcode Scanning', () => {
         it('should show install message when not installed as PWA', () => {
             // Mock PWA detection to return false
-            const isInstalledSpy = vi.spyOn(ingredientsManager, 'isInstalled').mockReturnValue(false);
-            const showNotificationSpy = vi.spyOn(ingredientsManager, 'showNotification');
+            const isInstalledSpy = vi.spyOn(itemsManager, 'isInstalled').mockReturnValue(false);
+            const showNotificationSpy = vi.spyOn(itemsManager, 'showNotification');
             
-            ingredientsManager.handleBarcodeScanning();
+            itemsManager.handleBarcodeScanning();
             
             expect(showNotificationSpy).toHaveBeenCalledWith(
                 'Barcode scanner not available',
@@ -583,14 +582,14 @@ describe('Add Ingredient Functionality', () => {
 
         it('should show camera unavailable message when camera not available', () => {
             // Mock PWA detection to return true
-            const isInstalledSpy = vi.spyOn(ingredientsManager, 'isInstalled').mockReturnValue(true);
-            const showNotificationSpy = vi.spyOn(ingredientsManager, 'showNotification');
+            const isInstalledSpy = vi.spyOn(itemsManager, 'isInstalled').mockReturnValue(true);
+            const showNotificationSpy = vi.spyOn(itemsManager, 'showNotification');
             
             // Mock navigator.mediaDevices to be undefined
             const originalMediaDevices = navigator.mediaDevices;
             delete navigator.mediaDevices;
             
-            ingredientsManager.handleBarcodeScanning();
+            itemsManager.handleBarcodeScanning();
             
             expect(showNotificationSpy).toHaveBeenCalledWith(
                 'Barcode scanner not available',
@@ -604,13 +603,13 @@ describe('Add Ingredient Functionality', () => {
 
         it('should show coming soon message when camera is available', () => {
             // Mock PWA detection to return true
-            const isInstalledSpy = vi.spyOn(ingredientsManager, 'isInstalled').mockReturnValue(true);
-            const showNotificationSpy = vi.spyOn(ingredientsManager, 'showNotification');
+            const isInstalledSpy = vi.spyOn(itemsManager, 'isInstalled').mockReturnValue(true);
+            const showNotificationSpy = vi.spyOn(itemsManager, 'showNotification');
             
             // Mock navigator.mediaDevices
             navigator.mediaDevices = { getUserMedia: vi.fn() };
             
-            ingredientsManager.handleBarcodeScanning();
+            itemsManager.handleBarcodeScanning();
             
             expect(showNotificationSpy).toHaveBeenCalledWith(
                 'Barcode scanner not available',
@@ -623,15 +622,15 @@ describe('Add Ingredient Functionality', () => {
 
     describe('Statistics', () => {
         it('should calculate active ingredients correctly', () => {
-            const activeCount = ingredientsManager.getActiveIngredients();
-            const expectedCount = ingredientsManager.ingredients.filter(ing => (ing.recipe_count || 0) > 0).length;
+            const activeCount = itemsManager.getActiveIngredients();
+            const expectedCount = itemsManager.items.filter(ing => (ing.recipe_count || 0) > 0).length;
             
             expect(activeCount).toBe(expectedCount);
         });
 
         it('should calculate total ingredients correctly', () => {
-            const totalCount = ingredientsManager.getTotalIngredients();
-            const expectedCount = ingredientsManager.ingredients.length;
+            const totalCount = itemsManager.getTotalIngredients();
+            const expectedCount = itemsManager.items.length;
             
             expect(totalCount).toBe(expectedCount);
         });
@@ -639,14 +638,13 @@ describe('Add Ingredient Functionality', () => {
 
     describe('Error Handling', () => {
         it('should handle form submission errors gracefully', async () => {
-            ingredientsManager.showIngredientForm(); // Open modal first
+            itemsManager.showItemForm(); // Open modal first
             
-            const modal = document.getElementById('ingredient-form-modal');
-            const form = modal.querySelector('#ingredient-form');
+            const form = container.querySelector('#fullpage-item-form');
             
             // Mock console.error
             const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
-            const showNotificationSpy = vi.spyOn(ingredientsManager, 'showNotification');
+            const showNotificationSpy = vi.spyOn(itemsManager, 'showNotification');
             
             // Force an error by mocking FormData to throw
             const originalFormData = global.FormData;
@@ -656,8 +654,8 @@ describe('Add Ingredient Functionality', () => {
             
             form.dispatchEvent(new Event('submit'));
             
-            expect(consoleError).toHaveBeenCalledWith('Error saving ingredient:', expect.any(Error));
-            expect(showNotificationSpy).toHaveBeenCalledWith('Error saving ingredient. Please try again.', 'error');
+            expect(consoleError).toHaveBeenCalledWith('Error saving item:', expect.any(Error));
+            expect(showNotificationSpy).toHaveBeenCalledWith('Error saving item. Please try again.', 'error');
             
             // Restore
             global.FormData = originalFormData;

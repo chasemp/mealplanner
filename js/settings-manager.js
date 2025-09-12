@@ -24,6 +24,11 @@ class SettingsManager {
         this.loadSettings();
         this.setupEventListeners();
         
+        // Initialize demo data IMMEDIATELY if using demo source
+        if (this.settings.sourceType === 'demo') {
+            this.initializeDemoData();
+        }
+        
         // Initialize database source indicator after DOM is ready
         setTimeout(() => {
             this.updateDatabaseSourceIndicator();
@@ -100,13 +105,13 @@ class SettingsManager {
         console.log('🍽️ Applying meal time visibility:', this.settings);
         const breakfastTab = document.querySelector('[data-tab="breakfast"]');
         const lunchTab = document.querySelector('[data-tab="lunch"]');
-        const dinnerTab = document.querySelector('[data-tab="dinner"]');
+        const planTab = document.querySelector('[data-tab="plan"]');
         
-        console.log('🔍 Found tabs:', { breakfastTab, lunchTab, dinnerTab });
+        console.log('🔍 Found tabs:', { breakfastTab, lunchTab, planTab });
         
         const breakfastContent = document.getElementById('breakfast-tab');
         const lunchContent = document.getElementById('lunch-tab');
-        const dinnerContent = document.getElementById('dinner-tab');
+        const planContent = document.getElementById('plan-tab');
 
         // Update checkboxes
         const showBreakfastInput = document.getElementById('show-breakfast');
@@ -124,7 +129,7 @@ class SettingsManager {
         // Show/hide tabs
         if (breakfastTab) breakfastTab.style.display = this.settings.showBreakfast ? '' : 'none';
         if (lunchTab) lunchTab.style.display = this.settings.showLunch ? '' : 'none';
-        if (dinnerTab) dinnerTab.style.display = this.settings.showDinner ? '' : 'none';
+        if (planTab) planTab.style.display = this.settings.showDinner ? '' : 'none';
 
         // If current tab is hidden, switch to recipes
         const currentTab = document.querySelector('.nav-tab.active');
@@ -132,7 +137,7 @@ class SettingsManager {
             const tabName = currentTab.getAttribute('data-tab');
             const isHidden = (tabName === 'breakfast' && !this.settings.showBreakfast) ||
                            (tabName === 'lunch' && !this.settings.showLunch) ||
-                           (tabName === 'dinner' && !this.settings.showDinner);
+                           (tabName === 'plan' && !this.settings.showDinner);
             
             if (isHidden) {
                 // Switch to recipes tab
@@ -388,7 +393,8 @@ class SettingsManager {
 
     async loadDemoData() {
         console.log('Loading demo data...');
-        // Demo data is already loaded by default
+        // Initialize demo data to localStorage for consistent access
+        this.initializeDemoData();
         return true;
     }
 
@@ -517,6 +523,56 @@ class SettingsManager {
         return this.settings.sourceType === 'demo';
     }
 
+    // Initialize demo data into localStorage on first load
+    initializeDemoData() {
+        console.log('🎯 Initializing demo data to localStorage...');
+        
+        if (!window.DemoDataManager) {
+            console.warn('⚠️ DemoDataManager not available for initialization');
+            return;
+        }
+
+        try {
+            const demoData = new window.DemoDataManager();
+            const dataTypes = ['items', 'recipes', 'scheduledMeals', 'pantryItems', 'meals'];
+            
+            dataTypes.forEach(dataType => {
+                const storageKey = `mealplanner_${dataType}`;
+                
+                // Only initialize if not already present
+                if (!localStorage.getItem(storageKey)) {
+                    let data = [];
+                    switch (dataType) {
+                        case 'items':
+                            data = demoData.getIngredients();
+                            break;
+                        case 'recipes':
+                            data = demoData.getRecipes();
+                            break;
+                        case 'scheduledMeals':
+                            data = demoData.getScheduledMeals();
+                            break;
+                        case 'pantryItems':
+                            data = demoData.getPantryItems ? demoData.getPantryItems() : [];
+                            break;
+                        case 'meals':
+                            data = demoData.getMeals ? demoData.getMeals() : [];
+                            break;
+                    }
+                    
+                    localStorage.setItem(storageKey, JSON.stringify(data));
+                    console.log(`✅ Initialized ${dataType}: ${data.length} items`);
+                } else {
+                    console.log(`📋 ${dataType} already exists in localStorage, skipping initialization`);
+                }
+            });
+            
+            console.log('🎯 Demo data initialization completed');
+        } catch (error) {
+            console.error('❌ Error initializing demo data:', error);
+        }
+    }
+
     // Centralized data loading authority - all managers get data from here
     getAuthoritativeData(dataType) {
         const currentSource = this.getCurrentDatabaseSource();
@@ -540,32 +596,9 @@ class SettingsManager {
     }
     
     getDemoData(dataType) {
-        if (!window.DemoDataManager) {
-            console.warn('⚠️ DemoDataManager not available, returning empty data');
-            return [];
-        }
-        
-        try {
-            const demoData = new window.DemoDataManager();
-            switch (dataType) {
-                case 'ingredients':
-                    return demoData.getIngredients();
-                case 'recipes':
-                    return demoData.getRecipes();
-                case 'scheduledMeals':
-                    return demoData.getScheduledMeals();
-                case 'pantryItems':
-                    return demoData.getPantryItems ? demoData.getPantryItems() : [];
-                case 'meals':
-                    return demoData.getMeals ? demoData.getMeals() : [];
-                default:
-                    console.warn(`⚠️ Unknown data type: ${dataType}`);
-                    return [];
-            }
-        } catch (error) {
-            console.error(`❌ Error loading demo ${dataType}:`, error);
-            return [];
-        }
+        // Demo data is initialized to localStorage on startup, so just read from localStorage
+        // This makes demo source behave exactly like local source (just with different initial seed)
+        return this.getLocalData(dataType);
     }
     
     getMemoryData(dataType) {

@@ -897,7 +897,7 @@ class MealManager {
     }
 
     switchToMealTypeTab(mealType) {
-        // Switch to the appropriate meal type tab (breakfast, lunch, dinner)
+        // Switch to the appropriate meal type tab (breakfast, lunch, plan)
         const tabButton = document.querySelector(`[data-tab="${mealType}"]`);
         if (tabButton) {
             tabButton.click();

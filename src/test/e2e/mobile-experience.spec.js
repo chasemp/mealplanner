@@ -148,15 +148,15 @@ test.describe('Mobile Experience - iPhone 12', () => {
             
             // Open add ingredient form
             await page.click('#add-ingredient-btn');
-            await page.waitForSelector('#ingredient-form-modal');
+            await page.waitForSelector('#item-form-modal');
             
             // Test form interaction on mobile
-            await page.fill('#ingredient-name', 'Mobile Test Ingredient');
-            await page.selectOption('#ingredient-category', 'produce');
+            await page.fill('#item-name', 'Mobile Test Ingredient');
+            await page.selectOption('#item-category', 'produce');
             await page.selectOption('#ingredient-unit', 'pieces');
             
             // Check that form is usable on mobile
-            const form = page.locator('#ingredient-form');
+            const form = page.locator('#item-form');
             const formBox = await form.boundingBox();
             const viewport = page.viewportSize();
             

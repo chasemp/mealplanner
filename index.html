@@ -6,9 +6,9 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <meta name="cache-bust" content="2025.09.12.1300">
+    <meta name="cache-bust" content="2025.09.12.1312">
     <meta name="build-timestamp" content="1725825300000">
-    <title>MealPlanner v2025.09.12.1300</title>
+    <title>MealPlanner v2025.09.12.1312</title>
     <meta name="description" content="A PWA for meal planning with local SQLite storage">
     
     <!-- PWA Meta Tags -->
@@ -23,7 +23,7 @@
     
     <!-- Styles -->
     <link rel="stylesheet" href="css/tailwind-compiled.css">
-    <link rel="stylesheet" href="./css/styles.css?v=2025.09.12.1300">
+    <link rel="stylesheet" href="./css/styles.css?v=2025.09.12.1312">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="./manifest.json">
@@ -210,7 +210,7 @@
 
                 <!-- Items Tab -->
                 <div id="items-tab" class="tab-content hidden">
-                    <div id="ingredients-manager-container">
+                    <div id="items-manager-container">
                         <!-- Items manager will be rendered here -->
                     </div>
                 </div>
@@ -289,32 +289,35 @@
                 </div>
 
                 <!-- Dinner Tab -->
-                <div id="dinner-tab" class="tab-content hidden">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Planning</h2>
-                        <div class="flex flex-wrap gap-3">
-                            <button id="view-toggle-dinner" class="btn-secondary" data-view="calendar">
-                                📅 Calendar View
-                            </button>
-                            <button id="clear-plan-dinner" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center space-x-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                </svg>
-                                <span>Clear</span>
-                            </button>
-                            <button id="auto-plan-dinner" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center space-x-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                                </svg>
-                                <span>Auto Plan</span>
-                            </button>
+                <div id="plan-tab" class="tab-content hidden">
+                    
+                    <!-- Planning Queue Info Bar -->
+                    <div class="mb-6">
+                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
+                            <div class="flex items-center justify-between">
+                                <!-- Left side: Queue summary -->
+                                <div class="flex items-center space-x-4 text-sm font-bold text-gray-800 dark:text-white" style="text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);">
+                                    <div class="flex items-center space-x-1">
+                                        <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                        <span id="queue-count"><strong>0</strong> recipes queued</span>
+                                    </div>
+                                    <div class="flex items-center space-x-1">
+                                        <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                        </svg>
+                                        <span id="combo-count"><strong>0</strong> combos</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    
+
                     <!-- Pending Recipes Queue -->
                     <div id="pending-recipes-section" class="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                         <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Planning Queue</h3>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Planning Queue <span id="planning-queue-count" class="text-blue-600 dark:text-blue-400">(0)</span></h3>
                             <button id="clear-pending-recipes" class="text-sm text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300">
                                 Clear All
                             </button>
@@ -331,118 +334,8 @@
                         </div>
                     </div>
 
-                    <!-- Planning Section -->
-                    <div id="dinner-recipe-selection" class="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Browse Recipes and Meals</h3>
-                        
-                        <!-- Search and Filter Controls (matching Recipe tab) -->
-                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
-                            <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
-                                <div>
-                                    <label for="plan-recipe-search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        Search Recipes
-                                    </label>
-                                    <div class="relative">
-                                        <input type="text" id="plan-recipe-search" 
-                                               placeholder="Search by name..." 
-                                               class="w-full pl-10 pr-12 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
-                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                            </svg>
-                                        </div>
-                                        <button id="show-favorites-only" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-red-500 transition-colors" title="Toggle favorites only">
-                                            <span class="text-lg">🤍</span>
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div>
-                                    <label for="plan-recipe-category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        Recipe Type
-                                    </label>
-                                    <select id="plan-recipe-category" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
-                                        <option value="all">All Meal Types</option>
-                                        <option value="breakfast">Breakfast</option>
-                                        <option value="lunch">Lunch</option>
-                                        <option value="dinner" selected>Dinner</option>
-                                        <option value="snack">Snack</option>
-                                    </select>
-                                </div>
-                                
-                                <div>
-                                    <label for="plan-recipe-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        Recipe Format
-                                    </label>
-                                    <select id="plan-recipe-type" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
-                                        <option value="all">All Types</option>
-                                        <option value="single">Single Recipes</option>
-                                        <option value="combo">Combo Recipes</option>
-                                    </select>
-                                </div>
-                                
-                                <div>
-                                    <label for="plan-recipe-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        Filter by Label
-                                    </label>
-                                    <select id="plan-recipe-label" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
-                                        <option value="all">All Labels</option>
-                                        <!-- Labels will be populated dynamically -->
-                                    </select>
-                                </div>
-                                
-                                <div>
-                                    <label for="plan-recipe-sort" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        Sort By
-                                    </label>
-                                    <select id="plan-recipe-sort" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
-                                        <option value="name">Name</option>
-                                        <option value="date">Date</option>
-                                        <option value="prep_time">Prep Time</option>
-                                        <option value="serving_count">Servings</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="flex items-end">
-                                    <button id="clear-plan-filters-btn" class="w-full px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md text-sm font-medium transition-colors">
-                                        Clear Filters
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Scrollable Recipe Browser -->
-                        <div class="border border-gray-200 dark:border-gray-600 rounded-lg">
-                            <div class="max-h-80 overflow-y-auto p-4">
-                                <div id="dinner-recipe-browser" class="space-y-2">
-                                    <!-- Recipe browser items will be rendered here -->
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Pending Section -->
-                    <div class="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Pending</h3>
-                            <span id="selected-recipe-count" class="text-sm text-gray-600 dark:text-gray-400">0 items selected</span>
-                        </div>
-                        
-                        <div id="recipe-selection-queue" class="min-h-[80px] border border-gray-200 dark:border-gray-600 rounded-lg p-4 mb-4">
-                            <div class="flex flex-wrap gap-2" id="selected-recipes-container">
-                                <div class="text-gray-500 dark:text-gray-400 text-sm italic" id="empty-selection-message">
-                                    No recipes selected for scheduling. Browse and add recipes above.
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="flex justify-end gap-2">
-                            <button id="clear-recipe-selection" class="btn-secondary text-sm">Clear All</button>
-                            <button id="schedule-selected-recipes" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                                📅 Schedule Selected (<span id="schedule-count">0</span>)
-                            </button>
-                        </div>
-                    </div>
+
                     
                     <!-- Scheduling Options Panel (hidden by default) -->
                     <div id="scheduling-options-panel" class="mb-8 bg-blue-50 dark:bg-blue-900 rounded-lg shadow p-6 hidden">
@@ -492,76 +385,97 @@
                     
                     <!-- Schedule Section -->
                     <div class="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                        <div class="flex justify-between items-center mb-6">
+                        <div class="mb-6">
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Schedule</h3>
+                        </div>
+                        
+                        <!-- Auto Plan Button -->
+                        <div class="mb-6 text-center">
+                            <button id="auto-plan-plan" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg text-sm font-medium flex items-center space-x-2 mx-auto">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                </svg>
+                                <span>Auto Plan</span>
+                            </button>
+                        </div>
+
+                        <!-- Calendar/Itinerary View Toggle -->
+                        <div class="text-center">
+                            <button id="view-toggle-plan" class="btn-secondary text-sm px-4 py-2" data-view="calendar">
+                                📅 Calendar View
+                            </button>
+                        </div>
                     </div>
+
+                    <!-- Meals Section -->
+                    <div class="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Meals</h3>
                     
                     <!-- Itinerary View (default) -->
-                    <div id="dinner-itinerary" class="meal-view">
+                    <div id="plan-itinerary" class="meal-view">
                         <!-- Itinerary content will be rendered here -->
+                        <div class="fallback-content bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <h3 class="text-lg font-semibold text-yellow-800">Meals Section Loading...</h3>
+                            <p class="text-yellow-600">If you see this message, the JavaScript initialization hasn't run yet or has failed.</p>
+                            <p class="text-sm text-yellow-500 mt-2">This content should be replaced by the itinerary view.</p>
                         </div>
                     </div>
                     
-                    <!-- Calendar View (hidden initially) -->
-                    <div id="dinner-calendar" class="meal-view hidden">
-                        <!-- Working Calendar -->
-                        <div class="bg-white rounded-lg shadow-lg p-6">
-                            <div class="flex items-center justify-between mb-6">
-                                <h3 class="text-lg font-semibold text-gray-900">December 2024</h3>
-                                <div class="flex space-x-2">
-                                    <button class="text-gray-400 hover:text-gray-600">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                                        </svg>
-                                    </button>
-                                    <button class="text-gray-400 hover:text-gray-600">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <div class="grid grid-cols-7 gap-1 mb-4">
-                                <div class="text-center text-sm font-medium text-gray-500 py-2">Sun</div>
-                                <div class="text-center text-sm font-medium text-gray-500 py-2">Mon</div>
-                                <div class="text-center text-sm font-medium text-gray-500 py-2">Tue</div>
-                                <div class="text-center text-sm font-medium text-gray-500 py-2">Wed</div>
-                                <div class="text-center text-sm font-medium text-gray-500 py-2">Thu</div>
-                                <div class="text-center text-sm font-medium text-gray-500 py-2">Fri</div>
-                                <div class="text-center text-sm font-medium text-gray-500 py-2">Sat</div>
-                            </div>
-                            
-                            <div id="calendar-days" class="grid grid-cols-7 gap-1">
-                                <!-- Calendar days will be generated by JavaScript -->
-                            </div>
-                            
-                            <div class="mt-4 p-3 bg-green-50 rounded-lg">
-                                <p class="text-sm text-green-700">
-                                    ✅ Calendar loaded successfully! Click on any date to schedule a dinner meal.
-                                </p>
-                            </div>
+                        <!-- Calendar View (hidden initially) -->
+                        <div id="plan-calendar" class="meal-view hidden">
+                            <!-- Calendar content will be rendered here -->
                         </div>
+                    </div>
+
+                    <!-- Update Menu Button -->
+                    <div class="mt-8 text-center">
+                        <button id="update-menu-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg text-sm font-medium flex items-center space-x-2 mx-auto">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                            <span>Update Menu</span>
+                        </button>
                     </div>
                 </div>
 
-                <!-- Grocery List Tab -->
-                <div id="scheduled-tab" class="tab-content hidden">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-gray-900">Grocery List</h2>
-                        
-                        <!-- Sync Button -->
-                        <div class="flex items-center space-x-2">
-                            <button id="google-calendar-btn" class="text-sm bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded flex items-center space-x-2" title="Sync with Google Calendar">
+                <!-- Menu Tab -->
+                <div id="menu-tab" class="tab-content hidden">
+                    <div class="max-w-4xl mx-auto">
+                        <!-- Header with unified date range selector -->
+                        <div class="flex justify-between items-center mb-6">
+                            <div class="flex-1">
+                                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Menu</h2>
+                                <div class="flex items-center gap-4 mt-2">
+                                    <select id="menu-week-selector" class="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                        <option value="1">This Week</option>
+                                        <option value="2">2 Weeks</option>
+                                        <option value="4">4 Weeks</option>
+                                        <option value="8">8 Weeks</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button id="google-calendar-sync" class="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
                                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
                                 </svg>
                                 <span id="google-calendar-status">Sync to Calendar</span>
                             </button>
                         </div>
-                    </div>
-                    <div id="grocery-list-container">
-                        <!-- Grocery list manager will be rendered here -->
+                    
+                        <!-- Meals Section -->
+                        <div class="mb-8">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Scheduled Meals</h3>
+                            <div id="menu-meals-container" class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                                <div class="text-gray-500 dark:text-gray-400 text-center py-4">
+                                    No meals scheduled for this timeframe. Use the Plan tab to schedule meals.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Grocery List Section -->
+                        <div id="grocery-list-container">
+                            <!-- Grocery list manager will be rendered here -->
+                        </div>
                     </div>
                 </div>
 
@@ -885,7 +799,7 @@
         
         <!-- Version Footer -->
         <footer class="fixed bottom-2 right-2 text-xs text-gray-400 bg-white/80 backdrop-blur-sm px-2 py-1 rounded shadow-sm">
-            <span id="version-display">v2025.09.12.1300</span>
+            <span id="version-display">v2025.09.12.1312</span>
         </footer>
     </div>
 
@@ -893,26 +807,26 @@
     <div id="modal-container"></div>
 
     <!-- JavaScript -->
-    <script src="./js/label-types.js?v=2025.09.12.1300"></script>
-    <script src="./js/multi-label-filter.js?v=2025.09.12.1300"></script>
-    <script src="./js/itinerary-view.js?v=2025.09.12.1300"></script>
-    <script src="./js/calendar-view.js?v=2025.09.12.1300"></script>
-      <script src="./js/demo-data.js?v=2025.09.12.1300"></script>
-    <script src="./js/barcode-scanner.js?v=2025.09.12.1300"></script>
-    <script src="./js/shared-barcode-scanner.js?v=2025.09.12.1300"></script>
-    <script src="./js/recipe-manager.js?v=2025.09.12.1300"></script>
-        <script src="./js/meal-manager.js?v=2025.09.12.1300"></script>
-        <script src="./js/schedule-manager.js?v=2025.09.12.1300"></script>
-    <script src="./js/ingredients-manager.js?v=2025.09.12.1300"></script>
-    <script src="./js/grocery-list-manager.js?v=2025.09.12.1300"></script>
-    <script src="./js/google-calendar-integration.js?v=2025.09.12.1300"></script>
-    <script src="./js/meal-rotation-engine.js?v=2025.09.12.1300"></script>
-    <script src="./js/settings-manager.js?v=2025.09.12.1300"></script>
-    <script src="./js/performance-manager.js?v=2025.09.12.1300"></script>
-    <script src="./js/advanced-planning.js?v=2025.09.12.1300"></script>
-    <script src="./js/pantry-manager.js?v=2025.09.12.1300"></script>
-    <script src="./js/mobile-navigation.js?v=2025.09.12.1300"></script>
-    <script src="./js/main.js?v=2025.09.12.1300"></script>
+    <script src="./js/label-types.js?v=2025.09.12.1312"></script>
+    <script src="./js/multi-label-filter.js?v=2025.09.12.1312"></script>
+    <script src="./js/itinerary-view.js?v=2025.09.12.1312"></script>
+    <script src="./js/calendar-view.js?v=2025.09.12.1312"></script>
+      <script src="./js/demo-data.js?v=2025.09.12.1312"></script>
+    <script src="./js/barcode-scanner.js?v=2025.09.12.1312"></script>
+    <script src="./js/shared-barcode-scanner.js?v=2025.09.12.1312"></script>
+    <script src="./js/recipe-manager.js?v=2025.09.12.1312"></script>
+        <script src="./js/meal-manager.js?v=2025.09.12.1312"></script>
+        <script src="./js/schedule-manager.js?v=2025.09.12.1312"></script>
+    <script src="./js/items-manager.js?v=2025.09.12.1312"></script>
+    <script src="./js/grocery-list-manager.js?v=2025.09.12.1312"></script>
+    <script src="./js/google-calendar-integration.js?v=2025.09.12.1312"></script>
+    <script src="./js/meal-rotation-engine.js?v=2025.09.12.1312"></script>
+    <script src="./js/settings-manager.js?v=2025.09.12.1312"></script>
+    <script src="./js/performance-manager.js?v=2025.09.12.1312"></script>
+    <script src="./js/advanced-planning.js?v=2025.09.12.1312"></script>
+    <script src="./js/pantry-manager.js?v=2025.09.12.1312"></script>
+    <script src="./js/mobile-navigation.js?v=2025.09.12.1312"></script>
+    <script src="./js/main.js?v=2025.09.12.1312"></script>
     
     <!-- Settings Navigation Script -->
     <script>

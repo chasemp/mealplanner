@@ -68,10 +68,21 @@ class MealRotationEngine {
         const forceInclude = options.forceInclude || []; // Recipe IDs that must be included
         const exclude = options.exclude || []; // Recipe IDs to exclude
         
-        // Filter available recipes
-        const availableRecipes = this.recipes.filter(recipe => 
-            !exclude.includes(recipe.id)
-        );
+        // Use provided available recipes or filter from all recipes
+        let availableRecipes;
+        if (options.availableRecipes && options.availableRecipes.length > 0) {
+            // Use only the recipes provided in options (e.g., from pending queue)
+            availableRecipes = options.availableRecipes.filter(recipe => 
+                !exclude.includes(recipe.id)
+            );
+            console.log(`🎯 Using ${availableRecipes.length} provided recipes for rotation`);
+        } else {
+            // Fallback to all recipes
+            availableRecipes = this.recipes.filter(recipe => 
+                !exclude.includes(recipe.id)
+            );
+            console.log(`🎯 Using ${availableRecipes.length} recipes from engine's recipe pool`);
+        }
 
         // Ensure forced recipes are included
         const forcedRecipes = forceInclude.map(id => 
@@ -285,9 +296,9 @@ class MealRotationEngine {
     }
 
     calculateIngredientScore(recipe, context) {
-        if (!recipe.ingredients || context.recentIngredients.length === 0) return 0;
+        if (!recipe.items || context.recentIngredients.length === 0) return 0;
 
-        const recipeIngredients = new Set(recipe.ingredients.map(ing => ing.ingredientId));
+        const recipeIngredients = new Set(recipe.items.map(ing => ing.ingredientId));
         const recentIngredients = new Set(context.recentIngredients);
         
         const overlap = [...recipeIngredients].filter(ing => recentIngredients.has(ing)).length;
@@ -305,12 +316,12 @@ class MealRotationEngine {
     }
 
     calculatePantryBonus(recipe) {
-        if (!recipe.ingredients) return 0;
+        if (!recipe.items) return 0;
 
         let pantryIngredients = 0;
-        let totalIngredients = recipe.ingredients.length;
+        let totalIngredients = recipe.items.length;
 
-        recipe.ingredients.forEach(ingredient => {
+        recipe.items.forEach(ingredient => {
             const available = this.pantryItems.get(ingredient.ingredientId) || 0;
             if (available >= (ingredient.quantity || 1)) {
                 pantryIngredients++;
@@ -362,8 +373,8 @@ class MealRotationEngine {
 
     // Utility methods
     detectCuisineType(recipe) {
-        const name = recipe.name.toLowerCase();
-        const ingredients = recipe.ingredients?.map(ing => ing.name.toLowerCase()).join(' ') || '';
+        const name = (recipe.title || recipe.name || '').toLowerCase();
+        const ingredients = recipe.items?.map(ing => (ing.name || '').toLowerCase()).join(' ') || '';
         const text = `${name} ${ingredients}`;
         
         const cuisineKeywords = {
@@ -385,11 +396,11 @@ class MealRotationEngine {
     }
 
     analyzeNutritionalProfile(recipe) {
-        const ingredients = recipe.ingredients || [];
+        const ingredients = recipe.items || [];
         const profile = { protein: 0, vegetables: 0, carbs: 0, healthy: 0 };
         
         ingredients.forEach(ingredient => {
-            const name = ingredient.name.toLowerCase();
+            const name = (ingredient.name || '').toLowerCase();
             
             if (name.includes('chicken') || name.includes('beef') || name.includes('fish') || 
                 name.includes('egg') || name.includes('bean') || name.includes('tofu')) {
@@ -423,13 +434,13 @@ class MealRotationEngine {
     calculateSeasonalScore(recipe) {
         // This would be enhanced with actual seasonal ingredient data
         const currentMonth = new Date().getMonth();
-        const ingredients = recipe.ingredients || [];
+        const ingredients = recipe.items || [];
         
         let seasonalScore = 0.5; // Base score
         
         // Simple seasonal logic (would be more sophisticated in production)
         ingredients.forEach(ingredient => {
-            const name = ingredient.name.toLowerCase();
+            const name = (ingredient.name || '').toLowerCase();
             
             // Spring (Mar-May)
             if (currentMonth >= 2 && currentMonth <= 4) {
@@ -467,7 +478,7 @@ class MealRotationEngine {
         let complexity = 0;
         
         // Base on number of ingredients
-        const ingredientCount = recipe.ingredients?.length || 0;
+        const ingredientCount = recipe.items?.length || 0;
         complexity += Math.min(0.4, ingredientCount / 20);
         
         // Base on prep time
@@ -476,7 +487,7 @@ class MealRotationEngine {
         }
         
         // Base on cooking method complexity
-        const instructions = recipe.instructions?.toLowerCase() || '';
+        const instructions = (typeof recipe.instructions === 'string' ? recipe.instructions.toLowerCase() : '');
         const complexMethods = ['braise', 'confit', 'reduction', 'emulsion', 'ferment'];
         complexMethods.forEach(method => {
             if (instructions.includes(method)) {
@@ -490,9 +501,9 @@ class MealRotationEngine {
     extractIngredients(meals) {
         const ingredients = [];
         meals.forEach(meal => {
-            if (meal.recipe.ingredients) {
-                meal.recipe.ingredients.forEach(ing => {
-                    ingredients.push(ing.ingredientId);
+            if (meal.recipe.items) {
+                meal.recipe.items.forEach(ing => {
+                    ingredients.push(ing.ingredient_id || ing.id);
                 });
             }
         });
