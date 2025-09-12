@@ -121,7 +121,9 @@ describe('Settings Manager', () => {
                 calendarManagedMode: false,
                 calendarNotifications: false,
                 confirmBeforeClearingFilters: false,
-                requireDoublePressForClearFilters: false
+                requireDoublePressForClearFilters: false,
+                mobileNavAutoHide: false,
+                confirmBeforeDeleting: true
             });
         });
 

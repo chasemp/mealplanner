@@ -202,8 +202,8 @@ describe('Manager Initialization Order', () => {
                 app.initializeCorrectOrder();
             }).not.toThrow();
             
-            // Ingredients should be accessible
-            expect(app.managers.ingredients.ingredients).toBeDefined();
+            // Items should be accessible
+            expect(app.managers.items.items).toBeDefined();
         });
 
         it('should prevent the "Unknown Ingredient" bug in grocery lists', () => {
@@ -236,15 +236,15 @@ describe('Manager Initialization Order', () => {
             
             // Verify Settings Manager is initialized first
             const settingsIndex = initCode.indexOf('initializeSettingsManager');
-            const ingredientsIndex = initCode.indexOf('initializeItemsManager');
+            const itemsIndex = initCode.indexOf('initializeItemsManager');
             const groceryIndex = initCode.indexOf('initializeGroceryListManager');
             
             expect(settingsIndex).toBeGreaterThan(-1);
-            expect(ingredientsIndex).toBeGreaterThan(-1);
+            expect(itemsIndex).toBeGreaterThan(-1);
             expect(groceryIndex).toBeGreaterThan(-1);
             
             // Settings Manager must come before other managers
-            expect(settingsIndex).toBeLessThan(ingredientsIndex);
+            expect(settingsIndex).toBeLessThan(itemsIndex);
             expect(settingsIndex).toBeLessThan(groceryIndex);
         });
     });

@@ -309,7 +309,7 @@ describe('Meal Planning Controls', () => {
             app.handleAutoPlan('breakfast');
             
             expect(showNotificationSpy).toHaveBeenCalledWith(
-                'Please select some recipes for breakfast planning first.',
+                'Please add some recipes to the planning queue first using the 📅 button on recipe cards.',
                 'warning'
             );
         });
