@@ -119,7 +119,9 @@ describe('Settings Manager', () => {
                 showLunch: false,
                 showDinner: true,
                 calendarManagedMode: false,
-                calendarNotifications: false
+                calendarNotifications: false,
+                confirmBeforeClearingFilters: false,
+                requireDoublePressForClearFilters: false
             });
         });
 
