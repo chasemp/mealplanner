@@ -495,13 +495,13 @@ class DemoDataGenerator {
         return recipes.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
     }
     
-    generateMeals(recipes, count = 7) {
-        const meals = [];
+    generateMealsAsComboRecipes(recipes, count = 7) {
+        const comboRecipes = [];
         
-        // Ensure we have enough recipes for meaningful meals
+        // Ensure we have enough recipes for meaningful combo recipes
         if (recipes.length < 2) {
-            console.warn('⚠️  Not enough recipes to generate meaningful meals');
-            return meals;
+            console.warn('⚠️  Not enough recipes to generate meaningful combo recipes');
+            return comboRecipes;
         }
         
         const mealTemplates = [
@@ -588,22 +588,36 @@ class DemoDataGenerator {
             
             const maxServings = Math.max(...selectedRecipes.map(r => r.servings));
             
-            meals.push({
-                id: i + 1,
-                name: template.name.replace('{theme}', theme),
+            // Convert meal to combo recipe format
+            const comboRecipeId = recipes.length + i + 1; // Ensure unique ID after regular recipes
+            
+            comboRecipes.push({
+                id: comboRecipeId,
+                title: template.name.replace('{theme}', theme),
                 description: template.description.replace('{theme}', theme.toLowerCase()),
-                recipes: selectedRecipes,
-                totalServings: maxServings,
-                mealTypes: template.mealTypes,
-                labels: [...template.labels, theme.toLowerCase().replace(' ', '-')],
-                tags: this.generateMealTags(),
-                estimatedTime: totalTime,
-                createdAt: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000).toISOString(),
-                updatedAt: new Date(Date.now() - Math.floor(Math.random() * 7) * 24 * 60 * 60 * 1000).toISOString()
+                recipe_type: 'combo',
+                image_url: `https://images.unsplash.com/photo-${1500000000 + Math.floor(Math.random() * 100000000)}?w=400&h=300&fit=crop`,
+                servings: maxServings,
+                prep_time: Math.floor(totalTime * 0.3), // Estimate prep as 30% of total
+                cook_time: Math.floor(totalTime * 0.7), // Estimate cook as 70% of total
+                created_at: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000).toISOString(),
+                instructions: [], // Combo recipes don't have their own instructions
+                labels: [
+                    ...template.labels, 
+                    theme.toLowerCase().replace(' ', '-'),
+                    'Recipe Combo', // Mark as combo type
+                    ...template.mealTypes.map(type => type.charAt(0).toUpperCase() + type.slice(1)) // Breakfast, Lunch, etc.
+                ],
+                combo_recipes: selectedRecipes.map(sr => ({
+                    recipe_id: sr.recipeId,
+                    servings: sr.servings
+                })),
+                ingredients: [], // Additional individual ingredients (empty for now)
+                favorite: Math.random() > 0.7 // 30% chance of being favorite
             });
         }
         
-        return meals;
+        return comboRecipes;
     }
     
     generateScheduledMeals(meals, recipes, count = 7) {
@@ -1543,19 +1557,24 @@ function main() {
     
     // Generate data
     const ingredients = generator.generateIngredients(options.items);
-    const recipes = generator.generateRecipes(ingredients, options.recipes);
-    const meals = generator.generateMeals(recipes, options.meals);
-    const scheduledMeals = generator.generateScheduledMeals(meals, recipes, options.scheduledMeals);
+    const baseRecipes = generator.generateRecipes(ingredients, options.recipes);
+    const comboRecipes = generator.generateMealsAsComboRecipes(baseRecipes, options.meals);
+    
+    // Combine regular recipes and combo recipes into one array
+    const recipes = [...baseRecipes, ...comboRecipes];
+    
+    // Generate scheduled meals using both regular recipes and combo recipes
+    const scheduledMeals = generator.generateScheduledMeals([], recipes, options.scheduledMeals);
     
     // Calculate ingredient usage statistics for test compatibility
     generator.calculateIngredientUsage(ingredients, recipes);
     
-    console.log(`✅ Generated ${ingredients.length} items, ${recipes.length} recipes, ${meals.length} meals, ${scheduledMeals.length} scheduled meals`);
+    console.log(`✅ Generated ${ingredients.length} items, ${baseRecipes.length} regular recipes, ${comboRecipes.length} combo recipes (${recipes.length} total), ${scheduledMeals.length} scheduled meals`);
     
     // Validate if requested
     if (options.validate) {
         console.log('🔍 Validating generated data...');
-        const errors = generator.validateData(ingredients, recipes, meals, scheduledMeals);
+        const errors = generator.validateData(ingredients, recipes, [], scheduledMeals);
         
         if (errors.length > 0) {
             console.error('❌ Validation errors:');
@@ -1567,7 +1586,7 @@ function main() {
     }
     
     // Generate file content
-    const content = generator.generateFileContent(ingredients, recipes, meals, scheduledMeals);
+    const content = generator.generateFileContent(ingredients, recipes, [], scheduledMeals);
     
     // Write to file
     const outputPath = path.resolve(options.output);
