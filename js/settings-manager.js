@@ -15,7 +15,9 @@ class SettingsManager {
             calendarManagedMode: false,
             calendarNotifications: false,
             confirmBeforeClearingFilters: false,
-            requireDoublePressForClearFilters: false
+            requireDoublePressForClearFilters: false,
+            mobileNavAutoHide: false,
+            confirmBeforeDeleting: true
         };
         
         this.githubApi = null;
@@ -110,10 +112,14 @@ class SettingsManager {
         const showBreakfastInput = document.getElementById('show-breakfast');
         const showLunchInput = document.getElementById('show-lunch');
         const showDinnerInput = document.getElementById('show-dinner');
+        const mobileNavAutoHideInput = document.getElementById('mobile-nav-auto-hide');
+        const confirmBeforeDeletingInput = document.getElementById('confirm-before-deleting');
         
         if (showBreakfastInput) showBreakfastInput.checked = this.settings.showBreakfast;
         if (showLunchInput) showLunchInput.checked = this.settings.showLunch;
         if (showDinnerInput) showDinnerInput.checked = this.settings.showDinner;
+        if (mobileNavAutoHideInput) mobileNavAutoHideInput.checked = this.settings.mobileNavAutoHide;
+        if (confirmBeforeDeletingInput) confirmBeforeDeletingInput.checked = this.settings.confirmBeforeDeleting;
 
         // Show/hide tabs
         if (breakfastTab) breakfastTab.style.display = this.settings.showBreakfast ? '' : 'none';
@@ -240,6 +246,30 @@ class SettingsManager {
                 });
             }
         });
+
+        // Mobile navigation auto-hide setting
+        const mobileNavAutoHideInput = document.getElementById('mobile-nav-auto-hide');
+        if (mobileNavAutoHideInput) {
+            mobileNavAutoHideInput.addEventListener('change', (e) => {
+                this.settings.mobileNavAutoHide = e.target.checked;
+                this.saveSettings();
+                
+                // Apply the setting immediately if mobile navigation exists
+                if (window.mobileNavigation) {
+                    window.mobileNavigation.updateAutoHideSetting(e.target.checked);
+                }
+            });
+        }
+
+        // Delete confirmation setting
+        const confirmBeforeDeletingInput = document.getElementById('confirm-before-deleting');
+        if (confirmBeforeDeletingInput) {
+            confirmBeforeDeletingInput.addEventListener('change', (e) => {
+                this.settings.confirmBeforeDeleting = e.target.checked;
+                this.saveSettings();
+                console.log('Confirm before deleting setting updated:', e.target.checked);
+            });
+        }
 
         // Calendar settings
         const calendarInputs = ['calendar-managed-mode', 'calendar-notifications'];

@@ -2,7 +2,9 @@
 class MealPlannerApp {
     constructor() {
         this.currentTab = 'recipes';
-        this.version = '2025.09.12.1152';
+        this.previousTab = null;
+        this.navigationHistory = [];
+        this.version = '2025.09.12.1300';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
@@ -133,7 +135,31 @@ class MealPlannerApp {
         });
     }
 
-    switchTab(tabName) {
+    switchTab(tabName, options = {}) {
+        const { trackHistory = true, fromSettings = false } = options;
+        
+        // Track navigation history (but not when returning from settings)
+        if (trackHistory && !fromSettings && this.currentTab !== tabName) {
+            // Store the current tab as previous
+            this.previousTab = this.currentTab;
+            
+            // Add to navigation history (limit to last 10 entries)
+            this.navigationHistory.push({
+                tab: this.currentTab,
+                timestamp: Date.now()
+            });
+            
+            // Keep only last 10 entries
+            if (this.navigationHistory.length > 10) {
+                this.navigationHistory = this.navigationHistory.slice(-10);
+            }
+            
+            console.log(`📍 Navigation: ${this.currentTab} → ${tabName}`, {
+                previousTab: this.previousTab,
+                historyLength: this.navigationHistory.length
+            });
+        }
+
         // Hide all tabs
         document.querySelectorAll('.tab-content').forEach(tab => {
             tab.classList.add('hidden');
@@ -165,7 +191,114 @@ class MealPlannerApp {
             window.mobileNavigation.onTabChange(tabName);
         }
 
+        // Update pending recipes if switching to dinner/plan tab
+        if (tabName === 'dinner') {
+            this.updatePendingRecipes();
+        }
+
         console.log(`Switched to ${tabName} tab`);
+    }
+
+    returnFromSettings() {
+        // Return to the previous tab, or default to recipes if no previous tab
+        const targetTab = this.previousTab || 'recipes';
+        
+        console.log(`🔙 Returning from settings to: ${targetTab}`, {
+            previousTab: this.previousTab,
+            currentTab: this.currentTab
+        });
+        
+        // Switch to previous tab without tracking this as a new navigation
+        this.switchTab(targetTab, { trackHistory: false, fromSettings: true });
+    }
+
+    updatePendingRecipes() {
+        const pendingList = document.getElementById('pending-recipes-list');
+        const emptyState = document.getElementById('pending-recipes-empty');
+        
+        if (!pendingList || !emptyState) return;
+
+        // Get pending recipes from localStorage
+        const pendingRecipes = JSON.parse(localStorage.getItem('mealplanner_pending_recipes') || '[]');
+        
+        if (pendingRecipes.length === 0) {
+            pendingList.innerHTML = '';
+            emptyState.classList.remove('hidden');
+            return;
+        }
+
+        emptyState.classList.add('hidden');
+        
+        // Render pending recipes
+        pendingList.innerHTML = pendingRecipes.map(pending => {
+            const addedDate = new Date(pending.addedAt).toLocaleDateString();
+            const isCombo = pending.recipe_type === 'combo';
+            
+            return `
+                <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div class="flex items-center space-x-3">
+                        ${isCombo ? `
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                                COMBO
+                            </span>
+                        ` : ''}
+                        <div>
+                            <h4 class="font-medium text-gray-900 dark:text-white">${pending.title}</h4>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Added ${addedDate}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium view-pending-recipe" data-recipe-id="${pending.id}">
+                            View
+                        </button>
+                        <button class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium remove-pending-recipe" data-recipe-id="${pending.id}">
+                            Remove
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // Attach event listeners for pending recipe actions
+        this.attachPendingRecipeListeners();
+    }
+
+    attachPendingRecipeListeners() {
+        // Remove pending recipe buttons
+        document.querySelectorAll('.remove-pending-recipe').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const recipeId = parseInt(btn.dataset.recipeId);
+                this.removePendingRecipe(recipeId);
+            });
+        });
+
+        // View pending recipe buttons
+        document.querySelectorAll('.view-pending-recipe').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const recipeId = parseInt(btn.dataset.recipeId);
+                if (window.recipeManager) {
+                    window.recipeManager.showRecipeDetail(recipeId);
+                }
+            });
+        });
+
+        // Clear all pending recipes button
+        const clearAllBtn = document.getElementById('clear-pending-recipes');
+        if (clearAllBtn) {
+            clearAllBtn.addEventListener('click', () => {
+                if (confirm('Are you sure you want to clear all recipes from the planning queue?')) {
+                    localStorage.removeItem('mealplanner_pending_recipes');
+                    this.updatePendingRecipes();
+                }
+            });
+        }
+    }
+
+    removePendingRecipe(recipeId) {
+        let pendingRecipes = JSON.parse(localStorage.getItem('mealplanner_pending_recipes') || '[]');
+        pendingRecipes = pendingRecipes.filter(p => p.id !== recipeId);
+        localStorage.setItem('mealplanner_pending_recipes', JSON.stringify(pendingRecipes));
+        this.updatePendingRecipes();
     }
 
     generateCalendarDays() {
@@ -229,7 +362,6 @@ class MealPlannerApp {
             // Initialize settings manager FIRST - other managers depend on it
             this.initializeSettingsManager();
             this.initializeRecipeManager();
-            this.initializeMealManager();
             this.initializeScheduleManager();
             this.initializeItemsManager();
             this.initializeGroceryListManager();
@@ -254,16 +386,6 @@ class MealPlannerApp {
         }
     }
 
-    initializeMealManager() {
-        console.log('🍽️ Initializing meal manager...');
-        
-        const container = document.getElementById('meal-manager-container');
-        if (container) {
-            this.mealManager = new MealManager(container);
-            window.mealManager = this.mealManager;
-            console.log('✅ Meal manager initialized');
-        }
-    }
 
     initializeScheduleManager() {
         console.log('📅 Initializing schedule manager...');

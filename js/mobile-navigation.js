@@ -4,6 +4,9 @@ class MobileNavigation {
         this.isMobile = this.detectMobile();
         this.currentTab = 'dinner';
         this.userHasInteracted = false; // Track if user has interacted with page
+        this.autoHideEnabled = false; // Default to false - always show navigation
+        this.lastScrollY = 0;
+        this.scrollThreshold = 10;
         this.init();
     }
 
@@ -18,6 +21,8 @@ class MobileNavigation {
             this.hideTopNavigation();
             this.setupEventListeners();
             this.setupTouchFeedback();
+            this.setupScrollListener();
+            this.loadAutoHideSetting();
         }
 
         // Listen for resize events
@@ -66,10 +71,7 @@ class MobileNavigation {
                 <span class="text-xs font-medium">Recipes</span>
             </button>
             
-            <button class="mobile-nav-tab flex flex-col items-center py-1 px-1 min-w-0 flex-1" data-tab="meals">
-                <span class="text-lg mb-1">🍽️</span>
-                <span class="text-xs font-medium">Meals</span>
-            </button>`;
+`;
         
         // Only add breakfast tab if enabled
         if (settings.showBreakfast) {
@@ -317,6 +319,79 @@ class MobileNavigation {
                 tab.style.backgroundColor = '';
             });
         });
+    }
+
+    setupScrollListener() {
+        let ticking = false;
+        
+        const handleScroll = () => {
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    this.handleScrollBehavior();
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+    }
+
+    handleScrollBehavior() {
+        if (!this.autoHideEnabled) return;
+
+        const currentScrollY = window.scrollY;
+        const bottomNav = document.getElementById('mobile-bottom-nav');
+        
+        if (!bottomNav) return;
+
+        const scrollDifference = currentScrollY - this.lastScrollY;
+
+        if (Math.abs(scrollDifference) < this.scrollThreshold) {
+            return;
+        }
+
+        if (scrollDifference > 0 && currentScrollY > 100) {
+            // Scrolling down - hide navigation
+            bottomNav.style.transform = 'translateY(100%)';
+            bottomNav.style.transition = 'transform 0.3s ease-in-out';
+        } else if (scrollDifference < 0) {
+            // Scrolling up - show navigation
+            bottomNav.style.transform = 'translateY(0)';
+            bottomNav.style.transition = 'transform 0.3s ease-in-out';
+        }
+
+        this.lastScrollY = currentScrollY;
+    }
+
+    updateAutoHideSetting(enabled) {
+        this.autoHideEnabled = enabled;
+        const bottomNav = document.getElementById('mobile-bottom-nav');
+        
+        if (!enabled && bottomNav) {
+            // If auto-hide is disabled, always show the navigation
+            bottomNav.style.transform = 'translateY(0)';
+            bottomNav.style.transition = 'transform 0.3s ease-in-out';
+        }
+        
+        console.log(`📱 Mobile navigation auto-hide ${enabled ? 'enabled' : 'disabled'}`);
+    }
+
+    loadAutoHideSetting() {
+        // Load setting from settings manager or localStorage
+        if (window.settingsManager && window.settingsManager.settings) {
+            this.autoHideEnabled = window.settingsManager.settings.mobileNavAutoHide || false;
+        } else {
+            // Fallback to localStorage
+            try {
+                const settings = JSON.parse(localStorage.getItem('mealplanner_settings') || '{}');
+                this.autoHideEnabled = settings.mobileNavAutoHide || false;
+            } catch (e) {
+                this.autoHideEnabled = false;
+            }
+        }
+        
+        console.log(`📱 Loaded mobile navigation auto-hide setting: ${this.autoHideEnabled}`);
     }
 }
 

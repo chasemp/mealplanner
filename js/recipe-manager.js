@@ -428,12 +428,13 @@ class RecipeManager {
             });
         });
 
-        // Delete recipe buttons
-        this.container.querySelectorAll('.delete-recipe').forEach(btn => {
+
+        // Schedule recipe buttons
+        this.container.querySelectorAll('.schedule-recipe').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const recipeId = parseInt(btn.dataset.recipeId);
-                this.deleteRecipe(recipeId);
+                this.scheduleRecipe(recipeId);
             });
         });
 
@@ -441,7 +442,7 @@ class RecipeManager {
         this.container.querySelectorAll('.recipe-card').forEach(card => {
             card.addEventListener('click', (e) => {
                 // Don't trigger if clicking on action buttons
-                if (!e.target.closest('.toggle-favorite, .edit-recipe, .delete-recipe')) {
+                if (!e.target.closest('.toggle-favorite, .edit-recipe, .schedule-recipe')) {
                     const recipeId = parseInt(card.dataset.recipeId);
                     console.log('🖱️ Recipe card clicked, recipeId:', recipeId);
                     this.showRecipeDetail(recipeId);
@@ -461,14 +462,6 @@ class RecipeManager {
                 <div class="p-6">
                     <div class="flex items-start justify-between mb-3">
                         <div class="flex items-center space-x-2">
-                            ${recipe.recipe_type === 'combo' ? `
-                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                                    </svg>
-                                    COMBO
-                                </span>
-                            ` : ''}
                             <h3 class="text-lg font-semibold text-gray-900 line-clamp-2">${recipe.title}</h3>
                         </div>
                         <div class="flex items-center space-x-1 ml-2">
@@ -477,14 +470,14 @@ class RecipeManager {
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
                                 </svg>
                             </button>
-                            <button class="text-gray-400 hover:text-blue-600 edit-recipe" data-recipe-id="${recipe.id}">
+                            <button class="text-gray-400 hover:text-blue-600 edit-recipe" data-recipe-id="${recipe.id}" title="Edit recipe">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                 </svg>
                             </button>
-                            <button class="text-gray-400 hover:text-red-600 delete-recipe" data-recipe-id="${recipe.id}">
+                            <button class="text-gray-400 hover:text-green-600 schedule-recipe" data-recipe-id="${recipe.id}" title="Add to planning queue">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                 </svg>
                             </button>
                         </div>
@@ -1272,12 +1265,22 @@ class RecipeManager {
                     
                     <!-- Form Actions -->
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-end space-y-2 sm:space-y-0 sm:space-x-4 p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
-                    <button type="button" id="cancel-recipe-form" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 px-4 py-2 w-full sm:w-auto order-2 sm:order-1 transition-colors">
-                            Cancel
-                        </button>
-                    <button type="submit" form="recipe-form" class="btn-primary w-full sm:w-auto order-1 sm:order-2">
-                            ${isEdit ? 'Update Recipe' : 'Save Recipe'}
-                        </button>
+                    <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
+                        <button type="button" id="cancel-recipe-form" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-md text-sm font-medium min-w-[80px] flex items-center justify-center transition-colors w-full sm:w-auto">
+                                Cancel
+                            </button>
+                        <button type="submit" form="recipe-form" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md text-sm font-medium min-w-[80px] flex items-center justify-center w-full sm:w-auto">
+                                ${isEdit ? 'Update' : (isCombo ? 'Save Combo' : 'Save Recipe')}
+                            </button>
+                        ${isEdit ? `
+                            <button type="button" id="delete-recipe-form" class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-md text-sm font-medium min-w-[80px] flex items-center justify-center space-x-2 transition-colors w-full sm:w-auto">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                                <span>Delete</span>
+                            </button>
+                        ` : ''}
+                    </div>
                     </div>
             </div>
         `;
@@ -1526,6 +1529,18 @@ class RecipeManager {
             cancelBtn: '#cancel-recipe-form',
             isFullPage: false
         });
+
+        // Add delete button listener for edit mode
+        const deleteBtn = modal.querySelector('#delete-recipe-form');
+        if (deleteBtn && recipe) {
+            deleteBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.handleDeleteRecipe(recipe, () => {
+                    // Close the modal after deletion
+                    modal.remove();
+                });
+            });
+        }
     }
 
     attachIngredientRowListeners(row) {
@@ -2179,6 +2194,20 @@ class RecipeManager {
         } else {
             console.warn('⚠️ Edit button NOT found in DOM');
         }
+
+        // Add schedule button handler
+        const scheduleBtn = this.container.querySelector('#mobile-recipe-schedule');
+        console.log('📱 Schedule button found:', !!scheduleBtn);
+        if (scheduleBtn) {
+            scheduleBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('📱 Schedule button clicked');
+                this.scheduleRecipe(recipe.id);
+            });
+        } else {
+            console.warn('⚠️ Schedule button NOT found in DOM');
+        }
         
         console.log('📱 Event listener attachment complete');
     }
@@ -2440,6 +2469,11 @@ class RecipeManager {
                             <button id="mobile-recipe-edit" class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm">
                                 Edit
                             </button>
+                            <button id="mobile-recipe-schedule" class="bg-green-500 text-white px-3 py-2 rounded-lg text-sm flex items-center space-x-1" title="Add to planning queue">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -2576,6 +2610,11 @@ class RecipeManager {
                             <button id="mobile-recipe-edit" class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm">
                                 Edit
                             </button>
+                            <button id="mobile-recipe-schedule" class="bg-green-500 text-white px-3 py-2 rounded-lg text-sm flex items-center space-x-1" title="Add to planning queue">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -2696,17 +2735,23 @@ class RecipeManager {
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white pr-2">${recipe.title}</h2>
                         <div class="flex items-center justify-end space-x-2 sm:space-x-3 flex-shrink-0">
+                            <button id="close-recipe-detail" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1">
+                                <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
                             <button id="edit-recipe-detail" class="bg-blue-500 hover:bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg flex items-center space-x-1 sm:space-x-2 transition-colors text-sm sm:text-base">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                             </svg>
                                 <span class="hidden sm:inline">Edit</span>
                         </button>
-                            <button id="close-recipe-detail" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1">
-                                <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
+                            <button id="schedule-recipe-detail" class="bg-green-500 hover:bg-green-600 text-white px-3 sm:px-4 py-2 rounded-lg flex items-center space-x-1 sm:space-x-2 transition-colors text-sm sm:text-base" title="Add to planning queue">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                <span class="hidden sm:inline">Schedule</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -2794,6 +2839,7 @@ class RecipeManager {
         // Add event listeners
         const closeBtn = modal.querySelector('#close-recipe-detail');
         const editBtn = modal.querySelector('#edit-recipe-detail');
+        const scheduleBtn = modal.querySelector('#schedule-recipe-detail');
         const closeModal = () => {
             modal.remove();
         };
@@ -2808,6 +2854,13 @@ class RecipeManager {
             console.log('🖥️ Desktop editing recipe:', recipe.title, 'isCombo:', isCombo);
             this.showRecipeForm(recipe, isCombo);
         });
+
+        if (scheduleBtn) {
+            scheduleBtn.addEventListener('click', () => {
+                console.log('🖥️ Desktop schedule button clicked');
+                this.scheduleRecipe(recipe.id);
+            });
+        }
         modal.addEventListener('click', (e) => {
             if (e.target === modal) closeModal();
         });
@@ -2861,25 +2914,34 @@ class RecipeManager {
                 <!-- Header -->
                 <div class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
                     <div class="max-w-4xl mx-auto px-4 py-4">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center space-x-3">
-                                <button id="back-to-recipes" class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        <!-- Title Row -->
+                        <div class="flex items-center space-x-3 mb-4">
+                            <button id="back-to-recipes" class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                </svg>
+                            </button>
+                            <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
+                                ${isEdit ? `Edit ${recipeType}` : `Add New ${recipeType}`}
+                            </h1>
+                        </div>
+                        
+                        <!-- Action Buttons Row -->
+                        <div class="flex items-center justify-end space-x-3">
+                            <button type="button" id="cancel-fullpage-form" class="bg-gray-500 text-white px-6 py-2 rounded-lg text-sm hover:bg-gray-600 transition-colors font-medium min-w-[80px] flex items-center justify-center">
+                                Cancel
+                            </button>
+                            <button type="submit" form="fullpage-recipe-form" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-medium min-w-[80px] flex items-center justify-center">
+                                ${isEdit ? 'Update' : `Save ${recipeType}`}
+                            </button>
+                            ${isEdit ? `
+                                <button type="button" id="delete-fullpage-form" class="bg-red-500 text-white px-6 py-2 rounded-lg text-sm hover:bg-red-600 transition-colors font-medium min-w-[80px] flex items-center justify-center space-x-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                     </svg>
+                                    <span>Delete</span>
                                 </button>
-                                <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
-                                    ${isEdit ? `Edit ${recipeType}` : `Add New ${recipeType}`}
-                                </h1>
-                            </div>
-                            <div class="flex items-center space-x-3">
-                                <button type="button" id="cancel-fullpage-form" class="bg-gray-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-600 transition-colors flex items-center justify-center">
-                                    Cancel
-                                </button>
-                                <button type="submit" form="fullpage-recipe-form" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium">
-                                    ${isEdit ? `Update ${recipeType}` : `Save ${recipeType}`}
-                                </button>
-                            </div>
+                            ` : ''}
                         </div>
                     </div>
                 </div>
@@ -3378,6 +3440,20 @@ class RecipeManager {
             cancelBtn: '#cancel-fullpage-form',
             isFullPage: true
         });
+
+        // Add delete button listener for edit mode
+        const deleteBtn = document.querySelector('#delete-fullpage-form');
+        if (deleteBtn && recipe) {
+            deleteBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const recipeType = recipe.recipe_type === 'combo' ? 'combo recipe' : 'recipe';
+                if (confirm(`Are you sure you want to delete "${recipe.title}"? This action cannot be undone.`)) {
+                    this.deleteRecipe(recipe.id);
+                    // Return to recipe list after deletion
+                    this.returnFromFullPageForm();
+                }
+            });
+        }
 
         // Attach combo-specific or ingredient-specific listeners
         if (isCombo) {
@@ -3988,6 +4064,47 @@ class RecipeManager {
             this.render();
             this.showNotification(`"${recipe.title}" has been deleted`, 'success');
         }
+    }
+
+    scheduleRecipe(recipeId) {
+        const recipe = this.recipes.find(r => r.id === recipeId);
+        if (!recipe) {
+            console.error('Recipe not found:', recipeId);
+            return;
+        }
+
+        // Get or create pending recipes list
+        let pendingRecipes = JSON.parse(localStorage.getItem('mealplanner_pending_recipes') || '[]');
+        
+        console.log('🔍 Scheduling recipe:', recipeId, 'type:', typeof recipeId);
+        console.log('🔍 Current pending recipes:', pendingRecipes);
+        console.log('🔍 Pending recipe IDs:', pendingRecipes.map(p => ({ id: p.id, type: typeof p.id })));
+        
+        // Check if recipe is already in pending list (ensure type consistency)
+        const existingIndex = pendingRecipes.findIndex(p => parseInt(p.id) === parseInt(recipeId));
+        console.log('🔍 Existing index:', existingIndex);
+        
+        if (existingIndex !== -1) {
+            this.showNotification(`${recipe.title} is already in your planning queue`, 'info');
+            return;
+        }
+
+        // Add recipe to pending list with timestamp
+        pendingRecipes.push({
+            id: recipe.id,
+            title: recipe.title,
+            recipe_type: recipe.recipe_type || 'regular',
+            addedAt: new Date().toISOString()
+        });
+
+        // Save to localStorage
+        localStorage.setItem('mealplanner_pending_recipes', JSON.stringify(pendingRecipes));
+        
+        // Show success notification
+        const recipeType = recipe.recipe_type === 'combo' ? 'combo recipe' : 'recipe';
+        this.showNotification(`${recipe.title} added to planning queue! Check the Plan tab.`, 'success');
+        
+        console.log(`📅 Added ${recipeType} "${recipe.title}" to planning queue`);
     }
 
     toggleFavorite(recipeId) {
