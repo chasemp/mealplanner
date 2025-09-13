@@ -1,4 +1,34 @@
-// Itinerary View Component for Meal Planning
+/**
+ * ItineraryView - Manages the display and interaction of scheduled meals in itinerary format
+ * 
+ * CRITICAL CACHE SYNCHRONIZATION AND UI REFRESH FIXES:
+ * 
+ * This class implements several critical fixes for data consistency and UI refresh issues:
+ * 
+ * 1. SCHEDULE MANAGER CACHE SYNC:
+ *    - The scheduleManager maintains a cached copy of scheduledMeals for performance
+ *    - When meals are added/removed/moved, both localStorage AND the cache must be updated
+ *    - Without cache sync, forceRefresh() loads stale cached data instead of updated localStorage data
+ *    - All meal operations (add/remove/move) now update both data sources immediately
+ * 
+ * 2. CROSS-PAGE DATA CONSISTENCY:
+ *    - Scheduling meals from Recipe page must update Plan tab's itinerary view
+ *    - This requires cache synchronization in RecipeManager.scheduleRecipeForSpecificDate()
+ *    - Without this fix, scheduled meals don't appear until page refresh
+ * 
+ * 3. UI REFRESH TIMING:
+ *    - forceRefresh() uses 100ms setTimeout to ensure data writes complete before UI updates
+ *    - DOM container is cleared and reloaded to prevent visual artifacts
+ *    - Forced DOM reflow (offsetHeight) ensures visual changes are applied immediately
+ *    - expandedWeeks state is cleared to prevent stale UI state
+ * 
+ * 4. AUTHORITATIVE DATA SOURCE:
+ *    - loadScheduledMeals() always loads from mealPlannerSettings (localStorage) not cache
+ *    - This ensures UI always reflects the most current data state
+ *    - Cache is updated after loading to keep it in sync for other components
+ * 
+ * These fixes resolve the "UI not updating immediately" issues reported by users.
+ */
 class ItineraryView {
     constructor(container, mealType = 'dinner', mealPlanData = {}) {
         this.container = container;
@@ -21,43 +51,31 @@ class ItineraryView {
 
     loadScheduledMeals() {
         try {
-            // Use ScheduleManager if available for consistency
-            if (window.scheduleManager) {
-                if (this.mealType === 'plan') {
-                    // For plan tab, show all scheduled meals regardless of type
-                    this.scheduledMeals = window.scheduleManager.scheduledMeals || [];
-                } else {
-                    // For specific meal types, filter by type
-                    this.scheduledMeals = window.scheduleManager.getScheduledMealsByType(this.mealType);
-                }
-            } else if (window.app && window.app.getScheduledMeals) {
-                // Fallback to main app
-                const allMeals = window.app.getScheduledMeals();
-                if (this.mealType === 'plan') {
-                    // For plan tab, show all scheduled meals
-                    this.scheduledMeals = allMeals;
-                } else {
-                    // For specific meal types, filter by type
-                    this.scheduledMeals = allMeals.filter(meal => meal.meal_type === this.mealType);
-                }
+            // CRITICAL: Always load from authoritative data source to ensure consistency
+            // This prevents cache inconsistencies where UI shows stale data after meal operations
+            const allMeals = window.mealPlannerSettings?.getAuthoritativeData('scheduledMeals') || [];
+            
+            if (this.mealType === 'plan') {
+                // For plan tab, show all scheduled meals regardless of type
+                this.scheduledMeals = allMeals;
             } else {
-                // Final fallback to localStorage
-                const stored = localStorage.getItem('mealplanner_scheduled_meals');
-                if (stored) {
-                    const allMeals = JSON.parse(stored);
-                    if (this.mealType === 'plan') {
-                        // For plan tab, show all scheduled meals
-                        this.scheduledMeals = allMeals;
-                    } else {
-                        // For specific meal types, filter by type
-                        this.scheduledMeals = allMeals.filter(meal => meal.meal_type === this.mealType);
-                    }
-                } else {
-                    this.scheduledMeals = [];
-                }
+                // For specific meal types, filter by type
+                this.scheduledMeals = allMeals.filter(meal => meal.meal_type === this.mealType);
             }
             
             console.log(`📅 Loaded ${this.scheduledMeals.length} ${this.mealType === 'plan' ? 'total' : this.mealType} meals for itinerary:`, this.scheduledMeals);
+            
+            // Debug: Check what the schedule manager has vs authoritative source
+            const scheduleManagerData = window.scheduleManager?.scheduledMeals || [];
+            console.log(`🔍 DEBUG loadScheduledMeals - Authoritative source has ${allMeals.length} meals`);
+            console.log(`🔍 DEBUG loadScheduledMeals - Schedule manager cache has ${scheduleManagerData.length} meals`);
+            
+            // CACHE SYNC FIX: Update the schedule manager's cache to keep it in sync with authoritative data
+            // This prevents scenarios where scheduleManager has stale cached data that differs from localStorage
+            if (window.scheduleManager && window.scheduleManager.scheduledMeals) {
+                window.scheduleManager.scheduledMeals = allMeals;
+                console.log(`🔄 Updated schedule manager cache with ${allMeals.length} meals`);
+            }
         } catch (error) {
             console.error('Error loading scheduled meals:', error);
             this.scheduledMeals = [];
@@ -600,9 +618,21 @@ class ItineraryView {
                     window.mealPlannerSettings.saveAuthoritativeData('scheduledMeals', scheduledMeals);
                     console.log(`💾 Saved updated scheduledMeals to authoritative source`);
                     
+                    // CRITICAL CACHE SYNC: Update the schedule manager's cache immediately after saving
+                    // This prevents UI refresh issues where forceRefresh() loads stale cached data
+                    // instead of the updated data that was just saved to localStorage
+                    if (window.scheduleManager && window.scheduleManager.scheduledMeals) {
+                        window.scheduleManager.scheduledMeals = scheduledMeals;
+                        console.log(`🔄 Updated schedule manager cache after removal with ${scheduledMeals.length} meals`);
+                    }
+                    
                     // Verify the save worked
                     const verifyData = window.mealPlannerSettings.getAuthoritativeData('scheduledMeals');
                     console.log(`🔍 Verification - authoritative data now has ${verifyData.length} meals`);
+                    
+                    // Double-check that the removed meal is actually gone
+                    const stillExists = verifyData.find(m => m.id == mealId || m.id === parseInt(mealId) || m.id === String(mealId));
+                    console.log(`🔍 Double-check - removed meal still exists in data: ${!!stillExists}`);
                 }
                 
                 // Force a complete refresh to ensure UI updates
@@ -881,10 +911,18 @@ class ItineraryView {
             const currentMeals = window.mealPlannerSettings.getAuthoritativeData('scheduledMeals') || [];
             currentMeals.push(newMeal);
             window.mealPlannerSettings.saveAuthoritativeData('scheduledMeals', currentMeals);
+            
+            // CACHE SYNC FIX: Update schedule manager cache after adding new meals
+            // This prevents the UI from showing stale data when forceRefresh() is called
+            if (window.scheduleManager && window.scheduleManager.scheduledMeals) {
+                window.scheduleManager.scheduledMeals = currentMeals;
+                console.log(`🔄 Updated schedule manager cache after add with ${currentMeals.length} meals`);
+            }
         }
         
-        // Update the view
-        this.render();
+        // UI REFRESH FIX: Use forceRefresh() instead of render() for immediate UI updates
+        // This ensures the new meal appears immediately without requiring a page refresh
+        this.forceRefresh();
         
         // Show success notification
         this.showNotification(`Added ${recipe.title} to ${this.mealType} on ${new Date(dateStr).toLocaleDateString()}`, 'success');
@@ -983,33 +1021,36 @@ class ItineraryView {
     // Force a complete refresh of the itinerary view
     forceRefresh() {
         console.log(`🔄 Force refreshing ${this.mealType} itinerary view...`);
-        
-        // Clear the container completely to ensure fresh render
+
+        // UI REFRESH TIMING FIX: Clear the container completely to ensure fresh render
+        // This prevents visual artifacts from previous render states
         if (this.container) {
             this.container.innerHTML = '<div class="text-center py-4">Loading...</div>';
             console.log(`🧹 Container cleared for ${this.mealType} itinerary view`);
         }
-        
-        // Use setTimeout to ensure DOM updates are processed
+
+        // TIMING FIX: Use setTimeout to ensure DOM updates and data saves are fully processed
+        // This prevents race conditions where UI updates before data is fully committed
         setTimeout(() => {
-            // Force reload data from authoritative source
+            // Force reload data from authoritative source (not cached data)
             this.loadScheduledMeals();
             console.log(`📊 After reload: ${this.scheduledMeals.length} meals loaded for ${this.mealType}`);
-            
-            // Clear any cached state that might interfere
+
+            // Clear any cached state that might interfere with fresh rendering
             this.expandedWeeks.clear();
-            
+
             // Re-render with fresh data
             this.render();
-            
-            // Force a DOM reflow to ensure visual update
+
+            // VISUAL UPDATE FIX: Force a DOM reflow to ensure visual update is applied immediately
+            // This prevents scenarios where data is updated but UI doesn't reflect changes
             if (this.container) {
                 this.container.offsetHeight; // Trigger reflow
                 console.log(`🔄 Forced DOM reflow for ${this.mealType} itinerary view`);
             }
-            
+
             console.log(`✅ Force refresh completed for ${this.mealType} itinerary view`);
-        }, 100); // Slightly longer delay to ensure all updates are processed
+        }, 100); // 100ms delay ensures all localStorage writes and cache updates are processed
     }
 
     // Drag and Drop functionality
@@ -1102,6 +1143,13 @@ class ItineraryView {
             // Save back to authoritative source
             if (window.mealPlannerSettings) {
                 window.mealPlannerSettings.saveAuthoritativeData('scheduledMeals', scheduledMeals);
+                
+                // CACHE SYNC FIX: Update schedule manager cache after drag & drop operations
+                // This ensures that subsequent UI operations see the updated meal positions
+                if (window.scheduleManager && window.scheduleManager.scheduledMeals) {
+                    window.scheduleManager.scheduledMeals = scheduledMeals;
+                    console.log(`🔄 Updated schedule manager cache after move with ${scheduledMeals.length} meals`);
+                }
             }
             
             // Check if the moved meal is now outside the current viewing range

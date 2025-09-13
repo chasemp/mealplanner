@@ -113,23 +113,12 @@
                                                     <label for="show-lunch" class="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">🥪 Lunch</label>
                                                 </div>
                                                 <div class="flex items-center space-x-2 md:space-x-3">
-                                                    <input type="checkbox" id="show-dinner" checked class="w-4 h-4 text-blue-600 rounded">
-                                                    <label for="show-dinner" class="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">🍽️ Dinner</label>
+                                                    <input type="checkbox" id="show-plan" checked class="w-4 h-4 text-blue-600 rounded">
+                                                    <label for="show-plan" class="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">📋 Plan</label>
                                                 </div>
                                             </div>
                                         </div>
                                         
-                                        <!-- Database Source -->
-                                        <div class="mb-4 md:mb-6">
-                                            <h4 class="text-sm md:text-base font-medium text-gray-700 dark:text-gray-300 mb-2 md:mb-3">Database Source</h4>
-                                            <select id="source-type-select" class="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                                <option value="demo" selected>📊 Demo Data</option>
-                                                <option value="memory">🧹 Clean Slate (Reset on Refresh)</option>
-                                                <option value="browser">💾 Browser Storage (Session Only)</option>
-                                                <option value="local">📁 Local File</option>
-                                                <option value="github">🔗 GitHub Repo</option>
-                                            </select>
-                                        </div>
                                         
                                         <!-- Cache Status -->
                                         <div class="mb-4 md:mb-6">
@@ -180,16 +169,10 @@
                         <button class="nav-tab active py-4 px-1 border-b-2 border-blue-500 text-blue-600 dark:text-blue-400 font-medium text-sm" data-tab="recipes">
                             📖 Recipes
                         </button>
-                        <button class="nav-tab meal-type-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="breakfast">
-                            🍳 Breakfast
-                        </button>
-                        <button class="nav-tab meal-type-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="lunch">
-                            🥪 Lunch
-                        </button>
-                        <button class="nav-tab meal-type-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="dinner">
+                        <button class="nav-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="plan">
                             📋 Plan
                         </button>
-                        <button class="nav-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="scheduled">
+                        <button class="nav-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="menu">
                             📄 Menu
                         </button>
                         <button class="nav-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="settings">
@@ -216,79 +199,7 @@
                 </div>
 
 
-                <!-- Breakfast Tab -->
-                <div id="breakfast-tab" class="tab-content hidden">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Breakfast Planning</h2>
-                        <div class="flex flex-wrap gap-3">
-                            <button id="view-toggle-breakfast" class="btn-secondary" data-view="calendar">
-                                📅 Calendar View
-                            </button>
-                            <button id="clear-plan-breakfast" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center space-x-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                </svg>
-                                <span>Clear</span>
-                            </button>
-                            <button id="auto-plan-breakfast" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center space-x-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                                </svg>
-                                <span>Auto Plan</span>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Itinerary View (default) -->
-                    <div id="breakfast-itinerary" class="meal-view">
-                        <!-- Itinerary content will be rendered here -->
-                    </div>
-                    
-                    <!-- Calendar View (hidden initially) -->
-                    <div id="breakfast-calendar" class="meal-view hidden">
-                        <div class="bg-white rounded-lg shadow p-6">
-                            <p class="text-gray-600">Breakfast calendar view will appear here.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Lunch Tab -->
-                <div id="lunch-tab" class="tab-content hidden">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Lunch Planning</h2>
-                        <div class="flex flex-wrap gap-3">
-                            <button id="view-toggle-lunch" class="btn-secondary" data-view="calendar">
-                                📅 Calendar View
-                            </button>
-                            <button id="clear-plan-lunch" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center space-x-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                </svg>
-                                <span>Clear</span>
-                            </button>
-                            <button id="auto-plan-lunch" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center space-x-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                                </svg>
-                                <span>Auto Plan</span>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Itinerary View (default) -->
-                    <div id="lunch-itinerary" class="meal-view">
-                        <!-- Itinerary content will be rendered here -->
-                    </div>
-                    
-                    <!-- Calendar View (hidden initially) -->
-                    <div id="lunch-calendar" class="meal-view hidden">
-                        <div class="bg-white rounded-lg shadow p-6">
-                            <p class="text-gray-600">Lunch calendar view will appear here.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Dinner Tab -->
+                <!-- Plan Tab -->
                 <div id="plan-tab" class="tab-content hidden">
                     
                     <!-- Planning Queue Info Bar -->
@@ -497,9 +408,7 @@
                                         </label>
                                         <select id="source-type-select" class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
                                             <option value="demo" selected>Demo Data</option>
-                                            <option value="memory">Clean Slate (Reset on Refresh)</option>
-                                            <option value="browser">Browser Storage (Session Only)</option>
-                                            <option value="local">Local Database File</option>
+                                            <option value="local">Local Database</option>
                                             <option value="github">GitHub Repository</option>
                                         </select>
                                     </div>
@@ -507,27 +416,29 @@
                                     <!-- Demo Data Options -->
                                     <div id="demo-options" class="source-options">
                                         <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md p-4">
-                                            <p class="text-sm text-blue-800 dark:text-blue-200">
+                                            <p class="text-sm text-blue-800 dark:text-blue-200 mb-4">
                                                 <strong>Demo Mode:</strong> Using sample data stored in browser. Perfect for testing and learning.
                                                 Data persists locally but won't sync across devices.
                                             </p>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- In Memory Options -->
-                                    <div id="memory-options" class="source-options hidden">
-                                        <div class="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-md p-4">
-                                            <p class="text-sm text-purple-800 dark:text-purple-200">
-                                                <strong>In Memory Mode:</strong> Starts with completely empty database - no ingredients, recipes, or meals. 
-                                                Perfect for testing workflows from scratch and experimenting with the interface.
-                                            </p>
-                                            <div class="mt-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded p-3">
-                                                <p class="text-xs text-yellow-800 dark:text-yellow-200">
-                                                    ⚠️ <strong>Note:</strong> All data created in this mode will be lost when you switch database sources or refresh the page.
+                                            
+                                            <!-- Demo Data Management -->
+                                            <div class="space-y-3">
+                                                <h5 class="text-sm font-medium text-blue-900 dark:text-blue-100">Data Management</h5>
+                                                <div class="flex flex-col sm:flex-row gap-2">
+                                                    <button id="clear-all-data-btn" class="flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-md transition-colors duration-200">
+                                                        🗑️ Clear All Data
+                                                    </button>
+                                                    <button id="reset-demo-data-btn" class="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors duration-200">
+                                                        🔄 Reset Demo Data
+                                                    </button>
+                                                </div>
+                                                <p class="text-xs text-blue-700 dark:text-blue-300">
+                                                    Clear All: Removes all data for clean testing • Reset Demo: Restores original sample data
                                                 </p>
                                             </div>
                                         </div>
                                     </div>
+                                    
                                     
                                     <!-- Local Database Options -->
                                     <div id="local-options" class="source-options hidden">
@@ -640,8 +551,8 @@
                                         <label for="show-lunch" class="text-sm text-gray-700 dark:text-gray-300">🥪 Show Lunch Meal Time</label>
                                     </div>
                                     <div class="flex items-center space-x-3">
-                                        <input type="checkbox" id="show-dinner" checked class="text-blue-600">
-                                        <label for="show-dinner" class="text-sm text-gray-700 dark:text-gray-300">🍽️ Show Dinner Meal Time</label>
+                                        <input type="checkbox" id="show-plan" checked class="text-blue-600">
+                                        <label for="show-plan" class="text-sm text-gray-700 dark:text-gray-300">📋 Show Plan Meal Time</label>
                                     </div>
                                 </div>
                             </div>
@@ -714,9 +625,9 @@
                                         </div>
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Dinner Time
+                                                Plan Time
                                             </label>
-                                            <input type="time" id="dinner-time" value="18:00" 
+                                            <input type="time" id="plan-time" value="18:00" 
                                                    class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
                                         </div>
                                     </div>

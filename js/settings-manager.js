@@ -3,6 +3,9 @@
 
 class SettingsManager {
     constructor() {
+        // Store original demo data in memory for reset functionality
+        this.originalDemoData = {};
+        
         this.settings = {
             sourceType: 'demo',
             localDbPath: '',
@@ -11,7 +14,7 @@ class SettingsManager {
             githubReadOnly: false,
             showBreakfast: false,
             showLunch: false,
-            showDinner: true,
+            showPlan: true,
             calendarManagedMode: false,
             calendarNotifications: false,
             confirmBeforeClearingFilters: false,
@@ -24,10 +27,10 @@ class SettingsManager {
         this.loadSettings();
         this.setupEventListeners();
         
-        // Initialize demo data IMMEDIATELY if using demo source
-        if (this.settings.sourceType === 'demo') {
-            this.initializeDemoData();
-        }
+        // Demo data initialization is now ONLY done:
+        // 1. On first-time setup (when switching TO demo mode)
+        // 2. When user explicitly clicks "Reset Demo Data"
+        // Page loads should NEVER auto-reload demo data - localStorage is authoritative
         
         // Initialize database source indicator after DOM is ready
         setTimeout(() => {
@@ -116,20 +119,20 @@ class SettingsManager {
         // Update checkboxes
         const showBreakfastInput = document.getElementById('show-breakfast');
         const showLunchInput = document.getElementById('show-lunch');
-        const showDinnerInput = document.getElementById('show-dinner');
+        const showPlanInput = document.getElementById('show-plan');
         const mobileNavAutoHideInput = document.getElementById('mobile-nav-auto-hide');
         const confirmBeforeDeletingInput = document.getElementById('confirm-before-deleting');
         
         if (showBreakfastInput) showBreakfastInput.checked = this.settings.showBreakfast;
         if (showLunchInput) showLunchInput.checked = this.settings.showLunch;
-        if (showDinnerInput) showDinnerInput.checked = this.settings.showDinner;
+        if (showPlanInput) showPlanInput.checked = this.settings.showPlan;
         if (mobileNavAutoHideInput) mobileNavAutoHideInput.checked = this.settings.mobileNavAutoHide;
         if (confirmBeforeDeletingInput) confirmBeforeDeletingInput.checked = this.settings.confirmBeforeDeleting;
 
         // Show/hide tabs
         if (breakfastTab) breakfastTab.style.display = this.settings.showBreakfast ? '' : 'none';
         if (lunchTab) lunchTab.style.display = this.settings.showLunch ? '' : 'none';
-        if (planTab) planTab.style.display = this.settings.showDinner ? '' : 'none';
+        if (planTab) planTab.style.display = this.settings.showPlan ? '' : 'none';
 
         // If current tab is hidden, switch to recipes
         const currentTab = document.querySelector('.nav-tab.active');
@@ -137,7 +140,7 @@ class SettingsManager {
             const tabName = currentTab.getAttribute('data-tab');
             const isHidden = (tabName === 'breakfast' && !this.settings.showBreakfast) ||
                            (tabName === 'lunch' && !this.settings.showLunch) ||
-                           (tabName === 'plan' && !this.settings.showDinner);
+                           (tabName === 'plan' && !this.settings.showPlan);
             
             if (isHidden) {
                 // Switch to recipes tab
@@ -239,7 +242,7 @@ class SettingsManager {
         }
 
         // Meal type visibility
-        const mealTypeInputs = ['show-breakfast', 'show-lunch', 'show-dinner'];
+        const mealTypeInputs = ['show-breakfast', 'show-lunch', 'show-plan'];
         mealTypeInputs.forEach(inputId => {
             const input = document.getElementById(inputId);
             if (input) {
@@ -314,6 +317,54 @@ class SettingsManager {
             });
         }
 
+        // Clear all data button
+        const clearAllBtn = document.getElementById('clear-all-data-btn');
+        if (clearAllBtn) {
+            clearAllBtn.addEventListener('click', async () => {
+                const confirmed = confirm('⚠️ This will permanently delete all your data (recipes, items, scheduled meals, etc.). This action cannot be undone.\n\nAre you sure you want to clear all data?');
+                if (confirmed) {
+                    try {
+                        // Use the main app's clearAllData method which properly clears managers and refreshes UI
+                        if (window.app) {
+                            await window.app.clearAllData();
+                            this.showNotification('All data cleared successfully! The app now has a clean slate.', 'success');
+                        } else {
+                            // Fallback to local method if app not available
+                            const success = this.clearAllData();
+                            if (success) {
+                                this.showNotification('All data cleared successfully! The app now has a clean slate.', 'success');
+                            } else {
+                                this.showNotification('Failed to clear all data. Please try again.', 'error');
+                            }
+                        }
+                    } catch (error) {
+                        console.error('❌ Error clearing all data:', error);
+                        this.showNotification('Failed to clear all data. Please try again.', 'error');
+                    }
+                }
+            });
+        }
+
+        // Reset demo data button
+        const resetDemoBtn = document.getElementById('reset-demo-data-btn');
+        if (resetDemoBtn) {
+            resetDemoBtn.addEventListener('click', async () => {
+                const confirmed = confirm('This will restore all data to the original demo state, overwriting any changes you\'ve made.\n\nAre you sure you want to reset to demo data?');
+                if (confirmed) {
+                    const success = this.resetDemoData();
+                    if (success) {
+                        this.showNotification('Demo data restored successfully!', 'success');
+                        // Reload all managers to reflect the restored data
+                        if (window.app) {
+                            await window.app.refreshAllComponents();
+                        }
+                    } else {
+                        this.showNotification('Failed to reset demo data. Please try again.', 'error');
+                    }
+                }
+            });
+        }
+
         // Export database button
         const exportBtn = document.getElementById('export-db-btn-settings');
         if (exportBtn) {
@@ -331,7 +382,7 @@ class SettingsManager {
         }
 
         // Calendar settings
-        const calendarSettings = ['calendar-name', 'event-duration', 'breakfast-time', 'lunch-time', 'dinner-time', 'include-ingredients', 'include-prep-time'];
+        const calendarSettings = ['calendar-name', 'event-duration', 'breakfast-time', 'lunch-time', 'plan-time', 'include-ingredients', 'include-prep-time'];
         calendarSettings.forEach(settingId => {
             const input = document.getElementById(settingId);
             if (input) {
@@ -365,12 +416,6 @@ class SettingsManager {
                 case 'demo':
                     await this.loadDemoData();
                     break;
-                case 'memory':
-                    await this.loadMemoryDatabase();
-                    break;
-                case 'browser':
-                    await this.loadBrowserDatabase();
-                    break;
                 case 'local':
                     await this.loadLocalDatabase();
                     break;
@@ -393,53 +438,21 @@ class SettingsManager {
 
     async loadDemoData() {
         console.log('Loading demo data...');
-        // Initialize demo data to localStorage for consistent access
-        this.initializeDemoData();
+        // Only initialize demo data when switching TO demo mode from another source
+        // If already in demo mode, localStorage is authoritative and should not be overwritten
+        const hasExistingData = localStorage.getItem('mealplanner_items') || 
+                               localStorage.getItem('mealplanner_recipes') || 
+                               localStorage.getItem('mealplanner_meals');
+        
+        if (!hasExistingData) {
+            console.log('📋 No existing data found - initializing demo data');
+            this.initializeDemoData();
+        } else {
+            console.log('📋 Existing data found - respecting localStorage as authoritative source');
+        }
         return true;
     }
 
-    async loadMemoryDatabase() {
-        console.log('Loading clean slate database (resets on refresh)...');
-        
-        try {
-            // Clear all data from localStorage
-            this.clearAllLocalStorageData();
-            
-            // Clear all data from the current app instance
-            if (window.app) {
-                await window.app.clearAllData();
-            }
-            
-            // Reload all managers to ensure they start with empty state
-            await this.reloadAllManagers();
-            
-            console.log('✅ Clean slate database initialized - all data cleared and managers reloaded');
-            return true;
-        } catch (error) {
-            console.error('❌ Failed to initialize clean slate database:', error);
-            throw new Error(`Failed to initialize clean slate database: ${error.message}`);
-        }
-    }
-
-    async loadBrowserDatabase() {
-        console.log('Loading browser storage database (persists across refreshes)...');
-        
-        try {
-            // Clear all data from the current app instance first
-            if (window.app) {
-                await window.app.clearAllData();
-            }
-            
-            // Reload all managers - they will load from browser storage via getAuthoritativeData
-            await this.reloadAllManagers();
-            
-            console.log('✅ Browser storage database initialized - managers loaded from browser storage');
-            return true;
-        } catch (error) {
-            console.error('❌ Failed to initialize browser storage database:', error);
-            throw new Error(`Failed to initialize browser storage database: ${error.message}`);
-        }
-    }
 
     clearAllLocalStorageData() {
         // Clear all MealPlanner-related data from localStorage
@@ -484,20 +497,12 @@ class SettingsManager {
                 name: 'Demo Data',
                 icon: `<path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>`
             },
-            'memory': {
-                name: 'Clean Slate',
-                icon: `<path fill-rule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" clip-rule="evenodd"></path><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>`
-            },
-            'browser': {
-                name: 'Browser Storage',
-                icon: `<path fill-rule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l.123.489.804.804A1 1 0 0113 18H7a1 1 0 01-.707-1.707l.804-.804L7.22 15H5a2 2 0 01-2-2V5zm5.771 7H5V5h10v7H8.771z" clip-rule="evenodd"></path>`
-            },
             'local': {
-                name: 'Local File',
+                name: 'Local Database',
                 icon: `<path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>`
             },
             'github': {
-                name: 'GitHub Sync',
+                name: 'GitHub Repository',
                 icon: `<path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>`
             }
         };
@@ -538,28 +543,32 @@ class SettingsManager {
             
             dataTypes.forEach(dataType => {
                 const storageKey = `mealplanner_${dataType}`;
+                let data = [];
                 
-                // Only initialize if not already present
+                // Generate the demo data
+                switch (dataType) {
+                    case 'items':
+                        data = demoData.getIngredients();
+                        break;
+                    case 'recipes':
+                        data = demoData.getRecipes();
+                        break;
+                    case 'scheduledMeals':
+                        data = demoData.getScheduledMeals();
+                        break;
+                    case 'pantryItems':
+                        data = demoData.getPantryItems ? demoData.getPantryItems() : [];
+                        break;
+                    case 'meals':
+                        data = demoData.getMeals ? demoData.getMeals() : [];
+                        break;
+                }
+                
+                // Store original demo data in memory for reset functionality
+                this.originalDemoData[dataType] = JSON.parse(JSON.stringify(data));
+                
+                // Only initialize localStorage if not already present
                 if (!localStorage.getItem(storageKey)) {
-                    let data = [];
-                    switch (dataType) {
-                        case 'items':
-                            data = demoData.getIngredients();
-                            break;
-                        case 'recipes':
-                            data = demoData.getRecipes();
-                            break;
-                        case 'scheduledMeals':
-                            data = demoData.getScheduledMeals();
-                            break;
-                        case 'pantryItems':
-                            data = demoData.getPantryItems ? demoData.getPantryItems() : [];
-                            break;
-                        case 'meals':
-                            data = demoData.getMeals ? demoData.getMeals() : [];
-                            break;
-                    }
-                    
                     localStorage.setItem(storageKey, JSON.stringify(data));
                     console.log(`✅ Initialized ${dataType}: ${data.length} items`);
                 } else {
@@ -568,8 +577,60 @@ class SettingsManager {
             });
             
             console.log('🎯 Demo data initialization completed');
+            console.log('💾 Original demo data stored in memory for reset functionality');
         } catch (error) {
             console.error('❌ Error initializing demo data:', error);
+        }
+    }
+
+    // Clear all data from localStorage (for clean slate testing)
+    clearAllData() {
+        console.log('🗑️ Clearing all data from localStorage...');
+        
+        try {
+            const dataTypes = ['items', 'recipes', 'scheduledMeals', 'pantryItems', 'meals'];
+            
+            dataTypes.forEach(dataType => {
+                const storageKey = `mealplanner_${dataType}`;
+                localStorage.removeItem(storageKey);
+                console.log(`✅ Cleared ${dataType} from localStorage`);
+            });
+            
+            console.log('🗑️ All data cleared successfully');
+            return true;
+        } catch (error) {
+            console.error('❌ Error clearing data:', error);
+            return false;
+        }
+    }
+
+    // Reset to original demo data
+    resetDemoData() {
+        console.log('🔄 Resetting to original demo data...');
+        
+        try {
+            if (!this.originalDemoData || Object.keys(this.originalDemoData).length === 0) {
+                console.warn('⚠️ Original demo data not available, reinitializing...');
+                this.initializeDemoData();
+                return true;
+            }
+            
+            const dataTypes = ['items', 'recipes', 'scheduledMeals', 'pantryItems', 'meals'];
+            
+            dataTypes.forEach(dataType => {
+                const storageKey = `mealplanner_${dataType}`;
+                const originalData = this.originalDemoData[dataType] || [];
+                
+                // Restore original demo data to localStorage
+                localStorage.setItem(storageKey, JSON.stringify(originalData));
+                console.log(`✅ Reset ${dataType}: ${originalData.length} items restored`);
+            });
+            
+            console.log('🔄 Demo data reset completed');
+            return true;
+        } catch (error) {
+            console.error('❌ Error resetting demo data:', error);
+            return false;
         }
     }
 
@@ -581,17 +642,13 @@ class SettingsManager {
         switch (currentSource) {
             case 'demo':
                 return this.getDemoData(dataType);
-            case 'memory':
-                return this.getMemoryData(dataType); // Clean slate - always empty
-            case 'browser':
-                return this.getBrowserData(dataType); // Session storage - persists during browser session
             case 'local':
                 return this.getLocalData(dataType);
             case 'github':
                 return this.getGitHubData(dataType);
             default:
                 console.warn(`⚠️ Unknown data source: ${currentSource}, falling back to empty data`);
-                return this.getMemoryData(dataType);
+                return [];
         }
     }
     
@@ -601,28 +658,6 @@ class SettingsManager {
         return this.getLocalData(dataType);
     }
     
-    getMemoryData(dataType) {
-        // Clean slate mode always returns empty data - resets on refresh
-        console.log(`✅ Returning empty ${dataType} for clean slate mode`);
-        return [];
-    }
-    
-    getBrowserData(dataType) {
-        // Browser storage mode - uses localStorage with browser_ prefix, persists across refreshes
-        try {
-            const stored = localStorage.getItem(`mealplanner_browser_${dataType}`);
-            if (stored) {
-                const data = JSON.parse(stored);
-                console.log(`✅ Loaded ${data.length} ${dataType} from browser storage`);
-                return data;
-            }
-        } catch (error) {
-            console.warn(`⚠️ Error loading ${dataType} from browser storage:`, error);
-        }
-        
-        console.log(`✅ No browser storage ${dataType} found, returning empty data`);
-        return [];
-    }
 
     // Centralized save method - routes to correct storage based on current database source
     saveAuthoritativeData(dataType, data) {
@@ -638,16 +673,6 @@ class SettingsManager {
                     console.log(`✅ Saved ${data.length} ${dataType} to localStorage`);
                     break;
                     
-                case 'browser':
-                    // Use browser-specific localStorage keys
-                    localStorage.setItem(`mealplanner_browser_${dataType}`, JSON.stringify(data));
-                    console.log(`✅ Saved ${data.length} ${dataType} to browser storage`);
-                    break;
-                    
-                case 'memory':
-                    // Memory mode - don't save anything
-                    console.log(`🗑️ Memory mode - not saving ${dataType} (will reset on refresh)`);
-                    break;
                     
                 case 'github':
                     // GitHub mode - save to localStorage for now (TODO: implement GitHub sync)
