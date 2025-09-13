@@ -210,6 +210,12 @@ class MealPlannerApp {
         if (tabElement) {
             tabElement.classList.remove('hidden');
         }
+
+        // Re-render ItemsManager when switching to items tab to ensure list view is shown
+        if (tabName === 'items' && this.itemsManager) {
+            console.log('🔄 Re-rendering ItemsManager for items tab activation');
+            this.itemsManager.render();
+        }
         this.currentTab = tabName;
 
         // Update mobile navigation if it exists
@@ -356,6 +362,11 @@ class MealPlannerApp {
         pendingRecipes = pendingRecipes.filter(p => p.id !== recipeId);
         localStorage.setItem('mealplanner_pending_recipes', JSON.stringify(pendingRecipes));
         this.updatePendingRecipes();
+        
+        // Update recipe button states in the recipe manager
+        if (this.recipeManager) {
+            this.recipeManager.render();
+        }
     }
 
     generateCalendarDays() {
@@ -2542,12 +2553,12 @@ class MealPlannerApp {
         return allMeals;
     }
 
-    handleDataSourceChange(sourceType) {
+    async handleDataSourceChange(sourceType) {
         console.log(`🗄️ Data source changed to: ${sourceType}`);
         
         switch (sourceType) {
             case 'demo':
-                this.loadDemoData();
+                await this.loadDemoData();
                 break;
             case 'new':
                 this.createNewDatabase();
@@ -2560,12 +2571,12 @@ class MealPlannerApp {
         }
     }
 
-    loadDemoData() {
+    async loadDemoData() {
         console.log('📊 Loading demo data...');
         
-        // Ensure demo data is initialized
+        // Use the settings manager's loadDemoData method which respects existing data
         if (this.settingsManager) {
-            this.settingsManager.initializeDemoData();
+            await this.settingsManager.loadDemoData();
         }
         
         // Show notification
@@ -2709,10 +2720,10 @@ class MealPlannerApp {
             { text: 'Got It', action: 'close', primary: true }
         ]);
         
-        modal.addEventListener('modal-action', (e) => {
+        modal.addEventListener('modal-action', async (e) => {
             if (e.detail.action === 'demo') {
                 document.getElementById('data-source-select').value = 'demo';
-                this.loadDemoData();
+                await this.loadDemoData();
             }
         });
     }
@@ -2768,13 +2779,29 @@ class MealPlannerApp {
         if (this.itemsManager) {
             this.itemsManager.render();
         }
+        if (this.mealManager) {
+            this.mealManager.render();
+        }
         if (this.groceryListManager) {
             this.groceryListManager.render();
         }
         
-        // Re-render itinerary and calendar views
-        Object.values(this.itineraryViews).forEach(view => view.render());
-        Object.values(this.calendarViews).forEach(view => view.render());
+        // Force refresh itinerary and calendar views to ensure they reload data from localStorage
+        // Use forceRefresh() instead of render() to clear cached state and reload data
+        Object.values(this.itineraryViews).forEach(view => {
+            if (view.forceRefresh) {
+                view.forceRefresh();
+            } else {
+                view.render();
+            }
+        });
+        Object.values(this.calendarViews).forEach(view => {
+            if (view.forceRefresh) {
+                view.forceRefresh();
+            } else {
+                view.render();
+            }
+        });
     }
 
     createModal(title, content, actions = []) {
