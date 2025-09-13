@@ -182,7 +182,7 @@ class CardSystem {
                     <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Additional Items (${additionalItems.length})</h3>
                     <div class="space-y-2">
                         ${additionalItems.map(ing => {
-                            const ingredient = window.itemsManager.ingredients.find(i => i.id === ing.ingredient_id);
+                            const ingredient = window.itemsManager.items.find(i => i.id === ing.ingredient_id);
                             return `
                                 <div class="flex justify-between items-center py-1">
                                     <span class="text-gray-900 dark:text-white">${ingredient ? ingredient.name : 'Unknown Item'}</span>
@@ -204,7 +204,7 @@ class CardSystem {
                 <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Items (${ingredients.length})</h3>
                 <div class="space-y-2">
                     ${ingredients.map(ing => {
-                        const ingredient = window.itemsManager.ingredients.find(i => i.id === ing.ingredient_id);
+                        const ingredient = window.itemsManager.items.find(i => i.id === ing.ingredient_id);
                         return `
                             <div class="flex justify-between items-center py-1">
                                 <span class="text-gray-900 dark:text-white">${ingredient ? ingredient.name : 'Unknown Item'}</span>
