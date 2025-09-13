@@ -1,0 +1,436 @@
+{
+  "version": "2025.09.13.0855",
+  "exported": "2025-09-13T16:18:48.694Z",
+  "schema": {
+    "items": "mealplanner_items",
+    "recipes": "mealplanner_recipes",
+    "combos": "mealplanner_combos",
+    "scheduledMeals": "mealplanner_scheduledMeals",
+    "planScheduledMeals": "mealplanner_planScheduledMeals",
+    "menuScheduledMeals": "mealplanner_menuScheduledMeals",
+    "pantryItems": "mealplanner_pantryItems",
+    "groceryList": "mealplanner_groceryList",
+    "demoDataPopulated": "mealplanner_demo_data_populated",
+    "mealPreferences": "mealPreferences",
+    "favoriteRecipes": "favoriteRecipes",
+    "settings": "mealplanner_settings"
+  },
+  "data": {
+    "items": [
+      {
+        "name": "Chicken Breast",
+        "category": "meat",
+        "default_unit": "pounds",
+        "storage_notes": null,
+        "nutrition_per_100g": {
+          "calories": 165,
+          "protein": 31,
+          "carbs": null,
+          "fat": null
+        },
+        "id": 1,
+        "recipe_count": 0,
+        "avg_quantity": 0
+      },
+      {
+        "name": "Rice",
+        "category": "pantry",
+        "default_unit": "cups",
+        "storage_notes": null,
+        "nutrition_per_100g": {
+          "calories": 130,
+          "protein": null,
+          "carbs": null,
+          "fat": null
+        },
+        "id": 2,
+        "recipe_count": 0,
+        "avg_quantity": 0
+      },
+      {
+        "name": "Broccoli",
+        "category": "produce",
+        "default_unit": "pieces",
+        "storage_notes": null,
+        "nutrition_per_100g": {
+          "calories": null,
+          "protein": null,
+          "carbs": null,
+          "fat": null
+        },
+        "id": 3,
+        "recipe_count": 0,
+        "avg_quantity": 0
+      },
+      {
+        "name": "Onion",
+        "category": "produce",
+        "default_unit": "pieces",
+        "storage_notes": null,
+        "nutrition_per_100g": {
+          "calories": null,
+          "protein": null,
+          "carbs": null,
+          "fat": null
+        },
+        "id": 4,
+        "recipe_count": 0,
+        "avg_quantity": 0
+      },
+      {
+        "name": "Garlic",
+        "category": "spices",
+        "default_unit": "pieces",
+        "storage_notes": null,
+        "nutrition_per_100g": {
+          "calories": null,
+          "protein": null,
+          "carbs": null,
+          "fat": null
+        },
+        "id": 5,
+        "recipe_count": 0,
+        "avg_quantity": 0
+      },
+      {
+        "name": "Tomato",
+        "category": "produce",
+        "default_unit": "pieces",
+        "storage_notes": null,
+        "nutrition_per_100g": {
+          "calories": null,
+          "protein": null,
+          "carbs": null,
+          "fat": null
+        },
+        "id": 6,
+        "recipe_count": 0,
+        "avg_quantity": 0
+      },
+      {
+        "name": "Cheese",
+        "category": "dairy",
+        "default_unit": "ounces",
+        "storage_notes": null,
+        "nutrition_per_100g": {
+          "calories": null,
+          "protein": null,
+          "carbs": null,
+          "fat": null
+        },
+        "id": 7,
+        "recipe_count": 0,
+        "avg_quantity": 0
+      },
+      {
+        "name": "Bread",
+        "category": "bakery",
+        "default_unit": "pieces",
+        "storage_notes": null,
+        "nutrition_per_100g": {
+          "calories": null,
+          "protein": null,
+          "carbs": null,
+          "fat": null
+        },
+        "id": 8,
+        "recipe_count": 0,
+        "avg_quantity": 0
+      },
+      {
+        "name": "Eggs",
+        "category": "dairy",
+        "default_unit": "pieces",
+        "storage_notes": null,
+        "nutrition_per_100g": {
+          "calories": null,
+          "protein": null,
+          "carbs": null,
+          "fat": null
+        },
+        "id": 9,
+        "recipe_count": 0,
+        "avg_quantity": 0
+      },
+      {
+        "name": "Milk",
+        "category": "dairy",
+        "default_unit": "cups",
+        "storage_notes": null,
+        "nutrition_per_100g": {
+          "calories": null,
+          "protein": null,
+          "carbs": null,
+          "fat": null
+        },
+        "id": 10,
+        "recipe_count": 0,
+        "avg_quantity": 0
+      },
+      {
+        "name": "Butter",
+        "category": "dairy",
+        "default_unit": "tablespoons",
+        "storage_notes": null,
+        "nutrition_per_100g": {
+          "calories": 717,
+          "protein": 0.9,
+          "carbs": 0.1,
+          "fat": 81.1
+        },
+        "id": 11,
+        "recipe_count": 0,
+        "avg_quantity": 0
+      }
+    ],
+    "recipes": [
+      {
+        "id": 8,
+        "title": "Breakfast Combo",
+        "description": "Complete breakfast with eggs and toast",
+        "servings": 2,
+        "prep_time": 0,
+        "cook_time": 0,
+        "instructions": [],
+        "labels": [
+          "Recipe Combo"
+        ],
+        "recipe_type": "combo",
+        "combo_recipes": [
+          {
+            "recipe_id": 5,
+            "servings_multiplier": 2
+          },
+          {
+            "recipe_id": 7,
+            "servings_multiplier": 1
+          }
+        ],
+        "ingredients": []
+      },
+      {
+        "id": 2,
+        "title": "Broccoli Stir Fry",
+        "description": "Quick and healthy vegetable stir fry",
+        "servings": 2,
+        "prep_time": 5,
+        "cook_time": 10,
+        "instructions": [
+          "Cut broccoli into florets. Heat oil in a pan, add broccoli and stir fry until tender. Season with salt and pepper."
+        ],
+        "labels": [],
+        "recipe_type": "regular",
+        "ingredients": [
+          {
+            "ingredient_id": 3,
+            "quantity": 2,
+            "unit": "pieces"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Cheese Sandwich",
+        "description": "Simple grilled cheese sandwich",
+        "servings": 2,
+        "prep_time": 5,
+        "cook_time": 10,
+        "instructions": [
+          "Butter bread slices. Add cheese between slices. Grill in a pan until golden and cheese melts."
+        ],
+        "labels": [],
+        "recipe_type": "regular",
+        "ingredients": [
+          {
+            "ingredient_id": 8,
+            "quantity": 4,
+            "unit": "slices"
+          },
+          {
+            "ingredient_id": 7,
+            "quantity": 4,
+            "unit": "oz"
+          }
+        ]
+      },
+      {
+        "id": 1,
+        "title": "Chicken and Rice",
+        "description": "Simple and delicious chicken with rice dish",
+        "servings": 4,
+        "prep_time": 10,
+        "cook_time": 25,
+        "instructions": [
+          "Season chicken with salt and pepper. Cook chicken in a pan until golden. Add rice and water, simmer until rice is tender."
+        ],
+        "labels": [],
+        "recipe_type": "regular",
+        "ingredients": [
+          {
+            "ingredient_id": 1,
+            "quantity": 1,
+            "unit": "lbs"
+          },
+          {
+            "ingredient_id": 2,
+            "quantity": 2,
+            "unit": "cups"
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Garlic Bread",
+        "description": "Crispy garlic bread with butter and garlic",
+        "servings": 4,
+        "prep_time": 10,
+        "cook_time": 15,
+        "instructions": [
+          "Mix butter with minced garlic. Spread on bread slices. Bake until golden and crispy."
+        ],
+        "labels": [],
+        "recipe_type": "regular",
+        "ingredients": [
+          {
+            "ingredient_id": 8,
+            "quantity": 8,
+            "unit": "slices"
+          },
+          {
+            "ingredient_id": 11,
+            "quantity": 4,
+            "unit": "tbsp"
+          },
+          {
+            "ingredient_id": 5,
+            "quantity": 3,
+            "unit": "cloves"
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "Lunch Combo",
+        "description": "Hearty lunch with soup and sandwich",
+        "servings": 2,
+        "prep_time": 0,
+        "cook_time": 0,
+        "instructions": [],
+        "labels": [
+          "Recipe Combo"
+        ],
+        "recipe_type": "combo",
+        "combo_recipes": [
+          {
+            "recipe_id": 3,
+            "servings_multiplier": 2
+          },
+          {
+            "recipe_id": 4,
+            "servings_multiplier": 1
+          }
+        ],
+        "ingredients": []
+      },
+      {
+        "id": 6,
+        "title": "Milk Shake",
+        "description": "Simple vanilla milk shake",
+        "servings": 2,
+        "prep_time": 5,
+        "cook_time": 0,
+        "instructions": [
+          "Blend milk with ice cream until smooth. Serve immediately."
+        ],
+        "labels": [],
+        "recipe_type": "regular",
+        "ingredients": [
+          {
+            "ingredient_id": 10,
+            "quantity": 2,
+            "unit": "cups"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Scrambled Eggs",
+        "description": "Fluffy scrambled eggs with butter",
+        "servings": 2,
+        "prep_time": 2,
+        "cook_time": 5,
+        "instructions": [
+          "Beat eggs in a bowl. Heat butter in a pan. Add eggs and scramble gently until set."
+        ],
+        "labels": [],
+        "recipe_type": "regular",
+        "ingredients": [
+          {
+            "ingredient_id": 9,
+            "quantity": 4,
+            "unit": "pieces"
+          },
+          {
+            "ingredient_id": 11,
+            "quantity": 2,
+            "unit": "tbsp"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Tomato Soup",
+        "description": "Classic creamy tomato soup",
+        "servings": 4,
+        "prep_time": 10,
+        "cook_time": 20,
+        "instructions": [
+          "Blend tomatoes until smooth. Heat in a pot, add cream and seasonings. Simmer for 15 minutes."
+        ],
+        "labels": [],
+        "recipe_type": "regular",
+        "ingredients": [
+          {
+            "ingredient_id": 6,
+            "quantity": 4,
+            "unit": "pieces"
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "title": "Dinner Combo",
+        "description": "Complete dinner with main course and side",
+        "servings": 4,
+        "prep_time": 0,
+        "cook_time": 0,
+        "instructions": [],
+        "labels": [
+          "Recipe Combo"
+        ],
+        "recipe_type": "combo",
+        "combo_recipes": [
+          {
+            "recipe_id": 1,
+            "servings_multiplier": 4
+          },
+          {
+            "recipe_id": 2,
+            "servings_multiplier": 2
+          }
+        ],
+        "ingredients": []
+      }
+    ],
+    "combos": null,
+    "scheduledMeals": [],
+    "planScheduledMeals": null,
+    "menuScheduledMeals": null,
+    "pantryItems": null,
+    "groceryList": null,
+    "demoDataPopulated": true,
+    "mealPreferences": null,
+    "favoriteRecipes": null,
+    "settings": null
+  }
+}
