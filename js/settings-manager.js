@@ -3,6 +3,12 @@
 
 class SettingsManager {
     constructor() {
+        console.log('⚙️ SETTINGS MANAGER CONSTRUCTOR STARTED');
+        console.log('🔍 TRACE: Settings manager initializing, localStorage state:');
+        console.log('  - items:', localStorage.getItem('mealplanner_items') ? 'EXISTS' : 'NULL');
+        console.log('  - recipes:', localStorage.getItem('mealplanner_recipes') ? 'EXISTS' : 'NULL');
+        console.log('  - demo_data_loaded flag:', localStorage.getItem('mealplanner_demo_data_loaded'));
+        
         // Store original demo data in memory for reset functionality
         this.originalDemoData = {};
         
@@ -12,8 +18,6 @@ class SettingsManager {
             githubRepo: '',
             // githubDeployKey: '', // 🔐 REMOVED - stored securely in IndexedDB
             githubReadOnly: false,
-            showBreakfast: false,
-            showLunch: false,
             showPlan: true,
             calendarManagedMode: false,
             calendarNotifications: false,
@@ -27,10 +31,9 @@ class SettingsManager {
         this.loadSettings();
         this.setupEventListeners();
         
-        // Demo data initialization is now ONLY done:
-        // 1. On first-time setup (when switching TO demo mode)
-        // 2. When user explicitly clicks "Reset Demo Data"
-        // Page loads should NEVER auto-reload demo data - localStorage is authoritative
+        // Initialize demo data on first-time load only
+        // This ensures new users get demo data, but existing users' data is preserved
+        this.initializeFirstTimeDemo();
         
         // Initialize database source indicator after DOM is ready
         setTimeout(() => {
@@ -39,6 +42,44 @@ class SettingsManager {
         
         // Make settings globally available for managers
         window.mealPlannerSettings = this;
+        
+        console.log('⚙️ SETTINGS MANAGER CONSTRUCTOR COMPLETED');
+        console.log('🔍 TRACE: Final localStorage state after constructor:');
+        console.log('  - items:', localStorage.getItem('mealplanner_items') ? 'EXISTS' : 'NULL');
+        console.log('  - recipes:', localStorage.getItem('mealplanner_recipes') ? 'EXISTS' : 'NULL');
+        console.log('  - demo_data_loaded flag:', localStorage.getItem('mealplanner_demo_data_loaded'));
+    }
+
+    initializeFirstTimeDemo() {
+        console.log('🔍 TRACE: initializeFirstTimeDemo() called');
+        
+        // Only initialize demo data if:
+        // 1. We're in demo mode
+        // 2. localStorage is completely empty (first-time user)
+        // 3. Demo data was never loaded before
+        
+        if (this.settings.sourceType !== 'demo') {
+            console.log('🔍 TRACE: Not in demo mode, skipping first-time demo initialization');
+            return;
+        }
+        
+        const demoDataLoaded = localStorage.getItem('mealplanner_demo_data_loaded');
+        if (demoDataLoaded === 'true') {
+            console.log('🔍 TRACE: Demo data was previously loaded, skipping first-time initialization');
+            return;
+        }
+        
+        // Check if localStorage is completely empty (first-time user)
+        const hasItems = localStorage.getItem('mealplanner_items');
+        const hasRecipes = localStorage.getItem('mealplanner_recipes');
+        const hasScheduledMeals = localStorage.getItem('mealplanner_scheduledMeals');
+        
+        if (!hasItems && !hasRecipes && !hasScheduledMeals) {
+            console.log('🎯 TRACE: First-time user detected - initializing demo data');
+            this.initializeDemoData();
+        } else {
+            console.log('🔍 TRACE: User has existing data, skipping first-time demo initialization');
+        }
     }
 
     loadSettings() {
@@ -83,11 +124,7 @@ class SettingsManager {
         if (deployKeyInput) deployKeyInput.placeholder = 'Deploy key stored securely (hidden)';
         if (readOnlyInput) readOnlyInput.checked = this.settings.githubReadOnly;
 
-        // Apply meal time visibility (defer to ensure DOM is ready)
-        setTimeout(() => {
-            console.log('⏰ Applying meal time visibility after timeout...');
-            this.applyMealTimeVisibility();
-        }, 500);
+        // Note: Meal time visibility logic removed - Plan tab is always visible
 
         // Apply calendar settings
         const managedModeInput = document.getElementById('calendar-managed-mode');
@@ -104,50 +141,6 @@ class SettingsManager {
         if (requireDoublePressInput) requireDoublePressInput.checked = this.settings.requireDoublePressForClearFilters;
     }
 
-    applyMealTimeVisibility() {
-        console.log('🍽️ Applying meal time visibility:', this.settings);
-        const breakfastTab = document.querySelector('[data-tab="breakfast"]');
-        const lunchTab = document.querySelector('[data-tab="lunch"]');
-        const planTab = document.querySelector('[data-tab="plan"]');
-        
-        console.log('🔍 Found tabs:', { breakfastTab, lunchTab, planTab });
-        
-        const breakfastContent = document.getElementById('breakfast-tab');
-        const lunchContent = document.getElementById('lunch-tab');
-        const planContent = document.getElementById('plan-tab');
-
-        // Update checkboxes
-        const showBreakfastInput = document.getElementById('show-breakfast');
-        const showLunchInput = document.getElementById('show-lunch');
-        const showPlanInput = document.getElementById('show-plan');
-        const mobileNavAutoHideInput = document.getElementById('mobile-nav-auto-hide');
-        const confirmBeforeDeletingInput = document.getElementById('confirm-before-deleting');
-        
-        if (showBreakfastInput) showBreakfastInput.checked = this.settings.showBreakfast;
-        if (showLunchInput) showLunchInput.checked = this.settings.showLunch;
-        if (showPlanInput) showPlanInput.checked = this.settings.showPlan;
-        if (mobileNavAutoHideInput) mobileNavAutoHideInput.checked = this.settings.mobileNavAutoHide;
-        if (confirmBeforeDeletingInput) confirmBeforeDeletingInput.checked = this.settings.confirmBeforeDeleting;
-
-        // Show/hide tabs
-        if (breakfastTab) breakfastTab.style.display = this.settings.showBreakfast ? '' : 'none';
-        if (lunchTab) lunchTab.style.display = this.settings.showLunch ? '' : 'none';
-        if (planTab) planTab.style.display = this.settings.showPlan ? '' : 'none';
-
-        // If current tab is hidden, switch to recipes
-        const currentTab = document.querySelector('.nav-tab.active');
-        if (currentTab) {
-            const tabName = currentTab.getAttribute('data-tab');
-            const isHidden = (tabName === 'breakfast' && !this.settings.showBreakfast) ||
-                           (tabName === 'lunch' && !this.settings.showLunch) ||
-                           (tabName === 'plan' && !this.settings.showPlan);
-            
-            if (isHidden) {
-                // Switch to recipes tab
-                window.app?.switchTab('recipes');
-            }
-        }
-    }
 
     setupEventListeners() {
         // Source type selection
@@ -241,19 +234,7 @@ class SettingsManager {
             });
         }
 
-        // Meal type visibility
-        const mealTypeInputs = ['show-breakfast', 'show-lunch', 'show-plan'];
-        mealTypeInputs.forEach(inputId => {
-            const input = document.getElementById(inputId);
-            if (input) {
-                input.addEventListener('change', (e) => {
-                    const mealType = inputId.replace('show-', '');
-                    this.settings[`show${mealType.charAt(0).toUpperCase() + mealType.slice(1)}`] = e.target.checked;
-                    this.applyMealTimeVisibility();
-                    this.saveSettings();
-                });
-            }
-        });
+        // Note: Meal type visibility controls removed - Plan tab is always visible
 
         // Mobile navigation auto-hide setting
         const mobileNavAutoHideInput = document.getElementById('mobile-nav-auto-hide');
@@ -438,18 +419,8 @@ class SettingsManager {
 
     async loadDemoData() {
         console.log('Loading demo data...');
-        // Only initialize demo data when switching TO demo mode from another source
-        // If already in demo mode, localStorage is authoritative and should not be overwritten
-        const hasExistingData = localStorage.getItem('mealplanner_items') || 
-                               localStorage.getItem('mealplanner_recipes') || 
-                               localStorage.getItem('mealplanner_meals');
-        
-        if (!hasExistingData) {
-            console.log('📋 No existing data found - initializing demo data');
-            this.initializeDemoData();
-        } else {
-            console.log('📋 Existing data found - respecting localStorage as authoritative source');
-        }
+        // Demo data initialization is handled by initializeDemoData() with proper flag logic
+        this.initializeDemoData();
         return true;
     }
 
@@ -529,8 +500,35 @@ class SettingsManager {
     }
 
     // Initialize demo data into localStorage on first load
+    // 
+    // CRITICAL RACE CONDITION BUG (Under Investigation):
+    // This method is called during settings manager initialization, but something else
+    // is loading demo data BEFORE this runs. When this method executes, localStorage
+    // already contains demo data, so the flag logic is never reached.
+    //
+    // Evidence:
+    // - Console shows "📋 items already exists in localStorage, skipping initialization"
+    // - Flag is never set because initialization is skipped
+    // - This causes demo data to auto-reload on every page refresh
+    //
+    // Investigation needed:
+    // - Find what's calling demo data loading during app startup
+    // - Likely in manager initialization sequence (RecipeManager, ItemsManager, etc.)
+    // - Check getAuthoritativeData() call chain during startup
     initializeDemoData() {
+        console.log('🎯 TRACE: initializeDemoData() ENTRY POINT');
+        console.log('🔍 TRACE: localStorage state at initializeDemoData() entry:');
+        console.log('  - items:', localStorage.getItem('mealplanner_items') ? 'EXISTS' : 'NULL');
+        console.log('  - recipes:', localStorage.getItem('mealplanner_recipes') ? 'EXISTS' : 'NULL');
+        console.log('  - demo_data_loaded flag:', localStorage.getItem('mealplanner_demo_data_loaded'));
         console.log('🎯 Initializing demo data to localStorage...');
+        
+        // Check if demo data was ever loaded before - if so, don't reload unless explicit reset
+        const demoDataLoaded = localStorage.getItem('mealplanner_demo_data_loaded');
+        if (demoDataLoaded === 'true') {
+            console.log('🚩 Demo data was previously loaded - skipping auto-reload (use Reset Demo Data for explicit reload)');
+            return;
+        }
         
         if (!window.DemoDataManager) {
             console.warn('⚠️ DemoDataManager not available for initialization');
@@ -567,16 +565,27 @@ class SettingsManager {
                 // Store original demo data in memory for reset functionality
                 this.originalDemoData[dataType] = JSON.parse(JSON.stringify(data));
                 
-                // Only initialize localStorage if not already present
+                // Only initialize localStorage if not already present AND data hasn't been explicitly cleared
+                const dataCleared = localStorage.getItem('mealplanner_data_cleared');
                 if (!localStorage.getItem(storageKey)) {
-                    localStorage.setItem(storageKey, JSON.stringify(data));
-                    console.log(`✅ Initialized ${dataType}: ${data.length} items`);
+                    if (dataCleared === 'true') {
+                        console.log(`🚩 ${dataType} was explicitly cleared, skipping demo data initialization`);
+                    } else {
+                        localStorage.setItem(storageKey, JSON.stringify(data));
+                        console.log(`✅ Initialized ${dataType}: ${data.length} items`);
+                    }
                 } else {
                     console.log(`📋 ${dataType} already exists in localStorage, skipping initialization`);
                 }
             });
             
             console.log('🎯 Demo data initialization completed');
+            
+            // CRITICAL: Always set the flag, even if data already existed
+            // This ensures we don't get stuck in an inconsistent state where data exists but flag is not set
+            localStorage.setItem('mealplanner_demo_data_loaded', 'true');
+            console.log('🚩 Set demo data loaded flag - prevents future auto-reloads');
+            
             console.log('💾 Original demo data stored in memory for reset functionality');
         } catch (error) {
             console.error('❌ Error initializing demo data:', error);
@@ -584,6 +593,16 @@ class SettingsManager {
     }
 
     // Clear all data from localStorage (for clean slate testing)
+    //
+    // INTENDED BEHAVIOR:
+    // - Removes all user data from localStorage
+    // - PRESERVES the mealplanner_demo_data_loaded flag (critical!)
+    // - This ensures demo data does NOT auto-reload on page refresh
+    // - Data should stay cleared until user manually adds new data or resets demo data
+    //
+    // CURRENT BUG:
+    // - Race condition causes demo data to auto-reload despite flag preservation
+    // - Something bypasses the flag system during app initialization
     clearAllData() {
         console.log('🗑️ Clearing all data from localStorage...');
         
@@ -595,6 +614,9 @@ class SettingsManager {
                 localStorage.removeItem(storageKey);
                 console.log(`✅ Cleared ${dataType} from localStorage`);
             });
+            
+            // Note: We keep the mealplanner_demo_data_loaded flag so demo data doesn't auto-reload
+            console.log('🚩 Demo data loaded flag preserved - no auto-reload will occur');
             
             console.log('🗑️ All data cleared successfully');
             return true;
@@ -609,6 +631,10 @@ class SettingsManager {
         console.log('🔄 Resetting to original demo data...');
         
         try {
+            // Temporarily clear the demo data loaded flag so initializeDemoData can run
+            localStorage.removeItem('mealplanner_demo_data_loaded');
+            console.log('🚩 Temporarily cleared demo data loaded flag for reset');
+            
             if (!this.originalDemoData || Object.keys(this.originalDemoData).length === 0) {
                 console.warn('⚠️ Original demo data not available, reinitializing...');
                 this.initializeDemoData();
@@ -626,6 +652,10 @@ class SettingsManager {
                 console.log(`✅ Reset ${dataType}: ${originalData.length} items restored`);
             });
             
+            // Set the demo data loaded flag since we just restored demo data
+            localStorage.setItem('mealplanner_demo_data_loaded', 'true');
+            console.log('🚩 Set demo data loaded flag - demo data restored');
+            
             console.log('🔄 Demo data reset completed');
             return true;
         } catch (error) {
@@ -635,24 +665,51 @@ class SettingsManager {
     }
 
     // Centralized data loading authority - all managers get data from here
+    //
+    // RACE CONDITION INVESTIGATION:
+    // This method is called by managers during initialization (RecipeManager, ItemsManager, etc.)
+    // When sourceType is 'demo', it calls getDemoData() -> getLocalData()
+    // If localStorage is empty, getLocalData() returns [] (empty array)
+    // BUT: Something must be populating localStorage between manager calls
+    // 
+    // Suspected call sequence during app startup:
+    // 1. Settings manager initializes (sourceType = 'demo')
+    // 2. RecipeManager initializes -> calls getAuthoritativeData('items') -> returns []
+    // 3. RecipeManager initializes -> calls getAuthoritativeData('recipes') -> returns []
+    // 4. ??? Something populates localStorage with demo data ???
+    // 5. Settings manager calls initializeDemoData() -> finds data already exists -> skips flag setting
     getAuthoritativeData(dataType) {
         const currentSource = this.getCurrentDatabaseSource();
-        console.log(`📊 Loading authoritative ${dataType} data from source: ${currentSource}`);
+        console.log(`📊 TRACE: getAuthoritativeData(${dataType}) called from source: ${currentSource}`);
+        console.log(`🔍 TRACE: localStorage state before loading ${dataType}:`);
+        console.log(`  - mealplanner_${dataType}:`, localStorage.getItem(`mealplanner_${dataType}`) ? 'EXISTS' : 'NULL');
+        console.log(`  - demo_data_loaded flag:`, localStorage.getItem('mealplanner_demo_data_loaded'));
         
+        // Add stack trace to see who's calling this
+        console.log('🔍 TRACE: Call stack:', new Error().stack);
+        
+        let result;
         switch (currentSource) {
             case 'demo':
-                return this.getDemoData(dataType);
+                result = this.getDemoData(dataType);
+                break;
             case 'local':
-                return this.getLocalData(dataType);
+                result = this.getLocalData(dataType);
+                break;
             case 'github':
-                return this.getGitHubData(dataType);
+                result = this.getGitHubData(dataType);
+                break;
             default:
                 console.warn(`⚠️ Unknown data source: ${currentSource}, falling back to empty data`);
-                return [];
+                result = [];
         }
+        
+        console.log(`📊 TRACE: getAuthoritativeData(${dataType}) returning ${result.length} items`);
+        return result;
     }
     
     getDemoData(dataType) {
+        console.log(`🔍 TRACE: getDemoData(${dataType}) called - delegating to getLocalData()`);
         // Demo data is initialized to localStorage on startup, so just read from localStorage
         // This makes demo source behave exactly like local source (just with different initial seed)
         return this.getLocalData(dataType);
@@ -689,19 +746,25 @@ class SettingsManager {
     }
     
     getLocalData(dataType) {
+        console.log(`🔍 TRACE: getLocalData(${dataType}) called`);
+        console.log(`🔍 TRACE: Checking localStorage key: mealplanner_${dataType}`);
+        
         // Local file mode - try localStorage first, then empty
         try {
             const stored = localStorage.getItem(`mealplanner_${dataType}`);
+            console.log(`🔍 TRACE: localStorage.getItem result:`, stored ? 'DATA_EXISTS' : 'NULL');
+            
             if (stored) {
                 const data = JSON.parse(stored);
-                console.log(`✅ Loaded ${data.length} ${dataType} from localStorage`);
+                console.log(`✅ TRACE: Loaded ${data.length} ${dataType} from localStorage`);
+                console.log(`🔍 TRACE: First item:`, data[0] ? data[0].name || data[0].title || data[0].id : 'NO_ITEMS');
                 return data;
             }
         } catch (error) {
             console.warn(`⚠️ Error loading ${dataType} from localStorage:`, error);
         }
         
-        console.log(`✅ No local ${dataType} found, returning empty data`);
+        console.log(`📋 TRACE: No ${dataType} found in localStorage, returning empty array`);
         return [];
     }
     

@@ -354,10 +354,12 @@ class ItemsManager {
         
         // Find recipes that use this item
         allRecipes.forEach(recipe => {
-            if (recipe.items && Array.isArray(recipe.items)) {
-                const itemUsage = recipe.items.find(ing => {
+            // MIGRATION: Support both 'items' (new) and 'ingredients' (legacy) during transition
+            const recipeItems = recipe.items || recipe.ingredients || [];
+            if (Array.isArray(recipeItems)) {
+                const itemUsage = recipeItems.find(ing => {
                     // Match by ID or name (for flexibility)
-                    return ing.item_id === itemId || 
+                    return ing.item_id === itemId || ing.ingredient_id === itemId ||
                            (ing.name && ing.name.toLowerCase() === this.getIngredientName(itemId).toLowerCase());
                 });
                 
@@ -980,13 +982,11 @@ class ItemsManager {
             console.log('🥕 Popped from navigation stack, remaining:', this.navigationStack.length);
             console.log('🥕 Restoring view, container length:', previousView.container.length);
             
-            this.container.innerHTML = previousView.container;
+            // Instead of restoring old HTML, render fresh UI with updated data
+            this.render();
             window.scrollTo(0, previousView.scrollPosition || 0);
             
-            // Reattach event listeners for the items list
-            this.attachEventListeners();
-            
-            console.log('🥕 Successfully restored items list view, new container length:', this.container.innerHTML.length);
+            console.log('🥕 Successfully rendered updated items list view');
         } else {
             console.log('❌ No navigation stack to restore - using fallback render');
             // Fallback: render the items list
