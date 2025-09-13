@@ -5,17 +5,19 @@ class ItemsManager {
         this.items = [];
         this.filteredIngredients = [];
         this.currentFilter = { search: '', category: '', label: '' };
+        // Initialize navigation stack for complex page navigation like RecipeManager
+        this.navigationStack = [];
         this.init();
     }
 
     async init() {
         console.log('🥕 Initializing Items Manager...');
-        await this.loadIngredients();
+        await this.loadItems();
         this.render();
         this.attachEventListeners();
     }
 
-    async loadIngredients() {
+    async loadItems() {
         console.log('📱 Loading items from authoritative data source...');
         
         // Get data from centralized authority
@@ -493,15 +495,22 @@ class ItemsManager {
         
         const isEdit = item !== null;
         
-        // Store previous view for navigation and callbacks
-        this.previousView = {
+        // Store current view in navigation stack for restoration (like RecipeManager)
+        if (!this.navigationStack) {
+            this.navigationStack = [];
+        }
+        
+        const currentView = {
             container: this.container.innerHTML,
             scrollPosition: window.scrollY
         };
+        
+        this.navigationStack.push(currentView);
         this.onSaveCallback = onSaveCallback;
         this.onCancelCallback = onCancelCallback;
         
-        console.log('🥕 Previous view stored, container length:', this.previousView.container.length);
+        console.log('🥕 Pushed to navigation stack, stack size:', this.navigationStack.length);
+        console.log('🥕 Current view container length:', currentView.container.length);
         
         // Generate full-page form HTML
         console.log('🥕 Setting container innerHTML...');
@@ -723,11 +732,8 @@ class ItemsManager {
             
             if (config.isFullPage) {
                 // Full-page form: restore previous view (items tab)
-                if (this.previousView) {
-                    this.container.innerHTML = this.previousView.container;
-                    window.scrollTo(0, this.previousView.scrollPosition || 0);
-                    this.attachEventListeners();
-                }
+                // Return to previous view using navigation stack
+                this.returnFromItemForm();
             } else {
                 // Modal form: remove modal
                 const modal = form.closest('.fixed');
@@ -774,6 +780,7 @@ class ItemsManager {
     }
 
     async handleFullPageItemFormSubmit(form, existingItem) {
+        console.log('🔥 DEBUG: handleFullPageItemFormSubmit called!');
         try {
             const formData = new FormData(form);
             
@@ -837,6 +844,9 @@ class ItemsManager {
 
             // Save to persistent storage
             this.saveItems();
+            
+            // Reload data from authoritative source to ensure consistency
+            await this.loadItems();
 
             // Show success notification
             if (existingItem) {
@@ -850,12 +860,10 @@ class ItemsManager {
                 this.onSaveCallback(savedIngredient);
             }
 
-            // Go back to previous view
-            if (this.previousView) {
-                this.container.innerHTML = this.previousView.container;
-                window.scrollTo(0, this.previousView.scrollPosition || 0);
-                this.attachEventListeners();
-            }
+            // Go back to previous view using navigation stack
+            console.log('🔥 DEBUG: About to call returnFromItemForm');
+            this.returnFromItemForm();
+            console.log('🔥 DEBUG: returnFromItemForm completed');
             
             // Clear callback
             this.onSaveCallback = null;
@@ -940,10 +948,12 @@ class ItemsManager {
             // Save to persistent storage
             this.saveItems();
             
-            // Close modal and refresh view
-            // Form is now full-page, so we clear the container instead
-            this.applyFilters();
-            this.render();
+            // Reload data from authoritative source to ensure consistency
+            await this.loadItems();
+            
+            // Return to items list view after successful save using navigation stack
+            console.log('🔄 Attempting to return to items list view...');
+            this.returnFromItemForm();
 
         } catch (error) {
             console.error('Error saving item:', error);
@@ -958,6 +968,29 @@ class ItemsManager {
         } else {
             console.warn('⚠️ Settings manager not available, falling back to localStorage');
             localStorage.setItem('mealplanner_items', JSON.stringify(this.items));
+        }
+    }
+
+    returnFromItemForm() {
+        console.log('🥕 Returning from item form');
+        console.log('🥕 Navigation stack size:', this.navigationStack ? this.navigationStack.length : 0);
+        
+        if (this.navigationStack && this.navigationStack.length > 0) {
+            const previousView = this.navigationStack.pop();
+            console.log('🥕 Popped from navigation stack, remaining:', this.navigationStack.length);
+            console.log('🥕 Restoring view, container length:', previousView.container.length);
+            
+            this.container.innerHTML = previousView.container;
+            window.scrollTo(0, previousView.scrollPosition || 0);
+            
+            // Reattach event listeners for the items list
+            this.attachEventListeners();
+            
+            console.log('🥕 Successfully restored items list view, new container length:', this.container.innerHTML.length);
+        } else {
+            console.log('❌ No navigation stack to restore - using fallback render');
+            // Fallback: render the items list
+            this.render();
         }
     }
 

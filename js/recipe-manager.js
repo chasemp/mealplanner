@@ -4155,6 +4155,12 @@ class RecipeManager {
         console.log(`📅 Added ${recipeType} "${recipe.title}" to planning queue`);
     }
 
+    /**
+     * CROSS-PAGE MEAL SCHEDULING FIX:
+     * This method handles scheduling meals from the Recipe page to specific dates.
+     * Critical fix: Must update both localStorage AND scheduleManager cache to ensure
+     * the Plan tab's itinerary view shows the new meal immediately without page refresh.
+     */
     scheduleRecipeForSpecificDate(recipeId, recipe) {
         const context = window.schedulingContext;
         console.log(`📅 Scheduling recipe "${recipe.title}" for specific date:`, context.targetDate);
@@ -4179,6 +4185,14 @@ class RecipeManager {
             // Save back to authoritative source
             if (window.mealPlannerSettings) {
                 window.mealPlannerSettings.saveAuthoritativeData('scheduledMeals', scheduledMeals);
+                
+                // CRITICAL CROSS-PAGE CACHE SYNC: Update schedule manager cache after scheduling from Recipe page
+                // This fixes the issue where scheduling a meal from Recipe page doesn't update Plan tab itinerary
+                // Without this, the Plan tab's forceRefresh() would load stale cached data instead of the new meal
+                if (window.scheduleManager && window.scheduleManager.scheduledMeals) {
+                    window.scheduleManager.scheduledMeals = scheduledMeals;
+                    console.log(`🔄 Updated schedule manager cache after scheduling with ${scheduledMeals.length} meals`);
+                }
             }
             
             // Show success notification
@@ -4204,7 +4218,8 @@ class RecipeManager {
                     }
                 }
                 
-                // Force refresh of itinerary views after tab switch
+                // UI REFRESH FIX: Force refresh of itinerary views after tab switch
+                // This ensures that meals scheduled from Recipe page appear immediately in Plan tab
                 setTimeout(() => {
                     if (window.itineraryViews && window.itineraryViews.plan) {
                         console.log('🔄 Force refreshing plan itinerary view after scheduling');
