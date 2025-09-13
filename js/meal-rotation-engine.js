@@ -336,6 +336,11 @@ class MealRotationEngine {
         const profile = recipe.nutritionalProfile;
         const balance = context.nutritionalBalance;
         
+        // If no nutritional profile exists, return neutral score
+        if (!profile || !balance) {
+            return 0;
+        }
+        
         let score = 0;
         
         // Encourage nutritional variety
