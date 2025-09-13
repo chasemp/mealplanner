@@ -2335,4 +2335,283 @@ describe('Demo Data Lifecycle', () => {
 
 ---
 
-*This document captures the lessons learned from building the MealPlanner PWA, emphasizing the importance of the static PWA sweet spot: modular organization without build complexity, enhanced with intelligent development tooling, schema-driven demo data generation, holistic data consistency management through single authoritative data sources, explicit cross-platform UI styling, systematic debugging approaches for complex UI state management, critical mobile-first design patterns that prioritize full-page experiences over constrained modal interactions, and sophisticated demo data lifecycle management that respects user data ownership while providing rich first-time experiences.*
+## 🗺️ **Navigation Tree Architecture for Complex PWAs**
+
+### **The Navigation Stack Pattern: Essential for Multi-Tab PWAs**
+
+**Lesson**: Complex PWAs with multiple tabs and deep navigation require a systematic navigation stack approach to maintain proper back navigation and state management.
+
+**Problem Discovered**: Menu tab navigation to recipe details was broken due to:
+- Truncated onclick handlers in dynamically generated HTML
+- Missing navigation stack implementation for cross-tab navigation
+- Inconsistent navigation patterns between different tabs
+
+**Root Cause Analysis**:
+- Template string truncation in `updateMenuMealsDisplay()` function
+- Lack of proper navigation stack for returning to Menu tab from recipe details
+- Different tabs using different navigation patterns (some with stacks, some without)
+
+### **The Navigation Stack Solution**
+
+**Core Pattern**: Every tab that can navigate to other content should implement a navigation stack:
+
+```javascript
+// ✅ CORRECT: Navigation stack implementation
+class TabManager {
+    constructor() {
+        this.navigationStack = [];
+    }
+    
+    navigateToDetail(itemId, returnTab) {
+        // Store current tab state for return navigation
+        const currentState = {
+            container: this.container.innerHTML,
+            scrollPosition: window.scrollY,
+            returnTab: returnTab,
+            timestamp: Date.now()
+        };
+        
+        this.navigationStack.push(currentState);
+        
+        // Navigate to detail view
+        this.showDetailView(itemId);
+    }
+    
+    returnFromDetail() {
+        if (this.navigationStack.length > 0) {
+            const previousState = this.navigationStack.pop();
+            
+            // Restore previous tab state
+            this.container.innerHTML = previousState.container;
+            window.scrollTo(0, previousState.scrollPosition);
+            
+            // Reattach event listeners
+            this.attachEventListeners();
+            
+            // Update mobile navigation state if needed
+            if (window.mobileNavigation) {
+                window.mobileNavigation.updateActiveTab(previousState.returnTab);
+            }
+        }
+    }
+}
+```
+
+### **Cross-Tab Navigation Implementation**
+
+**Pattern**: When one tab needs to navigate to content managed by another tab:
+
+```javascript
+// ✅ CORRECT: Cross-tab navigation with proper state management
+viewScheduledMeal(recipeId, mealType, scheduledMealId) {
+    // Set up navigation stack in target tab manager
+    if (window.recipeManager.navigationStack) {
+        // Clear any existing navigation stack for clean return
+        window.recipeManager.navigationStack = [];
+        
+        // Store current Menu tab state
+        const currentMenuContent = document.getElementById('menu-tab').innerHTML;
+        window.recipeManager.navigationStack.push({
+            container: currentMenuContent,
+            scrollPosition: window.scrollY,
+            returnTab: 'menu',
+            scheduledMealId: scheduledMealId
+        });
+    }
+    
+    // Navigate to recipe detail view
+    window.recipeManager.showRecipeDetail(recipeId);
+}
+```
+
+### **Template String Truncation Prevention**
+
+**Problem**: Template strings in innerHTML generation can be truncated, breaking onclick handlers.
+
+**Solution**: Use string concatenation for complex onclick handlers:
+
+```javascript
+// ❌ PROBLEMATIC: Template strings can truncate
+mealsHTML += `
+    <div onclick="window.app.viewScheduledMeal(${meal.recipe_id}, ${JSON.stringify(meal.meal_type)}, ${JSON.stringify(meal.id)})">
+        ${meal.recipe_name}
+    </div>
+`;
+
+// ✅ ROBUST: String concatenation prevents truncation
+const recipeId = meal.recipe_id;
+const mealType = JSON.stringify(meal.meal_type);
+const mealId = JSON.stringify(meal.id);
+
+mealsHTML += '<div class="meal-item" ' +
+    'onclick="window.app.viewScheduledMeal(' + recipeId + ', ' + mealType + ', ' + mealId + ')" ' +
+    'title="Click to view recipe details">' +
+    '<div class="meal-name">' + meal.recipe_name + '</div>' +
+    '</div>';
+```
+
+### **Navigation Stack Best Practices**
+
+**1. Consistent Stack Management**:
+- Every tab manager should have a `navigationStack` property
+- Always clear stack before adding new navigation state
+- Store complete state (HTML, scroll position, metadata)
+
+**2. Proper State Restoration**:
+- Restore innerHTML exactly as stored
+- Restore scroll position for user context
+- Reattach all event listeners after restoration
+- Update mobile navigation state if applicable
+
+**3. Cross-Tab Navigation**:
+- Store source tab state in target tab's navigation stack
+- Include `returnTab` metadata for proper back navigation
+- Clear target tab's existing stack for clean navigation
+
+**4. Event Listener Reattachment**:
+- Always call `attachEventListeners()` after innerHTML restoration
+- Use centralized listener management methods
+- Test all interactive elements after navigation
+
+### **Mobile Navigation Integration**
+
+**Pattern**: Navigation stacks should integrate with mobile navigation systems:
+
+```javascript
+returnFromDetail() {
+    if (this.navigationStack.length > 0) {
+        const previousState = this.navigationStack.pop();
+        
+        // Restore state
+        this.container.innerHTML = previousState.container;
+        window.scrollTo(0, previousState.scrollPosition);
+        
+        // Update mobile navigation
+        if (window.mobileNavigation) {
+            window.mobileNavigation.updateActiveTab(previousState.returnTab);
+        }
+        
+        // Reattach listeners
+        this.attachEventListeners();
+    }
+}
+```
+
+### **Testing Navigation Stacks**
+
+**Critical Test Scenarios**:
+1. **Basic Navigation**: Tab A → Detail → Back to Tab A
+2. **Cross-Tab Navigation**: Tab A → Tab B Detail → Back to Tab A
+3. **Deep Navigation**: Multiple levels of detail views
+4. **State Preservation**: Scroll position, form data, filter states
+5. **Event Listener Integrity**: All buttons/links work after navigation
+
+**Test Implementation**:
+```javascript
+describe('Navigation Stack', () => {
+    test('preserves tab state during cross-tab navigation', () => {
+        // Navigate from Menu to Recipe detail
+        viewScheduledMeal(7, 'plan', 'meal-123');
+        
+        // Verify navigation stack has Menu state
+        expect(window.recipeManager.navigationStack.length).toBe(1);
+        expect(window.recipeManager.navigationStack[0].returnTab).toBe('menu');
+        
+        // Return from detail
+        window.recipeManager.returnFromDetail();
+        
+        // Verify Menu tab is restored
+        expect(document.getElementById('menu-tab').innerHTML).toContain('Scheduled Meals');
+    });
+});
+```
+
+### **Architecture Benefits**
+
+**1. Consistent User Experience**:
+- All tabs behave the same way for navigation
+- Predictable back button behavior
+- Proper state preservation across navigation
+
+**2. Maintainable Code**:
+- Centralized navigation patterns
+- Reusable navigation stack implementation
+- Clear separation of concerns
+
+**3. Mobile-First Design**:
+- Native app-like navigation experience
+- Proper back button handling
+- Touch-friendly navigation patterns
+
+### **Implementation Checklist**
+
+**✅ Navigation Stack Setup**:
+- [ ] Every tab manager has `navigationStack` property
+- [ ] Navigation methods store complete state
+- [ ] Return methods restore state and reattach listeners
+- [ ] Cross-tab navigation properly manages stacks
+
+**✅ Template String Safety**:
+- [ ] Complex onclick handlers use string concatenation
+- [ ] No template string truncation in dynamic HTML
+- [ ] All event handlers properly escaped and complete
+
+**✅ Mobile Integration**:
+- [ ] Navigation stacks integrate with mobile navigation
+- [ ] Back button behavior is consistent
+- [ ] Touch interactions work after navigation
+
+**✅ Testing Coverage**:
+- [ ] Basic navigation flows tested
+- [ ] Cross-tab navigation tested
+- [ ] State preservation verified
+- [ ] Event listener integrity confirmed
+
+### **Key Architectural Lessons**
+
+**Lesson 1: Navigation Stacks Are Essential for Complex PWAs**
+- Multi-tab PWAs require systematic navigation management
+- Ad-hoc navigation patterns lead to broken user experiences
+- Navigation stacks provide predictable, maintainable navigation
+
+**Lesson 2: Cross-Tab Navigation Requires Careful State Management**
+- Source tab state must be stored in target tab's navigation stack
+- Return navigation must restore original tab context
+- Mobile navigation state must be updated appropriately
+
+**Lesson 3: Template String Safety in Dynamic HTML**
+- Complex onclick handlers should use string concatenation
+- Template strings can truncate in certain contexts
+- Always validate generated HTML for completeness
+
+**Lesson 4: Event Listener Reattachment Is Critical**
+- innerHTML updates destroy all event listeners
+- Navigation restoration must reattach all listeners
+- Centralized listener management prevents missing handlers
+
+### **Future PWA Development Guidelines**
+
+**Start with Navigation Architecture**:
+- Design navigation patterns before building features
+- Implement navigation stacks from the beginning
+- Plan for cross-tab navigation requirements
+
+**Use Consistent Patterns**:
+- Every tab should use the same navigation stack pattern
+- Standardize state storage and restoration
+- Implement centralized listener management
+
+**Test Navigation Thoroughly**:
+- Test all navigation paths systematically
+- Verify state preservation across navigation
+- Ensure event listeners work after navigation
+
+### **Critical Takeaway**
+
+**Navigation stacks are not optional for complex PWAs - they're essential infrastructure.** The interconnected nature of modern PWAs with multiple tabs, deep navigation, and cross-tab interactions requires systematic navigation management to provide a consistent, native app-like user experience.
+
+**The Rule**: If your PWA has multiple tabs that can navigate to detail views, implement navigation stacks from day one. Ad-hoc navigation patterns will inevitably break and create poor user experiences.
+
+---
+
+*This document captures the lessons learned from building the MealPlanner PWA, emphasizing the importance of the static PWA sweet spot: modular organization without build complexity, enhanced with intelligent development tooling, schema-driven demo data generation, holistic data consistency management through single authoritative data sources, explicit cross-platform UI styling, systematic debugging approaches for complex UI state management, critical mobile-first design patterns that prioritize full-page experiences over constrained modal interactions, sophisticated demo data lifecycle management that respects user data ownership while providing rich first-time experiences, and essential navigation tree architecture for complex multi-tab PWAs that require systematic state management and cross-tab navigation.*
