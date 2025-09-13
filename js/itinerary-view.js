@@ -51,9 +51,17 @@ class ItineraryView {
 
     loadScheduledMeals() {
         try {
-            // CRITICAL: Always load from authoritative data source to ensure consistency
-            // This prevents cache inconsistencies where UI shows stale data after meal operations
-            const allMeals = window.mealPlannerSettings?.getAuthoritativeData('scheduledMeals') || [];
+            // PLAN VS MENU ARCHITECTURE: Plan tab shows prospective schedule, other tabs show committed schedule
+            let allMeals = [];
+            if (this.mealType === 'plan') {
+                // Plan tab shows prospective schedule from planScheduledMeals
+                allMeals = window.mealPlannerSettings?.getAuthoritativeData('planScheduledMeals') || [];
+                console.log(`📅 Plan tab loading ${allMeals.length} meals from PLAN storage (prospective schedule)`);
+            } else {
+                // Other meal type tabs show committed schedule from menuScheduledMeals
+                allMeals = window.mealPlannerSettings?.getAuthoritativeData('menuScheduledMeals') || [];
+                console.log(`📅 ${this.mealType} tab loading ${allMeals.length} meals from MENU storage (committed schedule)`);
+            }
             
             if (this.mealType === 'plan') {
                 // For plan tab, show all scheduled meals regardless of type

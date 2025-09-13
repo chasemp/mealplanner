@@ -59,9 +59,9 @@ class GroceryListManager {
     async loadScheduledMeals() {
         console.log('📱 Grocery List Manager loading scheduled meals from authoritative data source...');
         
-        // Get data from centralized authority
+        // Load from the main scheduledMeals data source
         if (window.mealPlannerSettings) {
-            const allMeals = window.mealPlannerSettings.getAuthoritativeData('scheduledMeals');
+            const allMeals = window.mealPlannerSettings.getAuthoritativeData('scheduledMeals') || [];
             
             // Filter meals by date range if endDate is set (from unified selector)
             if (this.endDate) {
@@ -169,22 +169,7 @@ class GroceryListManager {
                     </div>
                 </div>
 
-                <!-- Week Overview -->
-                <div class="bg-white rounded-lg shadow p-6 mb-6">
-                    <h4 class="font-semibold text-gray-900 mb-4">This Week's Meals</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        ${this.renderScheduledMeals()}
-                    </div>
-                    ${this.scheduledMeals.length === 0 ? `
-                        <div class="text-center py-8">
-                            <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v11a2 2 0 002 2h2m0-13h10a2 2 0 012 2v11a2 2 0 01-2 2H9m0-13v13"></path>
-                            </svg>
-                            <p class="text-gray-500">No meals scheduled for this week</p>
-                            <p class="text-sm text-gray-400">Go to meal planning to schedule some meals first</p>
-                        </div>
-                    ` : ''}
-                </div>
+                <!-- Removed duplicative This Week's Meals section - meals are already shown in main Scheduled Meals section -->
 
                 <!-- Grocery List -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -289,7 +274,7 @@ class GroceryListManager {
                         ${date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                     </div>
                     <div class="text-xs text-gray-400 mt-1">
-                        ${recipe.items.length} items
+                        ${recipe.items ? recipe.items.length : 0} items
                     </div>
                 </div>
             `;
@@ -388,6 +373,8 @@ class GroceryListManager {
     }
 
     // Utility function to round quantities to 2 decimal places and remove trailing zeros
+    // PRINCIPLE: All quantities must be realistic values that a user could manually enter via UI
+    // No programmatic artifacts like 0.3333333333333333 - these would never be user-entered
     roundQuantity(quantity) {
         const rounded = Math.round(quantity * 100) / 100;
         return parseFloat(rounded.toFixed(2));
@@ -452,11 +439,12 @@ class GroceryListManager {
     }
 
     // Generate grocery list from current scheduled meals (called when meals change)
-    generateFromScheduledMeals() {
+    async generateFromScheduledMeals() {
         console.log('🛒 Regenerating grocery list from scheduled meals...');
         
-        // Reload scheduled meals from app storage
-        this.loadScheduledMeals();
+        // CRITICAL FIX: Await scheduled meals loading before generating grocery items
+        // This prevents the forEach error when scheduledMeals is undefined/empty
+        await this.loadScheduledMeals();
         
         // Regenerate grocery items
         this.groceryItems = this.generateGroceryItems();

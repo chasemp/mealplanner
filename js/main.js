@@ -4,7 +4,7 @@ class MealPlannerApp {
         this.currentTab = 'recipes';
         this.previousTab = null;
         this.navigationHistory = [];
-        this.version = '2025.09.12.1312';
+        this.version = '2025.09.13.0854';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
@@ -223,9 +223,11 @@ class MealPlannerApp {
             window.mobileNavigation.onTabChange(tabName);
         }
 
-        // Update pending recipes if switching to plan tab
+        // Update pending recipes and delta comparison if switching to plan tab
         if (tabName === 'plan') {
             this.updatePendingRecipes();
+            // Update Plan vs Menu delta comparison to show current differences
+            this.updatePlanMenuDelta();
         }
 
         console.log(`Switched to ${tabName} tab`);
@@ -851,7 +853,7 @@ class MealPlannerApp {
         }
         
         // Initialize both itinerary and calendar views for each meal type
-        const mealTypes = ['breakfast', 'lunch', 'plan'];
+        const mealTypes = ['plan']; // Only plan tab is supported now
         
         // Initialize calendar views registry
         this.calendarViews = {};
@@ -1704,6 +1706,15 @@ class MealPlannerApp {
             });
             console.log('✅ Update Menu button initialized');
         }
+
+        // Clear Plan Changes button
+        const clearPlanChangesBtn = document.getElementById('clear-plan-changes-btn');
+        if (clearPlanChangesBtn) {
+            clearPlanChangesBtn.addEventListener('click', () => {
+                this.handleClearPlanChanges();
+            });
+            console.log('✅ Clear Plan Changes button initialized');
+        }
         
         // Initialize Menu tab week selector
         this.initializeMenuWeekSelector();
@@ -1837,10 +1848,17 @@ class MealPlannerApp {
             
             meals.forEach(meal => {
                 mealsHTML += `
-                    <div class="flex items-center justify-between bg-white dark:bg-gray-600 rounded p-3 border border-gray-200 dark:border-gray-500">
+                    <div class="flex items-center justify-between bg-white dark:bg-gray-600 rounded p-3 border border-gray-200 dark:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500 cursor-pointer transition-colors"
+                         onclick="window.app.viewScheduledMeal(${meal.recipe_id}, '${meal.meal_type}', ${meal.id})"
+                         title="Click to view recipe details">
                         <div>
                             <div class="font-medium text-gray-900 dark:text-white">${meal.recipe_name || 'Unknown Recipe'}</div>
                             <div class="text-sm text-gray-500 dark:text-gray-400">${meal.meal_type} • ${meal.servings || 4} servings</div>
+                        </div>
+                        <div class="text-gray-400 dark:text-gray-300">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
                         </div>
                     </div>
                 `;
@@ -1980,49 +1998,38 @@ class MealPlannerApp {
         }
     }
 
-    handleUpdateMenu() {
+    async handleUpdateMenu() {
         console.log('🍽️ Updating Menu from Plan tab scheduled meals...');
         
         try {
-            // Get the current timeframe from the active itinerary view
-            const activeItineraryView = this.itineraryViews?.dinner; // Default to dinner
-            if (!activeItineraryView) {
-                this.showNotification('Plan view not available. Please try again.', 'error');
+            // PLAN VS MENU ARCHITECTURE: Copy prospective schedule (Plan) to committed schedule (Menu)
+            if (!window.mealPlannerSettings) {
+                this.showNotification('Settings manager not available. Please try again.', 'error');
                 return;
             }
             
-            // Get scheduled meals for the current timeframe only
-            const mealsInTimeframe = activeItineraryView.getScheduledMealsInTimeframe();
-            console.log(`📅 Found ${mealsInTimeframe.length} meals in current timeframe:`, mealsInTimeframe);
+            // Get all scheduled meals from Plan storage (prospective schedule)
+            const planScheduledMeals = window.mealPlannerSettings.getAuthoritativeData('planScheduledMeals') || [];
+            console.log(`📅 Found ${planScheduledMeals.length} meals in Plan storage (prospective schedule)`);
             
-            // Get all scheduled meals from the same source the itinerary views use
-            let allScheduledMeals = [];
-            
-            if (window.scheduleManager) {
-                // Use schedule manager (which reads from authoritative data)
-                allScheduledMeals = window.scheduleManager.scheduledMeals || [];
-                console.log(`📅 Got ${allScheduledMeals.length} total meals from schedule manager`);
-            } else {
-                // Fallback to main app method
-                allScheduledMeals = this.getScheduledMeals();
-                console.log(`📅 Got ${allScheduledMeals.length} total meals from main app method`);
-            }
-            
-            if (mealsInTimeframe.length === 0) {
-                this.showNotification('No scheduled meals found in current timeframe. Please use Auto Plan or manually schedule meals first.', 'warning');
+            if (planScheduledMeals.length === 0) {
+                this.showNotification('No scheduled meals found in Plan. Please use Auto Plan or manually schedule meals first.', 'warning');
                 return;
             }
             
-            // The scheduled meals are already in the authoritative data source if using schedule manager
-            // But ensure they're also saved to authoritative data for consistency
-            if (window.mealPlannerSettings) {
-                window.mealPlannerSettings.saveAuthoritativeData('scheduledMeals', allScheduledMeals);
-                console.log(`📅 Ensured ${allScheduledMeals.length} meals are in authoritative data source`);
-            }
+            // Copy Plan schedule to Menu storage (commit the prospective schedule)
+            window.mealPlannerSettings.saveAuthoritativeData('menuScheduledMeals', planScheduledMeals);
+            console.log(`📅 Copied ${planScheduledMeals.length} meals from Plan to Menu storage (committed schedule)`);
+            
+            // Show delta information
+            const menuScheduledMeals = window.mealPlannerSettings.getAuthoritativeData('menuScheduledMeals') || [];
+            console.log(`📊 Menu now has ${menuScheduledMeals.length} committed meals`);
+            
+            this.showNotification(`Menu updated! ${planScheduledMeals.length} meals committed to menu.`, 'success');
             
             // Refresh the grocery list manager to reflect the scheduled meals
             if (this.groceryListManager && this.groceryListManager.generateFromScheduledMeals) {
-                this.groceryListManager.generateFromScheduledMeals();
+                await this.groceryListManager.generateFromScheduledMeals();
                 console.log('🛒 Grocery list updated from scheduled meals');
             }
             
@@ -2039,6 +2046,127 @@ class MealPlannerApp {
             console.error('❌ Error updating menu:', error);
             this.showNotification('Error updating menu. Please try again.', 'error');
         }
+    }
+
+    handleClearPlanChanges() {
+        console.log('🗑️ Clearing Plan changes - reverting to Menu schedule...');
+        
+        try {
+            if (!window.mealPlannerSettings) {
+                this.showNotification('Settings manager not available. Please try again.', 'error');
+                return;
+            }
+            
+            // Get current Menu schedule (committed schedule)
+            const menuScheduledMeals = window.mealPlannerSettings.getAuthoritativeData('menuScheduledMeals') || [];
+            console.log(`📅 Found ${menuScheduledMeals.length} meals in Menu storage (committed schedule)`);
+            
+            // Copy Menu schedule back to Plan storage (discard prospective changes)
+            window.mealPlannerSettings.saveAuthoritativeData('planScheduledMeals', menuScheduledMeals);
+            console.log(`📅 Copied ${menuScheduledMeals.length} meals from Menu to Plan storage (discarded changes)`);
+            
+            this.showNotification(`Plan changes cleared! Reverted to menu with ${menuScheduledMeals.length} meals.`, 'success');
+            
+            // Update delta comparison display
+            this.updatePlanMenuDelta();
+            
+            // Refresh all components to show reverted data
+            this.refreshAllComponents();
+            
+        } catch (error) {
+            console.error('Error clearing plan changes:', error);
+            this.showNotification('Error clearing plan changes. Please try again.', 'error');
+        }
+    }
+
+    updatePlanMenuDelta() {
+        console.log('📊 Updating Plan vs Menu delta comparison...');
+        
+        try {
+            if (!window.mealPlannerSettings) {
+                console.warn('Settings manager not available for delta comparison');
+                return;
+            }
+            
+            // Get Plan and Menu schedules
+            const planMeals = window.mealPlannerSettings.getAuthoritativeData('planScheduledMeals') || [];
+            const menuMeals = window.mealPlannerSettings.getAuthoritativeData('menuScheduledMeals') || [];
+            
+            console.log(`📊 Plan has ${planMeals.length} meals, Menu has ${menuMeals.length} meals`);
+            
+            // Calculate delta
+            const planMealIds = new Set(planMeals.map(m => `${m.recipe_id}-${m.date}-${m.meal_type}`));
+            const menuMealIds = new Set(menuMeals.map(m => `${m.recipe_id}-${m.date}-${m.meal_type}`));
+            
+            const mealsToAdd = planMeals.filter(m => !menuMealIds.has(`${m.recipe_id}-${m.date}-${m.meal_type}`));
+            const mealsToRemove = menuMeals.filter(m => !planMealIds.has(`${m.recipe_id}-${m.date}-${m.meal_type}`));
+            
+            console.log(`📊 Delta: ${mealsToAdd.length} to add, ${mealsToRemove.length} to remove`);
+            
+            // Update UI
+            const deltaContainer = document.getElementById('plan-menu-delta');
+            const deltaSummary = document.getElementById('delta-summary');
+            const deltaDetails = document.getElementById('delta-details');
+            
+            if (mealsToAdd.length === 0 && mealsToRemove.length === 0) {
+                // No changes - hide delta
+                if (deltaContainer) deltaContainer.classList.add('hidden');
+            } else {
+                // Show changes
+                if (deltaContainer) deltaContainer.classList.remove('hidden');
+                
+                if (deltaSummary) {
+                    let summary = [];
+                    if (mealsToAdd.length > 0) summary.push(`${mealsToAdd.length} meals to be added`);
+                    if (mealsToRemove.length > 0) summary.push(`${mealsToRemove.length} meals to be removed`);
+                    deltaSummary.textContent = summary.join(', ');
+                }
+                
+                if (deltaDetails) {
+                    let details = [];
+                    if (mealsToAdd.length > 0) {
+                        details.push(`Adding: ${mealsToAdd.map(m => `${m.recipe_name} on ${m.date}`).join(', ')}`);
+                    }
+                    if (mealsToRemove.length > 0) {
+                        details.push(`Removing: ${mealsToRemove.map(m => `${m.recipe_name} on ${m.date}`).join(', ')}`);
+                    }
+                    deltaDetails.textContent = details.join(' | ');
+                }
+            }
+            
+        } catch (error) {
+            console.error('Error updating delta comparison:', error);
+        }
+    }
+
+    // Navigation method for viewing scheduled meals from Menu tab
+    viewScheduledMeal(recipeId, mealType, scheduledMealId) {
+        console.log(`🍽️ Viewing scheduled meal: Recipe ${recipeId}, Type: ${mealType}, Scheduled ID: ${scheduledMealId}`);
+        
+        if (!window.recipeManager) {
+            console.error('❌ Recipe manager not available');
+            return;
+        }
+        
+        // Set up navigation stack to return to Menu tab
+        if (window.recipeManager.navigationStack) {
+            // Clear any existing navigation stack to ensure clean return
+            window.recipeManager.navigationStack = [];
+        }
+        
+        // Store current Menu tab state for return navigation
+        const currentMenuContent = document.getElementById('menu-tab').innerHTML;
+        if (window.recipeManager.navigationStack) {
+            window.recipeManager.navigationStack.push({
+                container: currentMenuContent,
+                scrollPosition: window.scrollY,
+                returnTab: 'menu', // Custom property to indicate return destination
+                scheduledMealId: scheduledMealId // Store for potential updates
+            });
+        }
+        
+        // Navigate to recipe detail view
+        window.recipeManager.showRecipeDetail(recipeId);
     }
 
     handleClearPlan(mealType) {
@@ -2082,11 +2210,12 @@ class MealPlannerApp {
         console.log(`📅 Applying ${meals.length} ${mealType} meals to plan...`);
         
         try {
-            // Get current scheduled meals from the authoritative source (same place itinerary view reads from)
+            // PLAN VS MENU ARCHITECTURE: Save to Plan storage (prospective schedule)
+            // Plan tab shows working schedule, Menu tab shows committed schedule
             let scheduledMeals = [];
             if (window.mealPlannerSettings) {
-                scheduledMeals = window.mealPlannerSettings.getAuthoritativeData('scheduledMeals') || [];
-                console.log(`📖 Reading ${scheduledMeals.length} existing scheduled meals from authoritative source`);
+                scheduledMeals = window.mealPlannerSettings.getAuthoritativeData('planScheduledMeals') || [];
+                console.log(`📖 Reading ${scheduledMeals.length} existing PLAN scheduled meals from authoritative source`);
             }
             
             // Remove existing meals of this type (to avoid duplicates)
@@ -2121,10 +2250,10 @@ class MealPlannerApp {
             // Add new meals to the schedule
             scheduledMeals.push(...newScheduledMeals);
             
-            // Save to the authoritative data source (the single source of truth)
+            // Save to the PLAN authoritative data source (prospective schedule)
             if (window.mealPlannerSettings) {
-                window.mealPlannerSettings.saveAuthoritativeData('scheduledMeals', scheduledMeals);
-                console.log(`💾 Saved ${scheduledMeals.length} meals to authoritative data source`);
+                window.mealPlannerSettings.saveAuthoritativeData('planScheduledMeals', scheduledMeals);
+                console.log(`💾 Saved ${scheduledMeals.length} meals to PLAN authoritative data source`);
             } else {
                 console.error('❌ Cannot save scheduled meals - settings manager not available');
                 throw new Error('Settings manager not available for saving scheduled meals');
@@ -2247,7 +2376,7 @@ class MealPlannerApp {
             }
             
             // Refresh all components to show empty state
-            this.refreshAllComponents();
+            await this.refreshAllComponents();
             
             console.log('✅ All application data cleared successfully');
             
@@ -2315,7 +2444,7 @@ class MealPlannerApp {
     }
 
     // Refresh all meal plan related views
-    refreshMealPlanViews() {
+    async refreshMealPlanViews() {
         console.log('🔄 Refreshing all meal plan views...');
         
         // Refresh itinerary views
@@ -2342,7 +2471,7 @@ class MealPlannerApp {
         
         // Refresh grocery list to reflect scheduled meal changes
         if (this.groceryListManager && this.groceryListManager.generateFromScheduledMeals) {
-            this.groceryListManager.generateFromScheduledMeals();
+            await this.groceryListManager.generateFromScheduledMeals();
         }
     }
 
@@ -2600,7 +2729,7 @@ class MealPlannerApp {
         this.showNotification('Demo data loaded! This includes sample recipes, ingredients, and meal plans.', 'success');
         
         // Re-render all components with demo data
-        this.refreshAllComponents();
+        await this.refreshAllComponents();
     }
 
     createNewDatabase() {
@@ -2749,12 +2878,12 @@ class MealPlannerApp {
         console.log(`📂 Loading database file: ${file.name}`);
         
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = async (e) => {
             try {
                 // In a real implementation, this would parse the SQLite file
                 console.log('Database file loaded:', e.target.result.byteLength, 'bytes');
                 this.showNotification(`Database "${file.name}" loaded successfully!`, 'success');
-                this.refreshAllComponents();
+                await this.refreshAllComponents();
             } catch (error) {
                 console.error('Error loading database file:', error);
                 this.showNotification('Error loading database file. Please check the file format.', 'error');
@@ -2765,12 +2894,12 @@ class MealPlannerApp {
         reader.readAsArrayBuffer(file);
     }
 
-    createDatabaseFile(name, path) {
+    async createDatabaseFile(name, path) {
         console.log(`🆕 Creating database: ${name} at ${path}`);
         
         // In a real implementation, this would create a new SQLite database
         this.showNotification(`New database "${name}" created successfully!`, 'success');
-        this.refreshAllComponents();
+        await this.refreshAllComponents();
     }
 
     getCurrentDatabaseData() {
@@ -2786,7 +2915,7 @@ class MealPlannerApp {
         });
     }
 
-    refreshAllComponents() {
+    async refreshAllComponents() {
         console.log('🔄 Refreshing all components...');
         
         // Re-render all views with new data
@@ -2800,6 +2929,9 @@ class MealPlannerApp {
             this.mealManager.render();
         }
         if (this.groceryListManager) {
+            // CONSISTENCY FIX: Reload data before rendering to prevent stale cached data
+            // This ensures Menu tab shows correct state after clearAllData(), just like other tabs
+            await this.groceryListManager.loadData();
             this.groceryListManager.render();
         }
         

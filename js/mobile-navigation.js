@@ -2,7 +2,7 @@
 class MobileNavigation {
     constructor() {
         this.isMobile = this.detectMobile();
-        this.currentTab = 'dinner';
+        this.currentTab = 'recipes'; // Fixed: was 'dinner' (legacy), should default to 'recipes'
         this.userHasInteracted = false; // Track if user has interacted with page
         this.autoHideEnabled = false; // Default to false - always show navigation
         this.lastScrollY = 0;
@@ -58,7 +58,7 @@ class MobileNavigation {
         bottomNav.className = 'fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-40 safe-area-inset-bottom';
         
         // Get settings to determine which tabs to show
-        const settings = window.settingsManager?.settings || { showBreakfast: false, showLunch: false, showDinner: true };
+        const settings = window.settingsManager?.settings || { showPlan: true };
         
         let tabsHTML = `
             <button class="mobile-nav-tab flex flex-col items-center py-1 px-1 min-w-0 flex-1" data-tab="items">
@@ -72,24 +72,6 @@ class MobileNavigation {
             </button>
             
 `;
-        
-        // Only add breakfast tab if enabled
-        if (settings.showBreakfast) {
-            tabsHTML += `
-            <button class="mobile-nav-tab flex flex-col items-center py-1 px-1 min-w-0 flex-1" data-tab="breakfast">
-                <span class="text-lg mb-1">🍳</span>
-                <span class="text-xs font-medium">Breakfast</span>
-            </button>`;
-        }
-        
-        // Only add lunch tab if enabled
-        if (settings.showLunch) {
-            tabsHTML += `
-            <button class="mobile-nav-tab flex flex-col items-center py-1 px-1 min-w-0 flex-1" data-tab="lunch">
-                <span class="text-lg mb-1">🥪</span>
-                <span class="text-xs font-medium">Lunch</span>
-            </button>`;
-        }
         
         // Only add plan tab if enabled (should be true by default)
         if (settings.showPlan) {

@@ -525,7 +525,7 @@ class RecipeManager {
                         <div class="text-xs text-gray-400">
                             ${recipe.recipe_type === 'combo' ? 
                                 `${this.getCombinedItemsForCombo(recipe).length} items (from ${recipe.recipes ? recipe.recipes.length : (recipe.combo_recipes ? recipe.combo_recipes.length : 0)} recipes)` : 
-                                `${recipe.items ? recipe.items.length : 0} items`
+                                `${(recipe.items || recipe.ingredients || []).length} items`
                             }
                         </div>
                     </div>
@@ -837,6 +837,15 @@ class RecipeManager {
         return ingredient ? ingredient.name : 'Unknown Ingredient';
     }
 
+    // Utility function to round quantities to 2 decimal places and remove trailing zeros
+    // PRINCIPLE: All quantities must be realistic values that a user could manually enter via UI
+    // Items should be either whole numbers or rounded to hundredths (0.00) for practical use
+    // No programmatic artifacts like 0.3333333333333333 - these would never be user-entered
+    roundQuantity(quantity) {
+        const rounded = Math.round(quantity * 100) / 100;
+        return parseFloat(rounded.toFixed(2));
+    }
+
     getCombinedItemsForCombo(comboRecipe) {
         const combinedItems = new Map(); // Use Map to combine quantities of same items
         
@@ -854,14 +863,14 @@ class RecipeManager {
                 const key = `${ingredientName}_${ingredient.unit}`;
                 
                 if (combinedItems.has(key)) {
-                    // Add to existing quantity
+                    // Add to existing quantity and round it
                     const existing = combinedItems.get(key);
-                    existing.quantity += (parseFloat(ingredient.quantity) || 0) * portions;
+                    existing.quantity = this.roundQuantity(existing.quantity + (parseFloat(ingredient.quantity) || 0) * portions);
                 } else {
-                    // Add new item
+                    // Add new item with rounded quantity
                     combinedItems.set(key, {
                         name: ingredientName,
-                        quantity: (parseFloat(ingredient.quantity) || 0) * portions,
+                        quantity: this.roundQuantity((parseFloat(ingredient.quantity) || 0) * portions),
                         unit: ingredient.unit || ''
                     });
                 }
@@ -875,24 +884,21 @@ class RecipeManager {
             const key = `${ingredientName}_${ingredient.unit}`;
             
             if (combinedItems.has(key)) {
-                // Add to existing quantity
+                // Add to existing quantity and round it
                 const existing = combinedItems.get(key);
-                existing.quantity += parseFloat(ingredient.quantity) || 0;
+                existing.quantity = this.roundQuantity(existing.quantity + (parseFloat(ingredient.quantity) || 0));
             } else {
-                // Add new item
+                // Add new item with rounded quantity
                 combinedItems.set(key, {
                     name: ingredientName,
-                    quantity: parseFloat(ingredient.quantity) || 0,
+                    quantity: this.roundQuantity(parseFloat(ingredient.quantity) || 0),
                     unit: ingredient.unit || ''
                 });
             }
         });
         
-        // Convert Map to array and format quantities
-        return Array.from(combinedItems.values()).map(item => ({
-            ...item,
-            quantity: item.quantity % 1 === 0 ? item.quantity.toString() : item.quantity.toFixed(2)
-        }));
+        // Convert Map to array - quantities are already properly rounded
+        return Array.from(combinedItems.values());
     }
 
     attachEventListeners() {
@@ -1204,7 +1210,7 @@ class RecipeManager {
                         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Items</h3>
                         
                         <div id="ingredients-container" class="space-y-3 mb-4">
-                            ${this.renderIngredientRows(isEdit ? recipe.items : [])}
+                            ${this.renderItemRows(isEdit ? recipe.items : [], false)}
                         </div>
                         
                         <!-- Action buttons below the list -->
@@ -1305,7 +1311,19 @@ class RecipeManager {
         }, 100);
     }
 
-    renderIngredientRows(ingredients = []) {
+    /**
+     * Renders item rows for recipe/combo forms
+     * 
+     * TERMINOLOGY NOTE: We use "items" instead of "ingredients" because:
+     * - Items are more inclusive: bag of chips, ice cream scoop, napkins, utensils
+     * - Ingredients are restrictive: only things you cook/prepare with
+     * - Items can be standalone foods, non-edible components, or traditional ingredients
+     * 
+     * @param {Array} ingredients - Array of item data (keeping variable name for compatibility)
+     * @param {boolean} isCombo - If true, additional items are optional; if false (regular recipe), first item is required
+     * @returns {string} HTML string for item rows
+     */
+    renderItemRows(ingredients = [], isCombo = false) {
         if (ingredients.length === 0) {
             ingredients = [{ ingredient_id: '', name: '', quantity: '', unit: '', notes: '' }];
         }
@@ -1317,7 +1335,10 @@ class RecipeManager {
                         Item
                     </label>
                     <select class="ingredient-select w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                            name="ingredients[${index}][ingredient_id]" ${index === 0 ? 'required' : ''}>
+                            name="ingredients[${index}][ingredient_id]" ${!isCombo && index === 0 ? 'required' : ''}>
+                            <!-- VALIDATION LOGIC: 
+                                 - Regular recipes: First item is required (at least one item needed)
+                                 - Combos: All additional items are optional (recipes provide the base) -->
                         <option value="">Select item...</option>
                         ${this.ingredients.map(ing => `
                             <option value="${ing.id}" data-unit="${ing.default_unit}" 
@@ -1336,7 +1357,7 @@ class RecipeManager {
                            class="ingredient-quantity w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                            name="ingredients[${index}][quantity]" 
                            value="${ingredient.quantity}"
-                           placeholder="1.5" ${index === 0 ? 'required' : ''}>
+                           placeholder="1.5" ${!isCombo && index === 0 ? 'required' : ''}>
                 </div>
                 
                 <div class="col-span-3">
@@ -1493,7 +1514,7 @@ class RecipeManager {
                            class="ingredient-quantity w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                            name="ingredients[${index}][quantity]" 
                            value="${ingredient.quantity}"
-                           placeholder="1.5" ${index === 0 ? 'required' : ''}>
+                           placeholder="1.5" ${!isCombo && index === 0 ? 'required' : ''}>
                 </div>
                 
                 <div class="col-span-3">
@@ -2257,6 +2278,12 @@ class RecipeManager {
                     if (window.mealPlannerApp) {
                         window.mealPlannerApp.switchTab('plan');
                     }
+                } else if (returnTab === 'menu') {
+                    window.mobileNavigation.updateActiveTab('menu');
+                    // Also switch the main app to the menu tab
+                    if (window.mealPlannerApp) {
+                        window.mealPlannerApp.switchTab('menu');
+                    }
                 } else {
                     window.mobileNavigation.updateActiveTab('recipes');
                 }
@@ -2605,7 +2632,8 @@ class RecipeManager {
         const labels = recipe.labels || recipe.tags || [];
         
         // For regular recipes, keep it simple - no complex content generation
-        const ingredients = recipe.items || [];
+        // MIGRATION: Support both 'items' (new) and 'ingredients' (legacy) during transition
+        const ingredients = recipe.items || recipe.ingredients || [];
         const itemCount = ingredients.length;
         console.log('📖 Regular recipe ingredients:', itemCount);
         
@@ -2742,8 +2770,100 @@ class RecipeManager {
         modal.id = 'recipe-detail-modal';
         modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-start sm:items-center justify-center z-50 p-1 sm:p-4';
 
-        // Format labels/tags
+        // Format labels/tags and calculate item count
         const labels = recipe.labels || recipe.tags || [];
+        // MIGRATION: Support both 'items' (new) and 'ingredients' (legacy) during transition
+        const ingredients = recipe.items || recipe.ingredients || [];
+        const itemCount = ingredients.length;
+
+        // Generate content sections
+        let contentSection = '';
+        let instructionsSection = '';
+
+        // Generate items/ingredients section
+        if (recipe.recipe_type === 'combo') {
+            // For combos, show both recipes and additional items
+            const recipes = recipe.combo_recipes || recipe.recipes || [];
+            const additionalItems = recipe.items || [];
+            
+            contentSection = `
+                <!-- Combo Recipes -->
+                ${recipes.length > 0 ? `
+                    <div class="mb-4">
+                        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Recipes (${recipes.length})</h3>
+                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 space-y-2">
+                            ${recipes.map(r => {
+                                // Look up the actual recipe by ID to get the title
+                                const foundRecipe = this.recipes.find(recipe => recipe.id === r.recipe_id);
+                                const recipeName = foundRecipe ? foundRecipe.title : `Recipe ID ${r.recipe_id}`;
+                                return `
+                                    <div class="flex justify-between items-center text-xs">
+                                        <span class="text-gray-700 dark:text-gray-300">${recipeName}</span>
+                                        <span class="text-gray-500 dark:text-gray-400">${r.servings || 1} servings</span>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+                
+                <!-- Additional Items -->
+                ${additionalItems.length > 0 ? `
+                    <div class="mb-4">
+                        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Additional Items (${additionalItems.length})</h3>
+                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 space-y-2">
+                            ${additionalItems.map(item => {
+                                // Look up the actual item by ID to get the name
+                                const foundItem = this.ingredients.find(ingredient => ingredient.id === item.ingredient_id);
+                                const itemName = foundItem ? foundItem.name : `Item ID ${item.ingredient_id}`;
+                                return `
+                                    <div class="flex justify-between items-center text-xs">
+                                        <span class="text-gray-700 dark:text-gray-300">${itemName}</span>
+                                        <span class="text-gray-500 dark:text-gray-400">${item.quantity} ${item.unit}</span>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+            `;
+        } else {
+            // For regular recipes, show ingredients/items
+            contentSection = `
+                <!-- Items -->
+                ${ingredients.length > 0 ? `
+                    <div class="mb-4">
+                        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Items (${ingredients.length})</h3>
+                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 space-y-2">
+                            ${ingredients.map(item => {
+                                // Look up the actual item by ID to get the name
+                                const foundItem = this.ingredients.find(ingredient => ingredient.id === item.ingredient_id);
+                                const itemName = foundItem ? foundItem.name : `Item ID ${item.ingredient_id}`;
+                                return `
+                                    <div class="flex justify-between items-center text-xs">
+                                        <span class="text-gray-700 dark:text-gray-300">${itemName}</span>
+                                        <span class="text-gray-500 dark:text-gray-400">${item.quantity} ${item.unit}</span>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+            `;
+        }
+
+        // Generate instructions section
+        const instructions = recipe.instructions || [];
+        if (instructions.length > 0) {
+            instructionsSection = instructions.map((instruction, index) => `
+                <div class="flex items-start space-x-2 text-xs">
+                    <span class="bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-medium flex-shrink-0 mt-0.5">${index + 1}</span>
+                    <span class="text-gray-700 dark:text-gray-300 leading-relaxed">${instruction}</span>
+                </div>
+            `).join('');
+        } else {
+            instructionsSection = '<span class="text-xs text-gray-500 dark:text-gray-400">No instructions available</span>';
+        }
 
         modal.innerHTML = `
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-full sm:max-w-2xl md:max-w-4xl h-[90vh] sm:max-h-[90vh] flex flex-col mx-1 sm:mx-4 md:mx-0">
@@ -3048,12 +3168,15 @@ class RecipeManager {
                         </div>
 
                         <!-- Items Section for Combo -->
+                        <!-- COMBO ADDITIONAL ITEMS: Optional items beyond the recipes in the combo
+                             Examples: bag of chips, ice cream scoop, napkins, beverages, sides
+                             These are completely optional - combos work with just recipes -->
                         <div>
                             <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Additional Items</h3>
                             <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Add individual items that don't have their own recipe (e.g., watermelon, bread, etc.)</p>
                             
                             <div id="ingredients-container" class="space-y-3 mb-4">
-                                ${this.renderIngredientRows(isEdit ? recipe.items : [])}
+                                ${this.renderItemRows(isEdit ? recipe.items : [], true)}
                             </div>
                             
                             <!-- Item Action buttons -->
@@ -3074,7 +3197,7 @@ class RecipeManager {
                             <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Items</h3>
                             
                             <div id="ingredients-container" class="space-y-3 mb-4">
-                                ${this.renderIngredientRows(isEdit ? recipe.items : [])}
+                                ${this.renderItemRows(isEdit ? recipe.items : [], false)}
                             </div>
                             
                             <!-- Action buttons below the list -->
@@ -3678,7 +3801,9 @@ class RecipeManager {
             // Rebuild ingredient rows
             if (ingredientData.length > 0) {
                 console.log('🥕 Restoring', ingredientData.length, 'ingredients');
-                ingredientsContainer.innerHTML = this.renderIngredientRows(ingredientData);
+                // Check if this is a combo form by looking for recipe rows
+                const isCombo = form.querySelector('.recipe-row') !== null;
+                ingredientsContainer.innerHTML = this.renderItemRows(ingredientData, isCombo);
                 
                 // Reattach listeners to ingredient rows
                 ingredientsContainer.querySelectorAll('.ingredient-row').forEach(row => {
@@ -4174,7 +4299,7 @@ class RecipeManager {
                 id: Date.now(), // Simple ID generation
                 recipe_id: recipe.id,
                 name: recipe.title,
-                meal_type: context.mealType === 'plan' ? 'dinner' : context.mealType, // Default to dinner for plan tab
+                meal_type: context.mealType === 'plan' ? 'plan' : context.mealType, // Keep plan as plan
                 date: new Date(context.targetDate).toISOString(),
                 created_at: new Date().toISOString()
             };
