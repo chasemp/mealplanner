@@ -4,7 +4,7 @@ class MealPlannerApp {
         this.currentTab = 'recipes';
         this.previousTab = null;
         this.navigationHistory = [];
-        this.version = '2025.09.13.0854';
+        this.version = '2025.09.13.1332';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
@@ -118,6 +118,20 @@ class MealPlannerApp {
 
         document.getElementById('export-db-btn')?.addEventListener('click', () => {
             this.handleExportDatabase();
+        });
+
+        // Settings tab export/import buttons
+        document.getElementById('export-db-btn-settings')?.addEventListener('click', () => {
+            this.handleExportDatabase();
+        });
+
+        document.getElementById('import-db-btn-settings')?.addEventListener('click', () => {
+            this.handleImportDatabase();
+        });
+
+        // Import file input
+        document.getElementById('import-file-input')?.addEventListener('change', (e) => {
+            this.handleImportFile(e);
         });
 
         // Google Calendar integration
@@ -1793,7 +1807,7 @@ class MealPlannerApp {
         // Get scheduled meals for the selected timeframe
         let scheduledMeals = [];
         if (window.mealPlannerSettings) {
-            const allMeals = window.mealPlannerSettings.getAuthoritativeData('scheduledMeals') || [];
+            const allMeals = window.mealPlannerSettings.getAuthoritativeData('menuScheduledMeals') || [];
             scheduledMeals = allMeals.filter(meal => {
                 const mealDate = new Date(meal.date);
                 // Normalize dates to avoid timezone issues
@@ -1847,21 +1861,26 @@ class MealPlannerApp {
             `;
             
             meals.forEach(meal => {
-                mealsHTML += `
-                    <div class="flex items-center justify-between bg-white dark:bg-gray-600 rounded p-3 border border-gray-200 dark:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500 cursor-pointer transition-colors"
-                         onclick="window.app.viewScheduledMeal(${meal.recipe_id}, '${meal.meal_type}', ${meal.id})"
-                         title="Click to view recipe details">
-                        <div>
-                            <div class="font-medium text-gray-900 dark:text-white">${meal.recipe_name || 'Unknown Recipe'}</div>
-                            <div class="text-sm text-gray-500 dark:text-gray-400">${meal.meal_type} • ${meal.servings || 4} servings</div>
-                        </div>
-                        <div class="text-gray-400 dark:text-gray-300">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
-                        </div>
-                    </div>
-                `;
+                // Use string concatenation instead of template strings to avoid truncation issues
+                const recipeId = meal.recipe_id;
+                const mealType = JSON.stringify(meal.meal_type);
+                const mealId = JSON.stringify(meal.id);
+                const recipeName = meal.recipe_name || 'Unknown Recipe';
+                const servings = meal.servings || 4;
+                
+                mealsHTML += '<div class="flex items-center justify-between bg-white dark:bg-gray-600 rounded p-3 border border-gray-200 dark:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500 cursor-pointer transition-colors" ' +
+                    'onclick="window.app.viewScheduledMeal(' + recipeId + ', ' + mealType + ', ' + mealId + ')" ' +
+                    'title="Click to view recipe details">' +
+                    '<div>' +
+                        '<div class="font-medium text-gray-900 dark:text-white">' + recipeName + '</div>' +
+                        '<div class="text-sm text-gray-500 dark:text-gray-400">' + meal.meal_type + ' • ' + servings + ' servings</div>' +
+                    '</div>' +
+                    '<div class="text-gray-400 dark:text-gray-300">' +
+                        '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+                            '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>' +
+                        '</svg>' +
+                    '</div>' +
+                '</div>';
             });
             
             mealsHTML += `
@@ -2037,10 +2056,15 @@ class MealPlannerApp {
             this.updateMenuMealsDisplay();
             
             // Show success notification with timeframe-specific count
-            const timeframeName = activeItineraryView.weeksToShow === 1 ? 'This week' : `${activeItineraryView.weeksToShow} weeks`;
-            this.showNotification(`Menu updated! ${mealsInTimeframe.length} scheduled meals from ${timeframeName} synced to grocery list.`, 'success');
-            
-            console.log(`✅ Menu update completed with ${mealsInTimeframe.length} meals from current timeframe`);
+            if (this.itineraryViews && this.itineraryViews['plan']) {
+                const planView = this.itineraryViews['plan'];
+                const mealsInTimeframe = planView.getScheduledMealsInTimeframe();
+                const timeframeName = planView.weeksToShow === 1 ? 'This week' : `${planView.weeksToShow} weeks`;
+                this.showNotification(`Menu updated! ${mealsInTimeframe.length} scheduled meals from ${timeframeName} synced to grocery list.`, 'success');
+                console.log(`✅ Menu update completed with ${mealsInTimeframe.length} meals from current timeframe`);
+            } else {
+                console.log(`✅ Menu update completed with ${planScheduledMeals.length} meals`);
+            }
             
         } catch (error) {
             console.error('❌ Error updating menu:', error);
@@ -2779,23 +2803,161 @@ class MealPlannerApp {
     handleExportDatabase() {
         console.log('💾 Exporting database...');
         
-        // Create a blob with the current database state
-        const dbData = this.getCurrentDatabaseData();
-        const blob = new Blob([dbData], { type: 'application/octet-stream' });
+        try {
+            // Create a blob with the current database state
+            const dbData = this.getCurrentDatabaseData();
+            const blob = new Blob([dbData], { type: 'application/json' });
+            
+            // Create download link
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `mealplanner-export-${new Date().toISOString().split('T')[0]}.json`;
+            a.style.display = 'none';
+            
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            this.showNotification('Database exported successfully!', 'success');
+        } catch (error) {
+            console.error('❌ Error exporting database:', error);
+            this.showNotification('Error exporting database. Please try again.', 'error');
+        }
+    }
+
+    handleImportDatabase() {
+        console.log('📥 Opening file picker for import...');
         
-        // Create download link
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `mealplanner-${new Date().toISOString().split('T')[0]}.db`;
-        a.style.display = 'none';
+        // Trigger the hidden file input
+        const fileInput = document.getElementById('import-file-input');
+        if (fileInput) {
+            fileInput.click();
+        } else {
+            this.showNotification('Import functionality not available.', 'error');
+        }
+    }
+
+    async handleImportFile(event) {
+        const file = event.target.files[0];
+        if (!file) {
+            return;
+        }
+
+        console.log('📥 Importing file:', file.name);
+
+        try {
+            // Read the file content
+            const fileContent = await this.readFileAsText(file);
+            
+            // Parse the JSON
+            const importData = JSON.parse(fileContent);
+            
+            // Validate the import data structure
+            if (!this.validateImportData(importData)) {
+                this.showNotification('Invalid import file format. Please use a valid MealPlanner export file.', 'error');
+                return;
+            }
+
+            // Confirm import with user
+            const confirmed = await this.confirmImport(importData);
+            if (!confirmed) {
+                return;
+            }
+
+            // Import the data
+            await this.importDataToLocalStorage(importData);
+            
+            // Refresh all components to reflect the new data
+            await this.refreshAllComponents();
+            
+            this.showNotification('Database imported successfully! All data has been refreshed.', 'success');
+            
+        } catch (error) {
+            console.error('❌ Error importing database:', error);
+            this.showNotification('Error importing database. Please check the file format and try again.', 'error');
+        } finally {
+            // Reset the file input
+            event.target.value = '';
+        }
+    }
+
+    readFileAsText(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.onerror = (e) => reject(e);
+            reader.readAsText(file);
+        });
+    }
+
+    validateImportData(data) {
+        // Check if it's a valid MealPlanner export
+        if (!data || typeof data !== 'object') {
+            return false;
+        }
+
+        // Check for required fields
+        if (!data.version || !data.exported || !data.schema || !data.data) {
+            return false;
+        }
+
+        // Check if schema structure matches expected format
+        const expectedSchemaKeys = [
+            'items', 'recipes', 'combos', 'scheduledMeals', 
+            'planScheduledMeals', 'menuScheduledMeals', 'pantryItems',
+            'groceryList', 'demoDataPopulated', 'mealPreferences',
+            'favoriteRecipes', 'settings'
+        ];
+
+        const schemaKeys = Object.keys(data.schema);
+        const hasRequiredKeys = expectedSchemaKeys.every(key => schemaKeys.includes(key));
+
+        return hasRequiredKeys;
+    }
+
+    async confirmImport(importData) {
+        // Show confirmation dialog with import details
+        const itemCount = importData.data.items?.length || 0;
+        const recipeCount = importData.data.recipes?.length || 0;
+        const comboCount = importData.data.combos?.length || 0;
+        const mealCount = importData.data.scheduledMeals?.length || 0;
         
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        const message = `Import data from ${importData.exported}?\n\n` +
+                       `Items: ${itemCount}\n` +
+                       `Recipes: ${recipeCount}\n` +
+                       `Combos: ${comboCount}\n` +
+                       `Scheduled Meals: ${mealCount}\n\n` +
+                       `This will replace all current data. Continue?`;
+
+        return confirm(message);
+    }
+
+    async importDataToLocalStorage(importData) {
+        console.log('📥 Importing data to localStorage...');
         
-        this.showNotification('Database exported successfully!', 'success');
+        // Clear existing data first
+        Object.values(importData.schema).forEach(storageKey => {
+            localStorage.removeItem(storageKey);
+        });
+
+        // Import new data
+        Object.keys(importData.schema).forEach(key => {
+            const storageKey = importData.schema[key];
+            const value = importData.data[key];
+            
+            if (value !== null && value !== undefined) {
+                if (typeof value === 'object') {
+                    localStorage.setItem(storageKey, JSON.stringify(value));
+                } else {
+                    localStorage.setItem(storageKey, value);
+                }
+                console.log(`✅ Imported ${key}: ${Array.isArray(value) ? value.length : '1'} items`);
+            }
+        });
+
+        console.log('✅ Data import completed');
     }
 
     isInstalled() {
@@ -2915,16 +3077,44 @@ class MealPlannerApp {
     }
 
     getCurrentDatabaseData() {
-        // In a real implementation, this would serialize the current SQLite database
-        // For now, return a mock database structure
-        return JSON.stringify({
+        // Export all localStorage data in a schema-complete JSON object
+        const exportData = {
             version: this.version,
             exported: new Date().toISOString(),
-            recipes: [],
-            items: [],
-            meal_plans: [],
-            pantry_items: []
+            schema: {
+                items: 'mealplanner_items',
+                recipes: 'mealplanner_recipes', 
+                combos: 'mealplanner_combos',
+                scheduledMeals: 'mealplanner_scheduledMeals',
+                planScheduledMeals: 'mealplanner_planScheduledMeals',
+                menuScheduledMeals: 'mealplanner_menuScheduledMeals',
+                pantryItems: 'mealplanner_pantryItems',
+                groceryList: 'mealplanner_groceryList',
+                demoDataPopulated: 'mealplanner_demo_data_populated',
+                mealPreferences: 'mealPreferences',
+                favoriteRecipes: 'favoriteRecipes',
+                settings: 'mealplanner_settings'
+            },
+            data: {}
+        };
+
+        // Export all localStorage data
+        Object.keys(exportData.schema).forEach(key => {
+            const storageKey = exportData.schema[key];
+            const value = localStorage.getItem(storageKey);
+            if (value) {
+                try {
+                    exportData.data[key] = JSON.parse(value);
+                } catch (e) {
+                    // If not JSON, store as string
+                    exportData.data[key] = value;
+                }
+            } else {
+                exportData.data[key] = null;
+            }
         });
+
+        return JSON.stringify(exportData, null, 2);
     }
 
     async refreshAllComponents() {

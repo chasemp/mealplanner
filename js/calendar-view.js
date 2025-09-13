@@ -12,31 +12,24 @@ class CalendarView {
     
     loadScheduledMeals() {
         try {
-            // Use the same data loading logic as itinerary view for consistency
-            if (window.mealPlannerSettings) {
-                const allMeals = window.mealPlannerSettings.getAuthoritativeData('scheduledMeals') || [];
-                if (this.mealType === 'plan') {
-                    // For plan tab, show all scheduled meals regardless of type
-                    this.scheduledMeals = allMeals;
-                } else {
-                    // For specific meal types, filter by type
-                    this.scheduledMeals = allMeals.filter(meal => meal.meal_type === this.mealType);
-                }
+            // PLAN VS MENU ARCHITECTURE: Plan tab shows prospective schedule, other tabs show committed schedule
+            let allMeals = [];
+            if (this.mealType === 'plan') {
+                // Plan tab shows prospective schedule from planScheduledMeals
+                allMeals = window.mealPlannerSettings?.getAuthoritativeData('planScheduledMeals') || [];
+                console.log(`📅 Calendar view loading ${allMeals.length} meals from PLAN storage (prospective schedule)`);
             } else {
-                // Fallback to localStorage
-                const stored = localStorage.getItem('mealplanner_scheduled_meals');
-                if (stored) {
-                    const allMeals = JSON.parse(stored);
-                    if (this.mealType === 'plan') {
-                        // For plan tab, show all scheduled meals
-                        this.scheduledMeals = allMeals;
-                    } else {
-                        // For specific meal types, filter by type
-                        this.scheduledMeals = allMeals.filter(meal => meal.meal_type === this.mealType);
-                    }
-                } else {
-                    this.scheduledMeals = [];
-                }
+                // Other meal type tabs show committed schedule from menuScheduledMeals
+                allMeals = window.mealPlannerSettings?.getAuthoritativeData('menuScheduledMeals') || [];
+                console.log(`📅 Calendar view loading ${allMeals.length} meals from MENU storage (committed schedule)`);
+            }
+            
+            if (this.mealType === 'plan') {
+                // For plan tab, show all scheduled meals regardless of type
+                this.scheduledMeals = allMeals;
+            } else {
+                // For specific meal types, filter by type
+                this.scheduledMeals = allMeals.filter(meal => meal.meal_type === this.mealType);
             }
             
             console.log(`📅 Calendar view loaded ${this.scheduledMeals.length} ${this.mealType === 'plan' ? 'total' : this.mealType} meals:`, this.scheduledMeals);
