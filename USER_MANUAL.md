@@ -46,6 +46,44 @@ MealPlanner uses an **authoritative data source** system that determines where y
 
 ## Demo Data Mode
 
+### Demo Data Lifecycle (Technical Overview)
+
+**CRITICAL**: Understanding how demo data works is essential for proper application behavior.
+
+#### The Intended Flow
+1. **First Site Load**: 
+   - Demo data is loaded into localStorage
+   - Flag `mealplanner_demo_data_loaded = true` is set
+   - User can now modify this data freely
+
+2. **Subsequent Page Loads**:
+   - Flag prevents auto-reload of demo data
+   - localStorage becomes the authoritative source
+   - User modifications are preserved
+
+3. **Clear All Data**:
+   - Removes all data from localStorage
+   - **Keeps the demo data loaded flag** (critical!)
+   - No auto-reload occurs - data stays cleared
+
+4. **Reset Demo Data** (explicit user action):
+   - Temporarily clears the flag
+   - Reloads original demo data
+   - Sets flag again to prevent future auto-reloads
+
+#### Current Issue (Under Investigation)
+There is a **race condition** where something loads demo data before the flag system can prevent it. This causes demo data to auto-reload even after clearing, which violates the intended behavior.
+
+**Symptoms**:
+- Clear All Data works initially
+- Page refresh causes demo data to reappear
+- Flag system is bypassed somehow
+
+**Investigation Status**:
+- Confirmed: Something populates localStorage before `initializeDemoData()` runs
+- The data already exists when flag check happens, so flag logic is skipped
+- Need to find what's calling demo data loading during app initialization
+
 ### Key Principles
 
 #### 1. localStorage is Authoritative
@@ -153,6 +191,30 @@ The Items and Recipes tabs use a **navigation stack** system for complex page na
 ---
 
 ## Troubleshooting
+
+### Demo Data Race Condition (Active Bug Investigation)
+
+**Issue**: Demo data auto-reloads after clearing, despite flag system designed to prevent this.
+
+**Investigation Progress**:
+
+1. **Confirmed Race Condition**: Something loads demo data before the flag system can prevent it
+2. **Evidence Found**: 
+   - Console logs show `initializeDemoData()` called but data already exists
+   - Flag logic is skipped because localStorage is not empty
+   - Data exists when it should be empty after clearing
+
+3. **Suspected Root Cause**: 
+   - Manager initialization sequence calls `getAuthoritativeData()` during startup
+   - RecipeManager, ItemsManager, etc. request data before flag system is active
+   - Something in this chain populates localStorage with demo data
+
+4. **Next Investigation Steps**:
+   - Trace exact call sequence during app initialization
+   - Find what populates localStorage between manager calls
+   - Implement flag check earlier in the data loading chain
+
+5. **Workaround**: Use "Reset Demo Data" to restore clean demo state, then manually clear specific items as needed.
 
 ### Common Issues
 
