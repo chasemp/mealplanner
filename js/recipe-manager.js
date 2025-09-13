@@ -57,6 +57,7 @@ class RecipeManager {
         }
         
         console.log('📱 Final recipes count:', this.recipes.length);
+        this.render(); // IMPORT/EXPORT FIX: Render after loading data to ensure UI updates
     }
 
     async saveRecipes() {
