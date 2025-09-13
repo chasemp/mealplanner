@@ -3120,14 +3120,19 @@ class MealPlannerApp {
     async refreshAllComponents() {
         console.log('🔄 Refreshing all components...');
         
-        // Re-render all views with new data
+        // IMPORT/EXPORT FIX: Reload data before rendering to ensure UI reflects imported data
+        // This fixes the issue where imported data exists in localStorage but UI doesn't display it
         if (this.recipeManager) {
+            await this.recipeManager.loadRecipes();
             this.recipeManager.render();
         }
         if (this.itemsManager) {
+            await this.itemsManager.loadItems();
             this.itemsManager.render();
         }
         if (this.mealManager) {
+            await this.mealManager.loadRecipes();
+            await this.mealManager.loadMeals();
             this.mealManager.render();
         }
         if (this.groceryListManager) {

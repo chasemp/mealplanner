@@ -35,6 +35,7 @@ class ItemsManager {
         
         console.log('📱 Final items count:', this.items.length);
         this.applyFilters();
+        this.render(); // IMPORT/EXPORT FIX: Render after loading data to ensure UI updates
     }
 
     applyFilters() {
