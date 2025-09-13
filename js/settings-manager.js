@@ -7,7 +7,7 @@ class SettingsManager {
         console.log('🔍 TRACE: Settings manager initializing, localStorage state:');
         console.log('  - items:', localStorage.getItem('mealplanner_items') ? 'EXISTS' : 'NULL');
         console.log('  - recipes:', localStorage.getItem('mealplanner_recipes') ? 'EXISTS' : 'NULL');
-        console.log('  - demo_data_loaded flag:', localStorage.getItem('mealplanner_demo_data_loaded'));
+        console.log('  - demo_data_populated flag:', localStorage.getItem('mealplanner_demo_data_populated'));
         
         // Store original demo data in memory for reset functionality
         this.originalDemoData = {};
@@ -47,7 +47,7 @@ class SettingsManager {
         console.log('🔍 TRACE: Final localStorage state after constructor:');
         console.log('  - items:', localStorage.getItem('mealplanner_items') ? 'EXISTS' : 'NULL');
         console.log('  - recipes:', localStorage.getItem('mealplanner_recipes') ? 'EXISTS' : 'NULL');
-        console.log('  - demo_data_loaded flag:', localStorage.getItem('mealplanner_demo_data_loaded'));
+        console.log('  - demo_data_populated flag:', localStorage.getItem('mealplanner_demo_data_populated'));
     }
 
     initializeFirstTimeDemo() {
@@ -63,9 +63,9 @@ class SettingsManager {
             return;
         }
         
-        const demoDataLoaded = localStorage.getItem('mealplanner_demo_data_loaded');
-        if (demoDataLoaded === 'true') {
-            console.log('🔍 TRACE: Demo data was previously loaded, skipping first-time initialization');
+        const demoDataPopulated = localStorage.getItem('mealplanner_demo_data_populated');
+        if (demoDataPopulated === 'true') {
+            console.log('🔍 TRACE: Demo data was previously populated, skipping first-time initialization');
             return;
         }
         
@@ -520,13 +520,15 @@ class SettingsManager {
         console.log('🔍 TRACE: localStorage state at initializeDemoData() entry:');
         console.log('  - items:', localStorage.getItem('mealplanner_items') ? 'EXISTS' : 'NULL');
         console.log('  - recipes:', localStorage.getItem('mealplanner_recipes') ? 'EXISTS' : 'NULL');
-        console.log('  - demo_data_loaded flag:', localStorage.getItem('mealplanner_demo_data_loaded'));
-        console.log('🎯 Initializing demo data to localStorage...');
+        console.log('  - demo_data_populated flag:', localStorage.getItem('mealplanner_demo_data_populated'));
+        console.log('🎯 Checking if demo data initialization should proceed...');
         
-        // Check if demo data was ever loaded before - if so, don't reload unless explicit reset
-        const demoDataLoaded = localStorage.getItem('mealplanner_demo_data_loaded');
-        if (demoDataLoaded === 'true') {
-            console.log('🚩 Demo data was previously loaded - skipping auto-reload (use Reset Demo Data for explicit reload)');
+        // CRITICAL: Check if demo data was already auto-populated on initial site load
+        // This prevents repeated auto-population regardless of how many times user clears data
+        const demoDataPopulated = localStorage.getItem('mealplanner_demo_data_populated');
+        if (demoDataPopulated === 'true') {
+            console.log('🚫 BLOCKED: Demo data was already auto-populated on initial site load');
+            console.log('🚫 Demo data will ONLY load on explicit user reset via Settings, never automatically');
             return;
         }
         
@@ -581,10 +583,10 @@ class SettingsManager {
             
             console.log('🎯 Demo data initialization completed');
             
-            // CRITICAL: Always set the flag, even if data already existed
-            // This ensures we don't get stuck in an inconsistent state where data exists but flag is not set
-            localStorage.setItem('mealplanner_demo_data_loaded', 'true');
-            console.log('🚩 Set demo data loaded flag - prevents future auto-reloads');
+            // CRITICAL: Set flag to prevent future auto-population
+            // This flag persists even after "Clear All Data" to prevent re-population
+            localStorage.setItem('mealplanner_demo_data_populated', 'true');
+            console.log('🚩 Set demo_data_populated flag - prevents future auto-population');
             
             console.log('💾 Original demo data stored in memory for reset functionality');
         } catch (error) {
@@ -596,7 +598,7 @@ class SettingsManager {
     //
     // INTENDED BEHAVIOR:
     // - Removes all user data from localStorage
-    // - PRESERVES the mealplanner_demo_data_loaded flag (critical!)
+    // - PRESERVES the mealplanner_demo_data_populated flag (critical!)
     // - This ensures demo data does NOT auto-reload on page refresh
     // - Data should stay cleared until user manually adds new data or resets demo data
     //
@@ -604,24 +606,31 @@ class SettingsManager {
     // - Race condition causes demo data to auto-reload despite flag preservation
     // - Something bypasses the flag system during app initialization
     clearAllData() {
-        console.log('🗑️ Clearing all data from localStorage...');
+        console.log('🗑️ COMPREHENSIVE CLEAR: Clearing ALL data while preserving demo population flag...');
         
         try {
-            const dataTypes = ['items', 'recipes', 'scheduledMeals', 'pantryItems', 'meals'];
+            // Clear ALL MealPlanner localStorage keys EXCEPT the demo_data_populated flag
+            const allKeys = Object.keys(localStorage);
+            const mealPlannerKeys = allKeys.filter(key => 
+                key.startsWith('mealplanner_') && 
+                key !== 'mealplanner_demo_data_populated' // PRESERVE this flag
+            );
             
-            dataTypes.forEach(dataType => {
-                const storageKey = `mealplanner_${dataType}`;
-                localStorage.removeItem(storageKey);
-                console.log(`✅ Cleared ${dataType} from localStorage`);
+            mealPlannerKeys.forEach(key => {
+                localStorage.removeItem(key);
+                console.log(`✅ Cleared ${key} from localStorage`);
             });
             
-            // Note: We keep the mealplanner_demo_data_loaded flag so demo data doesn't auto-reload
-            console.log('🚩 Demo data loaded flag preserved - no auto-reload will occur');
+            // CRITICAL: Preserve the demo_data_populated flag to prevent auto-population
+            // This ensures demo data will NOT auto-populate after clearing, only on explicit reset
+            const demoPopulatedFlag = localStorage.getItem('mealplanner_demo_data_populated');
+            console.log(`🚩 PRESERVED demo_data_populated flag: ${demoPopulatedFlag}`);
+            console.log('🚩 Demo data will ONLY load on explicit user reset via Settings, never automatically');
             
-            console.log('🗑️ All data cleared successfully');
+            console.log('🗑️ COMPREHENSIVE CLEAR completed successfully');
             return true;
         } catch (error) {
-            console.error('❌ Error clearing data:', error);
+            console.error('❌ Error in comprehensive clear:', error);
             return false;
         }
     }
@@ -631,9 +640,10 @@ class SettingsManager {
         console.log('🔄 Resetting to original demo data...');
         
         try {
-            // Temporarily clear the demo data loaded flag so initializeDemoData can run
-            localStorage.removeItem('mealplanner_demo_data_loaded');
-            console.log('🚩 Temporarily cleared demo data loaded flag for reset');
+            // CRITICAL: Clear the demo_data_populated flag since user is explicitly resetting demo data
+            // This allows initializeDemoData to run and repopulate demo data
+            localStorage.removeItem('mealplanner_demo_data_populated');
+            console.log('🚩 CLEARED demo_data_populated flag - user explicitly requested demo data reset');
             
             if (!this.originalDemoData || Object.keys(this.originalDemoData).length === 0) {
                 console.warn('⚠️ Original demo data not available, reinitializing...');
@@ -652,9 +662,9 @@ class SettingsManager {
                 console.log(`✅ Reset ${dataType}: ${originalData.length} items restored`);
             });
             
-            // Set the demo data loaded flag since we just restored demo data
-            localStorage.setItem('mealplanner_demo_data_loaded', 'true');
-            console.log('🚩 Set demo data loaded flag - demo data restored');
+            // Set the demo_data_populated flag since we just restored demo data
+            localStorage.setItem('mealplanner_demo_data_populated', 'true');
+            console.log('🚩 Set demo_data_populated flag - demo data restored');
             
             console.log('🔄 Demo data reset completed');
             return true;
@@ -683,7 +693,7 @@ class SettingsManager {
         console.log(`📊 TRACE: getAuthoritativeData(${dataType}) called from source: ${currentSource}`);
         console.log(`🔍 TRACE: localStorage state before loading ${dataType}:`);
         console.log(`  - mealplanner_${dataType}:`, localStorage.getItem(`mealplanner_${dataType}`) ? 'EXISTS' : 'NULL');
-        console.log(`  - demo_data_loaded flag:`, localStorage.getItem('mealplanner_demo_data_loaded'));
+        console.log(`  - demo_data_populated flag:`, localStorage.getItem('mealplanner_demo_data_populated'));
         
         // Add stack trace to see who's calling this
         console.log('🔍 TRACE: Call stack:', new Error().stack);

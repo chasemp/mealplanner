@@ -409,7 +409,7 @@ class MealPlannerApp {
         console.log('🔍 TRACE: localStorage state before manager initialization:');
         console.log('  - items:', localStorage.getItem('mealplanner_items') ? 'EXISTS' : 'NULL');
         console.log('  - recipes:', localStorage.getItem('mealplanner_recipes') ? 'EXISTS' : 'NULL');
-        console.log('  - demo_data_loaded flag:', localStorage.getItem('mealplanner_demo_data_loaded'));
+        console.log('  - demo_data_populated flag:', localStorage.getItem('mealplanner_demo_data_populated'));
         console.log('📱 Initializing managers...');
         
         // Check if all manager classes are available
@@ -497,7 +497,7 @@ class MealPlannerApp {
         console.log('🔍 TRACE: localStorage state before SettingsManager constructor:');
         console.log('  - items:', localStorage.getItem('mealplanner_items') ? 'EXISTS' : 'NULL');
         console.log('  - recipes:', localStorage.getItem('mealplanner_recipes') ? 'EXISTS' : 'NULL');
-        console.log('  - demo_data_loaded flag:', localStorage.getItem('mealplanner_demo_data_loaded'));
+        console.log('  - demo_data_populated flag:', localStorage.getItem('mealplanner_demo_data_populated'));
         
         console.log('⚙️ Initializing settings manager...');
         this.settingsManager = new SettingsManager();
@@ -505,7 +505,7 @@ class MealPlannerApp {
         console.log('🔍 TRACE: localStorage state after SettingsManager constructor:');
         console.log('  - items:', localStorage.getItem('mealplanner_items') ? 'EXISTS' : 'NULL');
         console.log('  - recipes:', localStorage.getItem('mealplanner_recipes') ? 'EXISTS' : 'NULL');
-        console.log('  - demo_data_loaded flag:', localStorage.getItem('mealplanner_demo_data_loaded'));
+        console.log('  - demo_data_populated flag:', localStorage.getItem('mealplanner_demo_data_populated'));
         
         window.settingsManager = this.settingsManager;
         window.mealPlannerSettings = this.settingsManager; // Also set the expected reference
@@ -2335,16 +2335,27 @@ class MealPlannerApp {
     }
 
     async clearAllData() {
-        console.log('🗑️ Clearing ALL application data for in-memory mode...');
+        console.log('🗑️ COMPREHENSIVE CLEAR: Clearing ALL application data and preventing demo auto-population...');
         
         try {
-            // Clear all manager data
+            // STEP 1: Use SettingsManager comprehensive clear to handle localStorage and flags
+            if (window.mealPlannerSettings) {
+                const success = window.mealPlannerSettings.clearAllData();
+                if (!success) {
+                    throw new Error('SettingsManager clearAllData failed');
+                }
+            }
+            
+            // STEP 2: Clear all manager in-memory data and UI caches
             if (this.itemsManager) {
                 await this.itemsManager.clearAllData();
             }
             
             if (this.recipeManager) {
                 await this.recipeManager.clearAllData();
+                // CRITICAL: Clear RecipeManager ingredients cache to prevent demo data pollution
+                this.recipeManager.ingredients = [];
+                console.log('🔄 CLEARED RecipeManager ingredients cache');
             }
             
             if (this.mealManager) {
@@ -2359,7 +2370,7 @@ class MealPlannerApp {
                 await this.groceryListManager.clearAllData();
             }
             
-            // Clear local app state
+            // STEP 3: Clear local app state and UI caches
             this.selectedRecipes = {
                 breakfast: [],
                 lunch: [],
@@ -2375,13 +2386,14 @@ class MealPlannerApp {
                 this.mealRotationEngine.clearAllData();
             }
             
-            // Refresh all components to show empty state
+            // STEP 4: Force refresh all components to show empty state
             await this.refreshAllComponents();
             
-            console.log('✅ All application data cleared successfully');
+            console.log('✅ COMPREHENSIVE CLEAR completed successfully');
+            console.log('🚫 Demo data auto-population PREVENTED - will only load on explicit user reset');
             
         } catch (error) {
-            console.error('❌ Error clearing all data:', error);
+            console.error('❌ Error in comprehensive clear:', error);
             throw error;
         }
     }
