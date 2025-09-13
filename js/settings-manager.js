@@ -438,18 +438,8 @@ class SettingsManager {
 
     async loadDemoData() {
         console.log('Loading demo data...');
-        // Only initialize demo data when switching TO demo mode from another source
-        // If already in demo mode, localStorage is authoritative and should not be overwritten
-        const hasExistingData = localStorage.getItem('mealplanner_items') || 
-                               localStorage.getItem('mealplanner_recipes') || 
-                               localStorage.getItem('mealplanner_meals');
-        
-        if (!hasExistingData) {
-            console.log('📋 No existing data found - initializing demo data');
-            this.initializeDemoData();
-        } else {
-            console.log('📋 Existing data found - respecting localStorage as authoritative source');
-        }
+        // Demo data initialization is handled by initializeDemoData() with proper flag logic
+        this.initializeDemoData();
         return true;
     }
 
@@ -529,8 +519,30 @@ class SettingsManager {
     }
 
     // Initialize demo data into localStorage on first load
+    // 
+    // CRITICAL RACE CONDITION BUG (Under Investigation):
+    // This method is called during settings manager initialization, but something else
+    // is loading demo data BEFORE this runs. When this method executes, localStorage
+    // already contains demo data, so the flag logic is never reached.
+    //
+    // Evidence:
+    // - Console shows "📋 items already exists in localStorage, skipping initialization"
+    // - Flag is never set because initialization is skipped
+    // - This causes demo data to auto-reload on every page refresh
+    //
+    // Investigation needed:
+    // - Find what's calling demo data loading during app startup
+    // - Likely in manager initialization sequence (RecipeManager, ItemsManager, etc.)
+    // - Check getAuthoritativeData() call chain during startup
     initializeDemoData() {
         console.log('🎯 Initializing demo data to localStorage...');
+        
+        // Check if demo data was ever loaded before - if so, don't reload unless explicit reset
+        const demoDataLoaded = localStorage.getItem('mealplanner_demo_data_loaded');
+        if (demoDataLoaded === 'true') {
+            console.log('🚩 Demo data was previously loaded - skipping auto-reload (use Reset Demo Data for explicit reload)');
+            return;
+        }
         
         if (!window.DemoDataManager) {
             console.warn('⚠️ DemoDataManager not available for initialization');
@@ -567,16 +579,26 @@ class SettingsManager {
                 // Store original demo data in memory for reset functionality
                 this.originalDemoData[dataType] = JSON.parse(JSON.stringify(data));
                 
-                // Only initialize localStorage if not already present
+                // Only initialize localStorage if not already present AND data hasn't been explicitly cleared
+                const dataCleared = localStorage.getItem('mealplanner_data_cleared');
                 if (!localStorage.getItem(storageKey)) {
-                    localStorage.setItem(storageKey, JSON.stringify(data));
-                    console.log(`✅ Initialized ${dataType}: ${data.length} items`);
+                    if (dataCleared === 'true') {
+                        console.log(`🚩 ${dataType} was explicitly cleared, skipping demo data initialization`);
+                    } else {
+                        localStorage.setItem(storageKey, JSON.stringify(data));
+                        console.log(`✅ Initialized ${dataType}: ${data.length} items`);
+                    }
                 } else {
                     console.log(`📋 ${dataType} already exists in localStorage, skipping initialization`);
                 }
             });
             
             console.log('🎯 Demo data initialization completed');
+            
+            // Set flag to indicate demo data has been loaded - prevents future auto-reloads
+            localStorage.setItem('mealplanner_demo_data_loaded', 'true');
+            console.log('🚩 Set demo data loaded flag - prevents future auto-reloads');
+            
             console.log('💾 Original demo data stored in memory for reset functionality');
         } catch (error) {
             console.error('❌ Error initializing demo data:', error);
@@ -584,6 +606,16 @@ class SettingsManager {
     }
 
     // Clear all data from localStorage (for clean slate testing)
+    //
+    // INTENDED BEHAVIOR:
+    // - Removes all user data from localStorage
+    // - PRESERVES the mealplanner_demo_data_loaded flag (critical!)
+    // - This ensures demo data does NOT auto-reload on page refresh
+    // - Data should stay cleared until user manually adds new data or resets demo data
+    //
+    // CURRENT BUG:
+    // - Race condition causes demo data to auto-reload despite flag preservation
+    // - Something bypasses the flag system during app initialization
     clearAllData() {
         console.log('🗑️ Clearing all data from localStorage...');
         
@@ -595,6 +627,9 @@ class SettingsManager {
                 localStorage.removeItem(storageKey);
                 console.log(`✅ Cleared ${dataType} from localStorage`);
             });
+            
+            // Note: We keep the mealplanner_demo_data_loaded flag so demo data doesn't auto-reload
+            console.log('🚩 Demo data loaded flag preserved - no auto-reload will occur');
             
             console.log('🗑️ All data cleared successfully');
             return true;
@@ -609,6 +644,10 @@ class SettingsManager {
         console.log('🔄 Resetting to original demo data...');
         
         try {
+            // Temporarily clear the demo data loaded flag so initializeDemoData can run
+            localStorage.removeItem('mealplanner_demo_data_loaded');
+            console.log('🚩 Temporarily cleared demo data loaded flag for reset');
+            
             if (!this.originalDemoData || Object.keys(this.originalDemoData).length === 0) {
                 console.warn('⚠️ Original demo data not available, reinitializing...');
                 this.initializeDemoData();
@@ -626,6 +665,10 @@ class SettingsManager {
                 console.log(`✅ Reset ${dataType}: ${originalData.length} items restored`);
             });
             
+            // Set the demo data loaded flag since we just restored demo data
+            localStorage.setItem('mealplanner_demo_data_loaded', 'true');
+            console.log('🚩 Set demo data loaded flag - demo data restored');
+            
             console.log('🔄 Demo data reset completed');
             return true;
         } catch (error) {
@@ -635,6 +678,19 @@ class SettingsManager {
     }
 
     // Centralized data loading authority - all managers get data from here
+    //
+    // RACE CONDITION INVESTIGATION:
+    // This method is called by managers during initialization (RecipeManager, ItemsManager, etc.)
+    // When sourceType is 'demo', it calls getDemoData() -> getLocalData()
+    // If localStorage is empty, getLocalData() returns [] (empty array)
+    // BUT: Something must be populating localStorage between manager calls
+    // 
+    // Suspected call sequence during app startup:
+    // 1. Settings manager initializes (sourceType = 'demo')
+    // 2. RecipeManager initializes -> calls getAuthoritativeData('items') -> returns []
+    // 3. RecipeManager initializes -> calls getAuthoritativeData('recipes') -> returns []
+    // 4. ??? Something populates localStorage with demo data ???
+    // 5. Settings manager calls initializeDemoData() -> finds data already exists -> skips flag setting
     getAuthoritativeData(dataType) {
         const currentSource = this.getCurrentDatabaseSource();
         console.log(`📊 Loading authoritative ${dataType} data from source: ${currentSource}`);
