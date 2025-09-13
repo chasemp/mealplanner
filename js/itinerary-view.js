@@ -984,21 +984,32 @@ class ItineraryView {
     forceRefresh() {
         console.log(`🔄 Force refreshing ${this.mealType} itinerary view...`);
         
-        // Clear the container completely
+        // Clear the container completely to ensure fresh render
         if (this.container) {
             this.container.innerHTML = '<div class="text-center py-4">Loading...</div>';
+            console.log(`🧹 Container cleared for ${this.mealType} itinerary view`);
         }
         
         // Use setTimeout to ensure DOM updates are processed
         setTimeout(() => {
-            // Reload data from authoritative source
+            // Force reload data from authoritative source
             this.loadScheduledMeals();
+            console.log(`📊 After reload: ${this.scheduledMeals.length} meals loaded for ${this.mealType}`);
+            
+            // Clear any cached state that might interfere
+            this.expandedWeeks.clear();
             
             // Re-render with fresh data
             this.render();
             
+            // Force a DOM reflow to ensure visual update
+            if (this.container) {
+                this.container.offsetHeight; // Trigger reflow
+                console.log(`🔄 Forced DOM reflow for ${this.mealType} itinerary view`);
+            }
+            
             console.log(`✅ Force refresh completed for ${this.mealType} itinerary view`);
-        }, 50);
+        }, 100); // Slightly longer delay to ensure all updates are processed
     }
 
     // Drag and Drop functionality

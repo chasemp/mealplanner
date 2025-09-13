@@ -2119,8 +2119,7 @@ class MealPlannerApp {
             // Force refresh the plan itinerary view specifically
             if (this.itineraryViews['plan']) {
                 console.log('🔄 Force refreshing plan itinerary view');
-                this.itineraryViews['plan'].loadScheduledMeals();
-                this.itineraryViews['plan'].render();
+                this.itineraryViews['plan'].forceRefresh();
             }
             
             // Show success notification
