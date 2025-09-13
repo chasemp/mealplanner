@@ -403,6 +403,11 @@ class MealPlannerApp {
     }
 
     async initializeManagers() {
+        console.log('📱 TRACE: initializeManagers() ENTRY POINT');
+        console.log('🔍 TRACE: localStorage state before manager initialization:');
+        console.log('  - items:', localStorage.getItem('mealplanner_items') ? 'EXISTS' : 'NULL');
+        console.log('  - recipes:', localStorage.getItem('mealplanner_recipes') ? 'EXISTS' : 'NULL');
+        console.log('  - demo_data_loaded flag:', localStorage.getItem('mealplanner_demo_data_loaded'));
         console.log('📱 Initializing managers...');
         
         // Check if all manager classes are available
@@ -486,8 +491,20 @@ class MealPlannerApp {
     }
 
     initializeSettingsManager() {
+        console.log('⚙️ TRACE: initializeSettingsManager() ENTRY POINT');
+        console.log('🔍 TRACE: localStorage state before SettingsManager constructor:');
+        console.log('  - items:', localStorage.getItem('mealplanner_items') ? 'EXISTS' : 'NULL');
+        console.log('  - recipes:', localStorage.getItem('mealplanner_recipes') ? 'EXISTS' : 'NULL');
+        console.log('  - demo_data_loaded flag:', localStorage.getItem('mealplanner_demo_data_loaded'));
+        
         console.log('⚙️ Initializing settings manager...');
         this.settingsManager = new SettingsManager();
+        
+        console.log('🔍 TRACE: localStorage state after SettingsManager constructor:');
+        console.log('  - items:', localStorage.getItem('mealplanner_items') ? 'EXISTS' : 'NULL');
+        console.log('  - recipes:', localStorage.getItem('mealplanner_recipes') ? 'EXISTS' : 'NULL');
+        console.log('  - demo_data_loaded flag:', localStorage.getItem('mealplanner_demo_data_loaded'));
+        
         window.settingsManager = this.settingsManager;
         window.mealPlannerSettings = this.settingsManager; // Also set the expected reference
         console.log('✅ Settings manager initialized and available as both window.settingsManager and window.mealPlannerSettings');

@@ -11,8 +11,14 @@
 
 class DemoDataManager {
     constructor() {
+        console.log('📱 TRACE: DemoDataManager constructor ENTRY POINT');
+        console.log('🔍 TRACE: localStorage state when DemoDataManager created:');
+        console.log('  - items:', localStorage.getItem('mealplanner_items') ? 'EXISTS' : 'NULL');
+        console.log('  - recipes:', localStorage.getItem('mealplanner_recipes') ? 'EXISTS' : 'NULL');
+        console.log('  - demo_data_loaded flag:', localStorage.getItem('mealplanner_demo_data_loaded'));
         console.log('📱 DemoDataManager constructor called');
         this.initializeData();
+        console.log('📱 TRACE: DemoDataManager constructor COMPLETED');
     }
 
     initializeData() {
