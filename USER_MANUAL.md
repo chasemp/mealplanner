@@ -4,9 +4,10 @@
 1. [Database Source Management](#database-source-management)
 2. [Demo Data Mode](#demo-data-mode)
 3. [Data Persistence and Authority](#data-persistence-and-authority)
-4. [Navigation and UI](#navigation-and-ui)
-5. [Item Management](#item-management)
-6. [Troubleshooting](#troubleshooting)
+4. [Plan vs Menu Staging Workflow](#plan-vs-menu-staging-workflow)
+5. [Navigation and UI](#navigation-and-ui)
+6. [Item Management](#item-management)
+7. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -142,6 +143,253 @@ User Action → Manager Updates → localStorage Save → UI Refresh
      ↑                                              ↓
 Page Load ← Authoritative Source ← Settings Manager ← localStorage
 ```
+
+---
+
+## Plan vs Menu Staging Workflow
+
+### Architecture Overview
+
+MealPlanner uses a **staging vs production** architecture for meal planning:
+
+- **Plan Tab** = **Staging Environment** (prospective schedule)
+- **Menu Tab** = **Production Environment** (committed schedule)
+
+This allows you to build and refine meal plans without affecting your live menu until you're ready to publish changes.
+
+### Core Concepts
+
+#### 1. Separate Data Storage
+- **Plan Storage**: `planScheduledMeals` - working/prospective schedule
+- **Menu Storage**: `menuScheduledMeals` - committed/published schedule
+- **Complete Isolation**: Changes in Plan don't affect Menu until explicitly updated
+
+#### 2. Staging Workflow
+```
+Recipes → Planning Queue → Auto Plan → Plan Tab (staging) → Update Menu → Menu Tab (production)
+```
+
+#### 3. State Transitions
+- **Complete State Changes**: Plan moves between complete states, not incremental updates
+- **Delta Comparison**: See exactly what will change before committing
+- **Reset Capability**: Discard Plan changes and revert to Menu state
+
+### Detailed Workflow
+
+#### Step 1: Build Planning Queue
+1. Go to **Recipes** tab (`📖`)
+2. Click **Add to planning queue** (`📅`) on desired recipes/combos
+3. Recipes are added to the planning queue (not scheduled yet)
+
+**Example**:
+```
+✅ Added "Chicken Rice Bowl" to planning queue
+✅ Added "Dinner Combo 1" to planning queue
+Planning Queue: 2 recipes, 1 combo
+```
+
+#### Step 2: Create Prospective Schedule (Staging)
+1. Go to **Plan** tab (`📋`)
+2. Verify planning queue shows your recipes
+3. Click **Auto Plan** to generate schedule
+4. Plan creates prospective schedule in staging environment
+
+**Example Result**:
+```
+✅ Plan generated! 6 meals planned using 2 selected recipes
+Current Week: 2/7 meals planned
+- Friday 9/12: Dinner Combo 1
+- Saturday 9/13: Chicken Rice Bowl
+Planning Queue: Cleared (recipes consumed by Auto Plan)
+```
+
+#### Step 3: Review and Refine (Optional)
+- **View Schedule**: See all planned meals in Plan tab
+- **Make Changes**: Add/remove meals, adjust dates
+- **Delta Comparison**: System shows differences between Plan and Menu
+- **Safe Environment**: Changes only affect staging, not live menu
+
+#### Step 4: Commit to Production
+**Option A: Update Menu** (Publish Changes)
+1. Review delta comparison box (if visible)
+2. Click **Update Menu** button
+3. Plan schedule is copied to Menu storage
+4. Menu tab now shows committed schedule
+5. Grocery lists and other features update automatically
+
+**Example**:
+```
+✅ Menu updated! 6 meals committed to menu
+Delta Applied:
+- Added: Dinner Combo 1 on 9/12, Chicken Rice Bowl on 9/13
+- Removed: (none)
+```
+
+**Option B: Clear Plan Changes** (Discard Changes)
+1. Click **Clear Plan Changes** button
+2. Plan reverts to current Menu state
+3. All staging changes are discarded
+4. Plan and Menu are now synchronized
+
+**Example**:
+```
+✅ Plan changes cleared! Reverted to menu with 0 meals
+```
+
+### Delta Comparison System
+
+When Plan and Menu differ, a **Plan Changes** box appears showing:
+
+#### Delta Summary
+- **Meals to be added**: Count of new meals in Plan
+- **Meals to be removed**: Count of meals being removed from Menu
+
+#### Delta Details
+- **Adding**: Specific meals and dates being added
+- **Removing**: Specific meals and dates being removed
+
+**Example Delta Display**:
+```
+┌─ Plan Changes ─────────────────────────────┐
+│ 2 meals to be added                        │
+│                                            │
+│ Adding: Dinner Combo 1 on 2025-09-12,     │
+│         Chicken Rice Bowl on 2025-09-13   │
+└────────────────────────────────────────────┘
+```
+
+### Testing Scenarios
+
+#### Scenario 1: Fresh Start to Full Menu
+```bash
+# Starting State
+Plan: Empty (0 meals)
+Menu: Empty (0 meals)
+Delta: None (hidden)
+
+# Step 1: Add recipes to planning queue
+→ Recipes tab → Add "Chicken Rice Bowl" → Add "Dinner Combo 1"
+Planning Queue: 2 recipes
+
+# Step 2: Generate plan
+→ Plan tab → Auto Plan
+Plan: 6 meals (2 in current week)
+Menu: Empty (0 meals)
+Delta: "2 meals to be added"
+
+# Step 3: Commit to menu
+→ Click "Update Menu"
+Plan: 6 meals
+Menu: 6 meals (committed)
+Delta: None (synchronized)
+```
+
+#### Scenario 2: Modify Existing Menu
+```bash
+# Starting State
+Plan: 6 meals (synchronized with Menu)
+Menu: 6 meals (committed)
+Delta: None
+
+# Step 1: Add more recipes
+→ Recipes tab → Add "Tomato Rice" to planning queue
+→ Plan tab → Auto Plan (regenerates with new recipe)
+Plan: 8 meals (includes new recipe)
+Menu: 6 meals (unchanged)
+Delta: "2 meals to be added"
+
+# Step 2: Review changes
+Delta Details: "Adding: Tomato Rice on 2025-09-14, Tomato Rice on 2025-09-16"
+
+# Step 3: Decide
+Option A: Update Menu (commit changes)
+Option B: Clear Plan Changes (discard and revert)
+```
+
+#### Scenario 3: Discard Changes
+```bash
+# Starting State
+Plan: 8 meals (modified)
+Menu: 6 meals (original)
+Delta: "2 meals to be added"
+
+# Action: Discard changes
+→ Click "Clear Plan Changes"
+Plan: 6 meals (reverted to Menu state)
+Menu: 6 meals (unchanged)
+Delta: None (synchronized)
+```
+
+### Data Storage Technical Details
+
+#### localStorage Keys
+- `mealplanner_planScheduledMeals`: Staging environment data
+- `mealplanner_menuScheduledMeals`: Production environment data
+- `mealplanner_scheduledMeals`: Legacy data (being migrated)
+
+#### Console Debugging
+```javascript
+// Check Plan storage
+console.log('Plan meals:', localStorage.getItem('mealplanner_planScheduledMeals'));
+
+// Check Menu storage  
+console.log('Menu meals:', localStorage.getItem('mealplanner_menuScheduledMeals'));
+
+// Verify separation
+Plan tab loads from: planScheduledMeals
+Menu tab loads from: menuScheduledMeals
+```
+
+### Best Practices
+
+#### 1. Plan First, Commit Later
+- Always build your schedule in Plan tab first
+- Review the complete plan before committing to Menu
+- Use delta comparison to understand exactly what will change
+
+#### 2. Safe Experimentation
+- Plan tab is your sandbox - experiment freely
+- Changes don't affect grocery lists or other features until committed
+- Use "Clear Plan Changes" to start over if needed
+
+#### 3. Complete State Management
+- Don't try to make incremental changes to Menu directly
+- Always work through Plan → Update Menu workflow
+- Think in terms of complete meal plans, not individual meal changes
+
+#### 4. Testing Workflow
+```bash
+1. Clear All Data (clean slate)
+2. Create test items and recipes
+3. Add recipes to planning queue
+4. Generate plan in staging
+5. Review delta comparison
+6. Commit to menu or discard changes
+7. Verify Menu tab shows committed schedule
+8. Test grocery list generation from committed menu
+```
+
+### Troubleshooting Plan vs Menu Issues
+
+#### "Menu tab shows no meals after Auto Plan"
+- **Expected Behavior**: Auto Plan only affects Plan tab (staging)
+- **Solution**: Click "Update Menu" to commit Plan to Menu
+- **Verification**: Menu tab should show meals after Update Menu
+
+#### "Delta comparison not showing"
+- **Cause**: Plan and Menu are synchronized (no differences)
+- **Solution**: Make changes in Plan tab first, then check for delta box
+- **Verification**: Delta box appears when Plan ≠ Menu
+
+#### "Clear Plan Changes not working"
+- **Cause**: Plan and Menu already synchronized
+- **Solution**: This is expected behavior when no changes exist
+- **Verification**: Check that Plan tab matches Menu tab content
+
+#### "Update Menu button not working"
+- **Cause**: No meals in Plan to commit
+- **Solution**: Generate a plan first using Auto Plan
+- **Verification**: Plan tab should show meals before updating Menu
 
 ---
 

@@ -2087,4 +2087,252 @@ if (!window.mealPlannerSettings) {
 
 ---
 
-*This document captures the lessons learned from building the MealPlanner PWA, emphasizing the importance of the static PWA sweet spot: modular organization without build complexity, enhanced with intelligent development tooling, schema-driven demo data generation, holistic data consistency management through single authoritative data sources, explicit cross-platform UI styling, systematic debugging approaches for complex UI state management, and critical mobile-first design patterns that prioritize full-page experiences over constrained modal interactions.*
+---
+
+## 🎯 **Demo Data Lifecycle Management: Critical PWA Architecture**
+
+### **The Demo Data Challenge in Production PWAs**
+
+**Problem**: Demo data management becomes complex in production PWAs where users expect:
+- Fresh demo data on first visit (showcase features)
+- Preserved user changes during session (localStorage authoritative)
+- Ability to clear data completely (clean slate)
+- Explicit reset to restore demo state (not automatic reload)
+
+**Traditional Approach Issues**:
+- Demo data auto-reloads on every page refresh
+- User changes get overwritten unexpectedly
+- No clear distinction between "first load" and "subsequent loads"
+- Race conditions between initialization and data loading
+
+### **The Authoritative Data Source Solution**
+
+**Core Principle**: localStorage is ALWAYS the authoritative source once demo data is loaded. Demo data serves only as initial seed.
+
+**Implementation Pattern**:
+```javascript
+// ✅ CORRECT: Demo data lifecycle management
+class SettingsManager {
+    initializeFirstTimeDemo() {
+        // Only load demo data if:
+        // 1. We're in demo mode
+        // 2. localStorage is completely empty (first-time user)
+        // 3. Demo data was never loaded before
+        
+        if (this.settings.sourceType !== 'demo') return;
+        
+        const demoDataLoaded = localStorage.getItem('mealplanner_demo_data_loaded');
+        if (demoDataLoaded === 'true') {
+            console.log('🚩 Demo data previously loaded - localStorage is authoritative');
+            return;
+        }
+        
+        // First-time user: seed localStorage with demo data
+        this.initializeDemoData();
+        localStorage.setItem('mealplanner_demo_data_loaded', 'true');
+    }
+    
+    clearAllData() {
+        // Clear all data but PRESERVE the demo data loaded flag
+        // This prevents auto-reload after clearing
+        const demoDataLoaded = localStorage.getItem('mealplanner_demo_data_loaded');
+        localStorage.clear();
+        if (demoDataLoaded) {
+            localStorage.setItem('mealplanner_demo_data_loaded', demoDataLoaded);
+        }
+    }
+    
+    resetDemoData() {
+        // Explicit reset: temporarily clear flag, reload data, set flag again
+        localStorage.removeItem('mealplanner_demo_data_loaded');
+        this.initializeDemoData();
+        localStorage.setItem('mealplanner_demo_data_loaded', 'true');
+    }
+}
+```
+
+### **Critical Race Condition Prevention**
+
+**The Race Condition**: Something loads demo data into localStorage BEFORE the flag system can prevent it.
+
+**Evidence Pattern**:
+```javascript
+// Console logs showing the race condition:
+console.log('🎯 Initializing demo data to localStorage...');
+console.log('📋 items already exists in localStorage, skipping initialization');
+// Flag never gets set because initialization was skipped!
+```
+
+**Root Cause**: Manager initialization sequence calls `getAuthoritativeData()` which may trigger demo data loading before `initializeDemoData()` runs its flag check.
+
+**Prevention Strategy**:
+```javascript
+// Always set flag at END of initializeDemoData(), even if data already existed
+initializeDemoData() {
+    // ... data initialization logic ...
+    
+    // CRITICAL: Always set flag, regardless of whether data was actually initialized
+    localStorage.setItem('mealplanner_demo_data_loaded', 'true');
+    console.log('🚩 Set demo data loaded flag - prevents future auto-reloads');
+}
+```
+
+### **Demo Data Lifecycle States**
+
+**State 1: Fresh User (First Visit)**
+- localStorage: Empty
+- Flag: `null`
+- Action: Load demo data, set flag
+- Result: User sees demo data
+
+**State 2: Returning User (Page Refresh)**
+- localStorage: Contains data (demo or user-modified)
+- Flag: `'true'`
+- Action: No auto-reload, localStorage is authoritative
+- Result: User sees their data (preserved changes)
+
+**State 3: User Clears Data**
+- localStorage: Empty (except flag)
+- Flag: `'true'` (preserved)
+- Action: No auto-reload
+- Result: User sees empty app (clean slate)
+
+**State 4: User Resets Demo Data**
+- localStorage: Fresh demo data
+- Flag: `'true'` (reset)
+- Action: Explicit reload of demo data
+- Result: User sees original demo data
+
+### **Implementation Debugging Strategy**
+
+**Debug Logging Pattern**:
+```javascript
+// Comprehensive state logging for demo data issues
+console.log('🔍 TRACE: localStorage state at key points:');
+console.log('  - items:', localStorage.getItem('mealplanner_items') ? 'EXISTS' : 'NULL');
+console.log('  - recipes:', localStorage.getItem('mealplanner_recipes') ? 'EXISTS' : 'NULL');
+console.log('  - demo_data_loaded flag:', localStorage.getItem('mealplanner_demo_data_loaded'));
+
+// Manager initialization sequence logging
+console.log('⚙️ SETTINGS MANAGER CONSTRUCTOR STARTED');
+console.log('📱 TRACE: initializeManagers() ENTRY POINT');
+console.log('🎯 TRACE: initializeDemoData() ENTRY POINT');
+```
+
+### **Cache Busting for Demo Data Fixes**
+
+**Problem**: Browser caching can prevent demo data fixes from loading.
+
+**Solution**: Version management system ensures fresh JavaScript loads:
+```bash
+# Update all JavaScript file versions simultaneously
+npm run version:update
+
+# Force cache refresh in browser
+# Service worker update notification: "A new version is available!"
+```
+
+### **Testing Strategy for Demo Data**
+
+**Test Scenarios**:
+1. **Fresh Site Load**: Verify demo data loads and flag is set
+2. **Page Refresh**: Verify no auto-reload occurs
+3. **Clear All Data**: Verify data clears and no auto-reload
+4. **Reset Demo Data**: Verify explicit reload works
+5. **User Modifications**: Verify changes persist across refreshes
+
+**Unit Test Pattern**:
+```javascript
+describe('Demo Data Lifecycle', () => {
+    test('first-time user gets demo data and flag is set', () => {
+        // localStorage empty, no flag
+        expect(localStorage.getItem('mealplanner_demo_data_loaded')).toBeNull();
+        
+        settingsManager.initializeFirstTimeDemo();
+        
+        // Demo data loaded, flag set
+        expect(localStorage.getItem('mealplanner_items')).toBeTruthy();
+        expect(localStorage.getItem('mealplanner_demo_data_loaded')).toBe('true');
+    });
+    
+    test('returning user with flag does not get auto-reload', () => {
+        localStorage.setItem('mealplanner_demo_data_loaded', 'true');
+        localStorage.setItem('mealplanner_items', JSON.stringify([{id: 'user-item'}]));
+        
+        settingsManager.initializeFirstTimeDemo();
+        
+        // User data preserved, no demo data reload
+        const items = JSON.parse(localStorage.getItem('mealplanner_items'));
+        expect(items[0].id).toBe('user-item');
+    });
+});
+```
+
+### **Key Architecture Lessons**
+
+**Lesson 1: localStorage is Always Authoritative**
+- Once demo data is seeded to localStorage, treat it like user data
+- Never auto-reload demo data on page refresh
+- User modifications to demo data are legitimate and should persist
+
+**Lesson 2: Flag System Prevents Auto-Reload**
+- `mealplanner_demo_data_loaded` flag tracks if demo data was ever loaded
+- Flag persists through data clearing (prevents auto-reload after clear)
+- Only explicit reset should reload demo data
+
+**Lesson 3: Race Conditions Require Defensive Programming**
+- Always set flag at end of initialization, even if data already existed
+- Add comprehensive debug logging to trace initialization sequence
+- Use cache busting to ensure fixes actually load in browser
+
+**Lesson 4: Demo Data Should Enhance, Not Interfere**
+- Demo data provides great first-time user experience
+- But should never interfere with user's ability to modify or clear data
+- Clear distinction between "demo mode" and "demo data auto-reload"
+
+### **Critical Implementation Checklist**
+
+**✅ Demo Data Lifecycle**
+- [ ] Demo data loads only on first visit (empty localStorage + no flag)
+- [ ] Flag prevents auto-reload on subsequent visits
+- [ ] Clear All Data preserves flag (no auto-reload after clear)
+- [ ] Reset Demo Data explicitly reloads (only intentional reload)
+
+**✅ Race Condition Prevention**
+- [ ] Flag always set at end of initialization
+- [ ] Comprehensive debug logging for troubleshooting
+- [ ] Cache busting system for deploying fixes
+- [ ] Unit tests cover all lifecycle states
+
+**✅ User Experience**
+- [ ] First-time users see rich demo data
+- [ ] Returning users see their preserved changes
+- [ ] Clear data provides clean slate (no auto-reload)
+- [ ] Reset provides fresh demo data when desired
+
+### **Future PWA Development Guidelines**
+
+**Start with Lifecycle Design**:
+- Design demo data lifecycle before implementing features
+- Establish clear states and transitions
+- Plan for user data preservation from day one
+
+**Implement Flag System Early**:
+- Add demo data loaded flag from initial implementation
+- Don't retrofit flag system after auto-reload issues emerge
+- Test lifecycle states systematically
+
+**Debug with Comprehensive Logging**:
+- Add state logging at every critical transition
+- Log localStorage contents and flag states
+- Use logging to trace race conditions and timing issues
+
+### **Critical Takeaway**
+
+**Demo data in production PWAs requires careful lifecycle management to balance showcasing features for new users while respecting user data ownership.** The key is treating demo data as initial seed that transforms localStorage into the authoritative source, never auto-reloading unless explicitly requested.
+
+**The Rule**: Demo data should load once on first visit, then localStorage becomes authoritative. Auto-reload of demo data is a bug, not a feature. Users should control when demo data is restored through explicit reset actions.
+
+---
+
+*This document captures the lessons learned from building the MealPlanner PWA, emphasizing the importance of the static PWA sweet spot: modular organization without build complexity, enhanced with intelligent development tooling, schema-driven demo data generation, holistic data consistency management through single authoritative data sources, explicit cross-platform UI styling, systematic debugging approaches for complex UI state management, critical mobile-first design patterns that prioritize full-page experiences over constrained modal interactions, and sophisticated demo data lifecycle management that respects user data ownership while providing rich first-time experiences.*

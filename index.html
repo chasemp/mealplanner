@@ -6,9 +6,9 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <meta name="cache-bust" content="2025.09.12.1312">
+    <meta name="cache-bust" content="2025.09.13.0854">
     <meta name="build-timestamp" content="1725825300000">
-    <title>MealPlanner v2025.09.12.1312</title>
+    <title>MealPlanner v2025.09.13.0854</title>
     <meta name="description" content="A PWA for meal planning with local SQLite storage">
     
     <!-- PWA Meta Tags -->
@@ -23,7 +23,7 @@
     
     <!-- Styles -->
     <link rel="stylesheet" href="css/tailwind-compiled.css">
-    <link rel="stylesheet" href="./css/styles.css?v=2025.09.12.1312">
+    <link rel="stylesheet" href="./css/styles.css?v=2025.09.13.0854">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="./manifest.json">
@@ -100,24 +100,6 @@
                                     <div class="p-4 md:p-6">
                                         <h3 class="text-lg md:text-xl font-semibold text-gray-900 dark:text-white mb-4 md:mb-6">Settings</h3>
                                         
-                                        <!-- Meal Time Visibility -->
-                                        <div class="mb-4 md:mb-6">
-                                            <h4 class="text-sm md:text-base font-medium text-gray-700 dark:text-gray-300 mb-2 md:mb-3">Meal Time Visibility</h4>
-                                            <div class="space-y-2 md:space-y-3">
-                                                <div class="flex items-center space-x-2 md:space-x-3">
-                                                    <input type="checkbox" id="show-breakfast" class="w-4 h-4 text-blue-600 rounded">
-                                                    <label for="show-breakfast" class="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">🍳 Breakfast</label>
-                                                </div>
-                                                <div class="flex items-center space-x-2 md:space-x-3">
-                                                    <input type="checkbox" id="show-lunch" class="w-4 h-4 text-blue-600 rounded">
-                                                    <label for="show-lunch" class="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">🥪 Lunch</label>
-                                                </div>
-                                                <div class="flex items-center space-x-2 md:space-x-3">
-                                                    <input type="checkbox" id="show-plan" checked class="w-4 h-4 text-blue-600 rounded">
-                                                    <label for="show-plan" class="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">📋 Plan</label>
-                                                </div>
-                                            </div>
-                                        </div>
                                         
                                         
                                         <!-- Cache Status -->
@@ -338,13 +320,30 @@
                         </div>
                     </div>
 
-                    <!-- Update Menu Button -->
-                    <div class="mt-8 text-center">
-                        <button id="update-menu-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg text-sm font-medium flex items-center space-x-2 mx-auto">
+                    <!-- Plan vs Menu Delta Comparison -->
+                    <div id="plan-menu-delta" class="mt-8 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 hidden">
+                        <h4 class="text-lg font-medium text-yellow-800 dark:text-yellow-200 mb-2">Plan Changes</h4>
+                        <div id="delta-summary" class="text-sm text-yellow-700 dark:text-yellow-300 mb-4">
+                            <!-- Delta summary will be populated here -->
+                        </div>
+                        <div id="delta-details" class="text-xs text-yellow-600 dark:text-yellow-400 mb-4">
+                            <!-- Delta details will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Plan vs Menu Action Buttons -->
+                    <div class="mt-8 text-center space-x-4">
+                        <button id="update-menu-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg text-sm font-medium inline-flex items-center space-x-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                             </svg>
                             <span>Update Menu</span>
+                        </button>
+                        <button id="clear-plan-changes-btn" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg text-sm font-medium inline-flex items-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                            <span>Clear Plan Changes</span>
                         </button>
                     </div>
                 </div>
@@ -538,24 +537,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Meal Type Visibility -->
-                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Meal Time Visibility</h3>
-                                <div class="space-y-3">
-                                    <div class="flex items-center space-x-3">
-                                        <input type="checkbox" id="show-breakfast" class="text-blue-600">
-                                        <label for="show-breakfast" class="text-sm text-gray-700 dark:text-gray-300">🍳 Show Breakfast Meal Time</label>
-                                    </div>
-                                    <div class="flex items-center space-x-3">
-                                        <input type="checkbox" id="show-lunch" class="text-blue-600">
-                                        <label for="show-lunch" class="text-sm text-gray-700 dark:text-gray-300">🥪 Show Lunch Meal Time</label>
-                                    </div>
-                                    <div class="flex items-center space-x-3">
-                                        <input type="checkbox" id="show-plan" checked class="text-blue-600">
-                                        <label for="show-plan" class="text-sm text-gray-700 dark:text-gray-300">📋 Show Plan Meal Time</label>
-                                    </div>
-                                </div>
-                            </div>
                             
                             <!-- Mobile Navigation Settings -->
                             <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
@@ -608,21 +589,7 @@
                                         </div>
                                     </div>
                                     
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Breakfast Time
-                                            </label>
-                                            <input type="time" id="breakfast-time" value="08:00" 
-                                                   class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Lunch Time
-                                            </label>
-                                            <input type="time" id="lunch-time" value="12:00" 
-                                                   class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
-                                        </div>
+                                    <div class="grid grid-cols-1 gap-4">
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                                 Plan Time
@@ -710,7 +677,7 @@
         
         <!-- Version Footer -->
         <footer class="fixed bottom-2 right-2 text-xs text-gray-400 bg-white/80 backdrop-blur-sm px-2 py-1 rounded shadow-sm">
-            <span id="version-display">v2025.09.12.1312</span>
+            <span id="version-display">v2025.09.13.0854</span>
         </footer>
     </div>
 
@@ -718,26 +685,26 @@
     <div id="modal-container"></div>
 
     <!-- JavaScript -->
-    <script src="./js/label-types.js?v=2025.09.12.1312"></script>
-    <script src="./js/multi-label-filter.js?v=2025.09.12.1312"></script>
-    <script src="./js/itinerary-view.js?v=2025.09.12.1312"></script>
-    <script src="./js/calendar-view.js?v=2025.09.12.1312"></script>
-      <script src="./js/demo-data.js?v=2025.09.12.1312"></script>
-    <script src="./js/barcode-scanner.js?v=2025.09.12.1312"></script>
-    <script src="./js/shared-barcode-scanner.js?v=2025.09.12.1312"></script>
-    <script src="./js/recipe-manager.js?v=2025.09.12.1312"></script>
-        <script src="./js/meal-manager.js?v=2025.09.12.1312"></script>
-        <script src="./js/schedule-manager.js?v=2025.09.12.1312"></script>
-    <script src="./js/items-manager.js?v=2025.09.12.1312"></script>
-    <script src="./js/grocery-list-manager.js?v=2025.09.12.1312"></script>
-    <script src="./js/google-calendar-integration.js?v=2025.09.12.1312"></script>
-    <script src="./js/meal-rotation-engine.js?v=2025.09.12.1312"></script>
-    <script src="./js/settings-manager.js?v=2025.09.12.1312"></script>
-    <script src="./js/performance-manager.js?v=2025.09.12.1312"></script>
-    <script src="./js/advanced-planning.js?v=2025.09.12.1312"></script>
-    <script src="./js/pantry-manager.js?v=2025.09.12.1312"></script>
-    <script src="./js/mobile-navigation.js?v=2025.09.12.1312"></script>
-    <script src="./js/main.js?v=2025.09.12.1312"></script>
+    <script src="./js/label-types.js?v=2025.09.13.0854"></script>
+    <script src="./js/multi-label-filter.js?v=2025.09.13.0854"></script>
+    <script src="./js/itinerary-view.js?v=2025.09.13.0854"></script>
+    <script src="./js/calendar-view.js?v=2025.09.13.0854"></script>
+      <script src="./js/demo-data.js?v=2025.09.13.0854"></script>
+    <script src="./js/barcode-scanner.js?v=2025.09.13.0854"></script>
+    <script src="./js/shared-barcode-scanner.js?v=2025.09.13.0854"></script>
+    <script src="./js/recipe-manager.js?v=2025.09.13.0854"></script>
+        <script src="./js/meal-manager.js?v=2025.09.13.0854"></script>
+        <script src="./js/schedule-manager.js?v=2025.09.13.0854"></script>
+    <script src="./js/items-manager.js?v=2025.09.13.0854"></script>
+    <script src="./js/grocery-list-manager.js?v=2025.09.13.0854"></script>
+    <script src="./js/google-calendar-integration.js?v=2025.09.13.0854"></script>
+    <script src="./js/meal-rotation-engine.js?v=2025.09.13.0854"></script>
+    <script src="./js/settings-manager.js?v=2025.09.13.0854"></script>
+    <script src="./js/performance-manager.js?v=2025.09.13.0854"></script>
+    <script src="./js/advanced-planning.js?v=2025.09.13.0854"></script>
+    <script src="./js/pantry-manager.js?v=2025.09.13.0854"></script>
+    <script src="./js/mobile-navigation.js?v=2025.09.13.0854"></script>
+    <script src="./js/main.js?v=2025.09.13.0854"></script>
     
     <!-- Settings Navigation Script -->
     <script>

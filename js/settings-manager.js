@@ -18,8 +18,6 @@ class SettingsManager {
             githubRepo: '',
             // githubDeployKey: '', // 🔐 REMOVED - stored securely in IndexedDB
             githubReadOnly: false,
-            showBreakfast: false,
-            showLunch: false,
             showPlan: true,
             calendarManagedMode: false,
             calendarNotifications: false,
@@ -126,11 +124,7 @@ class SettingsManager {
         if (deployKeyInput) deployKeyInput.placeholder = 'Deploy key stored securely (hidden)';
         if (readOnlyInput) readOnlyInput.checked = this.settings.githubReadOnly;
 
-        // Apply meal time visibility (defer to ensure DOM is ready)
-        setTimeout(() => {
-            console.log('⏰ Applying meal time visibility after timeout...');
-            this.applyMealTimeVisibility();
-        }, 500);
+        // Note: Meal time visibility logic removed - Plan tab is always visible
 
         // Apply calendar settings
         const managedModeInput = document.getElementById('calendar-managed-mode');
@@ -147,50 +141,6 @@ class SettingsManager {
         if (requireDoublePressInput) requireDoublePressInput.checked = this.settings.requireDoublePressForClearFilters;
     }
 
-    applyMealTimeVisibility() {
-        console.log('🍽️ Applying meal time visibility:', this.settings);
-        const breakfastTab = document.querySelector('[data-tab="breakfast"]');
-        const lunchTab = document.querySelector('[data-tab="lunch"]');
-        const planTab = document.querySelector('[data-tab="plan"]');
-        
-        console.log('🔍 Found tabs:', { breakfastTab, lunchTab, planTab });
-        
-        const breakfastContent = document.getElementById('breakfast-tab');
-        const lunchContent = document.getElementById('lunch-tab');
-        const planContent = document.getElementById('plan-tab');
-
-        // Update checkboxes
-        const showBreakfastInput = document.getElementById('show-breakfast');
-        const showLunchInput = document.getElementById('show-lunch');
-        const showPlanInput = document.getElementById('show-plan');
-        const mobileNavAutoHideInput = document.getElementById('mobile-nav-auto-hide');
-        const confirmBeforeDeletingInput = document.getElementById('confirm-before-deleting');
-        
-        if (showBreakfastInput) showBreakfastInput.checked = this.settings.showBreakfast;
-        if (showLunchInput) showLunchInput.checked = this.settings.showLunch;
-        if (showPlanInput) showPlanInput.checked = this.settings.showPlan;
-        if (mobileNavAutoHideInput) mobileNavAutoHideInput.checked = this.settings.mobileNavAutoHide;
-        if (confirmBeforeDeletingInput) confirmBeforeDeletingInput.checked = this.settings.confirmBeforeDeleting;
-
-        // Show/hide tabs
-        if (breakfastTab) breakfastTab.style.display = this.settings.showBreakfast ? '' : 'none';
-        if (lunchTab) lunchTab.style.display = this.settings.showLunch ? '' : 'none';
-        if (planTab) planTab.style.display = this.settings.showPlan ? '' : 'none';
-
-        // If current tab is hidden, switch to recipes
-        const currentTab = document.querySelector('.nav-tab.active');
-        if (currentTab) {
-            const tabName = currentTab.getAttribute('data-tab');
-            const isHidden = (tabName === 'breakfast' && !this.settings.showBreakfast) ||
-                           (tabName === 'lunch' && !this.settings.showLunch) ||
-                           (tabName === 'plan' && !this.settings.showPlan);
-            
-            if (isHidden) {
-                // Switch to recipes tab
-                window.app?.switchTab('recipes');
-            }
-        }
-    }
 
     setupEventListeners() {
         // Source type selection
@@ -284,19 +234,7 @@ class SettingsManager {
             });
         }
 
-        // Meal type visibility
-        const mealTypeInputs = ['show-breakfast', 'show-lunch', 'show-plan'];
-        mealTypeInputs.forEach(inputId => {
-            const input = document.getElementById(inputId);
-            if (input) {
-                input.addEventListener('change', (e) => {
-                    const mealType = inputId.replace('show-', '');
-                    this.settings[`show${mealType.charAt(0).toUpperCase() + mealType.slice(1)}`] = e.target.checked;
-                    this.applyMealTimeVisibility();
-                    this.saveSettings();
-                });
-            }
-        });
+        // Note: Meal type visibility controls removed - Plan tab is always visible
 
         // Mobile navigation auto-hide setting
         const mobileNavAutoHideInput = document.getElementById('mobile-nav-auto-hide');

@@ -599,11 +599,12 @@ class DemoDataGenerator {
                         const key = `${item.ingredient_id}_${item.unit}`;
                         const multiplier = sr.servings / recipe.servings || 1;
                         if (itemMap.has(key)) {
-                            itemMap.get(key).quantity += item.quantity * multiplier;
+                            // Round the aggregated quantity to realistic user-entered values
+                            itemMap.get(key).quantity = this.roundQuantity(itemMap.get(key).quantity + item.quantity * multiplier);
                         } else {
                             itemMap.set(key, {
                                 ingredient_id: item.ingredient_id,
-                                quantity: item.quantity * multiplier,
+                                quantity: this.roundQuantity(item.quantity * multiplier),
                                 unit: item.unit
                             });
                         }
@@ -1155,6 +1156,15 @@ class DemoDataGenerator {
     
     getRandomUnit(category) {
         return this.getRandomElement(this.units[category] || this.units.pantry);
+    }
+
+    // Utility function to round quantities to realistic user-entered values
+    // PRINCIPLE: Demo data must look like it was created by a user via UI
+    // All quantities must be realistic values that a user could manually enter
+    // No programmatic artifacts like 0.3333333333333333 - these would never be user-entered
+    roundQuantity(quantity) {
+        const rounded = Math.round(quantity * 100) / 100;
+        return parseFloat(rounded.toFixed(2));
     }
     
     getRandomElement(array) {
