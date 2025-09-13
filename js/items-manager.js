@@ -850,6 +850,14 @@ class ItemsManager {
             // Reload data from authoritative source to ensure consistency
             await this.loadItems();
 
+            // CRITICAL FIX: Notify RecipeManager to refresh its ingredients when items change
+            // This prevents demo data pollution in recipe forms after adding/updating items
+            if (window.app && window.app.recipeManager && window.app.recipeManager.loadIngredients) {
+                console.log('🔄 ITEMS CHANGED: Refreshing RecipeManager ingredients...');
+                await window.app.recipeManager.loadIngredients();
+                console.log('✅ RecipeManager ingredients refreshed successfully');
+            }
+
             // Show success notification
             if (existingItem) {
                 this.showNotification(`"${savedIngredient.name}" has been updated!`, 'success');
@@ -1009,6 +1017,14 @@ class ItemsManager {
             
             // Save to persistent storage
             this.saveItems();
+            
+            // CRITICAL FIX: Notify RecipeManager to refresh its ingredients when items are deleted
+            // This prevents stale ingredient references in recipe forms
+            if (window.app && window.app.recipeManager && window.app.recipeManager.loadIngredients) {
+                console.log('🔄 ITEM DELETED: Refreshing RecipeManager ingredients...');
+                await window.app.recipeManager.loadIngredients();
+                console.log('✅ RecipeManager ingredients refreshed after deletion');
+            }
             
             this.applyFilters();
             this.render();
