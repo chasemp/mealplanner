@@ -298,7 +298,7 @@ class MealRotationEngine {
     calculateIngredientScore(recipe, context) {
         if (!recipe.items || context.recentIngredients.length === 0) return 0;
 
-        const recipeIngredients = new Set(recipe.items.map(ing => ing.ingredientId));
+        const recipeIngredients = new Set(recipe.items.map(ing => ing.ingredient_id || ing.id));
         const recentIngredients = new Set(context.recentIngredients);
         
         const overlap = [...recipeIngredients].filter(ing => recentIngredients.has(ing)).length;
@@ -322,7 +322,7 @@ class MealRotationEngine {
         let totalIngredients = recipe.items.length;
 
         recipe.items.forEach(ingredient => {
-            const available = this.pantryItems.get(ingredient.ingredientId) || 0;
+            const available = this.pantryItems.get(ingredient.ingredient_id || ingredient.id) || 0;
             if (available >= (ingredient.quantity || 1)) {
                 pantryIngredients++;
             }
@@ -501,7 +501,7 @@ class MealRotationEngine {
     extractIngredients(meals) {
         const ingredients = [];
         meals.forEach(meal => {
-            if (meal.recipe.items) {
+            if (meal.recipe && meal.recipe.items) {
                 meal.recipe.items.forEach(ing => {
                     ingredients.push(ing.ingredient_id || ing.id);
                 });
