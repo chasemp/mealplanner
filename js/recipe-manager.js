@@ -31,7 +31,7 @@ class RecipeManager {
         
         // Get data from centralized authority
         if (window.mealPlannerSettings) {
-            this.ingredients = window.mealPlannerSettings.getAuthoritativeData('ingredients');
+            this.ingredients = window.mealPlannerSettings.getAuthoritativeData('items');
             console.log(`✅ Recipe Manager loaded ${this.ingredients.length} ingredients from authoritative source`);
         } else {
             // Fallback if settings not available
@@ -2386,7 +2386,7 @@ class RecipeManager {
                         <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Additional Items (${additionalItems.length})</h3>
                         <div class="space-y-2">
                             ${additionalItems.map(ing => {
-                                const ingredient = window.itemsManager.ingredients.find(i => i.id === ing.ingredient_id);
+                                const ingredient = window.itemsManager.items.find(i => i.id === ing.ingredient_id);
                                 return `
                                     <div class="flex justify-between items-center py-1">
                                         <span class="text-gray-900 dark:text-white">${ingredient ? ingredient.name : 'Unknown Item'}</span>
@@ -2403,7 +2403,7 @@ class RecipeManager {
                     <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">All Items (${combinedItems.size})</h3>
                     <div class="space-y-2">
                         ${Array.from(combinedItems.entries()).map(([ingredientId, totalQuantity]) => {
-                            const ingredient = window.itemsManager.ingredients.find(i => i.id === parseInt(ingredientId));
+                            const ingredient = window.itemsManager.items.find(i => i.id === parseInt(ingredientId));
                             return `
                                 <div class="flex justify-between items-center py-1">
                                     <span class="text-gray-900 dark:text-white">${ingredient ? ingredient.name : 'Unknown Item'}</span>
@@ -2426,7 +2426,7 @@ class RecipeManager {
                     <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Items (${ingredients.length})</h3>
                     <div class="space-y-2">
                         ${ingredients.map(ing => {
-                            const ingredient = window.itemsManager.ingredients.find(i => i.id === ing.ingredient_id);
+                            const ingredient = window.itemsManager.items.find(i => i.id === ing.ingredient_id);
                             return `
                                 <div class="flex justify-between items-center py-1">
                                     <span class="text-gray-900 dark:text-white">${ingredient ? ingredient.name : 'Unknown Item'}</span>
@@ -2552,7 +2552,7 @@ class RecipeManager {
                             <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Additional Items (${additionalItems.length})</h3>
                             <div class="space-y-2">
                                 ${additionalItems.map(ing => {
-                                    const ingredient = window.itemsManager.ingredients.find(i => i.id === ing.ingredient_id);
+                                    const ingredient = window.itemsManager.items.find(i => i.id === ing.ingredient_id);
                                     return `
                                         <div class="flex justify-between items-center py-1">
                                             <span class="text-gray-900 dark:text-white">${ingredient ? ingredient.name : 'Unknown Item'}</span>

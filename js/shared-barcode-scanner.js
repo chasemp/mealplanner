@@ -449,11 +449,11 @@ class SharedBarcodeScanner {
         // Add to items manager if available
         if (window.itemsManager) {
             // Generate a proper ID
-            const maxId = Math.max(0, ...window.itemsManager.ingredients.map(i => i.id || 0));
+            const maxId = Math.max(0, ...window.itemsManager.items.map(i => i.id || 0));
             ingredient.id = maxId + 1;
             
             // Add to the ingredients array
-            window.itemsManager.ingredients.push(ingredient);
+            window.itemsManager.items.push(ingredient);
             
             // Refresh the items view if it's currently displayed
             if (window.itemsManager.container && !window.itemsManager.container.classList.contains('hidden')) {
