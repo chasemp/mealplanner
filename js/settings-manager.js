@@ -3,6 +3,12 @@
 
 class SettingsManager {
     constructor() {
+        console.log('⚙️ SETTINGS MANAGER CONSTRUCTOR STARTED');
+        console.log('🔍 TRACE: Settings manager initializing, localStorage state:');
+        console.log('  - items:', localStorage.getItem('mealplanner_items') ? 'EXISTS' : 'NULL');
+        console.log('  - recipes:', localStorage.getItem('mealplanner_recipes') ? 'EXISTS' : 'NULL');
+        console.log('  - demo_data_loaded flag:', localStorage.getItem('mealplanner_demo_data_loaded'));
+        
         // Store original demo data in memory for reset functionality
         this.originalDemoData = {};
         
@@ -27,10 +33,9 @@ class SettingsManager {
         this.loadSettings();
         this.setupEventListeners();
         
-        // Demo data initialization is now ONLY done:
-        // 1. On first-time setup (when switching TO demo mode)
-        // 2. When user explicitly clicks "Reset Demo Data"
-        // Page loads should NEVER auto-reload demo data - localStorage is authoritative
+        // Initialize demo data on first-time load only
+        // This ensures new users get demo data, but existing users' data is preserved
+        this.initializeFirstTimeDemo();
         
         // Initialize database source indicator after DOM is ready
         setTimeout(() => {
@@ -39,6 +44,44 @@ class SettingsManager {
         
         // Make settings globally available for managers
         window.mealPlannerSettings = this;
+        
+        console.log('⚙️ SETTINGS MANAGER CONSTRUCTOR COMPLETED');
+        console.log('🔍 TRACE: Final localStorage state after constructor:');
+        console.log('  - items:', localStorage.getItem('mealplanner_items') ? 'EXISTS' : 'NULL');
+        console.log('  - recipes:', localStorage.getItem('mealplanner_recipes') ? 'EXISTS' : 'NULL');
+        console.log('  - demo_data_loaded flag:', localStorage.getItem('mealplanner_demo_data_loaded'));
+    }
+
+    initializeFirstTimeDemo() {
+        console.log('🔍 TRACE: initializeFirstTimeDemo() called');
+        
+        // Only initialize demo data if:
+        // 1. We're in demo mode
+        // 2. localStorage is completely empty (first-time user)
+        // 3. Demo data was never loaded before
+        
+        if (this.settings.sourceType !== 'demo') {
+            console.log('🔍 TRACE: Not in demo mode, skipping first-time demo initialization');
+            return;
+        }
+        
+        const demoDataLoaded = localStorage.getItem('mealplanner_demo_data_loaded');
+        if (demoDataLoaded === 'true') {
+            console.log('🔍 TRACE: Demo data was previously loaded, skipping first-time initialization');
+            return;
+        }
+        
+        // Check if localStorage is completely empty (first-time user)
+        const hasItems = localStorage.getItem('mealplanner_items');
+        const hasRecipes = localStorage.getItem('mealplanner_recipes');
+        const hasScheduledMeals = localStorage.getItem('mealplanner_scheduledMeals');
+        
+        if (!hasItems && !hasRecipes && !hasScheduledMeals) {
+            console.log('🎯 TRACE: First-time user detected - initializing demo data');
+            this.initializeDemoData();
+        } else {
+            console.log('🔍 TRACE: User has existing data, skipping first-time demo initialization');
+        }
     }
 
     loadSettings() {
@@ -535,6 +578,11 @@ class SettingsManager {
     // - Likely in manager initialization sequence (RecipeManager, ItemsManager, etc.)
     // - Check getAuthoritativeData() call chain during startup
     initializeDemoData() {
+        console.log('🎯 TRACE: initializeDemoData() ENTRY POINT');
+        console.log('🔍 TRACE: localStorage state at initializeDemoData() entry:');
+        console.log('  - items:', localStorage.getItem('mealplanner_items') ? 'EXISTS' : 'NULL');
+        console.log('  - recipes:', localStorage.getItem('mealplanner_recipes') ? 'EXISTS' : 'NULL');
+        console.log('  - demo_data_loaded flag:', localStorage.getItem('mealplanner_demo_data_loaded'));
         console.log('🎯 Initializing demo data to localStorage...');
         
         // Check if demo data was ever loaded before - if so, don't reload unless explicit reset
@@ -595,7 +643,8 @@ class SettingsManager {
             
             console.log('🎯 Demo data initialization completed');
             
-            // Set flag to indicate demo data has been loaded - prevents future auto-reloads
+            // CRITICAL: Always set the flag, even if data already existed
+            // This ensures we don't get stuck in an inconsistent state where data exists but flag is not set
             localStorage.setItem('mealplanner_demo_data_loaded', 'true');
             console.log('🚩 Set demo data loaded flag - prevents future auto-reloads');
             
@@ -693,22 +742,36 @@ class SettingsManager {
     // 5. Settings manager calls initializeDemoData() -> finds data already exists -> skips flag setting
     getAuthoritativeData(dataType) {
         const currentSource = this.getCurrentDatabaseSource();
-        console.log(`📊 Loading authoritative ${dataType} data from source: ${currentSource}`);
+        console.log(`📊 TRACE: getAuthoritativeData(${dataType}) called from source: ${currentSource}`);
+        console.log(`🔍 TRACE: localStorage state before loading ${dataType}:`);
+        console.log(`  - mealplanner_${dataType}:`, localStorage.getItem(`mealplanner_${dataType}`) ? 'EXISTS' : 'NULL');
+        console.log(`  - demo_data_loaded flag:`, localStorage.getItem('mealplanner_demo_data_loaded'));
         
+        // Add stack trace to see who's calling this
+        console.log('🔍 TRACE: Call stack:', new Error().stack);
+        
+        let result;
         switch (currentSource) {
             case 'demo':
-                return this.getDemoData(dataType);
+                result = this.getDemoData(dataType);
+                break;
             case 'local':
-                return this.getLocalData(dataType);
+                result = this.getLocalData(dataType);
+                break;
             case 'github':
-                return this.getGitHubData(dataType);
+                result = this.getGitHubData(dataType);
+                break;
             default:
                 console.warn(`⚠️ Unknown data source: ${currentSource}, falling back to empty data`);
-                return [];
+                result = [];
         }
+        
+        console.log(`📊 TRACE: getAuthoritativeData(${dataType}) returning ${result.length} items`);
+        return result;
     }
     
     getDemoData(dataType) {
+        console.log(`🔍 TRACE: getDemoData(${dataType}) called - delegating to getLocalData()`);
         // Demo data is initialized to localStorage on startup, so just read from localStorage
         // This makes demo source behave exactly like local source (just with different initial seed)
         return this.getLocalData(dataType);
@@ -745,19 +808,25 @@ class SettingsManager {
     }
     
     getLocalData(dataType) {
+        console.log(`🔍 TRACE: getLocalData(${dataType}) called`);
+        console.log(`🔍 TRACE: Checking localStorage key: mealplanner_${dataType}`);
+        
         // Local file mode - try localStorage first, then empty
         try {
             const stored = localStorage.getItem(`mealplanner_${dataType}`);
+            console.log(`🔍 TRACE: localStorage.getItem result:`, stored ? 'DATA_EXISTS' : 'NULL');
+            
             if (stored) {
                 const data = JSON.parse(stored);
-                console.log(`✅ Loaded ${data.length} ${dataType} from localStorage`);
+                console.log(`✅ TRACE: Loaded ${data.length} ${dataType} from localStorage`);
+                console.log(`🔍 TRACE: First item:`, data[0] ? data[0].name || data[0].title || data[0].id : 'NO_ITEMS');
                 return data;
             }
         } catch (error) {
             console.warn(`⚠️ Error loading ${dataType} from localStorage:`, error);
         }
         
-        console.log(`✅ No local ${dataType} found, returning empty data`);
+        console.log(`📋 TRACE: No ${dataType} found in localStorage, returning empty array`);
         return [];
     }
     
