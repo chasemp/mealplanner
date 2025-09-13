@@ -1487,7 +1487,7 @@ class RecipeManager {
         return recipeDetails || '<div class="text-gray-500 dark:text-gray-400 text-sm italic">Recipe details will appear here as you add recipes.</div>';
     }
 
-    renderSingleIngredientRow(ingredient, index, showRemoveButton = false) {
+    renderSingleItemRow(ingredient, index, showRemoveButton = false, isCombo = false) {
         return `
             <div class="ingredient-row grid grid-cols-10 gap-2 items-end">
                 <div class="col-span-5">
@@ -1495,7 +1495,7 @@ class RecipeManager {
                         Item
                     </label>
                     <select class="ingredient-select w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                            name="ingredients[${index}][ingredient_id]" ${index === 0 ? 'required' : ''}>
+                            name="ingredients[${index}][ingredient_id]" ${!isCombo && index === 0 ? 'required' : ''}>
                         <option value="">Select item...</option>
                         ${this.ingredients.map(ing => `
                             <option value="${ing.id}" data-unit="${ing.default_unit}" 
@@ -1931,13 +1931,13 @@ class RecipeManager {
                 
                 // Add a new ingredient row with the scanned ingredient
                 const currentRows = ingredientsContainer.querySelectorAll('.ingredient-row').length;
-                const newRowHtml = this.renderSingleIngredientRow({
+                const newRowHtml = this.renderSingleItemRow({
                     ingredient_id: ingredient.id,
                     name: ingredient.name,
                     quantity: '1',
                     unit: ingredient.default_unit || 'pieces',
                     notes: ''
-                }, currentRows, true);
+                }, currentRows, true, false); // false = not a combo
                 
                 ingredientsContainer.insertAdjacentHTML('beforeend', newRowHtml);
                 
@@ -3404,8 +3404,8 @@ class RecipeManager {
             });
         }
 
-        // Shared ingredient/items listeners
-        this.attachSharedIngredientListeners(config);
+        // Shared item listeners
+        this.attachSharedItemListeners(config);
 
         // Instruction step listeners
         this.attachInstructionStepListeners();
@@ -3428,18 +3428,19 @@ class RecipeManager {
         });
     }
 
-    attachSharedIngredientListeners(config) {
+    attachSharedItemListeners(config) {
         const addIngredientBtn = document.querySelector('#add-ingredient-row');
         const createIngredientBtn = document.querySelector('#create-new-ingredient');
         const ingredientsContainer = document.querySelector('#ingredients-container');
+        const isCombo = config.isCombo || false; // Get isCombo from config
 
-        console.log('Attaching shared ingredient listeners:', { addIngredientBtn, createIngredientBtn, ingredientsContainer });
+        console.log('Attaching shared ingredient listeners:', { addIngredientBtn, createIngredientBtn, ingredientsContainer, isCombo });
 
         // Add ingredient row
         addIngredientBtn?.addEventListener('click', () => {
             console.log('Add ingredient button clicked');
             const currentRows = ingredientsContainer.querySelectorAll('.ingredient-row').length;
-            const newRowHtml = this.renderSingleIngredientRow({ ingredient_id: '', name: '', quantity: '', unit: '', notes: '' }, currentRows, true);
+            const newRowHtml = this.renderSingleItemRow({ ingredient_id: '', name: '', quantity: '', unit: '', notes: '' }, currentRows, true, isCombo);
             
             ingredientsContainer.insertAdjacentHTML('beforeend', newRowHtml);
             
@@ -3578,7 +3579,8 @@ class RecipeManager {
             form: '#fullpage-recipe-form',
             backBtn: '#back-to-recipes',
             cancelBtn: '#cancel-fullpage-form',
-            isFullPage: true
+            isFullPage: true,
+            isCombo: isCombo
         });
 
         // Add delete button listener for edit mode
@@ -3595,14 +3597,15 @@ class RecipeManager {
             });
         }
 
-        // Attach combo-specific or ingredient-specific listeners
+        // Attach combo-specific or item-specific listeners
         if (isCombo) {
             this.attachSharedRecipeListeners();
         } else {
-            this.attachSharedIngredientListeners({
+            this.attachSharedItemListeners({
                 addIngredientBtn: '#add-ingredient-row',
                 createIngredientBtn: '#create-new-ingredient',
-                ingredientsContainer: '#ingredients-container'
+                ingredientsContainer: '#ingredients-container',
+                isCombo: isCombo
             });
         }
     }
@@ -3849,7 +3852,7 @@ class RecipeManager {
                 notes: ''
             };
             
-            const newRowHtml = this.renderSingleIngredientRow(newIngredientRow, currentRows, true);
+            const newRowHtml = this.renderSingleItemRow(newIngredientRow, currentRows, true, false); // false = not a combo
             ingredientsContainer.insertAdjacentHTML('beforeend', newRowHtml);
             targetRow = ingredientsContainer.lastElementChild;
             this.attachIngredientRowListeners(targetRow);
