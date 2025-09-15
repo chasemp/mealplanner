@@ -252,7 +252,7 @@ class MealPlannerApp {
             const result = db.exec(`
                 SELECT r.*, COUNT(ri.id) as ingredient_count
                 FROM recipes r
-                LEFT JOIN recipe_ingredients ri ON r.id = ri.recipe_id
+                LEFT JOIN recipe_items ri ON r.id = ri.recipe_id
                 GROUP BY r.id
                 ORDER BY r.updated_at DESC
             `)

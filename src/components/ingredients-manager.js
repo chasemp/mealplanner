@@ -14,8 +14,8 @@ export class ItemsManager {
                 SELECT i.*, 
                        COUNT(ri.recipe_id) as recipe_count,
                        AVG(ri.quantity) as avg_quantity
-                FROM ingredients i
-                LEFT JOIN recipe_ingredients ri ON i.id = ri.ingredient_id
+                FROM items i
+                LEFT JOIN recipe_items ri ON i.id = ri.item_id
                 GROUP BY i.id
                 ORDER BY i.name ASC
             `)
