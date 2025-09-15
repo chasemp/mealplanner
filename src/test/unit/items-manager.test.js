@@ -1,6 +1,6 @@
 // Unit tests for ItemsManager class (Items Manager)
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { ItemsManager } from '../../components/ingredients-manager.js'
+import { ItemsManager } from '../../components/items-manager.js'
 
 // Mock database
 const createMockDatabase = () => ({

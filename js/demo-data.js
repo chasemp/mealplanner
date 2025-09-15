@@ -3,7 +3,7 @@
 // This file contains realistic demo data converted from user export
 // 
 // Data Summary:
-// - 5 ingredients across 4 categories
+// - 5 items across 4 categories
 // - 2 recipes (2 regular, 0 combo)
 // - 0 meals combining multiple recipes
 // - 3 scheduled meals for planning
@@ -22,8 +22,8 @@ class DemoDataManager {
     }
 
     initializeRawData() {
-        // Comprehensive ingredient list (5 items)
-        this.ingredients = [
+        // Comprehensive items list (5 items)
+        this.items = [
         {
                 "id": 1,
                 "name": "Chicken",
@@ -117,12 +117,12 @@ class DemoDataManager {
                 "cook_time": 30,
                 "items": [
                         {
-                                "ingredient_id": 1,
+                                "item_id": 1,
                                 "quantity": 2,
                                 "unit": "lbs"
                         },
                         {
-                                "ingredient_id": 2,
+                                "item_id": 2,
                                 "quantity": 1,
                                 "unit": "cups"
                         }
@@ -210,7 +210,7 @@ class DemoDataManager {
     // Get all data
     getAllData() {
         return {
-            ingredients: this.ingredients,
+            items: this.items,
             recipes: this.recipes,
             meals: this.meals,
             scheduledMeals: this.scheduledMeals,
@@ -218,9 +218,14 @@ class DemoDataManager {
         };
     }
 
-    // Get ingredients
+    // Get items (formerly ingredients)
+    getItems() {
+        return this.items;
+    }
+
+    // Backward compatibility method
     getIngredients() {
-        return this.ingredients;
+        return this.items;
     }
 
     // Get recipes
