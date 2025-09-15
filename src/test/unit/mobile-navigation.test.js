@@ -98,20 +98,21 @@ describe('Mobile Navigation', () => {
                 
                 bottomNav.innerHTML = `
                     <div class="flex justify-around items-center py-2">
-                        <button class="mobile-nav-tab flex flex-col items-center py-2 px-3 min-w-0 flex-1" data-tab="recipes">
+                        <button class="mobile-nav-tab flex flex-col items-center py-1 px-1 min-w-0 flex-1" data-tab="items">
+                            <span class="text-lg mb-1">🥕</span>
+                            <span class="text-xs font-medium">Items</span>
+                        </button>
+                        <button class="mobile-nav-tab flex flex-col items-center py-1 px-1 min-w-0 flex-1" data-tab="recipes">
+                            <span class="text-lg mb-1">📖</span>
                             <span class="text-xs font-medium">Recipes</span>
                         </button>
-                        <button class="mobile-nav-tab flex flex-col items-center py-2 px-3 min-w-0 flex-1" data-tab="ingredients">
-                            <span class="text-xs font-medium">Ingredients</span>
+                        <button class="mobile-nav-tab flex flex-col items-center py-1 px-1 min-w-0 flex-1" data-tab="plan">
+                            <span class="text-lg mb-1">📋</span>
+                            <span class="text-xs font-medium">Plan</span>
                         </button>
-                        <button class="mobile-nav-tab flex flex-col items-center py-2 px-3 min-w-0 flex-1" data-tab="meal-planning">
-                            <span class="text-xs font-medium">Planning</span>
-                        </button>
-                        <button class="mobile-nav-tab flex flex-col items-center py-2 px-3 min-w-0 flex-1" data-tab="grocery-list">
-                            <span class="text-xs font-medium">Grocery</span>
-                        </button>
-                        <button class="mobile-nav-tab flex flex-col items-center py-2 px-3 min-w-0 flex-1" data-tab="settings">
-                            <span class="text-xs font-medium">Settings</span>
+                        <button class="mobile-nav-tab flex flex-col items-center py-1 px-1 min-w-0 flex-1" data-tab="menu">
+                            <span class="text-lg mb-1">📄</span>
+                            <span class="text-xs font-medium">Menu</span>
                         </button>
                     </div>
                 `;
@@ -138,13 +139,22 @@ describe('Mobile Navigation', () => {
                 const bottomNav = document.getElementById('mobile-bottom-nav');
                 if (!bottomNav) return;
 
-                bottomNav.addEventListener('click', (e) => {
+                // Remove any existing listeners to prevent duplicates
+                const existingHandler = bottomNav._mobileNavHandler;
+                if (existingHandler) {
+                    bottomNav.removeEventListener('click', existingHandler);
+                }
+
+                const clickHandler = (e) => {
                     const tabButton = e.target.closest('.mobile-nav-tab');
                     if (tabButton) {
                         const tabName = tabButton.dataset.tab;
                         this.switchTab(tabName);
                     }
-                });
+                };
+
+                bottomNav.addEventListener('click', clickHandler);
+                bottomNav._mobileNavHandler = clickHandler; // Store for cleanup
             }
 
             switchTab(tabName) {
@@ -171,6 +181,40 @@ describe('Mobile Navigation', () => {
                     activeTab.classList.remove('text-gray-600', 'dark:text-gray-400');
                     activeTab.classList.add('text-blue-600', 'dark:text-blue-400');
                 }
+            }
+
+            refreshNavigation() {
+                const bottomNav = document.getElementById('mobile-bottom-nav');
+                if (bottomNav) {
+                    bottomNav.remove();
+                    this.createBottomNavigation();
+                    this.setupEventListeners();
+                }
+            }
+
+            ensureEventListeners() {
+                this.setupEventListeners();
+            }
+
+            checkHealth() {
+                const bottomNav = document.getElementById('mobile-bottom-nav');
+                const hasHandler = bottomNav && bottomNav._mobileNavHandler;
+                const tabButtons = bottomNav ? bottomNav.querySelectorAll('.mobile-nav-tab').length : 0;
+                
+                const result = {
+                    healthy: this.isMobile && bottomNav && hasHandler && tabButtons > 0,
+                    bottomNavExists: !!bottomNav,
+                    hasEventHandler: !!hasHandler,
+                    tabButtonCount: tabButtons
+                };
+                
+                console.log('checkHealth result:', result);
+                console.log('this.isMobile:', this.isMobile);
+                console.log('bottomNav:', !!bottomNav);
+                console.log('hasHandler:', !!hasHandler);
+                console.log('tabButtons:', tabButtons);
+                
+                return result;
             }
 
             onTabChange(tabName) {
@@ -224,10 +268,10 @@ describe('Mobile Navigation', () => {
             const bottomNav = document.getElementById('mobile-bottom-nav');
             const tabs = bottomNav.querySelectorAll('.mobile-nav-tab');
             
-            expect(tabs).toHaveLength(5);
+            expect(tabs).toHaveLength(4);
             
             const tabNames = Array.from(tabs).map(tab => tab.dataset.tab);
-            expect(tabNames).toEqual(['recipes', 'ingredients', 'meal-planning', 'grocery-list', 'settings']);
+            expect(tabNames).toEqual(['items', 'recipes', 'plan', 'menu']);
         });
 
         it('should hide top navigation on mobile', () => {
@@ -261,13 +305,13 @@ describe('Mobile Navigation', () => {
             });
             
             const bottomNav = document.getElementById('mobile-bottom-nav');
-            const ingredientsTab = bottomNav.querySelector('[data-tab="ingredients"]');
+            const itemsTab = bottomNav.querySelector('[data-tab="items"]');
             
-            ingredientsTab.click();
+            itemsTab.click();
             
             expect(eventFired).toBe(true);
-            expect(eventDetail.tabName).toBe('ingredients');
-            expect(mobileNav.currentTab).toBe('ingredients');
+            expect(eventDetail.tabName).toBe('items');
+            expect(mobileNav.currentTab).toBe('items');
         });
 
         it('should update active tab styling', () => {
@@ -275,30 +319,30 @@ describe('Mobile Navigation', () => {
             
             const bottomNav = document.getElementById('mobile-bottom-nav');
             const recipesTab = bottomNav.querySelector('[data-tab="recipes"]');
-            const ingredientsTab = bottomNav.querySelector('[data-tab="ingredients"]');
+            const itemsTab = bottomNav.querySelector('[data-tab="items"]');
             
             // Initially recipes should be active
             expect(recipesTab.classList.contains('text-blue-600')).toBe(true);
-            expect(ingredientsTab.classList.contains('text-gray-600')).toBe(true);
+            expect(itemsTab.classList.contains('text-gray-600')).toBe(true);
             
-            // Switch to ingredients
-            mobileNav.switchTab('ingredients');
+            // Switch to items
+            mobileNav.switchTab('items');
             
             expect(recipesTab.classList.contains('text-gray-600')).toBe(true);
-            expect(ingredientsTab.classList.contains('text-blue-600')).toBe(true);
+            expect(itemsTab.classList.contains('text-blue-600')).toBe(true);
         });
 
         it('should respond to external tab changes', () => {
             const mobileNav = new MobileNavigation();
             
             const bottomNav = document.getElementById('mobile-bottom-nav');
-            const ingredientsTab = bottomNav.querySelector('[data-tab="ingredients"]');
+            const itemsTab = bottomNav.querySelector('[data-tab="items"]');
             
             // Simulate external tab change
-            mobileNav.onTabChange('ingredients');
+            mobileNav.onTabChange('items');
             
-            expect(mobileNav.currentTab).toBe('ingredients');
-            expect(ingredientsTab.classList.contains('text-blue-600')).toBe(true);
+            expect(mobileNav.currentTab).toBe('items');
+            expect(itemsTab.classList.contains('text-blue-600')).toBe(true);
         });
     });
 
@@ -465,10 +509,26 @@ describe('Mobile Navigation', () => {
             
             const bottomNav = document.getElementById('mobile-bottom-nav');
             
+            // Ensure we have a bottom nav and it's in mobile mode
+            expect(bottomNav).toBeTruthy();
+            expect(mobileNav.isMobile).toBe(true);
+            
+            // Check that the method exists and can be called
+            expect(typeof mobileNav.checkHealth).toBe('function');
+            
+            // First check that health is healthy when handler exists
+            const initialHealth = mobileNav.checkHealth();
+            expect(initialHealth).toBeDefined();
+            expect(typeof initialHealth).toBe('object');
+            expect(initialHealth.healthy).toBe(true);
+            expect(initialHealth.hasEventHandler).toBe(true);
+            
             // Simulate lost event handler
             delete bottomNav._mobileNavHandler;
             
             const health = mobileNav.checkHealth();
+            expect(health).toBeDefined();
+            expect(typeof health).toBe('object');
             expect(health.healthy).toBe(false);
             expect(health.hasEventHandler).toBe(false);
         });
