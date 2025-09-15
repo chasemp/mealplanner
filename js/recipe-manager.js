@@ -859,11 +859,11 @@ class RecipeManager {
         
         recipeRefs.forEach(recipeRef => {
             const recipe = this.recipes.find(r => r.id === parseInt(recipeRef.recipe_id));
-            if (!recipe || !recipe.items) return;
+            if (!recipe || (!recipe.items && !recipe.ingredients)) return;
             
             const portions = recipeRef.servings || 1; // How many portions of this recipe
             
-            recipe.items.forEach(ingredient => {
+            (recipe.items || recipe.ingredients || []).forEach(ingredient => {
                 const ingredientName = this.getIngredientNameById(ingredient.ingredient_id) || 'Unknown item';
                 const key = `${ingredientName}_${ingredient.unit}`;
                 
@@ -1215,7 +1215,7 @@ class RecipeManager {
                         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Items</h3>
                         
                         <div id="ingredients-container" class="space-y-3 mb-4">
-                            ${this.renderItemRows(isEdit ? recipe.items : [], false)}
+                            ${this.renderItemRows(isEdit ? recipe.items || recipe.ingredients : [], false)}
                         </div>
                         
                         <!-- Action buttons below the list -->
@@ -1775,8 +1775,8 @@ class RecipeManager {
                 }
             });
 
-            // Add ingredients to recipe data
-            recipeData.ingredients = ingredients;
+            // Add items to recipe data (consistent naming)
+            recipeData.items = ingredients;
             
             // Add labels (convert from tags for now)
             recipeData.labels = recipeData.tags || [];
@@ -2045,7 +2045,7 @@ class RecipeManager {
             return;
         }
 
-        recipeData.ingredients = ingredients;
+        recipeData.items = ingredients;
 
         try {
             // Save recipe
@@ -2371,7 +2371,7 @@ class RecipeManager {
         if (isCombo) {
             // For combo recipes, show both recipes and additional items
             const recipes = recipe.combo_recipes || recipe.recipes || [];
-            const additionalItems = recipe.items || [];
+            const additionalItems = recipe.items || recipe.ingredients || [];
             const combinedItems = this.getCombinedItemsForCombo(recipe);
             
             console.log('🔍 Mobile view - Recipes:', recipes, 'Additional items:', additionalItems);
@@ -2452,7 +2452,7 @@ class RecipeManager {
             return comboHTML;
         } else {
             // For regular recipes, show ingredients
-            const ingredients = recipe.items || [];
+            const ingredients = recipe.items || recipe.ingredients || [];
             return `
                 <div class="mb-4">
                     <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Items (${ingredients.length})</h3>
@@ -2491,7 +2491,7 @@ class RecipeManager {
         console.log('🎯 Generating COMBO mobile HTML for:', recipe.title);
         
         const recipes = recipe.combo_recipes || recipe.recipes || [];
-        const additionalItems = recipe.items || [];
+        const additionalItems = recipe.items || recipe.ingredients || [];
         const combinedItems = this.getCombinedItemsForCombo(recipe);
         const labels = recipe.labels || [];
         
@@ -2789,7 +2789,7 @@ class RecipeManager {
         if (recipe.recipe_type === 'combo') {
             // For combos, show both recipes and additional items
             const recipes = recipe.combo_recipes || recipe.recipes || [];
-            const additionalItems = recipe.items || [];
+            const additionalItems = recipe.items || recipe.ingredients || [];
             
             contentSection = `
                 <!-- Combo Recipes -->
@@ -3181,7 +3181,7 @@ class RecipeManager {
                             <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Add individual items that don't have their own recipe (e.g., watermelon, bread, etc.)</p>
                             
                             <div id="ingredients-container" class="space-y-3 mb-4">
-                                ${this.renderItemRows(isEdit ? recipe.items : [], true)}
+                                ${this.renderItemRows(isEdit ? recipe.items || recipe.ingredients : [], true)}
                             </div>
                             
                             <!-- Item Action buttons -->
@@ -3202,7 +3202,7 @@ class RecipeManager {
                             <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Items</h3>
                             
                             <div id="ingredients-container" class="space-y-3 mb-4">
-                                ${this.renderItemRows(isEdit ? recipe.items : [], false)}
+                                ${this.renderItemRows(isEdit ? recipe.items || recipe.ingredients : [], false)}
                             </div>
                             
                             <!-- Action buttons below the list -->
@@ -4113,7 +4113,7 @@ class RecipeManager {
                     }
                 });
 
-                recipeData.ingredients = ingredients;
+                recipeData.items = ingredients;
                 console.log('🥕 Final combo ingredients array:', ingredients);
 
                 // Auto-add Recipe Combo label if not already present
@@ -4146,7 +4146,7 @@ class RecipeManager {
                     }
                 });
 
-                recipeData.ingredients = ingredients;
+                recipeData.items = ingredients;
                 console.log('🥕 Final ingredients array:', ingredients);
             }
 
