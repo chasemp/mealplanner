@@ -5,18 +5,20 @@ import { describe, it, expect, beforeEach } from 'vitest';
 
 describe('Demo Data Validation', () => {
     let demoData;
+    let demoManager;
 
     beforeEach(async () => {
         // Import DemoDataManager
         await import('../../../js/demo-data.js');
-        demoData = new global.DemoDataManager();
+        demoManager = new global.DemoDataManager();
+        demoData = demoManager.getAllData();
     });
 
     describe('Data Structure Integrity', () => {
         it('should have all required data arrays', () => {
-            expect(demoData.ingredients).toBeDefined();
-            expect(Array.isArray(demoData.ingredients)).toBe(true);
-            expect(demoData.ingredients.length).toBeGreaterThan(0);
+            expect(demoData.items).toBeDefined();
+            expect(Array.isArray(demoData.items)).toBe(true);
+            expect(demoData.items.length).toBeGreaterThan(0);
 
             expect(demoData.recipes).toBeDefined();
             expect(Array.isArray(demoData.recipes)).toBe(true);
@@ -86,8 +88,8 @@ describe('Demo Data Validation', () => {
             });
         });
 
-        it('should have all recipe ingredients reference valid ingredients', () => {
-            const allIngredientIds = demoData.ingredients.map(i => i.id);
+        it('should have all recipe items reference valid items', () => {
+            const allIngredientIds = demoData.items.map(i => i.id);
 
             demoData.recipes.forEach(recipe => {
                 expect(recipe.items).toBeDefined();
@@ -95,16 +97,16 @@ describe('Demo Data Validation', () => {
                 expect(recipe.items.length).toBeGreaterThan(0);
 
                 recipe.items.forEach(recipeIngredient => {
-                    expect(recipeIngredient.ingredient_id).toBeDefined();
+                    expect(recipeIngredient.item_id).toBeDefined();
                     expect(recipeIngredient.quantity).toBeDefined();
                     expect(recipeIngredient.unit).toBeDefined();
                     
-                    expect(typeof recipeIngredient.ingredient_id).toBe('number');
+                    expect(typeof recipeIngredient.item_id).toBe('number');
                     expect(typeof recipeIngredient.quantity).toBe('number');
                     expect(typeof recipeIngredient.unit).toBe('string');
                     
                     // Verify ingredient exists
-                    expect(allIngredientIds).toContain(recipeIngredient.ingredient_id);
+                    expect(allIngredientIds).toContain(recipeIngredient.item_id);
                 });
             });
         });
@@ -129,7 +131,7 @@ describe('Demo Data Validation', () => {
 
     describe('Data Consistency Validation', () => {
         it('should pass built-in consistency validation', () => {
-            const issues = demoData.validateConsistency();
+            const issues = demoManager.validateConsistency();
             expect(issues).toBeDefined();
             expect(Array.isArray(issues)).toBe(true);
             expect(issues.length).toBe(0); // No validation issues
@@ -142,7 +144,7 @@ describe('Demo Data Validation', () => {
         });
 
         it('should have unique ingredient IDs', () => {
-            const ingredientIds = demoData.ingredients.map(i => i.id);
+            const ingredientIds = demoData.items.map(i => i.id);
             const uniqueIds = [...new Set(ingredientIds)];
             expect(ingredientIds.length).toBe(uniqueIds.length);
         });
@@ -176,8 +178,8 @@ describe('Demo Data Validation', () => {
             });
         });
 
-        it('should have all ingredients with required fields', () => {
-            demoData.ingredients.forEach(ingredient => {
+        it('should have all items with required fields', () => {
+            demoData.items.forEach(ingredient => {
                 expect(ingredient.id).toBeDefined();
                 expect(ingredient.name).toBeDefined();
                 expect(ingredient.category).toBeDefined();
@@ -193,11 +195,11 @@ describe('Demo Data Validation', () => {
     });
 
     describe('Combo Recipe Specific Validation', () => {
-        it('should have combo recipes with aggregated ingredients matching component recipes', () => {
+        it('should have combo recipes with aggregated items matching component recipes', () => {
             const comboRecipes = demoData.recipes.filter(r => r.recipe_type === 'combo');
             
             comboRecipes.forEach(combo => {
-                // Verify combo has both combo_recipes and ingredients
+                // Verify combo has both combo_recipes and items
                 expect(combo.combo_recipes).toBeDefined();
                 expect(combo.items).toBeDefined();
                 expect(combo.combo_recipes.length).toBeGreaterThan(0);
@@ -294,7 +296,7 @@ describe('Demo Data Validation', () => {
             expect(mealTypes).toContain('lunch');
             expect(mealTypes).toContain('dinner');
             
-            const categories = [...new Set(demoData.ingredients.map(i => i.category))];
+            const categories = [...new Set(demoData.items.map(i => i.category))];
             expect(categories.length).toBeGreaterThan(3); // Multiple ingredient categories
         });
     });

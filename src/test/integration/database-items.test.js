@@ -1,4 +1,4 @@
-// Integration tests for ingredients database operations
+// Integration tests for items database operations
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { initializeDatabase, DATABASE_SCHEMA } from '../../database/schema.js'
 
@@ -14,7 +14,7 @@ const createTestDatabase = () => {
         return []
       }
       
-      if (sql.includes('INSERT INTO ingredients')) {
+      if (sql.includes('INSERT INTO items')) {
         const id = nextId++
         // Handle different INSERT parameter patterns
         let name, category, default_unit, cost_per_unit, storage_notes, nutrition_per_100g, barcode, brand
@@ -43,7 +43,7 @@ const createTestDatabase = () => {
         return []
       }
       
-      if (sql.includes('UPDATE ingredients')) {
+      if (sql.includes('UPDATE items')) {
         // Handle UPDATE queries
         if (sql.includes('WHERE id = ?')) {
           const id = params[params.length - 1] // Last parameter is the ID
@@ -66,7 +66,7 @@ const createTestDatabase = () => {
         return []
       }
       
-      if (sql.includes('DELETE FROM ingredients')) {
+      if (sql.includes('DELETE FROM items')) {
         if (sql.includes('WHERE id = ?') && params.length > 0) {
           mockData.delete(params[0])
         } else if (sql.includes('WHERE name = ?') && params.length > 0) {
@@ -105,19 +105,19 @@ const createTestDatabase = () => {
         }]
       }
       
-      if (sql.includes('SELECT') && sql.includes('ingredients')) {
-        const ingredients = Array.from(mockData.values())
+      if (sql.includes('SELECT') && sql.includes('items')) {
+        const items = Array.from(mockData.values())
         
         // Handle specific column selections
         if (sql.includes('SELECT name, default_unit')) {
           return [{
             columns: ['name', 'default_unit'],
-            values: ingredients.map(ing => [ing.name, ing.default_unit])
+            values: items.map(ing => [ing.name, ing.default_unit])
           }]
         }
         
         if (sql.includes('SELECT nutrition_per_100g')) {
-          const ingredient = ingredients.find(ing => sql.includes(`WHERE name = ?`) ? ing.name === params[0] : true)
+          const ingredient = items.find(ing => sql.includes(`WHERE name = ?`) ? ing.name === params[0] : true)
           if (ingredient) {
             return [{
               columns: ['nutrition_per_100g'],
@@ -129,7 +129,7 @@ const createTestDatabase = () => {
         
         // Handle nutrition_per_100g JSON queries
         if (sql.includes('nutrition_per_100g') && sql.includes('JSON')) {
-          const ingredient = ingredients[0] // For test simplicity
+          const ingredient = items[0] // For test simplicity
           if (ingredient && ingredient.nutrition_per_100g) {
             try {
               const nutrition = JSON.parse(ingredient.nutrition_per_100g)
@@ -145,7 +145,7 @@ const createTestDatabase = () => {
         
         // Handle WHERE name = ? queries
         if (sql.includes('WHERE name = ?') && params.length > 0) {
-          const ingredient = ingredients.find(ing => ing.name === params[0])
+          const ingredient = items.find(ing => ing.name === params[0])
           if (ingredient) {
             return [{
               columns: ['id', 'name', 'category', 'default_unit', 'cost_per_unit', 'storage_notes', 'nutrition_per_100g', 'barcode', 'brand', 'recipe_count'],
@@ -161,7 +161,7 @@ const createTestDatabase = () => {
         
         // Handle WHERE category = ? queries
         if (sql.includes('WHERE category = ?') && params.length > 0) {
-          const filteredIngredients = ingredients.filter(ing => ing.category === params[0])
+          const filteredIngredients = items.filter(ing => ing.category === params[0])
           return [{
             columns: ['id', 'name', 'category', 'default_unit', 'cost_per_unit', 'storage_notes', 'nutrition_per_100g', 'barcode', 'brand', 'recipe_count'],
             values: filteredIngredients.map(ing => [
@@ -174,7 +174,7 @@ const createTestDatabase = () => {
         // Handle LIKE queries
         if (sql.includes('LIKE ?') && params.length > 0) {
           const pattern = params[0].replace(/%/g, '')
-          const filteredIngredients = ingredients.filter(ing => 
+          const filteredIngredients = items.filter(ing => 
             ing.name.toLowerCase().includes(pattern.toLowerCase())
           )
           return [{
@@ -189,15 +189,15 @@ const createTestDatabase = () => {
         // Handle GROUP BY category
         if (sql.includes('GROUP BY category')) {
           const categoryGroups = new Map()
-          ingredients.forEach(ing => {
+          items.forEach(ing => {
             if (ing.category) { // Only count non-null categories
               const count = categoryGroups.get(ing.category) || 0
               categoryGroups.set(ing.category, count + 1)
             }
           })
           
-          // Special case for performance test - if we have exactly 100 ingredients, return expected result
-          if (ingredients.length === 100 && sql.includes('ORDER BY count DESC')) {
+          // Special case for performance test - if we have exactly 100 items, return expected result
+          if (items.length === 100 && sql.includes('ORDER BY count DESC')) {
             return [{
               columns: ['category', 'count'],
               values: [['produce', 50], ['dairy', 50]]
@@ -236,24 +236,24 @@ const createTestDatabase = () => {
         if (sql.includes('LEFT JOIN') && sql.includes('recipe_count')) {
           return [{
             columns: ['id', 'name', 'category', 'default_unit', 'cost_per_unit', 'storage_notes', 'nutrition_per_100g', 'barcode', 'recipe_count'],
-            values: ingredients.map(ing => [
+            values: items.map(ing => [
               ing.id, ing.name, ing.category, ing.default_unit, ing.cost_per_unit, 
               ing.storage_notes, ing.nutrition_per_100g, ing.barcode, 0
             ])
           }]
         }
         
-        // Default: return all ingredients
+        // Default: return all items
         return [{
           columns: ['id', 'name', 'category', 'default_unit', 'cost_per_unit', 'storage_notes', 'nutrition_per_100g', 'barcode', 'brand', 'recipe_count'],
-          values: ingredients.map(ing => [
+          values: items.map(ing => [
             ing.id, ing.name, ing.category, ing.default_unit, ing.cost_per_unit, 
             ing.storage_notes, ing.nutrition_per_100g, ing.barcode, ing.brand, 0
           ])
         }]
       }
       
-      if (sql.includes('UPDATE ingredients')) {
+      if (sql.includes('UPDATE items')) {
         const id = params[params.length - 1]
         const existing = mockData.get(id)
         if (existing) {
@@ -272,7 +272,7 @@ const createTestDatabase = () => {
         return []
       }
       
-      if (sql.includes('DELETE FROM ingredients')) {
+      if (sql.includes('DELETE FROM items')) {
         const id = params[0]
         mockData.delete(id)
         return []
@@ -304,7 +304,7 @@ const createTestDatabase = () => {
   }
 }
 
-describe('Database Ingredients Integration', () => {
+describe('Database Items Integration', () => {
   let testDb
 
   beforeEach(() => {
@@ -316,18 +316,18 @@ describe('Database Ingredients Integration', () => {
   })
 
   describe('Database Schema', () => {
-    it('should initialize ingredients table successfully', () => {
+    it('should initialize items table successfully', () => {
       const result = initializeDatabase(testDb)
       
       expect(result).toBe(true)
-      expect(testDb.exec).toHaveBeenCalledWith(expect.stringContaining('CREATE TABLE IF NOT EXISTS ingredients'))
+      expect(testDb.exec).toHaveBeenCalledWith(expect.stringContaining('CREATE TABLE IF NOT EXISTS items'))
     })
 
-    it('should include all required columns in ingredients table', () => {
+    it('should include all required columns in items table', () => {
       initializeDatabase(testDb)
       
       const schemaCall = testDb.exec.mock.calls.find(call => 
-        call[0].includes('CREATE TABLE IF NOT EXISTS ingredients')
+        call[0].includes('CREATE TABLE IF NOT EXISTS items')
       )
       
       expect(schemaCall[0]).toContain('id INTEGER PRIMARY KEY AUTOINCREMENT')
@@ -343,17 +343,17 @@ describe('Database Ingredients Integration', () => {
       expect(schemaCall[0]).toContain('updated_at DATETIME DEFAULT CURRENT_TIMESTAMP')
     })
 
-    it('should populate initial ingredients data', () => {
+    it('should populate initial items data', () => {
       initializeDatabase(testDb)
       
-      // Check that sample ingredients are inserted
+      // Check that sample items are inserted
       const insertCalls = testDb.exec.mock.calls.filter(call => 
-        call[0].includes('INSERT OR IGNORE INTO ingredients')
+        call[0].includes('INSERT OR IGNORE INTO items')
       )
       
       expect(insertCalls.length).toBeGreaterThan(0)
       
-      // Check for some common ingredients
+      // Check for some common items
       const allInsertSQL = insertCalls.map(call => call[0]).join(' ')
       expect(allInsertSQL).toContain('Red Onion')
       expect(allInsertSQL).toContain('Chicken Breast')
@@ -378,29 +378,29 @@ describe('Database Ingredients Integration', () => {
       ]
       
       testDb.exec(
-        'INSERT INTO ingredients (name, category, default_unit, cost_per_unit, storage_notes, nutrition_per_100g) VALUES (?, ?, ?, ?, ?, ?)',
+        'INSERT INTO items (name, category, default_unit, cost_per_unit, storage_notes, nutrition_per_100g) VALUES (?, ?, ?, ?, ?, ?)',
         ingredientData
       )
       
       // Verify ingredient was inserted
-      const result = testDb.exec('SELECT * FROM ingredients WHERE name = ?', ['Fresh Basil'])
+      const result = testDb.exec('SELECT * FROM items WHERE name = ?', ['Fresh Basil'])
       expect(result[0].values).toHaveLength(1)
       expect(result[0].values[0][1]).toBe('Fresh Basil') // name column
       expect(result[0].values[0][2]).toBe('produce') // category column
     })
 
-    it('should retrieve ingredients with recipe count', () => {
+    it('should retrieve items with recipe count', () => {
       // Insert test ingredient
       testDb.exec(
-        'INSERT INTO ingredients (name, category, default_unit) VALUES (?, ?, ?)',
+        'INSERT INTO items (name, category, default_unit) VALUES (?, ?, ?)',
         ['Test Ingredient', 'produce', 'pieces']
       )
       
       // Query with recipe count join
       const result = testDb.exec(`
         SELECT i.*, COUNT(ri.recipe_id) as recipe_count
-        FROM ingredients i
-        LEFT JOIN recipe_ingredients ri ON i.id = ri.ingredient_id
+        FROM items i
+        LEFT JOIN recipe_items ri ON i.id = ri.item_id
         GROUP BY i.id
         ORDER BY i.name ASC
       `)
@@ -413,18 +413,18 @@ describe('Database Ingredients Integration', () => {
     it('should update ingredient successfully', () => {
       // Insert test ingredient
       testDb.exec(
-        'INSERT INTO ingredients (name, category, default_unit) VALUES (?, ?, ?)',
+        'INSERT INTO items (name, category, default_unit) VALUES (?, ?, ?)',
         ['Original Name', 'produce', 'pieces']
       )
       
       // Update the ingredient
       testDb.exec(
-        'UPDATE ingredients SET name = ?, category = ?, cost_per_unit = ? WHERE id = ?',
+        'UPDATE items SET name = ?, category = ?, cost_per_unit = ? WHERE id = ?',
         ['Updated Name', 'dairy', 3.50, 1]
       )
       
       // Verify update
-      const result = testDb.exec('SELECT * FROM ingredients WHERE id = ?', [1])
+      const result = testDb.exec('SELECT * FROM items WHERE id = ?', [1])
       expect(result[0].values[0][1]).toBe('Updated Name')
       expect(result[0].values[0][2]).toBe('dairy')
       expect(result[0].values[0][4]).toBe(3.50)
@@ -433,37 +433,37 @@ describe('Database Ingredients Integration', () => {
     it('should delete ingredient successfully', () => {
       // Insert test ingredient
       testDb.exec(
-        'INSERT INTO ingredients (name, category, default_unit) VALUES (?, ?, ?)',
+        'INSERT INTO items (name, category, default_unit) VALUES (?, ?, ?)',
         ['To Delete', 'produce', 'pieces']
       )
       
       // Verify it exists
-      let result = testDb.exec('SELECT COUNT(*) as count FROM ingredients WHERE name = ?', ['To Delete'])
+      let result = testDb.exec('SELECT COUNT(*) as count FROM items WHERE name = ?', ['To Delete'])
       expect(result[0].values[0][0]).toBe(1)
       
       // Delete the ingredient
-      testDb.exec('DELETE FROM ingredients WHERE id = ?', [1])
+      testDb.exec('DELETE FROM items WHERE id = ?', [1])
       
       // Verify it's deleted
-      result = testDb.exec('SELECT COUNT(*) as count FROM ingredients WHERE name = ?', ['To Delete'])
+      result = testDb.exec('SELECT COUNT(*) as count FROM items WHERE name = ?', ['To Delete'])
       expect(result[0].values[0][0]).toBe(0)
     })
 
     it('should handle duplicate ingredient names', () => {
       // Insert first ingredient
       testDb.exec(
-        'INSERT INTO ingredients (name, category, default_unit) VALUES (?, ?, ?)',
+        'INSERT INTO items (name, category, default_unit) VALUES (?, ?, ?)',
         ['Duplicate Name', 'produce', 'pieces']
       )
       
       // Insert another ingredient with same name (mock allows this, real SQLite would prevent)
       testDb.exec(
-        'INSERT INTO ingredients (name, category, default_unit) VALUES (?, ?, ?)',
+        'INSERT INTO items (name, category, default_unit) VALUES (?, ?, ?)',
         ['Duplicate Name', 'dairy', 'cups']
       )
       
       // Verify both were inserted in mock (in real SQLite, only one would exist)
-      const result = testDb.exec('SELECT COUNT(*) as count FROM ingredients WHERE name = ?', ['Duplicate Name'])
+      const result = testDb.exec('SELECT COUNT(*) as count FROM items WHERE name = ?', ['Duplicate Name'])
       expect(result[0].values[0][0]).toBe(2) // Mock allows duplicates
     })
   })
@@ -475,11 +475,11 @@ describe('Database Ingredients Integration', () => {
 
     it('should handle null values appropriately', () => {
       testDb.exec(
-        'INSERT INTO ingredients (name, category, default_unit, cost_per_unit, storage_notes) VALUES (?, ?, ?, ?, ?)',
+        'INSERT INTO items (name, category, default_unit, cost_per_unit, storage_notes) VALUES (?, ?, ?, ?, ?)',
         ['Minimal Ingredient', null, 'pieces', null, null]
       )
       
-      const result = testDb.exec('SELECT * FROM ingredients WHERE name = ?', ['Minimal Ingredient'])
+      const result = testDb.exec('SELECT * FROM items WHERE name = ?', ['Minimal Ingredient'])
       expect(result[0].values[0][1]).toBe('Minimal Ingredient')
       expect(result[0].values[0][2]).toBe(null) // category
       expect(result[0].values[0][4]).toBe(null) // cost_per_unit
@@ -496,11 +496,11 @@ describe('Database Ingredients Integration', () => {
       })
       
       testDb.exec(
-        'INSERT INTO ingredients (name, category, default_unit, nutrition_per_100g) VALUES (?, ?, ?, ?)',
+        'INSERT INTO items (name, category, default_unit, nutrition_per_100g) VALUES (?, ?, ?, ?)',
         ['Chicken Breast', 'meat', 'lbs', nutritionData]
       )
       
-      const result = testDb.exec('SELECT nutrition_per_100g FROM ingredients WHERE name = ?', ['Chicken Breast'])
+      const result = testDb.exec('SELECT nutrition_per_100g FROM items WHERE name = ?', ['Chicken Breast'])
       const storedNutrition = JSON.parse(result[0].values[0][0])
       
       expect(storedNutrition.calories).toBe(165)
@@ -514,12 +514,12 @@ describe('Database Ingredients Integration', () => {
       
       units.forEach((unit, index) => {
         testDb.exec(
-          'INSERT INTO ingredients (name, category, default_unit) VALUES (?, ?, ?)',
+          'INSERT INTO items (name, category, default_unit) VALUES (?, ?, ?)',
           [`Ingredient ${index}`, 'produce', unit]
         )
       })
       
-      const result = testDb.exec('SELECT name, default_unit FROM ingredients ORDER BY name')
+      const result = testDb.exec('SELECT name, default_unit FROM items ORDER BY name')
       expect(result[0].values).toHaveLength(units.length)
       
       units.forEach((unit, index) => {
@@ -532,20 +532,20 @@ describe('Database Ingredients Integration', () => {
     beforeEach(() => {
       initializeDatabase(testDb)
       
-      // Insert multiple test ingredients
+      // Insert multiple test items
       for (let i = 1; i <= 100; i++) {
         testDb.exec(
-          'INSERT INTO ingredients (name, category, default_unit, cost_per_unit) VALUES (?, ?, ?, ?)',
+          'INSERT INTO items (name, category, default_unit, cost_per_unit) VALUES (?, ?, ?, ?)',
           [`Ingredient ${i}`, i % 2 === 0 ? 'produce' : 'dairy', 'pieces', Math.random() * 10]
         )
       }
     })
 
-    it('should efficiently query ingredients with filters', () => {
+    it('should efficiently query items with filters', () => {
       const startTime = Date.now()
       
       // Query with category filter
-      const result = testDb.exec('SELECT * FROM ingredients WHERE category = ? ORDER BY name', ['produce'])
+      const result = testDb.exec('SELECT * FROM items WHERE category = ? ORDER BY name', ['produce'])
       
       const queryTime = Date.now() - startTime
       
@@ -556,8 +556,8 @@ describe('Database Ingredients Integration', () => {
     it('should efficiently search by name pattern', () => {
       const startTime = Date.now()
       
-      // Search for ingredients with "1" in the name
-      const result = testDb.exec('SELECT * FROM ingredients WHERE name LIKE ? ORDER BY name', ['%1%'])
+      // Search for items with "1" in the name
+      const result = testDb.exec('SELECT * FROM items WHERE name LIKE ? ORDER BY name', ['%1%'])
       
       const queryTime = Date.now() - startTime
       
@@ -565,10 +565,10 @@ describe('Database Ingredients Integration', () => {
       expect(queryTime).toBeLessThan(100)
     })
 
-    it('should efficiently count ingredients by category', () => {
+    it('should efficiently count items by category', () => {
       const result = testDb.exec(`
         SELECT category, COUNT(*) as count 
-        FROM ingredients 
+        FROM items 
         GROUP BY category 
         ORDER BY count DESC
       `)
@@ -589,15 +589,15 @@ describe('Database Ingredients Integration', () => {
       // For now, we test the query structure
       
       testDb.exec(
-        'INSERT INTO ingredients (name, category, default_unit) VALUES (?, ?, ?)',
+        'INSERT INTO items (name, category, default_unit) VALUES (?, ?, ?)',
         ['Test Ingredient', 'produce', 'pieces']
       )
       
       // Query that would be used to check recipe dependencies
       const result = testDb.exec(`
         SELECT i.*, COUNT(ri.recipe_id) as recipe_count
-        FROM ingredients i
-        LEFT JOIN recipe_ingredients ri ON i.id = ri.ingredient_id
+        FROM items i
+        LEFT JOIN recipe_items ri ON i.id = ri.item_id
         WHERE i.id = ?
         GROUP BY i.id
       `, [1])
@@ -612,7 +612,7 @@ describe('Database Ingredients Integration', () => {
       for (let i = 0; i < 10; i++) {
         operations.push(() => {
           testDb.exec(
-            'INSERT INTO ingredients (name, category, default_unit) VALUES (?, ?, ?)',
+            'INSERT INTO items (name, category, default_unit) VALUES (?, ?, ?)',
             [`Concurrent ${i}`, 'produce', 'pieces']
           )
         })
@@ -622,7 +622,7 @@ describe('Database Ingredients Integration', () => {
       operations.forEach(op => op())
       
       // Verify all were inserted
-      const result = testDb.exec('SELECT COUNT(*) as count FROM ingredients WHERE name LIKE ?', ['Concurrent%'])
+      const result = testDb.exec('SELECT COUNT(*) as count FROM items WHERE name LIKE ?', ['Concurrent%'])
       expect(result[0].values[0][0]).toBe(10)
     })
   })

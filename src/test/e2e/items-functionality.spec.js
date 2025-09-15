@@ -1,16 +1,16 @@
-// End-to-end tests for ingredients functionality
+// End-to-end tests for items functionality
 import { test, expect } from '@playwright/test'
 
-test.describe('Ingredients Management E2E', () => {
+test.describe('Items Management E2E', () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to the test ingredients page since the main app has caching issues
-    await page.goto('/MealPlanner/test-ingredients.html')
+    // Navigate to the test items page since the main app has caching issues
+    await page.goto('/MealPlanner/test-items.html')
     await page.waitForLoadState('networkidle')
   })
 
-  test.describe('Ingredients Display', () => {
-    test('should display ingredient cards with all information', async ({ page }) => {
-      // Check that ingredient cards are visible
+  test.describe('Items Display', () => {
+    test('should display item cards with all information', async ({ page }) => {
+      // Check that item cards are visible
       await expect(page.locator('.bg-white.rounded-lg.shadow')).toHaveCount(3)
       
       // Check Red Onion card
@@ -172,7 +172,7 @@ test.describe('Ingredients Management E2E', () => {
 
   test.describe('Search and Filter', () => {
     test('should have search input and category filter', async ({ page }) => {
-      await expect(page.locator('input[placeholder="Search ingredients..."]')).toBeVisible()
+      await expect(page.locator('input[placeholder="Search items..."]')).toBeVisible()
       await expect(page.locator('select#category-filter')).toBeVisible()
       
       // Check category options
@@ -186,7 +186,7 @@ test.describe('Ingredients Management E2E', () => {
     })
 
     test('should trigger search functionality', async ({ page }) => {
-      const searchInput = page.locator('input[placeholder="Search ingredients..."]')
+      const searchInput = page.locator('input[placeholder="Search items..."]')
       
       // Listen for console logs to verify search is triggered
       const consoleMessages = []
@@ -221,11 +221,11 @@ test.describe('Ingredients Management E2E', () => {
       await page.setViewportSize({ width: 375, height: 667 })
       
       // Check that elements are still visible and properly arranged
-      await expect(page.locator('h1:has-text("Ingredients Management Test")')).toBeVisible()
+      await expect(page.locator('h1:has-text("items management Test")')).toBeVisible()
       await expect(page.locator('button:has-text("Add Ingredient")')).toBeVisible()
       await expect(page.locator('button:has-text("📱 Scan Barcode")')).toBeVisible()
       
-      // Check that ingredient cards stack properly on mobile
+      // Check that item cards stack properly on mobile
       const cards = page.locator('.bg-white.rounded-lg.shadow')
       await expect(cards.first()).toBeVisible()
     })
@@ -234,11 +234,11 @@ test.describe('Ingredients Management E2E', () => {
       await page.setViewportSize({ width: 768, height: 1024 })
       
       // Check that layout adapts to tablet size
-      await expect(page.locator('h1:has-text("Ingredients Management Test")')).toBeVisible()
+      await expect(page.locator('h1:has-text("items management Test")')).toBeVisible()
       await expect(page.locator('.grid')).toBeVisible()
       
       // Check that search and filter are properly arranged
-      await expect(page.locator('input[placeholder="Search ingredients..."]')).toBeVisible()
+      await expect(page.locator('input[placeholder="Search items..."]')).toBeVisible()
       await expect(page.locator('select#category-filter')).toBeVisible()
     })
   })
@@ -280,9 +280,9 @@ test.describe('Ingredients Management E2E', () => {
   })
 
   test.describe('Performance', () => {
-    test('should load ingredients quickly', async ({ page }) => {
+    test('should load items quickly', async ({ page }) => {
       const startTime = Date.now()
-      await page.goto('/MealPlanner/test-ingredients.html')
+      await page.goto('/MealPlanner/test-items.html')
       await page.waitForSelector('.bg-white.rounded-lg.shadow')
       const loadTime = Date.now() - startTime
       
@@ -291,7 +291,7 @@ test.describe('Ingredients Management E2E', () => {
     })
 
     test('should handle rapid search input without performance issues', async ({ page }) => {
-      const searchInput = page.locator('input[placeholder="Search ingredients..."]')
+      const searchInput = page.locator('input[placeholder="Search items..."]')
       
       // Rapidly type in search
       const searchTerms = ['a', 'ab', 'abc', 'abcd', 'abcde']

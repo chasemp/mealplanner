@@ -235,9 +235,9 @@ class ExportImportLifecycleTests {
                 servings: 4,
                 prep_time: 15,
                 cook_time: 30,
-                ingredients: [
-                    { ingredient_id: 1, quantity: 2, unit: 'pounds' }, // Chicken
-                    { ingredient_id: 2, quantity: 1, unit: 'cups' }     // Rice
+                items: [
+                    { item_id: 1, quantity: 2, unit: 'pounds' }, // Chicken
+                    { item_id: 2, quantity: 1, unit: 'cups' }     // Rice
                 ],
                 instructions: ['Cook chicken in a pan until golden brown', 'Add rice and cook until tender'],
                 labels: ['main-dish'],
@@ -307,7 +307,7 @@ class ExportImportLifecycleTests {
             throw new Error(`Expected 2 recipes, got ${recipes.length}`);
         }
         
-        const requiredFields = ['id', 'title', 'description', 'servings', 'ingredients'];
+        const requiredFields = ['id', 'title', 'description', 'servings', 'items'];
         recipes.forEach(recipe => {
             requiredFields.forEach(field => {
                 if (!recipe[field]) {
@@ -449,11 +449,11 @@ class ExportImportLifecycleTests {
     validateRecipesIntegrity(recipes, items) {
         // Validate that recipes reference valid items
         recipes.forEach(recipe => {
-            if (recipe.ingredients) {
-                recipe.ingredients.forEach(ingredient => {
-                    const itemExists = items.some(item => item.id === ingredient.ingredient_id);
+            if (recipe.items) {
+                recipe.items.forEach(ingredient => {
+                    const itemExists = items.some(item => item.id === ingredient.item_id);
                     if (!itemExists) {
-                        throw new Error(`Recipe references non-existent item: ${ingredient.ingredient_id}`);
+                        throw new Error(`Recipe references non-existent item: ${ingredient.item_id}`);
                     }
                 });
             }
@@ -479,9 +479,9 @@ class ExportImportLifecycleTests {
         // Check that items are referenced in recipes
         const usedItemIds = new Set();
         recipes.forEach(recipe => {
-            if (recipe.ingredients) {
-                recipe.ingredients.forEach(ingredient => {
-                    usedItemIds.add(ingredient.ingredient_id);
+            if (recipe.items) {
+                recipe.items.forEach(ingredient => {
+                    usedItemIds.add(ingredient.item_id);
                 });
             }
         });
@@ -495,9 +495,9 @@ class ExportImportLifecycleTests {
         
         // Check that recipes have valid ingredient relationships
         return recipes.every(recipe => {
-            if (recipe.ingredients) {
-                return recipe.ingredients.every(ingredient => {
-                    return items.some(item => item.id === ingredient.ingredient_id);
+            if (recipe.items) {
+                return recipe.items.every(ingredient => {
+                    return items.some(item => item.id === ingredient.item_id);
                 });
             }
             return true;

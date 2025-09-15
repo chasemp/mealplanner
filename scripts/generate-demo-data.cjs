@@ -596,14 +596,14 @@ class DemoDataGenerator {
                 const recipe = recipes.find(r => r.id === sr.recipeId);
                 if (recipe && recipe.items) {
                     recipe.items.forEach(item => {
-                        const key = `${item.ingredient_id}_${item.unit}`;
+                        const key = `${item.item_id || item.ingredient_id}_${item.unit}`;
                         const multiplier = sr.servings / recipe.servings || 1;
                         if (itemMap.has(key)) {
                             // Round the aggregated quantity to realistic user-entered values
                             itemMap.get(key).quantity = this.roundQuantity(itemMap.get(key).quantity + item.quantity * multiplier);
                         } else {
                             itemMap.set(key, {
-                                ingredient_id: item.ingredient_id,
+                                item_id: item.item_id || item.ingredient_id,
                                 quantity: this.roundQuantity(item.quantity * multiplier),
                                 unit: item.unit
                             });
@@ -916,13 +916,13 @@ class DemoDataGenerator {
             const recipe = basicRecipes.find(r => r.id === comboRecipe.recipe_id);
             if (recipe && recipe.items) {
                 recipe.items.forEach(ing => {
-                    const key = `${ing.ingredient_id}_${ing.unit}`;
+                    const key = `${ing.item_id || ing.ingredient_id}_${ing.unit}`;
                     const multiplier = comboRecipe.servings / recipe.servings || 1;
                     if (ingredientMap.has(key)) {
                         ingredientMap.get(key).quantity += ing.quantity * multiplier;
                     } else {
                         ingredientMap.set(key, {
-                            ingredient_id: ing.ingredient_id,
+                            item_id: ing.item_id || ing.ingredient_id,
                             quantity: ing.quantity * multiplier,
                             unit: ing.unit
                         });
@@ -1017,7 +1017,7 @@ class DemoDataGenerator {
     
     generateRecipeIngredients(selectedIngredients) {
         return selectedIngredients.map(ingredient => ({
-            ingredient_id: ingredient.id,
+            item_id: ingredient.id,
             quantity: this.generateQuantity(ingredient.category),
             unit: ingredient.default_unit
         }));
@@ -1317,12 +1317,12 @@ class DemoDataGenerator {
             // Validate ingredient references
             if (recipe.items) {
                 recipe.items.forEach((recipeIng, ingIndex) => {
-                    const ingredient = ingredients.find(ing => ing.id === recipeIng.ingredient_id);
+                    const ingredient = ingredients.find(ing => ing.id === (recipeIng.item_id || recipeIng.ingredient_id));
                     if (!ingredient) {
-                        errors.push(`Recipe ${index}: References non-existent ingredient ${recipeIng.ingredient_id} at index ${ingIndex}`);
+                        errors.push(`Recipe ${index}: References non-existent ingredient ${recipeIng.item_id || recipeIng.ingredient_id} at index ${ingIndex}`);
                     }
                     if (!recipeIng.quantity || recipeIng.quantity <= 0) {
-                        errors.push(`Recipe ${index}: Invalid quantity for ingredient ${recipeIng.ingredient_id}`);
+                        errors.push(`Recipe ${index}: Invalid quantity for ingredient ${recipeIng.item_id || recipeIng.ingredient_id}`);
                     }
                 });
             }
@@ -1465,7 +1465,7 @@ class DemoDataManager {
     // Get all data
     getAllData() {
         return {
-            ingredients: this.ingredients,
+            items: this.ingredients,
             recipes: this.recipes,
             meals: this.meals,
             scheduledMeals: this.scheduledMeals
@@ -1500,9 +1500,9 @@ class DemoDataManager {
         this.recipes.forEach(recipe => {
             if (recipe.items) {
                 recipe.items.forEach(recipeIng => {
-                    const ingredient = this.ingredients.find(ing => ing.id === recipeIng.ingredient_id);
+                    const ingredient = this.ingredients.find(ing => ing.id === (recipeIng.item_id || recipeIng.ingredient_id));
                     if (!ingredient) {
-                        issues.push(\`Recipe "\${recipe.title}" references non-existent ingredient ID \${recipeIng.ingredient_id}\`);
+                        issues.push(\`Recipe "\${recipe.title}" references non-existent ingredient ID \${recipeIng.item_id || recipeIng.ingredient_id}\`);
                     }
                 });
             }

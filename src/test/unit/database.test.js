@@ -56,16 +56,16 @@ describe('Database Schema Structure', () => {
   it('should contain all required tables', () => {
     const schema = DATABASE_SCHEMA
     
-    expect(schema).toContain('CREATE TABLE IF NOT EXISTS ingredients')
+    expect(schema).toContain('CREATE TABLE IF NOT EXISTS items')
     expect(schema).toContain('CREATE TABLE IF NOT EXISTS recipes')
-    expect(schema).toContain('CREATE TABLE IF NOT EXISTS recipe_ingredients')
+    expect(schema).toContain('CREATE TABLE IF NOT EXISTS recipe_items')
     expect(schema).toContain('CREATE TABLE IF NOT EXISTS meal_plans')
     expect(schema).toContain('CREATE TABLE IF NOT EXISTS scheduled_meals')
     expect(schema).toContain('CREATE TABLE IF NOT EXISTS pantry_items')
     expect(schema).toContain('CREATE TABLE IF NOT EXISTS grocery_lists')
   })
 
-  it('should include common ingredients', () => {
+  it('should include common items', () => {
     const schema = DATABASE_SCHEMA
     
     expect(schema).toContain("'Red Onion'")
