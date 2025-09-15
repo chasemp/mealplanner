@@ -89,6 +89,9 @@ class MealPlannerApp {
             
             console.log(`✅ MealPlanner v${this.version} initialized successfully!`);
             
+            // Set up navigation listeners for browser back/forward support
+            this.setupNavigationListeners();
+            
             // Make app globally available for other components
             window.app = this;
         }, 1000);
@@ -194,6 +197,9 @@ class MealPlannerApp {
                 this.navigationHistory = this.navigationHistory.slice(-10);
             }
             
+            // Push to browser history for back/forward support
+            this.pushNavigationState(tabName, { previousTab: this.currentTab });
+            
             console.log(`📍 Navigation: ${this.currentTab} → ${tabName}`, {
                 previousTab: this.previousTab,
                 historyLength: this.navigationHistory.length
@@ -251,6 +257,76 @@ class MealPlannerApp {
         }
 
         console.log(`Switched to ${tabName} tab`);
+    }
+
+    // Navigation Stack System with Browser History Integration
+    pushNavigationState(tabName, data = {}) {
+        const state = {
+            tab: tabName,
+            data: data,
+            timestamp: Date.now()
+        };
+
+        // Update browser history
+        const url = new URL(window.location);
+        url.searchParams.set('tab', tabName);
+        history.pushState(state, '', url);
+
+        console.log(`📍 Pushed navigation state: ${tabName}`, state);
+    }
+
+    popNavigationState() {
+        if (this.navigationHistory.length > 0) {
+            const previousState = this.navigationHistory.pop();
+            if (previousState) {
+                console.log(`📍 Popped navigation state: ${previousState.tab}`, previousState);
+                return previousState;
+            }
+        }
+        return null;
+    }
+
+    getCurrentNavigationState() {
+        return {
+            currentTab: this.currentTab,
+            previousTab: this.previousTab,
+            historyLength: this.navigationHistory.length,
+            history: [...this.navigationHistory]
+        };
+    }
+
+    clearNavigationStack() {
+        this.navigationHistory = [];
+        this.previousTab = null;
+        console.log('🧹 Navigation stack cleared');
+    }
+
+    setupNavigationListeners() {
+        // Handle browser back/forward buttons
+        window.addEventListener('popstate', (event) => {
+            console.log('🔄 Browser navigation detected:', event.state);
+            
+            if (event.state && event.state.tab) {
+                // Switch to the tab from browser history
+                this.switchTab(event.state.tab, { trackHistory: false });
+            } else {
+                // Handle URL parameters for direct navigation
+                const urlParams = new URLSearchParams(window.location.search);
+                const tabFromUrl = urlParams.get('tab');
+                if (tabFromUrl && tabFromUrl !== this.currentTab) {
+                    this.switchTab(tabFromUrl, { trackHistory: false });
+                }
+            }
+        });
+
+        // Handle initial page load with URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const initialTab = urlParams.get('tab');
+        if (initialTab && initialTab !== this.currentTab) {
+            this.switchTab(initialTab, { trackHistory: false });
+        }
+
+        console.log('✅ Navigation listeners set up');
     }
 
     returnFromSettings() {
