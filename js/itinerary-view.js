@@ -187,6 +187,51 @@ class ItineraryView {
             console.log(`📝 Setting innerHTML for ${this.mealType} itinerary view`);
             this.container.innerHTML = `
             <div class="itinerary-view">
+                <!-- Auto Plan Controls (only for plan tab) -->
+                ${this.mealType === 'plan' ? `
+                <div class="mb-6 space-y-4">
+                    <!-- Meals per Week Control -->
+                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                        <label for="meals-per-week" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Meals per Week
+                        </label>
+                        <div class="flex items-center space-x-4">
+                            <input type="range" 
+                                   id="meals-per-week" 
+                                   min="1" 
+                                   max="7" 
+                                   value="7" 
+                                   class="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-600">
+                            <span id="meals-per-week-value" class="text-sm font-medium text-gray-900 dark:text-white min-w-[2rem] text-center">7</span>
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            <span>1</span>
+                            <span>7</span>
+                        </div>
+                    </div>
+
+                    <!-- Meal Spacing Control -->
+                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                        <label for="meal-spacing" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Minimum Days Between Same Meal
+                        </label>
+                        <div class="flex items-center space-x-4">
+                            <input type="range" 
+                                   id="meal-spacing" 
+                                   min="1" 
+                                   max="14" 
+                                   value="3" 
+                                   class="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-600">
+                            <span id="meal-spacing-value" class="text-sm font-medium text-gray-900 dark:text-white min-w-[2rem] text-center">3</span>
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            <span>1</span>
+                            <span>14</span>
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
+
                 <!-- Header -->
                    <div class="mb-6">
                        <div class="flex-1">
@@ -226,6 +271,13 @@ class ItineraryView {
             console.log(`✅ ${this.mealType} itinerary view HTML set successfully`);
             
             this.attachEventListeners();
+            
+            // Initialize auto-plan controls for plan tab
+            console.log(`🔍 Checking if mealType is 'plan': ${this.mealType} === 'plan' ? ${this.mealType === 'plan'}`);
+            if (this.mealType === 'plan') {
+                console.log(`🎛️ Calling initializeAutoPlanControls for ${this.mealType}`);
+                this.initializeAutoPlanControls();
+            }
             
             // Listen for meal move events from calendar view
             this.listenForMealMoves();
@@ -1340,6 +1392,40 @@ class ItineraryView {
             recipesContent.insertBefore(banner, recipesContent.firstChild);
             
         }, 100);
+    }
+    
+    initializeAutoPlanControls() {
+        console.log('🎛️ Initializing auto-plan controls...');
+        
+        // Initialize meals per week slider
+        const mealsPerWeekSlider = document.getElementById('meals-per-week');
+        const mealsPerWeekValue = document.getElementById('meals-per-week-value');
+        
+        if (mealsPerWeekSlider && mealsPerWeekValue) {
+            // Update display value when slider changes
+            mealsPerWeekSlider.addEventListener('input', (e) => {
+                mealsPerWeekValue.textContent = e.target.value;
+            });
+            
+            // Initialize display value
+            mealsPerWeekValue.textContent = mealsPerWeekSlider.value;
+        }
+        
+        // Initialize meal spacing slider
+        const mealSpacingSlider = document.getElementById('meal-spacing');
+        const mealSpacingValue = document.getElementById('meal-spacing-value');
+        
+        if (mealSpacingSlider && mealSpacingValue) {
+            // Update display value when slider changes
+            mealSpacingSlider.addEventListener('input', (e) => {
+                mealSpacingValue.textContent = e.target.value;
+            });
+            
+            // Initialize display value
+            mealSpacingValue.textContent = mealSpacingSlider.value;
+        }
+        
+        console.log('✅ Auto-plan controls initialized');
     }
 }
 

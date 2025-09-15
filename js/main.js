@@ -242,6 +242,12 @@ class MealPlannerApp {
             this.updatePendingRecipes();
             // Update Plan vs Menu delta comparison to show current differences
             this.updatePlanMenuDelta();
+            
+            // Refresh the plan itinerary view to ensure auto-plan controls are visible
+            if (this.itineraryViews && this.itineraryViews['plan']) {
+                console.log('🔄 Refreshing plan itinerary view to show auto-plan controls');
+                this.itineraryViews['plan'].render();
+            }
         }
 
         console.log(`Switched to ${tabName} tab`);
@@ -3181,6 +3187,166 @@ class MealPlannerApp {
         });
 
         return JSON.stringify(exportData, null, 2);
+    }
+
+    handleExportDatabase() {
+        console.log('💾 Exporting database...');
+        
+        try {
+            // Create a blob with the current database state
+            const dbData = this.getCurrentDatabaseData();
+            const blob = new Blob([dbData], { type: 'application/json' });
+            
+            // Create download link
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `mealplanner-export-${new Date().toISOString().split('T')[0]}.json`;
+            a.style.display = 'none';
+            
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            this.showNotification('Database exported successfully!', 'success');
+        } catch (error) {
+            console.error('❌ Error exporting database:', error);
+            this.showNotification('Error exporting database. Please try again.', 'error');
+        }
+    }
+
+    handleImportDatabase() {
+        console.log('📥 Opening file picker for import...');
+        
+        // Trigger the hidden file input
+        const fileInput = document.getElementById('import-file-input');
+        if (fileInput) {
+            fileInput.click();
+        } else {
+            this.showNotification('Import functionality not available.', 'error');
+        }
+    }
+
+    async handleImportFile(event) {
+        const file = event.target.files[0];
+        if (!file) {
+            return;
+        }
+
+        console.log('📥 Importing file:', file.name);
+
+        try {
+            // Read the file content
+            const fileContent = await this.readFileAsText(file);
+            
+            // Parse the JSON
+            const importData = JSON.parse(fileContent);
+            
+            // Validate the import data structure
+            if (!this.validateImportData(importData)) {
+                this.showNotification('Invalid import file format. Please use a valid MealPlanner export file.', 'error');
+                return;
+            }
+
+            // Confirm import with user
+            const confirmed = await this.confirmImport(importData);
+            if (!confirmed) {
+                return;
+            }
+
+            // Import the data
+            await this.importDataToLocalStorage(importData);
+            
+            // Refresh all components to reflect the new data
+            await this.refreshAllComponents();
+            
+            this.showNotification('Database imported successfully! All data has been refreshed.', 'success');
+            
+        } catch (error) {
+            console.error('❌ Error importing database:', error);
+            this.showNotification('Error importing database. Please check the file format and try again.', 'error');
+        } finally {
+            // Reset the file input
+            event.target.value = '';
+        }
+    }
+
+    readFileAsText(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.onerror = (e) => reject(e);
+            reader.readAsText(file);
+        });
+    }
+
+    validateImportData(data) {
+        // Check if it's a valid MealPlanner export
+        if (!data || typeof data !== 'object') {
+            return false;
+        }
+
+        // Check for required fields
+        if (!data.version || !data.exported || !data.schema || !data.data) {
+            return false;
+        }
+
+        // Check if schema structure matches expected format
+        const expectedSchemaKeys = [
+            'items', 'recipes', 'combos', 'scheduledMeals', 
+            'planScheduledMeals', 'menuScheduledMeals', 'pantryItems',
+            'groceryList', 'demoDataPopulated', 'mealPreferences',
+            'favoriteRecipes', 'settings'
+        ];
+
+        const schemaKeys = Object.keys(data.schema);
+        const hasRequiredKeys = expectedSchemaKeys.every(key => schemaKeys.includes(key));
+
+        return hasRequiredKeys;
+    }
+
+    async confirmImport(importData) {
+        // Show confirmation dialog with import details
+        const itemCount = importData.data.items?.length || 0;
+        const recipeCount = importData.data.recipes?.length || 0;
+        const comboCount = importData.data.combos?.length || 0;
+        const mealCount = importData.data.scheduledMeals?.length || 0;
+        
+        const message = `Import data from ${importData.exported}?\n\n` +
+                       `Items: ${itemCount}\n` +
+                       `Recipes: ${recipeCount}\n` +
+                       `Combos: ${comboCount}\n` +
+                       `Scheduled Meals: ${mealCount}\n\n` +
+                       `This will replace all current data. Continue?`;
+
+        return confirm(message);
+    }
+
+    async importDataToLocalStorage(importData) {
+        console.log('📥 Importing data to localStorage...');
+        
+        // Clear existing data first
+        Object.values(importData.schema).forEach(storageKey => {
+            localStorage.removeItem(storageKey);
+        });
+
+        // Import new data
+        Object.keys(importData.schema).forEach(key => {
+            const storageKey = importData.schema[key];
+            const value = importData.data[key];
+            
+            if (value !== null && value !== undefined) {
+                if (typeof value === 'object') {
+                    localStorage.setItem(storageKey, JSON.stringify(value));
+                } else {
+                    localStorage.setItem(storageKey, value);
+                }
+                console.log(`✅ Imported ${key}: ${Array.isArray(value) ? value.length : '1'} items`);
+            }
+        });
+
+        console.log('✅ Data import completed');
     }
 
     async refreshAllComponents() {

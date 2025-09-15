@@ -1,0 +1,316 @@
+{
+  "version": "2025.09.13.0859",
+  "exported": "2025-09-15T19:57:21.093Z",
+  "schema": {
+    "items": "mealplanner_items",
+    "recipes": "mealplanner_recipes",
+    "combos": "mealplanner_combos",
+    "scheduledMeals": "mealplanner_scheduledMeals",
+    "planScheduledMeals": "mealplanner_planScheduledMeals",
+    "menuScheduledMeals": "mealplanner_menuScheduledMeals",
+    "pantryItems": "mealplanner_pantryItems",
+    "groceryList": "mealplanner_groceryList",
+    "demoDataPopulated": "mealplanner_demo_data_populated",
+    "mealPreferences": "mealPreferences",
+    "favoriteRecipes": "favoriteRecipes",
+    "settings": "mealplanner_settings"
+  },
+  "data": {
+    "items": [
+      {
+        "name": "Chicken",
+        "category": "meat",
+        "default_unit": "pounds",
+        "storage_notes": null,
+        "nutrition_per_100g": {
+          "calories": null,
+          "protein": null,
+          "carbs": null,
+          "fat": null
+        },
+        "id": 1,
+        "recipe_count": 0,
+        "avg_quantity": 0
+      },
+      {
+        "name": "Rice",
+        "category": "pantry",
+        "default_unit": "cups",
+        "storage_notes": null,
+        "nutrition_per_100g": {
+          "calories": null,
+          "protein": null,
+          "carbs": null,
+          "fat": null
+        },
+        "id": 2,
+        "recipe_count": 0,
+        "avg_quantity": 0
+      },
+      {
+        "id": 3,
+        "name": "Onions",
+        "category": "produce",
+        "default_unit": "pieces",
+        "storage_notes": null,
+        "nutrition": {
+          "calories": 0,
+          "protein": 0,
+          "carbs": 0,
+          "fat": 0
+        },
+        "created_at": "2025-09-13T19:44:24.073Z",
+        "updated_at": "2025-09-13T19:44:24.073Z"
+      },
+      {
+        "id": 5,
+        "name": "Tomatoes",
+        "category": "produce",
+        "default_unit": "pieces",
+        "storage_notes": null,
+        "nutrition": {
+          "calories": 0,
+          "protein": 0,
+          "carbs": 0,
+          "fat": 0
+        },
+        "created_at": "2025-09-13T19:44:24.073Z",
+        "updated_at": "2025-09-13T19:44:24.073Z"
+      },
+      {
+        "id": 7,
+        "name": "Salt",
+        "category": "spices",
+        "default_unit": "teaspoons",
+        "storage_notes": null,
+        "nutrition": {
+          "calories": 0,
+          "protein": 0,
+          "carbs": 0,
+          "fat": 0
+        },
+        "created_at": "2025-09-13T19:44:24.073Z",
+        "updated_at": "2025-09-13T19:44:24.073Z"
+      },
+      {
+        "name": "Beef",
+        "category": "meat",
+        "default_unit": "pounds",
+        "storage_notes": null,
+        "nutrition_per_100g": {
+          "calories": 250,
+          "protein": 26,
+          "carbs": null,
+          "fat": null
+        },
+        "id": 8,
+        "recipe_count": 0,
+        "avg_quantity": 0
+      },
+      {
+        "name": "Potatoes",
+        "category": "produce",
+        "default_unit": "pieces",
+        "storage_notes": null,
+        "nutrition_per_100g": {
+          "calories": null,
+          "protein": null,
+          "carbs": null,
+          "fat": null
+        },
+        "id": 9,
+        "recipe_count": 0,
+        "avg_quantity": 0
+      },
+      {
+        "name": "Milk",
+        "category": "dairy",
+        "default_unit": "cups",
+        "storage_notes": null,
+        "nutrition_per_100g": {
+          "calories": null,
+          "protein": null,
+          "carbs": null,
+          "fat": null
+        },
+        "id": 10,
+        "recipe_count": 0,
+        "avg_quantity": 0
+      }
+    ],
+    "recipes": [
+      {
+        "id": 3,
+        "title": "Beef Stew",
+        "description": "A hearty and comforting beef stew with vegetables",
+        "servings": 4,
+        "prep_time": 15,
+        "cook_time": 30,
+        "instructions": [
+          "Cut beef into cubes and brown in a large pot. Add onions and cook until softened. Add potatoes and enough water to cover. Simmer for 2 hours until beef is tender."
+        ],
+        "labels": [],
+        "recipe_type": "regular",
+        "ingredients": [
+          {
+            "ingredient_id": 8,
+            "quantity": 2,
+            "unit": "lbs"
+          },
+          {
+            "ingredient_id": 9,
+            "quantity": 4,
+            "unit": "pieces"
+          },
+          {
+            "ingredient_id": 3,
+            "quantity": 2,
+            "unit": "pieces"
+          }
+        ]
+      },
+      {
+        "id": 1,
+        "title": "Chicken and Rice",
+        "description": "A simple and delicious chicken and rice dish",
+        "servings": 4,
+        "prep_time": 15,
+        "cook_time": 30,
+        "instructions": [
+          "Cook chicken in a pan until golden brown, then add rice and cook until tender"
+        ],
+        "labels": [],
+        "recipe_type": "regular",
+        "ingredients": [
+          {
+            "ingredient_id": 1,
+            "quantity": 2,
+            "unit": "lbs"
+          },
+          {
+            "ingredient_id": 2,
+            "quantity": 1,
+            "unit": "cups"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Complete Dinner Combo",
+        "description": "A complete dinner with main dish and side",
+        "servings": 4,
+        "prep_time": 0,
+        "cook_time": 0,
+        "instructions": [],
+        "labels": [
+          "Recipe Combo"
+        ],
+        "recipe_type": "combo",
+        "combo_recipes": [
+          {
+            "recipe_id": 1,
+            "servings_multiplier": 1
+          }
+        ],
+        "ingredients": []
+      },
+      {
+        "id": 4,
+        "title": "Mashed Potatoes",
+        "description": "Creamy mashed potatoes with milk and butter",
+        "servings": 4,
+        "prep_time": 15,
+        "cook_time": 30,
+        "instructions": [
+          "Boil potatoes until tender. Drain and mash with milk and butter until smooth."
+        ],
+        "labels": [],
+        "recipe_type": "regular",
+        "ingredients": [
+          {
+            "ingredient_id": 9,
+            "quantity": 6,
+            "unit": "pieces"
+          },
+          {
+            "ingredient_id": 10,
+            "quantity": 1,
+            "unit": "cups"
+          }
+        ]
+      }
+    ],
+    "combos": null,
+    "scheduledMeals": [],
+    "planScheduledMeals": [
+      {
+        "id": "plan-1",
+        "recipe_id": 1,
+        "recipe_name": "Chicken and Rice",
+        "meal_type": "dinner",
+        "servings": 4,
+        "date": "2025-09-08",
+        "created_at": "2025-09-13T19:46:13.146Z",
+        "updated_at": "2025-09-13T19:46:13.146Z"
+      },
+      {
+        "id": "plan-2",
+        "recipe_id": 2,
+        "recipe_name": "Tomato Salad",
+        "meal_type": "lunch",
+        "servings": 2,
+        "date": "2025-09-09",
+        "created_at": "2025-09-13T19:46:13.146Z",
+        "updated_at": "2025-09-13T19:46:13.146Z"
+      },
+      {
+        "id": "plan-3",
+        "recipe_id": 4,
+        "recipe_name": "Complete Dinner Combo",
+        "meal_type": "dinner",
+        "servings": 4,
+        "date": "2025-09-10",
+        "created_at": "2025-09-13T19:46:13.146Z",
+        "updated_at": "2025-09-13T19:46:13.146Z"
+      }
+    ],
+    "menuScheduledMeals": [
+      {
+        "id": "plan-1",
+        "recipe_id": 1,
+        "recipe_name": "Chicken and Rice",
+        "meal_type": "dinner",
+        "servings": 4,
+        "date": "2025-09-08",
+        "created_at": "2025-09-13T19:46:13.146Z",
+        "updated_at": "2025-09-13T19:46:13.146Z"
+      },
+      {
+        "id": "plan-2",
+        "recipe_id": 2,
+        "recipe_name": "Tomato Salad",
+        "meal_type": "lunch",
+        "servings": 2,
+        "date": "2025-09-09",
+        "created_at": "2025-09-13T19:46:13.146Z",
+        "updated_at": "2025-09-13T19:46:13.146Z"
+      },
+      {
+        "id": "plan-3",
+        "recipe_id": 4,
+        "recipe_name": "Complete Dinner Combo",
+        "meal_type": "dinner",
+        "servings": 4,
+        "date": "2025-09-10",
+        "created_at": "2025-09-13T19:46:13.146Z",
+        "updated_at": "2025-09-13T19:46:13.146Z"
+      }
+    ],
+    "pantryItems": null,
+    "groceryList": null,
+    "demoDataPopulated": true,
+    "mealPreferences": null,
+    "favoriteRecipes": null,
+    "settings": null
+  }
+}
