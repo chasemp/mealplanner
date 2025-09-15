@@ -458,10 +458,45 @@ class MealPlannerApp {
         this.initializePerformanceManager();
         this.initializeAdvancedPlanning();
         this.initializePantryManager();
-            this.initializeMealRotationEngine();
+        this.initializeMealRotationEngine();
+        this.initializeAutoPlanControls();
         } catch (error) {
             console.error('❌ Error initializing managers:', error);
         }
+    }
+
+    initializeAutoPlanControls() {
+        console.log('🎛️ Initializing auto-plan controls...');
+        
+        // Initialize meals per week slider
+        const mealsPerWeekSlider = document.getElementById('meals-per-week');
+        const mealsPerWeekValue = document.getElementById('meals-per-week-value');
+        
+        if (mealsPerWeekSlider && mealsPerWeekValue) {
+            // Update display value when slider changes
+            mealsPerWeekSlider.addEventListener('input', (e) => {
+                mealsPerWeekValue.textContent = e.target.value;
+            });
+            
+            // Initialize display value
+            mealsPerWeekValue.textContent = mealsPerWeekSlider.value;
+        }
+        
+        // Initialize meal spacing slider
+        const mealSpacingSlider = document.getElementById('meal-spacing');
+        const mealSpacingValue = document.getElementById('meal-spacing-value');
+        
+        if (mealSpacingSlider && mealSpacingValue) {
+            // Update display value when slider changes
+            mealSpacingSlider.addEventListener('input', (e) => {
+                mealSpacingValue.textContent = e.target.value;
+            });
+            
+            // Initialize display value
+            mealSpacingValue.textContent = mealSpacingSlider.value;
+        }
+        
+        console.log('✅ Auto-plan controls initialized');
     }
 
     initializeRecipeManager() {
@@ -472,6 +507,9 @@ class MealPlannerApp {
             this.recipeManager = new RecipeManager(container);
             window.recipeManager = this.recipeManager;
             console.log('✅ Recipe manager initialized');
+            console.log('✅ this.recipeManager assigned:', !!this.recipeManager);
+        } else {
+            console.warn('⚠️ Recipe manager container not found');
         }
     }
 
@@ -1978,8 +2016,20 @@ class MealPlannerApp {
             }
 
             // Use the meal rotation engine to generate a plan with selected recipes
+            // SCOPE FIX: Use the itinerary view's date range instead of always starting from today
             const weeksToShow = itineraryView.weeksToShow || 4;
-            const startDate = new Date();
+            const startDate = itineraryView.startDate || new Date();
+            
+            // Get auto-plan control values
+            const mealsPerWeek = parseInt(document.getElementById('meals-per-week')?.value || '7');
+            const mealSpacing = parseInt(document.getElementById('meal-spacing')?.value || '3');
+            
+            // Calculate end date for logging
+            const endDate = new Date(startDate);
+            endDate.setDate(endDate.getDate() + (weeksToShow * 7) - 1);
+            
+            console.log(`📅 Auto-plan scope: ${weeksToShow} weeks from ${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}`);
+            console.log(`🎛️ Auto-plan settings: ${mealsPerWeek} meals/week, ${mealSpacing} days spacing`);
             
             // Generate rotation for the specified period using only selected recipes
             const rotation = this.mealRotationEngine.generateRotation(
@@ -1988,7 +2038,11 @@ class MealPlannerApp {
                 mealType, 
                 { 
                     forceInclude: selectedRecipeIds,
-                    availableRecipes: selectedRecipes
+                    availableRecipes: selectedRecipes,
+                    constraints: {
+                        minDaysBetweenSameRecipe: mealSpacing,
+                        mealsPerWeek: mealsPerWeek
+                    }
                 }
             );
             
@@ -2935,29 +2989,41 @@ class MealPlannerApp {
     }
 
     async importDataToLocalStorage(importData) {
-        console.log('📥 Importing data to localStorage...');
+        console.log('📥 Importing data using authoritative data source...');
         
-        // Clear existing data first
-        Object.values(importData.schema).forEach(storageKey => {
-            localStorage.removeItem(storageKey);
+        // Use the authoritative data source system for consistency
+        if (!window.mealPlannerSettings) {
+            throw new Error('Settings manager not available for import');
+        }
+
+        // Clear existing data first by saving empty arrays to authoritative source
+        const dataTypes = ['items', 'recipes', 'meals', 'scheduledMeals', 'planScheduledMeals', 'menuScheduledMeals', 'pantryItems'];
+        dataTypes.forEach(dataType => {
+            window.mealPlannerSettings.saveAuthoritativeData(dataType, []);
         });
 
-        // Import new data
-        Object.keys(importData.schema).forEach(key => {
-            const storageKey = importData.schema[key];
+        // Import new data using the authoritative system
+        // The export structure has a 'data' object with the actual data arrays
+        Object.keys(importData.data).forEach(key => {
             const value = importData.data[key];
             
-            if (value !== null && value !== undefined) {
-                if (typeof value === 'object') {
+            if (value !== null && value !== undefined && Array.isArray(value)) {
+                // Use the key directly as the data type (items, recipes, etc.)
+                // The export already uses the correct naming convention
+                window.mealPlannerSettings.saveAuthoritativeData(key, value);
+                console.log(`✅ Imported ${key}: ${value.length} items via authoritative source`);
+            } else if (value !== null && value !== undefined) {
+                // Handle non-array values (like demoDataPopulated flag)
+                // These should be saved directly to localStorage since they're not managed by authoritative source
+                const storageKey = importData.schema[key];
+                if (storageKey) {
                     localStorage.setItem(storageKey, JSON.stringify(value));
-                } else {
-                    localStorage.setItem(storageKey, value);
+                    console.log(`✅ Imported ${key}: ${value} to localStorage`);
                 }
-                console.log(`✅ Imported ${key}: ${Array.isArray(value) ? value.length : '1'} items`);
             }
         });
 
-        console.log('✅ Data import completed');
+        console.log('✅ Data import completed using authoritative data source');
     }
 
     isInstalled() {
@@ -3119,16 +3185,24 @@ class MealPlannerApp {
 
     async refreshAllComponents() {
         console.log('🔄 Refreshing all components...');
+        console.log('🔄 RecipeManager available:', !!this.recipeManager);
+        console.log('🔄 ItemsManager available:', !!this.itemsManager);
+        console.log('🔄 MealManager available:', !!this.mealManager);
         
         // IMPORT/EXPORT FIX: Reload data before rendering to ensure UI reflects imported data
         // This fixes the issue where imported data exists in localStorage but UI doesn't display it
-        if (this.recipeManager) {
-            await this.recipeManager.loadRecipes();
-            this.recipeManager.render();
+        // Note: loadRecipes() and loadItems() already call render(), so we don't need to call render() again
+        // Try both this.recipeManager and window.recipeManager
+        const recipeManager = this.recipeManager || window.recipeManager;
+        if (recipeManager) {
+            console.log('🔄 Calling RecipeManager.loadRecipes()...');
+            await recipeManager.loadRecipes();
+            console.log('✅ RecipeManager.loadRecipes() completed');
+        } else {
+            console.warn('⚠️ RecipeManager not available in refreshAllComponents (tried both this.recipeManager and window.recipeManager)');
         }
         if (this.itemsManager) {
             await this.itemsManager.loadItems();
-            this.itemsManager.render();
         }
         if (this.mealManager) {
             await this.mealManager.loadRecipes();

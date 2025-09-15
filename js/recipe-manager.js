@@ -45,7 +45,10 @@ class RecipeManager {
         
         // Get data from centralized authority
         if (window.mealPlannerSettings) {
-            this.recipes = window.mealPlannerSettings.getAuthoritativeData('recipes');
+            const loadedRecipes = window.mealPlannerSettings.getAuthoritativeData('recipes');
+            console.log('📱 Raw data from getAuthoritativeData:', loadedRecipes);
+            console.log('📱 Type of loaded data:', typeof loadedRecipes, Array.isArray(loadedRecipes));
+            this.recipes = loadedRecipes || [];
             console.log(`✅ Recipe Manager loaded ${this.recipes.length} recipes from authoritative source`);
             if (this.recipes.length > 0) {
                 console.log('📱 First recipe:', this.recipes[0]);
@@ -57,6 +60,7 @@ class RecipeManager {
         }
         
         console.log('📱 Final recipes count:', this.recipes.length);
+        console.log('📱 this.recipes array:', this.recipes);
         this.render(); // IMPORT/EXPORT FIX: Render after loading data to ensure UI updates
     }
 
