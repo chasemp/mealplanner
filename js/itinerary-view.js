@@ -509,11 +509,13 @@ class ItineraryView {
                             </div>
                             <div class="flex-1">
                                 ${hasMeal ? `
-                                    <div class="flex items-center space-x-2 draggable-meal cursor-move" 
+                                    <div class="flex items-center space-x-2 draggable-meal cursor-pointer" 
                                          draggable="true"
                                          data-meal-id="${scheduledMeal?.id || ''}"
                                          data-meal-name="${mealName}"
                                          data-original-date="${dateStr}"
+                                         data-recipe-id="${scheduledMeal?.recipe_id || ''}"
+                                         onclick="window.itineraryViews['${this.mealType}'].openRecipeView('${scheduledMeal?.recipe_id || ''}')"
                                          ondragstart="window.itineraryViews['${this.mealType}'].handleDragStart(event)"
                                          ondragend="window.itineraryViews['${this.mealType}'].handleDragEnd(event)">
                                         <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
@@ -1249,6 +1251,50 @@ class ItineraryView {
         
         // Show scheduling banner in recipes tab
         this.showSchedulingBanner(dateStr);
+    }
+
+    openRecipeView(recipeId) {
+        console.log(`🍳 Opening recipe view for recipe ID: ${recipeId}`);
+        
+        if (!recipeId) {
+            console.error('❌ No recipe ID provided to openRecipeView');
+            return;
+        }
+        
+        // Check if recipe manager is available
+        if (!window.recipeManager) {
+            console.error('❌ Recipe manager not available');
+            return;
+        }
+        
+        // Store navigation context for return to menu
+        window.navigationContext = {
+            returnTab: 'menu',
+            returnMealType: this.mealType
+        };
+        
+        // Switch to recipes tab first
+        if (window.mealPlannerApp && window.mealPlannerApp.switchTab) {
+            window.mealPlannerApp.switchTab('recipes');
+        } else if (window.app && window.app.switchTab) {
+            window.app.switchTab('recipes');
+        } else {
+            // Fallback: trigger mobile navigation
+            const recipesTab = document.querySelector('[data-tab="recipes"]');
+            if (recipesTab) {
+                recipesTab.click();
+            }
+        }
+        
+        // Wait for tab switch, then open recipe view
+        setTimeout(() => {
+            if (window.recipeManager && window.recipeManager.showRecipeDetail) {
+                console.log(`🍳 Calling showRecipeDetail for recipe ${recipeId}`);
+                window.recipeManager.showRecipeDetail(parseInt(recipeId));
+            } else {
+                console.error('❌ Recipe manager or showRecipeDetail method not available');
+            }
+        }, 100);
     }
     
     showSchedulingBanner(dateStr) {
