@@ -459,9 +459,9 @@ class SettingsManager {
     }
 
     updateDatabaseSourceIndicator() {
-        const indicator = document.getElementById('database-source-indicator');
         const iconElement = document.getElementById('database-source-icon');
-        if (!indicator || !iconElement) return;
+        const tooltipElement = document.querySelector('#database-source-indicator-container .absolute');
+        if (!iconElement) return;
 
         const sourceConfig = {
             'demo': {
@@ -480,11 +480,13 @@ class SettingsManager {
 
         const config = sourceConfig[this.settings.sourceType] || sourceConfig['demo'];
         
-        // Update the text indicator
-        indicator.textContent = config.name;
-        
         // Update the icon
         iconElement.innerHTML = config.icon;
+        
+        // Update the tooltip text if it exists
+        if (tooltipElement) {
+            tooltipElement.textContent = config.name;
+        }
 
         console.log(`📊 Updated database source indicator: ${config.name}`);
     }
