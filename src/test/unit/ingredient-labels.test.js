@@ -49,18 +49,18 @@ const mockDemoData = {
 class MockIngredientsManager {
     constructor(container) {
         this.container = container;
-        this.ingredients = [];
+        this.items = [];
         this.filteredIngredients = [];
         this.currentFilter = { search: '', category: '', label: '' };
     }
 
-    async loadIngredients() {
-        this.ingredients = mockDemoData.getIngredients();
+    async loadItems() {
+        this.items = mockDemoData.getItems();
         this.applyFilters();
     }
 
     applyFilters() {
-        this.filteredIngredients = this.ingredients.filter(ingredient => {
+        this.filteredIngredients = this.items.filter(ingredient => {
             const matchesSearch = !this.currentFilter.search || 
                 ingredient.name.toLowerCase().includes(this.currentFilter.search.toLowerCase());
             
@@ -76,7 +76,7 @@ class MockIngredientsManager {
 
     getAllLabels() {
         const allLabels = new Set();
-        this.ingredients.forEach(ingredient => {
+        this.items.forEach(ingredient => {
             if (ingredient.labels && Array.isArray(ingredient.labels)) {
                 ingredient.labels.forEach(label => allLabels.add(label));
             }
@@ -90,18 +90,18 @@ describe('Ingredient Labels Functionality', () => {
 
     beforeEach(async () => {
         ingredientsManager = new MockIngredientsManager(mockContainer);
-        await ingredientsManager.loadIngredients();
+        await ingredientsManager.loadItems();
     });
 
     describe('Label Data Loading', () => {
-        it('should load ingredients with labels correctly', () => {
-            expect(ingredientsManager.ingredients).toHaveLength(5);
-            expect(ingredientsManager.ingredients[0].labels).toEqual(['protein', 'lean', 'versatile', 'popular']);
-            expect(ingredientsManager.ingredients[4].labels).toEqual([]); // Milk has no labels
+        it('should load items with labels correctly', () => {
+            expect(ingredientsManager.items).toHaveLength(5);
+            expect(ingredientsManager.items[0].labels).toEqual(['protein', 'lean', 'versatile', 'popular']);
+            expect(ingredientsManager.items[4].labels).toEqual([]); // Milk has no labels
         });
 
-        it('should handle ingredients without labels', () => {
-            const milkIngredient = ingredientsManager.ingredients.find(i => i.name === 'Milk');
+        it('should handle items without labels', () => {
+            const milkIngredient = ingredientsManager.items.find(i => i.name === 'Milk');
             expect(milkIngredient.labels).toEqual([]);
         });
     });
@@ -133,7 +133,7 @@ describe('Ingredient Labels Functionality', () => {
     });
 
     describe('Label Filtering', () => {
-        it('should filter ingredients by protein label', () => {
+        it('should filter items by protein label', () => {
             ingredientsManager.currentFilter.label = 'protein';
             ingredientsManager.applyFilters();
             
@@ -141,7 +141,7 @@ describe('Ingredient Labels Functionality', () => {
             expect(ingredientsManager.filteredIngredients.map(i => i.name)).toEqual(['Chicken Breast', 'Ground Beef']);
         });
 
-        it('should filter ingredients by healthy label', () => {
+        it('should filter items by healthy label', () => {
             ingredientsManager.currentFilter.label = 'healthy';
             ingredientsManager.applyFilters();
             
@@ -149,7 +149,7 @@ describe('Ingredient Labels Functionality', () => {
             expect(ingredientsManager.filteredIngredients[0].name).toBe('Broccoli');
         });
 
-        it('should filter ingredients by versatile label', () => {
+        it('should filter items by versatile label', () => {
             ingredientsManager.currentFilter.label = 'versatile';
             ingredientsManager.applyFilters();
             
@@ -167,7 +167,7 @@ describe('Ingredient Labels Functionality', () => {
             expect(ingredientsManager.filteredIngredients).toHaveLength(0);
         });
 
-        it('should return all ingredients when no label filter is applied', () => {
+        it('should return all items when no label filter is applied', () => {
             ingredientsManager.currentFilter.label = '';
             ingredientsManager.applyFilters();
             
@@ -221,7 +221,7 @@ describe('Ingredient Labels Functionality', () => {
     });
 
     describe('Edge Cases', () => {
-        it('should handle ingredients with null labels', () => {
+        it('should handle items with null labels', () => {
             const ingredientWithNullLabels = {
                 id: 6,
                 name: 'Test Ingredient',
@@ -229,7 +229,7 @@ describe('Ingredient Labels Functionality', () => {
                 labels: null
             };
             
-            ingredientsManager.ingredients.push(ingredientWithNullLabels);
+            ingredientsManager.items.push(ingredientWithNullLabels);
             ingredientsManager.currentFilter.label = 'protein';
             ingredientsManager.applyFilters();
             
@@ -237,7 +237,7 @@ describe('Ingredient Labels Functionality', () => {
             expect(ingredientsManager.filteredIngredients.map(i => i.name)).not.toContain('Test Ingredient');
         });
 
-        it('should handle ingredients with undefined labels', () => {
+        it('should handle items with undefined labels', () => {
             const ingredientWithUndefinedLabels = {
                 id: 7,
                 name: 'Another Test Ingredient',
@@ -245,7 +245,7 @@ describe('Ingredient Labels Functionality', () => {
                 // labels property is undefined
             };
             
-            ingredientsManager.ingredients.push(ingredientWithUndefinedLabels);
+            ingredientsManager.items.push(ingredientWithUndefinedLabels);
             ingredientsManager.currentFilter.label = 'protein';
             ingredientsManager.applyFilters();
             
@@ -254,9 +254,9 @@ describe('Ingredient Labels Functionality', () => {
         });
 
         it('should handle empty labels array in getAllLabels', () => {
-            // Create manager with only ingredients that have no labels
+            // Create manager with only items that have no labels
             const emptyLabelsManager = new MockIngredientsManager(mockContainer);
-            emptyLabelsManager.ingredients = [
+            emptyLabelsManager.items = [
                 { id: 1, name: 'Test', category: 'test', labels: [] },
                 { id: 2, name: 'Test2', category: 'test', labels: null },
                 { id: 3, name: 'Test3', category: 'test' } // no labels property
