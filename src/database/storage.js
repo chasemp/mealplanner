@@ -302,7 +302,7 @@ class SQLiteStorage {
                 DELETE FROM scheduled_meals;
                 DELETE FROM grocery_lists;
                 DELETE FROM meal_plans;
-                DELETE FROM recipe_ingredients;
+                DELETE FROM recipe_items;
                 DELETE FROM recipes;
                 DELETE FROM pantry_items;
             `

@@ -3,7 +3,7 @@ class RecipeManager {
     constructor(container) {
         this.container = container;
         this.recipes = [];
-        this.ingredients = [];
+        this.items = [];
         this.currentRecipe = null;
         this.searchTerm = '';
         this.selectedLabels = []; // Changed to array for multi-select
@@ -20,23 +20,23 @@ class RecipeManager {
 
     async init() {
         console.log('🍳 Initializing Recipe Manager...');
-        await this.loadIngredients();
+        await this.loadItems();
         await this.loadRecipes();
         this.render();
         this.attachEventListeners();
     }
 
-    async loadIngredients() {
-        console.log('📱 Recipe Manager loading ingredients from authoritative data source...');
+    async loadItems() {
+        console.log('📱 Recipe Manager loading items from authoritative data source...');
         
         // Get data from centralized authority
         if (window.mealPlannerSettings) {
-            this.ingredients = window.mealPlannerSettings.getAuthoritativeData('items');
-            console.log(`✅ Recipe Manager loaded ${this.ingredients.length} ingredients from authoritative source`);
+            this.items = window.mealPlannerSettings.getAuthoritativeData('items');
+            console.log(`✅ Recipe Manager loaded ${this.items.length} items from authoritative source`);
         } else {
             // Fallback if settings not available
-            console.warn('⚠️ Settings manager not available, using empty ingredients');
-            this.ingredients = [];
+            console.warn('⚠️ Settings manager not available, using empty items');
+            this.items = [];
         }
     }
 
@@ -825,21 +825,21 @@ class RecipeManager {
 
     getUniqueIngredientLabels() {
         const allLabels = new Set();
-        this.ingredients.forEach(ingredient => {
-            if (ingredient.labels && Array.isArray(ingredient.labels)) {
-                ingredient.labels.forEach(label => allLabels.add(label));
+        this.items.forEach(item => {
+            if (item.labels && Array.isArray(item.labels)) {
+                item.labels.forEach(label => allLabels.add(label));
             }
         });
         return Array.from(allLabels);
     }
 
-    getIngredientById(id) {
-        return this.ingredients.find(ingredient => ingredient.id === id);
+    getItemById(id) {
+        return this.items.find(item => item.id === id);
     }
 
-    getIngredientNameById(id) {
-        const ingredient = this.getIngredientById(id);
-        return ingredient ? ingredient.name : 'Unknown Ingredient';
+    getItemNameById(id) {
+        const item = this.getItemById(id);
+        return item ? item.name : 'Unknown Item';
     }
 
     // Utility function to round quantities to 2 decimal places and remove trailing zeros
@@ -864,8 +864,8 @@ class RecipeManager {
             const portions = recipeRef.servings || 1; // How many portions of this recipe
             
             (recipe.items || recipe.ingredients || []).forEach(ingredient => {
-                const ingredientName = this.getIngredientNameById(ingredient.ingredient_id) || 'Unknown item';
-                const key = `${ingredientName}_${ingredient.unit}`;
+                const itemName = this.getItemNameById(ingredient.ingredient_id || ingredient.item_id) || 'Unknown item';
+                const key = `${itemName}_${ingredient.unit}`;
                 
                 if (combinedItems.has(key)) {
                     // Add to existing quantity and round it
