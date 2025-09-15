@@ -98,6 +98,20 @@ class MealRotationEngine {
                 continue;
             }
 
+            // Check meals per week constraint
+            if (constraints.mealsPerWeek && constraints.mealsPerWeek < 7) {
+                const currentWeek = Math.floor(day / 7);
+                const mealsThisWeek = rotation.filter(meal => {
+                    const mealWeek = Math.floor((meal.date - currentDate) / (7 * 24 * 60 * 60 * 1000));
+                    return mealWeek === currentWeek;
+                }).length;
+                
+                if (mealsThisWeek >= constraints.mealsPerWeek) {
+                    console.log(`⏭️ Skipping day ${day} - already have ${mealsThisWeek}/${constraints.mealsPerWeek} meals this week`);
+                    continue;
+                }
+            }
+
             // Get context for this day
             const context = this.buildDayContext(rotation, day, dayDate);
             
