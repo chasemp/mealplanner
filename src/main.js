@@ -1,6 +1,6 @@
 // Main application entry point
 import { initializeStorage, sqliteStorage } from './database/storage.js'
-import { IngredientsManager } from './components/ingredients-manager.js'
+import { ItemsManager } from './components/items-manager.js'
 import { CalendarView } from './components/calendar-view.js'
 import { SimpleCalendar } from './components/simple-calendar.js'
 
@@ -38,7 +38,7 @@ class MealPlannerApp {
             }
             
             // Initialize components
-            this.ingredientsManager = new IngredientsManager(sqliteStorage.getDatabase())
+            this.itemsManager = new ItemsManager(sqliteStorage.getDatabase())
             
             // Set up UI event listeners
             this.setupEventListeners()

@@ -864,7 +864,7 @@ class RecipeManager {
             const portions = recipeRef.servings || 1; // How many portions of this recipe
             
             (recipe.items || recipe.ingredients || []).forEach(ingredient => {
-                const itemName = this.getItemNameById(ingredient.ingredient_id || ingredient.item_id) || 'Unknown item';
+                const itemName = this.getItemNameById(ingredient.item_id || ingredient.ingredient_id) || 'Unknown item';
                 const key = `${itemName}_${ingredient.unit}`;
                 
                 if (combinedItems.has(key)) {
@@ -885,8 +885,8 @@ class RecipeManager {
         // ALSO add the combo's own additional ingredients
         const additionalIngredients = comboRecipe.ingredients || [];
         additionalIngredients.forEach(ingredient => {
-            const ingredientName = this.getIngredientNameById(ingredient.ingredient_id) || 'Unknown item';
-            const key = `${ingredientName}_${ingredient.unit}`;
+            const itemName = this.getItemNameById(ingredient.item_id || ingredient.ingredient_id) || 'Unknown item';
+            const key = `${itemName}_${ingredient.unit}`;
             
             if (combinedItems.has(key)) {
                 // Add to existing quantity and round it
@@ -1340,12 +1340,12 @@ class RecipeManager {
                         Item
                     </label>
                     <select class="ingredient-select w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                            name="ingredients[${index}][ingredient_id]" ${!isCombo && index === 0 ? 'required' : ''}>
+                            name="items[${index}][item_id]" ${!isCombo && index === 0 ? 'required' : ''}>
                             <!-- VALIDATION LOGIC: 
                                  - Regular recipes: First item is required (at least one item needed)
                                  - Combos: All additional items are optional (recipes provide the base) -->
                         <option value="">Select item...</option>
-                        ${this.ingredients.map(ing => `
+                        ${this.items.map(ing => `
                             <option value="${ing.id}" data-unit="${ing.default_unit}" 
                                     ${ingredient.ingredient_id == ing.id ? 'selected' : ''}>
                                 ${ing.name}
@@ -1360,7 +1360,7 @@ class RecipeManager {
                     </label>
                     <input type="number" step="0.25" min="0" 
                            class="ingredient-quantity w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                           name="ingredients[${index}][quantity]" 
+                           name="items[${index}][quantity]" 
                            value="${ingredient.quantity}"
                            placeholder="1.5" ${!isCombo && index === 0 ? 'required' : ''}>
                 </div>
@@ -1370,7 +1370,7 @@ class RecipeManager {
                         Unit
                     </label>
                     <select class="unit-select w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                            name="ingredients[${index}][unit]">
+                            name="items[${index}][unit]">
                         <option value="pieces" ${ingredient.unit === 'pieces' ? 'selected' : ''}>pieces</option>
                         <option value="cups" ${ingredient.unit === 'cups' ? 'selected' : ''}>cups</option>
                         <option value="tbsp" ${ingredient.unit === 'tbsp' ? 'selected' : ''}>tbsp</option>
@@ -1500,9 +1500,9 @@ class RecipeManager {
                         Item
                     </label>
                     <select class="ingredient-select w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                            name="ingredients[${index}][ingredient_id]" ${!isCombo && index === 0 ? 'required' : ''}>
+                            name="items[${index}][item_id]" ${!isCombo && index === 0 ? 'required' : ''}>
                         <option value="">Select item...</option>
-                        ${this.ingredients.map(ing => `
+                        ${this.items.map(ing => `
                             <option value="${ing.id}" data-unit="${ing.default_unit}" 
                                     ${ingredient.ingredient_id == ing.id ? 'selected' : ''}>
                                 ${ing.name}
@@ -1517,7 +1517,7 @@ class RecipeManager {
                     </label>
                     <input type="number" step="0.25" min="0" 
                            class="ingredient-quantity w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                           name="ingredients[${index}][quantity]" 
+                           name="items[${index}][quantity]" 
                            value="${ingredient.quantity}"
                            placeholder="1.5" ${!isCombo && index === 0 ? 'required' : ''}>
                 </div>
@@ -1527,7 +1527,7 @@ class RecipeManager {
                         Unit
                     </label>
                     <select class="unit-select w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                            name="ingredients[${index}][unit]">
+                            name="items[${index}][unit]">
                         <option value="pieces" ${ingredient.unit === 'pieces' ? 'selected' : ''}>pieces</option>
                         <option value="cups" ${ingredient.unit === 'cups' ? 'selected' : ''}>cups</option>
                         <option value="tbsp" ${ingredient.unit === 'tbsp' ? 'selected' : ''}>tbsp</option>
@@ -1756,16 +1756,17 @@ class RecipeManager {
             const ingredientRows = form.querySelectorAll('.ingredient-row');
             
             ingredientRows.forEach((row, index) => {
-                const ingredientId = row.querySelector(`[name="ingredients[${index}][ingredient_id]"]`)?.value;
-                const quantity = row.querySelector(`[name="ingredients[${index}][quantity]"]`)?.value;
-                const unit = row.querySelector(`[name="ingredients[${index}][unit]"]`)?.value;
-                const notes = row.querySelector(`[name="ingredients[${index}][notes]"]`)?.value;
+                const itemId = row.querySelector(`[name="items[${index}][item_id]"]`)?.value;
+                const quantity = row.querySelector(`[name="items[${index}][quantity]"]`)?.value;
+                const unit = row.querySelector(`[name="items[${index}][unit]"]`)?.value;
+                const notes = row.querySelector(`[name="items[${index}][notes]"]`)?.value;
 
-                if (ingredientId && quantity) {
-                    const ingredient = this.ingredients.find(ing => ing.id == ingredientId);
+                if (itemId && quantity) {
+                    const ingredient = this.items.find(ing => ing.id == itemId);
                     if (ingredient) {
                         ingredients.push({
-                            ingredient_id: parseInt(ingredientId),
+                            item_id: parseInt(itemId),
+                            ingredient_id: parseInt(itemId), // Backward compatibility
                             name: ingredient.name,
                             quantity: parseFloat(quantity),
                             unit: unit || ingredient.default_unit,
@@ -2819,7 +2820,7 @@ class RecipeManager {
                         <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 space-y-2">
                             ${additionalItems.map(item => {
                                 // Look up the actual item by ID to get the name
-                                const foundItem = this.ingredients.find(ingredient => ingredient.id === item.ingredient_id);
+                                const foundItem = this.items.find(ingredient => ingredient.id === (item.item_id || item.ingredient_id));
                                 const itemName = foundItem ? foundItem.name : `Item ID ${item.ingredient_id}`;
                                 return `
                                     <div class="flex justify-between items-center text-xs">
@@ -2842,7 +2843,7 @@ class RecipeManager {
                         <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 space-y-2">
                             ${ingredients.map(item => {
                                 // Look up the actual item by ID to get the name
-                                const foundItem = this.ingredients.find(ingredient => ingredient.id === item.ingredient_id);
+                                const foundItem = this.items.find(ingredient => ingredient.id === (item.item_id || item.ingredient_id));
                                 const itemName = foundItem ? foundItem.name : `Item ID ${item.ingredient_id}`;
                                 return `
                                     <div class="flex justify-between items-center text-xs">
@@ -3794,13 +3795,14 @@ class RecipeManager {
             // Extract ingredient data from FormData
             const ingredientData = [];
             let index = 0;
-            while (formData.has(`ingredients[${index}][ingredient_id]`)) {
+            while (formData.has(`items[${index}][item_id]`)) {
                 const ingredient = {
-                    ingredient_id: formData.get(`ingredients[${index}][ingredient_id]`),
-                    quantity: formData.get(`ingredients[${index}][quantity]`),
-                    unit: formData.get(`ingredients[${index}][unit]`)
+                    item_id: formData.get(`items[${index}][item_id]`),
+                    ingredient_id: formData.get(`items[${index}][item_id]`), // Backward compatibility
+                    quantity: formData.get(`items[${index}][quantity]`),
+                    unit: formData.get(`items[${index}][unit]`)
                 };
-                if (ingredient.ingredient_id) { // Only add if ingredient is selected
+                if (ingredient.item_id) { // Only add if item is selected
                     ingredientData.push(ingredient);
                 }
                 index++;
@@ -3827,8 +3829,8 @@ class RecipeManager {
         console.log('🥕 Adding ingredient to recipe form:', savedIngredient);
         
         // Add the new ingredient to the ingredients list (for the select dropdown)
-        if (!this.ingredients.find(ing => ing.id === savedIngredient.id)) {
-            this.ingredients.push(savedIngredient);
+        if (!this.items.find(ing => ing.id === savedIngredient.id)) {
+            this.items.push(savedIngredient);
         }
         
         // Check if there's an empty row we can use instead of adding a new one
