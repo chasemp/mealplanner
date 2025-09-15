@@ -468,6 +468,10 @@ class SettingsManager {
                 name: 'Demo Data',
                 icon: `<path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>`
             },
+            'memory': {
+                name: 'In Memory',
+                icon: `<path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>`
+            },
             'local': {
                 name: 'Local Database',
                 icon: `<path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>`
@@ -721,12 +725,266 @@ class SettingsManager {
     }
     
     getDemoData(dataType) {
-        console.log(`🔍 TRACE: getDemoData(${dataType}) called - delegating to getLocalData()`);
-        // Demo data is initialized to localStorage on startup, so just read from localStorage
-        // This makes demo source behave exactly like local source (just with different initial seed)
+        if (!window.DemoDataManager) {
+            console.warn('⚠️ DemoDataManager not available, returning empty data');
+            return [];
+        }
+        
+        try {
+            const demoData = new window.DemoDataManager();
+            switch (dataType) {
+                case 'ingredients':
+                case 'items':
+                    return demoData.getIngredients();
+                case 'recipes':
+                    return demoData.getRecipes();
+                case 'scheduledMeals':
+                    return demoData.getScheduledMeals();
+                case 'planScheduledMeals':
+                    return demoData.getPlanScheduledMeals();
+                case 'menuScheduledMeals':
+                    return demoData.getMenuScheduledMeals();
+                case 'pantryItems':
+                    return demoData.getPantryItems();
+                case 'meals':
+                    return []; // Meals are user-created, not in demo data
+                default:
+                    console.warn(`⚠️ Unknown data type: ${dataType}`);
+                    return [];
+            }
+        } catch (error) {
+            console.error(`❌ Error loading demo ${dataType}:`, error);
+            return [];
+        }
+    }
+    
+    getMemoryData(dataType) {
+        // In-memory mode always returns empty data - clean slate
+        console.log(`✅ Returning empty ${dataType} for in-memory mode`);
+        return [];
+    }
+    
+    getLocalData(dataType) {
+        // Local file mode - try localStorage first, then empty
+        try {
+            const stored = localStorage.getItem(`mealplanner_${dataType}`);
+            if (stored) {
+                const data = JSON.parse(stored);
+                console.log(`✅ Loaded ${data.length} ${dataType} from localStorage`);
+                return data;
+            }
+        } catch (error) {
+            console.warn(`⚠️ Error loading ${dataType} from localStorage:`, error);
+        }
+        
+        console.log(`✅ No local ${dataType} found, returning empty data`);
+        return [];
+    }
+    
+    getGitHubData(dataType) {
+        // GitHub mode - try localStorage first (synced data), then empty
+        // TODO: Implement GitHub sync logic
         return this.getLocalData(dataType);
     }
     
+    // Method for managers to check if they should load demo data
+    shouldLoadDemoData() {
+        return this.settings.sourceType === 'demo';
+    }
+    
+    // Method to reload all managers when database source changes
+    async reloadAllManagers() {
+        console.log('🔄 Reloading all managers due to database source change...');
+        
+        try {
+            // Reload all managers that have data
+            if (window.app) {
+                // Reload recipe manager
+                if (window.app.recipeManager) {
+                    await window.app.recipeManager.loadRecipes();
+                    window.app.recipeManager.render();
+                }
+                
+                // Reload items manager
+                if (window.app.itemsManager) {
+                    await window.app.itemsManager.loadItems();
+                    window.app.itemsManager.render();
+                }
+                
+                // Reload meal manager
+                if (window.app.mealManager) {
+                    await window.app.mealManager.loadRecipes();
+                    await window.app.mealManager.loadMeals();
+                    window.app.mealManager.render();
+                }
+                
+                // Reload grocery list manager
+                if (window.app.groceryListManager) {
+                    await window.app.groceryListManager.loadData();
+                    window.app.groceryListManager.render();
+                }
+                
+                // Reload schedule manager
+                if (window.app.scheduleManager) {
+                    window.app.scheduleManager.loadScheduledMeals();
+                }
+                
+                // Refresh all meal planning views
+                window.app.refreshAllComponents();
+                
+                console.log('✅ All managers reloaded successfully');
+            }
+        } catch (error) {
+            console.error('❌ Error reloading managers:', error);
+        }
+    }
+    
+    async applyDatabaseSource() {
+        try {
+            // Update header database source indicator
+            this.updateDatabaseSourceIndicator();
+            
+            switch (this.settings.sourceType) {
+                case 'demo':
+                    await this.loadDemoData();
+                    break;
+                case 'memory':
+                    await this.loadMemoryDatabase();
+                    break;
+                case 'local':
+                    await this.loadLocalDatabase();
+                    break;
+                case 'github':
+                    await this.loadGitHubDatabase();
+                    break;
+            }
+            
+            this.showNotification('Database source applied successfully!', 'success');
+            
+            // Refresh all components
+            if (window.app) {
+                window.app.refreshAllComponents();
+            }
+        } catch (error) {
+            console.error('Failed to apply database source:', error);
+            this.showNotification(`Failed to apply database source: ${error.message}`, 'error');
+        }
+    }
+
+    async loadDemoData() {
+        console.log('Loading demo data...');
+        // Demo data is already loaded by default
+        return true;
+    }
+
+    async loadMemoryDatabase() {
+        console.log('Loading in-memory database (clean slate)...');
+        
+        try {
+            // Clear all data from localStorage
+            this.clearAllLocalStorageData();
+            
+            // Clear all data from the current app instance
+            if (window.app) {
+                await window.app.clearAllData();
+            }
+            
+            // Reload all managers to ensure they start with empty state
+            await this.reloadAllManagers();
+            
+            console.log('✅ In-memory database initialized - all data cleared and managers reloaded');
+            return true;
+        } catch (error) {
+            console.error('❌ Failed to initialize in-memory database:', error);
+            throw new Error(`Failed to initialize in-memory database: ${error.message}`);
+        }
+    }
+
+    async loadLocalDatabase() {
+        const fileInput = document.getElementById('local-file-input');
+        const file = fileInput?.files[0];
+        
+        if (!file) {
+            throw new Error('Please select a database file first');
+        }
+
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const arrayBuffer = e.target.result;
+                    const uint8Array = new Uint8Array(arrayBuffer);
+                    
+                    // Store in IndexedDB
+                    await this.storeDatabaseInIndexedDB(uint8Array);
+                    
+                    // Reinitialize database
+                    if (window.app && window.app.databaseManager) {
+                        await window.app.databaseManager.initializeFromIndexedDB();
+                    }
+                    
+                    resolve();
+                } catch (error) {
+                    reject(error);
+                }
+            };
+            reader.onerror = () => reject(new Error('Failed to read database file'));
+            reader.readAsArrayBuffer(file);
+        });
+    }
+
+    async loadGitHubDatabase() {
+        if (!this.settings.githubRepo) {
+            throw new Error('Please enter a GitHub repository URL');
+        }
+
+        // Initialize GitHub API
+        // 🔐 Deploy key will be loaded from secure storage by GitHubDatabaseSync
+        this.githubApi = new GitHubDatabaseSync(
+            this.settings.githubRepo,
+            null, // Deploy key loaded securely from IndexedDB
+            this.settings.githubReadOnly
+        );
+
+        // Load database from GitHub
+        const dbData = await this.githubApi.loadDatabase();
+        
+        if (dbData) {
+            // Store in IndexedDB
+            await this.storeDatabaseInIndexedDB(dbData);
+            
+            // Reinitialize database
+            if (window.app && window.app.databaseManager) {
+                await window.app.databaseManager.initializeFromIndexedDB();
+            }
+        }
+    }
+
+    async storeDatabaseInIndexedDB(uint8Array) {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open('MealPlannerDB', 1);
+            
+            request.onerror = () => reject(request.error);
+            
+            request.onsuccess = () => {
+                const db = request.result;
+                const transaction = db.transaction(['database'], 'readwrite');
+                const store = transaction.objectStore('database');
+                
+                store.put({ id: 'main', data: uint8Array });
+                
+                transaction.oncomplete = () => resolve();
+                transaction.onerror = () => reject(transaction.error);
+            };
+            
+            request.onupgradeneeded = () => {
+                const db = request.result;
+                if (!db.objectStoreNames.contains('database')) {
+                    db.createObjectStore('database', { keyPath: 'id' });
+                }
+            };
+        });
+    }
 
     // Centralized save method - routes to correct storage based on current database source
     saveAuthoritativeData(dataType, data) {
