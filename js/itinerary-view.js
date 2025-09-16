@@ -188,22 +188,14 @@ class ItineraryView {
             this.container.innerHTML = `
             <div class="itinerary-view">
 
-                <!-- Header -->
-                   <div class="mb-6">
-                       <div class="flex-1">
-                           <h3 class="text-lg font-semibold">Meals</h3>
-                           <div class="text-gray-600 text-sm">
-                               <div>${this.formatDateRange()}</div>
-                               <div>${this.weeksToShow} weeks</div>
-                           </div>
-                       </div>
-                       
-                       <div class="flex items-center mt-3">
-                           <select id="weeks-select-${this.mealType}" class="text-sm border border-gray-300 rounded px-2 py-1 min-w-0">
-                               ${this.renderWeekOptions()}
-                           </select>
-                       </div>
-                   </div>
+                <!-- Week Selector -->
+                <div class="mb-6">
+                    <div class="flex items-center">
+                        <select id="weeks-select-${this.mealType}" class="text-sm border border-gray-300 rounded px-2 py-1 min-w-0">
+                            ${this.renderWeekOptions()}
+                        </select>
+                    </div>
+                </div>
 
                 <!-- Planning Summary -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
