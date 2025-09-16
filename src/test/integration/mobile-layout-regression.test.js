@@ -44,12 +44,26 @@ describe('Mobile Layout Regression Tests', () => {
         `;
         document.body.appendChild(mockContainer);
         
-        // Mock RecipeManager as a global class
+        // Mock RecipeManager as a global class with all required methods
         global.RecipeManager = vi.fn(() => ({
+            // Core methods
             attachEventListeners: vi.fn(),
             render: vi.fn(),
             showNotification: vi.fn(),
-            recipes: []
+            
+            // Label management methods
+            addLabel: vi.fn(),
+            removeLabel: vi.fn(),
+            clearAllLabels: vi.fn(),
+            
+            // UI update methods
+            updateFavoritesButton: vi.fn(),
+            updateRecipeDisplay: vi.fn(),
+            
+            // Data properties
+            recipes: [],
+            showFavoritesOnly: false,
+            selectedLabels: []
         }));
         
         recipeManager = new global.RecipeManager(mockContainer.querySelector('#recipe-tab'));

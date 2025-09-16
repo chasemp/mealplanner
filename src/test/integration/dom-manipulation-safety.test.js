@@ -23,6 +23,7 @@ describe('DOM Manipulation Safety Tests', () => {
         mockContainer.innerHTML = `
             <div id="recipe-tab">
                 <div id="recipes-grid"></div>
+                <div id="empty-state" class="bg-gray-50 dark:bg-gray-800">No recipes found</div>
                 <button id="favorites-filter-btn"></button>
                 <button id="clear-recipe-filters-btn"></button>
                 <input id="recipe-search" type="text">
@@ -31,13 +32,46 @@ describe('DOM Manipulation Safety Tests', () => {
         `;
         document.body.appendChild(mockContainer);
         
-        // Mock RecipeManager as a global class
-        global.RecipeManager = vi.fn(() => ({
-            attachEventListeners: vi.fn(),
-            render: vi.fn(),
-            showNotification: vi.fn(),
-            recipes: []
-        }));
+        // Mock RecipeManager as a global class with all required methods
+        global.RecipeManager = vi.fn(() => {
+            const instance = {
+                // Data properties
+                recipes: [],
+                showFavoritesOnly: false,
+                selectedLabels: [],
+                searchTerm: '',
+                sortBy: 'name',
+                sortAscending: true,
+                
+                // Core methods with realistic behavior
+                attachEventListeners: vi.fn(),
+                showNotification: vi.fn(),
+                
+                // Render method that actually updates DOM to reflect state
+                render: vi.fn(() => {
+                    const searchInput = mockContainer.querySelector('#recipe-search');
+                    if (searchInput && instance.searchTerm) {
+                        searchInput.value = instance.searchTerm;
+                    }
+                }),
+                
+                // Label management methods that call attachEventListeners
+                addLabel: vi.fn(() => {
+                    instance.attachEventListeners();
+                }),
+                removeLabel: vi.fn(() => {
+                    instance.attachEventListeners();
+                }),
+                clearAllLabels: vi.fn(() => {
+                    instance.attachEventListeners();
+                }),
+                
+                // UI update methods
+                updateFavoritesButton: vi.fn(),
+                updateRecipeDisplay: vi.fn()
+            };
+            return instance;
+        });
         
         recipeManager = new global.RecipeManager(mockContainer.querySelector('#recipe-tab'));
     });
