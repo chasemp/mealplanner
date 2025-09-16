@@ -40,7 +40,10 @@
     "demo:generate": "node scripts/generate-demo-data.cjs --validate",
     "demo:refresh": "node scripts/generate-demo-data.cjs --validate",
     "demo:large": "node scripts/generate-demo-data.cjs --recipes 100 --items 50 --validate",
-    "demo:favorites": "node scripts/generate-demo-data.cjs --validate && echo 'Demo data regenerated with random favorites'"
+    "demo:favorites": "node scripts/generate-demo-data.cjs --validate && echo 'Demo data regenerated with random favorites'",
+    "hooks:setup": "node scripts/setup-git-hooks.js",
+    "hooks:test": "echo 'Testing pre-commit hook...' && .git/hooks/pre-commit",
+    "precommit": "npm run test:run"
   },
   "keywords": [
     "pwa",

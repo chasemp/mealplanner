@@ -1,5 +1,217 @@
 # PWA Development Lessons Learned
 
+## 🧪 **Test Isolation and State Management**
+
+**Lesson**: Tests must not pollute each other's state, especially when dealing with constructors that have side effects.
+
+**Problem**: Tests were failing inconsistently because the `SettingsManager` constructor automatically calls `initializeFirstTimeDemo()`, which populates localStorage with demo data. This caused tests to interfere with each other.
+
+**Root Cause**: 
+- Constructor side effects (automatic demo data population)
+- Tests not properly isolating their state
+- Shared localStorage state between test runs
+
+**Solution**: Proper test state management:
+```javascript
+beforeEach(async () => {
+    // CRITICAL: Set flag BEFORE creating instance to prevent auto-population
+    localStorage.setItem('mealplanner_demo_data_populated', 'true');
+    
+    // Now create instance - constructor won't populate demo data
+    settingsManager = new SettingsManager();
+});
+
+afterEach(() => {
+    // Clean up ALL state to prevent test pollution
+    global.localStorage = originalLocalStorage;
+    mockLocalStorage.clear();
+    
+    // Clean up global modifications
+    if (global.window && global.window.mealPlannerSettings) {
+        delete global.window.mealPlannerSettings;
+    }
+});
+```
+
+**Key Principles**:
+1. **Prevent Side Effects**: Control constructor behavior with flags/mocks
+2. **Clean State**: Each test starts with a known, clean state
+3. **Complete Cleanup**: afterEach must restore ALL modified state
+4. **Test Isolation**: No test should depend on another test's state
+
+**Testing Pattern for Constructors with Side Effects**:
+```javascript
+// Test the side effect explicitly
+it('should populate demo data on first load', () => {
+    localStorage.clear(); // Clean slate
+    const newInstance = new SettingsManager(); // Allow side effect
+    expect(localStorage.getItem('demo_data')).toBeTruthy();
+});
+
+// Test normal behavior with side effects prevented
+it('should work normally', () => {
+    localStorage.setItem('prevent_side_effect_flag', 'true');
+    const instance = new SettingsManager(); // No side effects
+    // Test normal behavior
+});
+```
+
+**Takeaway**: When constructors have side effects, tests must actively manage those side effects rather than just hoping they won't interfere.
+
+---
+
+## ⚡ **Explicit Failure vs Implicit Fallbacks**
+
+**Lesson**: Prefer fast, explicit failure over silent fallbacks that mask problems.
+
+**Problem**: Methods with implicit fallbacks can hide bugs and make debugging harder. For example:
+```javascript
+// BAD: Silent fallback masks the real problem
+resetDemoData() {
+    if (!this.originalDemoData) {
+        // Silently fall back - user never knows something went wrong
+        this.initializeDemoData(); 
+        return true;
+    }
+    // ... normal path
+}
+```
+
+**Better Approach**: Explicit failure with clear error messages:
+```javascript
+// GOOD: Explicit failure makes problems visible
+resetDemoData() {
+    if (!this.originalDemoData) {
+        console.error('❌ Original demo data not available - cannot reset');
+        return false; // Explicit failure
+    }
+    // ... normal path
+}
+```
+
+**Key Principles**:
+1. **Fail Fast**: Don't hide problems with fallbacks
+2. **Clear Errors**: Make failure reasons obvious
+3. **User Feedback**: Show users when something went wrong
+4. **Debugging**: Explicit failures are easier to debug than silent fallbacks
+
+**Testing Implications**:
+- **Test user-facing behavior**, not internal implementation details
+- **Don't force unrealistic error states** just to test error handling
+- **Focus on realistic failure scenarios** users might actually encounter
+
+**Takeaway**: Robust error handling means clear, explicit failure messages, not silent fallbacks that mask problems.
+
+---
+
+## 🔄 **Pre-Commit Hooks for Regression Prevention**
+
+**Lesson**: Critical functionality regressions can be prevented with targeted pre-commit hooks that focus on the most important tests.
+
+**Problem**: Clear All and demo data functionality was fixed multiple times but kept regressing due to lack of automated prevention.
+
+**Solution**: Smart pre-commit hook strategy:
+```bash
+# Critical tests that BLOCK commits
+critical_tests=(
+    "src/test/unit/clear-all-and-demo-data.test.js"
+    "src/test/unit/database-source-switching.test.js"
+    "src/test/unit/demo-data-validation.test.js"
+)
+
+# All other tests are informational (don't block commits)
+npm run test:run -- src/test/unit/ # Shows warnings but allows commit
+```
+
+**Key Benefits**:
+1. **Prevents Critical Regressions**: Blocks commits that break core functionality
+2. **Developer Friendly**: Doesn't block commits for minor test failures
+3. **Comprehensive Feedback**: Still runs all tests for visibility
+4. **Easy Setup**: Simple npm scripts for installation
+
+**Implementation**:
+```json
+{
+  "scripts": {
+    "hooks:setup": "node scripts/setup-git-hooks.js",
+    "hooks:test": ".git/hooks/pre-commit",
+    "precommit": "npm run test:run"
+  }
+}
+```
+
+**Takeaway**: Focus pre-commit hooks on preventing the most critical regressions rather than requiring all tests to pass. This maintains development velocity while protecting core functionality.
+
+---
+
+## 🎯 **Multi-Tier Testing Strategy**
+
+**Lesson**: Use a layered testing approach that balances comprehensive coverage with development velocity.
+
+**Problem**: All-or-nothing testing approaches either block development too much or provide insufficient protection.
+
+**Solution**: Three-tier testing strategy:
+
+### **Tier 1: Critical Regression Tests (Block Commits)**
+```bash
+# These MUST pass for commits to succeed
+critical_tests=(
+    "src/test/unit/clear-all-and-demo-data.test.js"
+    "src/test/unit/database-source-switching.test.js" 
+    "src/test/unit/demo-data-validation.test.js"
+)
+```
+- **Purpose**: Prevent regressions in core user-facing functionality
+- **Scope**: Features that have been fixed multiple times
+- **Action**: Block commits if these fail
+
+### **Tier 2: Comprehensive Unit Tests (Informational)**
+```bash
+# Run all unit tests but don't block commits
+npm run test:run -- src/test/unit/
+```
+- **Purpose**: Broad coverage of application functionality
+- **Scope**: All unit tests across the application
+- **Action**: Show warnings but allow commits
+
+### **Tier 3: Integration & E2E Tests (CI/CD)**
+```bash
+# Run in CI/CD pipeline, not locally
+npm run test:e2e
+npm run test:integration
+```
+- **Purpose**: Full system validation
+- **Scope**: Cross-component interactions, real browser testing
+- **Action**: Block merges to main branch
+
+### **Implementation Structure**:
+```
+.git/hooks/pre-commit          # Tier 1 + Tier 2
+.github/workflows/ci.yml       # Tier 3
+package.json scripts:
+  - hooks:setup                # Install pre-commit hook
+  - hooks:test                 # Test the hook manually
+  - test:critical              # Run only critical tests
+  - test:run                   # Run all unit tests
+  - test:e2e                   # Run E2E tests
+```
+
+### **Benefits**:
+1. **Fast Feedback**: Critical tests run in seconds
+2. **Development Velocity**: Non-critical failures don't block work
+3. **Comprehensive Coverage**: All tests still run and provide feedback
+4. **Regression Prevention**: Core functionality is protected
+5. **Flexible Workflow**: Developers can choose when to fix non-critical issues
+
+### **Test Categories**:
+- **Critical**: Clear All, demo data, authentication, data persistence
+- **Important**: UI components, filtering, search functionality  
+- **Nice-to-have**: Edge cases, error handling, performance optimizations
+
+**Takeaway**: Layer your testing strategy to match the criticality of functionality. Protect what matters most while maintaining development speed.
+
+---
+
 ## 📱 **Mobile-First UI Pattern Selection**
 
 **Lesson**: Choose the right UI pattern for each platform - don't force desktop patterns onto mobile.

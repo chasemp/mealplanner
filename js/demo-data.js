@@ -3896,6 +3896,7 @@ class DemoDataManager {
         return this.scheduledMeals;
     }
 
+
     // Validation method to ensure data consistency
     validateConsistency() {
         const issues = [];
