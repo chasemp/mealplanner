@@ -91,13 +91,13 @@ test.describe('Mobile Experience', () => {
     });
 
     test('should handle meal planning controls on mobile', async ({ page }) => {
-        // Test breakfast planning
-        await page.click('[data-tab="breakfast"]');
-        await page.waitForSelector('#breakfast-tab');
+        // Test plan tab
+        await page.click('[data-tab="plan"]');
+        await page.waitForSelector('#plan-tab');
         
         // Test mobile-friendly controls
-        const autoPlanBtn = page.locator('#auto-plan-breakfast');
-        const clearPlanBtn = page.locator('#clear-plan-breakfast');
+        const autoPlanBtn = page.locator('#auto-plan-plan');
+        const clearPlanBtn = page.locator('#clear-plan-plan');
         
         // Check button spacing and sizing
         const autoPlanBox = await autoPlanBtn.boundingBox();

@@ -45,15 +45,11 @@ describe('Theme and Visibility Toggles', () => {
                 <!-- Meal Type Tabs -->
                 <div class="nav-tabs">
                     <button data-tab="recipes" class="nav-tab active">Recipes</button>
-                    <button data-tab="breakfast" class="nav-tab">Breakfast</button>
-                    <button data-tab="lunch" class="nav-tab">Lunch</button>
-                    <button data-tab="dinner" class="nav-tab">Dinner</button>
+                    <button data-tab="plan" class="nav-tab">Plan</button>
                 </div>
 
                 <!-- Tab Content -->
-                <div id="breakfast-tab" class="tab-content">Breakfast Content</div>
-                <div id="lunch-tab" class="tab-content">Lunch Content</div>
-                <div id="dinner-tab" class="tab-content">Dinner Content</div>
+                <div id="plan-tab" class="tab-content">Plan Content</div>
             </body>
             </html>
         `, {

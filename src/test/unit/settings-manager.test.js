@@ -69,13 +69,9 @@ describe('Settings Manager', () => {
                 <button id="apply-source-btn">Apply Source</button>
                 <button id="export-db-btn-settings">Export Database</button>
                 
-                <button class="nav-tab" data-tab="breakfast">Breakfast</button>
-                <button class="nav-tab" data-tab="lunch">Lunch</button>
-                <button class="nav-tab" data-tab="dinner">Dinner</button>
+                <button class="nav-tab" data-tab="plan">Plan</button>
                 
-                <div id="breakfast-tab"></div>
-                <div id="lunch-tab"></div>
-                <div id="dinner-tab"></div>
+                <div id="plan-tab"></div>
             </body>
             </html>
         `, { url: 'http://localhost' });

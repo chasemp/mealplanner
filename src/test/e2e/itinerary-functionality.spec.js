@@ -9,38 +9,38 @@ test.describe('Itinerary View Functionality', () => {
   })
 
   test('should display itinerary view by default on meal planning tabs', async ({ page }) => {
-    // Click on breakfast tab
-    await page.click('[data-tab="breakfast"]')
-    await expect(page.locator('#breakfast-tab')).toBeVisible()
+    // Click on plan tab
+    await page.click('[data-tab="plan"]')
+    await expect(page.locator('#plan-tab')).toBeVisible()
     
     // Should show itinerary view by default
-    await expect(page.locator('#breakfast-itinerary')).toBeVisible()
-    await expect(page.locator('#breakfast-calendar')).toBeHidden()
+    await expect(page.locator('#plan-itinerary')).toBeVisible()
+    await expect(page.locator('#plan-calendar')).toBeHidden()
     
     // Should have itinerary content
-    await expect(page.locator('#breakfast-itinerary .itinerary-view')).toBeVisible()
-    await expect(page.locator('#breakfast-itinerary h3')).toContainText('breakfast Plan Itinerary')
+    await expect(page.locator('#plan-itinerary .itinerary-view')).toBeVisible()
+    await expect(page.locator('#plan-itinerary h3')).toContainText('Plan Itinerary')
   })
 
   test('should switch between itinerary and calendar views', async ({ page }) => {
-    // Go to dinner tab
-    await page.click('[data-tab="dinner"]')
-    await expect(page.locator('#dinner-tab')).toBeVisible()
+    // Go to plan tab
+    await page.click('[data-tab="plan"]')
+    await expect(page.locator('#plan-tab')).toBeVisible()
     
     // Should start with itinerary view
-    await expect(page.locator('#dinner-itinerary')).toBeVisible()
-    await expect(page.locator('#dinner-calendar')).toBeHidden()
+    await expect(page.locator('#plan-itinerary')).toBeVisible()
+    await expect(page.locator('#plan-calendar')).toBeHidden()
     
     // Button should show "Calendar View"
-    const toggleButton = page.locator('#view-toggle-dinner')
+    const toggleButton = page.locator('#view-toggle-plan')
     await expect(toggleButton).toContainText('📅 Calendar View')
     
     // Click to switch to calendar view
     await toggleButton.click()
     
     // Should now show calendar view
-    await expect(page.locator('#dinner-itinerary')).toBeHidden()
-    await expect(page.locator('#dinner-calendar')).toBeVisible()
+    await expect(page.locator('#plan-itinerary')).toBeHidden()
+    await expect(page.locator('#plan-calendar')).toBeVisible()
     
     // Button should now show "Itinerary View"
     await expect(toggleButton).toContainText('📋 Itinerary View')
@@ -49,53 +49,53 @@ test.describe('Itinerary View Functionality', () => {
     await toggleButton.click()
     
     // Should be back to itinerary view
-    await expect(page.locator('#dinner-itinerary')).toBeVisible()
-    await expect(page.locator('#dinner-calendar')).toBeHidden()
+    await expect(page.locator('#plan-itinerary')).toBeVisible()
+    await expect(page.locator('#plan-calendar')).toBeHidden()
     await expect(toggleButton).toContainText('📅 Calendar View')
   })
 
   test('should display planning summary metrics', async ({ page }) => {
-    await page.click('[data-tab="lunch"]')
-    await expect(page.locator('#lunch-itinerary')).toBeVisible()
+    await page.click('[data-tab="plan"]')
+    await expect(page.locator('#plan-itinerary')).toBeVisible()
     
     // Should show planning summary cards
-    const summaryCards = page.locator('#lunch-itinerary .grid .bg-white.rounded-lg.shadow')
+    const summaryCards = page.locator('#plan-itinerary .grid .bg-white.rounded-lg.shadow')
     await expect(summaryCards).toHaveCount(4)
     
     // Should show metric labels
-    await expect(page.locator('#lunch-itinerary')).toContainText('Total Meals')
-    await expect(page.locator('#lunch-itinerary')).toContainText('Unique Recipes')
-    await expect(page.locator('#lunch-itinerary')).toContainText('Shared Ingredients')
-    await expect(page.locator('#lunch-itinerary')).toContainText('Estimated Cost')
+    await expect(page.locator('#plan-itinerary')).toContainText('Total Meals')
+    await expect(page.locator('#plan-itinerary')).toContainText('Unique Recipes')
+    await expect(page.locator('#plan-itinerary')).toContainText('Shared Ingredients')
+    await expect(page.locator('#plan-itinerary')).toContainText('Estimated Cost')
     
     // Should show numeric values
-    const metricValues = page.locator('#lunch-itinerary .text-2xl.font-bold')
+    const metricValues = page.locator('#plan-itinerary .text-2xl.font-bold')
     await expect(metricValues.first()).toBeVisible()
   })
 
   test('should display weekly breakdown', async ({ page }) => {
-    await page.click('[data-tab="breakfast"]')
-    await expect(page.locator('#breakfast-itinerary')).toBeVisible()
+    await page.click('[data-tab="plan"]')
+    await expect(page.locator('#plan-itinerary')).toBeVisible()
     
     // Should show weeks container
-    await expect(page.locator('#breakfast-itinerary .space-y-4')).toBeVisible()
+    await expect(page.locator('#plan-itinerary .space-y-4')).toBeVisible()
     
     // Should show week cards (default 4 weeks)
-    const weekCards = page.locator('#breakfast-itinerary .bg-white.rounded-lg.shadow')
+    const weekCards = page.locator('#plan-itinerary .bg-white.rounded-lg.shadow')
     // Expect at least 4 week cards (plus summary cards)
     await expect(weekCards).toHaveCount.greaterThanOrEqual(4)
     
     // Should show week headers with dates
-    await expect(page.locator('#breakfast-itinerary')).toContainText('Week 1:')
-    await expect(page.locator('#breakfast-itinerary')).toContainText('Week 2:')
+    await expect(page.locator('#plan-itinerary')).toContainText('Week 1:')
+    await expect(page.locator('#plan-itinerary')).toContainText('Week 2:')
   })
 
   test('should handle weeks selector', async ({ page }) => {
-    await page.click('[data-tab="dinner"]')
-    await expect(page.locator('#dinner-itinerary')).toBeVisible()
+    await page.click('[data-tab="plan"]')
+    await expect(page.locator('#plan-itinerary')).toBeVisible()
     
     // Find the weeks selector
-    const weeksSelect = page.locator('#dinner-itinerary select')
+    const weeksSelect = page.locator('#plan-itinerary select')
     await expect(weeksSelect).toBeVisible()
     
     // Should have default value of 4 weeks

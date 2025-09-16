@@ -28,15 +28,15 @@ test.describe('MealPlanner PWA', () => {
   test('should switch between tabs', async ({ page }) => {
     // Start on recipes tab (default)
     await expect(page.locator('#recipes-tab')).toBeVisible()
-    await expect(page.locator('#breakfast-tab')).toBeHidden()
+    await expect(page.locator('#plan-tab')).toBeHidden()
     
-    // Click breakfast tab
-    await page.click('[data-tab="breakfast"]')
-    await expect(page.locator('#breakfast-tab')).toBeVisible()
+    // Click plan tab
+    await page.click('[data-tab="plan"]')
+    await expect(page.locator('#plan-tab')).toBeVisible()
     await expect(page.locator('#recipes-tab')).toBeHidden()
     
     // Check active tab styling
-    await expect(page.locator('[data-tab="breakfast"]')).toHaveClass(/active/)
+    await expect(page.locator('[data-tab="plan"]')).toHaveClass(/active/)
     await expect(page.locator('[data-tab="recipes"]')).not.toHaveClass(/active/)
   })
 
