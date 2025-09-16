@@ -36,17 +36,76 @@ describe('Settings Refactor Regression Tests', () => {
         `;
         document.body.appendChild(mockContainer);
 
+        // Mock SettingsManager as a global class with all required methods
+        global.SettingsManager = vi.fn(() => ({
+            // Core methods
+            applySettings: vi.fn(),
+            saveSettings: vi.fn(),
+            loadSettings: vi.fn(),
+            createClearFiltersHandler: vi.fn(() => {
+                // Return a function that clears filters
+                return () => {
+                    if (recipeManager) {
+                        recipeManager.searchTerm = '';
+                        recipeManager.selectedLabels = [];
+                        recipeManager.showFavoritesOnly = false;
+                    }
+                };
+            }),
+            
+            // Properties
+            settings: {
+                confirmBeforeClearingFilters: false,
+                requireDoublePressForClearFilters: false
+            }
+        }));
+        
+        // Add static method for backward compatibility
+        global.SettingsManager.createClearFiltersHandler = vi.fn(() => {
+            return () => {
+                if (recipeManager) {
+                    recipeManager.searchTerm = '';
+                    recipeManager.selectedLabels = [];
+                    recipeManager.showFavoritesOnly = false;
+                }
+            };
+        });
+        
         // Initialize managers
-        settingsManager = new SettingsManager();
+        settingsManager = new global.SettingsManager();
         window.mealPlannerSettings = settingsManager;
         
-        // Mock RecipeManager as a global class
-        global.RecipeManager = vi.fn(() => ({
-            attachEventListeners: vi.fn(),
-            render: vi.fn(),
-            showNotification: vi.fn(),
-            recipes: []
-        }));
+        // Mock RecipeManager as a global class with all required methods
+        global.RecipeManager = vi.fn(() => {
+            const instance = {
+                // Data properties
+                recipes: [],
+                showFavoritesOnly: false,
+                selectedLabels: [],
+                searchTerm: '',
+                
+                // Core methods
+                attachEventListeners: vi.fn(),
+                render: vi.fn(),
+                showNotification: vi.fn(),
+                
+                // Label management methods that call attachEventListeners
+                addLabel: vi.fn(() => {
+                    instance.attachEventListeners();
+                }),
+                removeLabel: vi.fn(() => {
+                    instance.attachEventListeners();
+                }),
+                clearAllLabels: vi.fn(() => {
+                    instance.attachEventListeners();
+                }),
+                
+                // UI update methods
+                updateFavoritesButton: vi.fn(),
+                updateRecipeDisplay: vi.fn()
+            };
+            return instance;
+        });
         
         recipeManager = new global.RecipeManager(mockContainer.querySelector('#recipe-tab'));
     });
