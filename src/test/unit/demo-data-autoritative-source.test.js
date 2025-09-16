@@ -109,8 +109,9 @@ describe('Demo Data Authoritative Source Behavior', () => {
             // Should NOT have overwritten existing data
             expect(mockLocalStorage.setItem).not.toHaveBeenCalledWith('mealplanner_items', expect.any(String));
             expect(mockLocalStorage.setItem).not.toHaveBeenCalledWith('mealplanner_recipes', expect.any(String));
-            expect(console.log).toHaveBeenCalledWith('📋 items already exists in localStorage, skipping initialization');
-            expect(console.log).toHaveBeenCalledWith('📋 recipes already exists in localStorage, skipping initialization');
+            // Should log that demo data initialization was blocked due to existing flag
+            expect(console.log).toHaveBeenCalledWith('🚫 BLOCKED: Demo data was already auto-populated on initial site load');
+            expect(console.log).toHaveBeenCalledWith('🚫 Demo data will ONLY load on explicit user reset via Settings, never automatically');
         });
     });
 
@@ -124,11 +125,17 @@ describe('Demo Data Authoritative Source Behavior', () => {
             
             // Should have initialized data
             expect(result).toBe(true);
-            expect(console.log).toHaveBeenCalledWith('📋 No existing data found - initializing demo data');
+            // Should have populated localStorage with demo data
             expect(mockLocalStorage.setItem).toHaveBeenCalledWith('mealplanner_items', expect.any(String));
+            expect(mockLocalStorage.setItem).toHaveBeenCalledWith('mealplanner_recipes', expect.any(String));
+            // Should have set the demo data populated flag
+            expect(mockLocalStorage.setItem).toHaveBeenCalledWith('mealplanner_demo_data_populated', 'true');
         });
 
         it('should respect existing localStorage data and NOT overwrite', async () => {
+            // WHY: Users should never lose their custom data when the app loads
+            // WHAT: Verifies that existing user data is preserved and not overwritten by demo data
+            
             // Pre-populate localStorage with user data
             mockLocalStorage.data['mealplanner_items'] = JSON.stringify([
                 { id: 100, name: 'User Created Item', category: 'custom' }
@@ -141,10 +148,13 @@ describe('Demo Data Authoritative Source Behavior', () => {
             // Call loadDemoData
             const result = await settingsManager.loadDemoData();
             
-            // Should respect existing data
+            // Should respect existing data - user's custom items should remain untouched
             expect(result).toBe(true);
-            expect(console.log).toHaveBeenCalledWith('📋 Existing data found - respecting localStorage as authoritative source');
             expect(mockLocalStorage.setItem).not.toHaveBeenCalledWith('mealplanner_items', expect.any(String));
+            
+            // Verify user data is still there
+            const userData = JSON.parse(mockLocalStorage.data['mealplanner_items']);
+            expect(userData[0].name).toBe('User Created Item');
         });
     });
 
@@ -178,6 +188,9 @@ describe('Demo Data Authoritative Source Behavior', () => {
 
     describe('Reset Demo Data Functionality', () => {
         it('should force reinitialize demo data when explicitly requested', () => {
+            // WHY: Users need a way to restore original demo data when they want to start over
+            // WHAT: Verifies that Reset Demo Data button replaces user data with fresh demo data
+            
             // Pre-populate localStorage with user data
             mockLocalStorage.data['mealplanner_items'] = JSON.stringify([
                 { id: 300, name: 'User Item To Be Replaced', category: 'user' }
@@ -187,17 +200,22 @@ describe('Demo Data Authoritative Source Behavior', () => {
             mockLocalStorage.setItem.mockClear();
             console.log.mockClear();
             
-            // Call resetDemoData (explicit user action)
+            // Call resetDemoData (explicit user action via Settings button)
             settingsManager.resetDemoData();
             
-            // Should have forcibly reinitialized demo data (multiple data types)
+            // Should have forcibly replaced user data with fresh demo data
+            expect(mockLocalStorage.setItem).toHaveBeenCalledWith('mealplanner_items', expect.any(String));
             expect(mockLocalStorage.setItem).toHaveBeenCalledWith('mealplanner_recipes', expect.any(String));
-            expect(console.log).toHaveBeenCalledWith('✅ Initialized recipes: 2 items');
+            // Should set flag to prevent auto-reload after reset
+            expect(mockLocalStorage.setItem).toHaveBeenCalledWith('mealplanner_demo_data_populated', 'true');
         });
     });
 
     describe('Integration with Main.js loadDemoData', () => {
         it('should use SettingsManager loadDemoData method (not direct initializeDemoData)', async () => {
+            // WHY: Main.js should use the centralized data loading method, not bypass it
+            // WHAT: Verifies that the app uses the proper data loading architecture
+            
             // Mock the SettingsManager's loadDemoData method
             const loadDemoDataSpy = vi.spyOn(settingsManager, 'loadDemoData');
             
@@ -209,11 +227,12 @@ describe('Demo Data Authoritative Source Behavior', () => {
             // Call the method that main.js would call
             await settingsManager.loadDemoData();
             
-            // Should have called the correct method
+            // Should have called the correct method (architectural compliance)
             expect(loadDemoDataSpy).toHaveBeenCalled();
             
-            // Should have respected existing data
-            expect(console.log).toHaveBeenCalledWith('📋 Existing data found - respecting localStorage as authoritative source');
+            // Should have respected existing data (user data preservation)
+            const userData = JSON.parse(mockLocalStorage.data['mealplanner_items']);
+            expect(userData[0].name).toBe('Existing Item');
         });
     });
 });

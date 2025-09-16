@@ -25,7 +25,7 @@ class MockSettingsManager {
     }
     
     getAuthoritativeData(dataType) {
-        return dataType === 'ingredients' ? [] : {};
+        return dataType === 'items' || dataType === 'ingredients' ? [] : {};
     }
 }
 
@@ -40,7 +40,7 @@ class MockItemsManager {
         }
         
         // Try to access authoritative data like the real manager does
-        this.ingredients = global.window.mealPlannerSettings.getAuthoritativeData('ingredients');
+        this.items = global.window.mealPlannerSettings.getAuthoritativeData('items') || [];
     }
 }
 
@@ -157,8 +157,8 @@ describe('Manager Initialization Order', () => {
             app.initializeCorrectOrder();
             
             // Items Manager should have successfully loaded data
-            expect(app.managers.items.ingredients).toBeDefined();
-            expect(Array.isArray(app.managers.items.ingredients)).toBe(true);
+            expect(app.managers.items.items).toBeDefined();
+            expect(Array.isArray(app.managers.items.items)).toBe(true);
         });
     });
 
@@ -202,8 +202,9 @@ describe('Manager Initialization Order', () => {
                 app.initializeCorrectOrder();
             }).not.toThrow();
             
-            // Items should be accessible
+            // Items should be accessible (may be empty array but should be defined)
             expect(app.managers.items.items).toBeDefined();
+            expect(Array.isArray(app.managers.items.items)).toBe(true);
         });
 
         it('should prevent the "Unknown Ingredient" bug in grocery lists', () => {
@@ -229,7 +230,7 @@ describe('Manager Initialization Order', () => {
             const mainJsContent = await fs.readFile(mainJsPath, 'utf-8');
             
             // Find the initialization section
-            const initSection = mainJsContent.match(/\/\/ Initialize managers[\s\S]*?} catch/);
+            const initSection = mainJsContent.match(/\/\/ Initialize managers[\s\S]*?this\.initializeAutoPlanControls\(\);/);
             expect(initSection).toBeTruthy();
             
             const initCode = initSection[0];

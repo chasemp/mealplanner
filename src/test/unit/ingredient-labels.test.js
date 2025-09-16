@@ -55,7 +55,7 @@ class MockIngredientsManager {
     }
 
     async loadItems() {
-        this.items = mockDemoData.getItems();
+        this.items = mockDemoData.getIngredients(); // Use existing method name for backward compatibility
         this.applyFilters();
     }
 

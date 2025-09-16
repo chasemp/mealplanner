@@ -36,7 +36,7 @@ class SettingsManager {
         this.initializeFirstTimeDemo();
         
         // Initialize database source indicator after DOM is ready
-        setTimeout(() => {
+        this.timeoutId = setTimeout(() => {
             this.updateDatabaseSourceIndicator();
         }, 100);
         

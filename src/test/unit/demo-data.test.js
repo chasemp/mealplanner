@@ -20,6 +20,8 @@ describe('Demo Data Manager', () => {
 
     describe('Data Structure', () => {
         it('should initialize with comprehensive ingredient list', () => {
+            // WHY: New users need sample ingredients to understand the app and start cooking
+            // WHAT: Verifies demo data provides sufficient ingredients for meaningful meal planning
             const ingredients = demoData.getIngredients();
             
             expect(ingredients).toBeDefined();
@@ -37,6 +39,8 @@ describe('Demo Data Manager', () => {
         });
 
         it('should have diverse ingredient categories', () => {
+            // WHY: Users need ingredients from all food groups to create balanced, realistic meals
+            // WHAT: Verifies demo data includes major food categories for comprehensive meal planning
             const ingredients = demoData.getIngredients();
             const categories = [...new Set(ingredients.map(ing => ing.category))];
             
@@ -105,15 +109,15 @@ describe('Demo Data Manager', () => {
             });
         });
 
-        it('should have all recipe ingredients reference existing ingredients', () => {
-            const ingredients = demoData.getIngredients();
+        it('should have all recipe items reference existing items', () => {
+            const items = demoData.getIngredients(); // Still called getIngredients for backward compatibility
             const recipes = demoData.getRecipes();
-            const ingredientIds = ingredients.map(ing => ing.id);
+            const itemIds = items.map(item => item.id);
             
             recipes.forEach(recipe => {
                 if (recipe.items) {
-                    recipe.items.forEach(recipeIngredient => {
-                        expect(ingredientIds).toContain(recipeIngredient.ingredient_id);
+                    recipe.items.forEach(recipeItem => {
+                        expect(itemIds).toContain(recipeItem.item_id);
                     });
                 }
             });
@@ -124,34 +128,43 @@ describe('Demo Data Manager', () => {
             expect(issues).toEqual([]);
         });
 
-        it('should have proper ingredient usage statistics', () => {
-            const ingredients = demoData.getIngredients();
+        it('should have proper item usage in recipes', () => {
+            const items = demoData.getIngredients();
+            const recipes = demoData.getRecipes();
             
-            // Some ingredients should be used in recipes
-            const usedIngredients = ingredients.filter(ing => ing.recipe_count > 0);
-            expect(usedIngredients.length).toBeGreaterThan(0);
+            // Some items should be used in recipes
+            const usedItemIds = new Set();
+            recipes.forEach(recipe => {
+                if (recipe.items) {
+                    recipe.items.forEach(recipeItem => {
+                        usedItemIds.add(recipeItem.item_id);
+                    });
+                }
+            });
             
-            // Check that usage counts are reasonable
-            usedIngredients.forEach(ingredient => {
-                expect(ingredient.recipe_count).toBeGreaterThan(0);
-                expect(ingredient.avg_quantity).toBeGreaterThan(0);
+            expect(usedItemIds.size).toBeGreaterThan(0);
+            
+            // Verify used items exist in items list
+            const itemIds = items.map(item => item.id);
+            usedItemIds.forEach(usedId => {
+                expect(itemIds).toContain(usedId);
             });
         });
     });
 
     describe('Recipe Ingredient Relationships', () => {
-        it('should have recipes with proper ingredient quantities', () => {
+        it('should have recipes with proper item quantities', () => {
             const recipes = demoData.getRecipes();
             
             recipes.forEach(recipe => {
                 if (recipe.items) {
                     expect(recipe.items.length).toBeGreaterThan(0);
                     
-                    recipe.items.forEach(ingredient => {
-                        expect(ingredient).toHaveProperty('ingredient_id');
-                        expect(ingredient).toHaveProperty('quantity');
-                        expect(ingredient).toHaveProperty('unit');
-                        expect(ingredient.quantity).toBeGreaterThan(0);
+                    recipe.items.forEach(recipeItem => {
+                        expect(recipeItem).toHaveProperty('item_id');
+                        expect(recipeItem).toHaveProperty('quantity');
+                        expect(recipeItem).toHaveProperty('unit');
+                        expect(recipeItem.quantity).toBeGreaterThan(0);
                     });
                 }
             });
@@ -233,11 +246,11 @@ describe('Demo Data Manager', () => {
         it('should provide getAllData method', () => {
             const allData = demoData.getAllData();
             
-            expect(allData).toHaveProperty('ingredients');
+            expect(allData).toHaveProperty('items');
             expect(allData).toHaveProperty('recipes');
             expect(allData).toHaveProperty('scheduledMeals');
             
-            expect(allData.ingredients).toBeInstanceOf(Array);
+            expect(allData.items).toBeInstanceOf(Array);
             expect(allData.recipes).toBeInstanceOf(Array);
             expect(allData.scheduledMeals).toBeInstanceOf(Array);
         });
