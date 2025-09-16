@@ -4266,6 +4266,11 @@ class RecipeManager {
         // Save to localStorage
         localStorage.setItem('mealplanner_pending_recipes', JSON.stringify(pendingRecipes));
         
+        // Update the planning queue UI counter
+        if (window.app && window.app.updatePendingRecipes) {
+            window.app.updatePendingRecipes();
+        }
+        
         // Update the schedule button to show it's queued
         const scheduleButtons = document.querySelectorAll(`.schedule-recipe[data-recipe-id="${recipeId}"]`);
         scheduleButtons.forEach(button => {
