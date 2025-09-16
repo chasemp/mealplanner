@@ -3,7 +3,7 @@ class ItemsManager {
     constructor(container) {
         this.container = container;
         this.items = [];
-        this.filteredIngredients = [];
+        this.filteredItems = [];
         this.currentFilter = { search: '', category: '', label: '' };
         // Initialize navigation stack for complex page navigation like RecipeManager
         this.navigationStack = [];
@@ -42,7 +42,7 @@ class ItemsManager {
         console.log('🔍 Applying filters:', this.currentFilter);
         console.log('📦 Total items:', this.items.length);
         
-        this.filteredIngredients = this.items.filter(item => {
+        this.filteredItems = this.items.filter(item => {
             const matchesSearch = !this.currentFilter.search || 
                 item.name.toLowerCase().includes(this.currentFilter.search.toLowerCase());
             const matchesCategory = !this.currentFilter.category || 
@@ -59,7 +59,7 @@ class ItemsManager {
             return matches;
         });
         
-        console.log('✅ Filtered items:', this.filteredIngredients.length);
+        console.log('✅ Filtered items:', this.filteredItems.length);
     }
 
     getAllLabels() {
@@ -146,15 +146,15 @@ class ItemsManager {
                         <div class="text-sm text-gray-600 dark:text-gray-400">Categories</div>
                     </div>
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-                        <div class="text-2xl font-bold text-purple-600">${this.getActiveIngredients()}</div>
+                        <div class="text-2xl font-bold text-purple-600">${this.getActiveItems()}</div>
                         <div class="text-sm text-gray-600 dark:text-gray-400">In Recipes</div>
                     </div>
                 </div>
 
                 <!-- Items Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    ${this.filteredIngredients.length > 0 ? 
-                        this.filteredIngredients.map(item => this.createItemCard(item)).join('') :
+                    ${this.filteredItems.length > 0 ? 
+                        this.filteredItems.map(item => this.createItemCard(item)).join('') :
                         '<div class="col-span-full text-center py-12"><p class="text-gray-500 dark:text-gray-400">No items found matching your criteria.</p></div>'
                     }
                 </div>
@@ -334,11 +334,11 @@ class ItemsManager {
         `;
     }
 
-    getActiveIngredients() {
+    getActiveItems() {
         return this.items.filter(i => (i.recipe_count || 0) > 0).length;
     }
 
-    getTotalIngredients() {
+    getTotalItems() {
         return this.items.length;
     }
 
@@ -1092,7 +1092,7 @@ class ItemsManager {
     async clearAllData() {
         console.log('🗑️ Clearing all items data...');
         this.items = [];
-        this.filteredIngredients = [];
+        this.filteredItems = [];
         this.currentFilter = {
             search: '',
             category: '',

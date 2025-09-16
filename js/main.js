@@ -1,10 +1,10 @@
 // MealPlanner Main Application
 class MealPlannerApp {
     constructor() {
-        this.currentTab = 'recipes';
+        this.currentTab = 'menu';
         this.previousTab = null;
         this.navigationHistory = [];
-        this.version = '2025.09.13.1332';
+        this.version = '2025.09.16.0826';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
@@ -2513,9 +2513,9 @@ class MealPlannerApp {
             
             if (this.recipeManager) {
                 await this.recipeManager.clearAllData();
-                // CRITICAL: Clear RecipeManager ingredients cache to prevent demo data pollution
-                this.recipeManager.ingredients = [];
-                console.log('🔄 CLEARED RecipeManager ingredients cache');
+                // CRITICAL: Clear RecipeManager items cache to prevent demo data pollution
+                this.recipeManager.items = [];
+                console.log('🔄 CLEARED RecipeManager items cache');
             }
             
             if (this.mealManager) {
@@ -2755,8 +2755,8 @@ class MealPlannerApp {
                 <div class="space-y-2">
                     <h4 class="font-medium">Sync Options</h4>
                     <label class="flex items-center space-x-2">
-                        <input type="checkbox" id="include-ingredients" class="text-blue-600">
-                        <span>Include ingredients in event descriptions</span>
+                        <input type="checkbox" id="include-items" class="text-blue-600">
+                        <span>Include items in event descriptions</span>
                     </label>
                     <label class="flex items-center space-x-2">
                         <input type="checkbox" id="include-instructions" class="text-blue-600">
@@ -2786,7 +2786,7 @@ class MealPlannerApp {
             } else if (action === 'sync') {
                 // Get selected options
                 const selectedMode = modal.querySelector('input[name="calendar-mode"]:checked').value;
-                const includeIngredients = modal.querySelector('#include-ingredients').checked;
+                const includeItems = modal.querySelector('#include-items').checked;
                 const includeInstructions = modal.querySelector('#include-instructions').checked;
                 
                 // Update managed mode
@@ -2794,7 +2794,7 @@ class MealPlannerApp {
                 
                 // Sync meal plan
                 await this.syncMealPlanToCalendar({
-                    includeIngredients,
+                    includeItems,
                     includeInstructions
                 });
             }
@@ -2898,7 +2898,7 @@ class MealPlannerApp {
         }
         
         // Show notification
-        this.showNotification('Demo data loaded! This includes sample recipes, ingredients, and meal plans.', 'success');
+        this.showNotification('Demo data loaded! This includes sample recipes, items, and meal plans.', 'success');
         
         // Re-render all components with demo data
         await this.refreshAllComponents();
@@ -3474,6 +3474,41 @@ class MealPlannerApp {
                 view.render();
             }
         });
+    }
+
+    async refreshAllComponentsEmptyState() {
+        console.log('🔄 Refreshing all components to show empty state (no data reload)...');
+        
+        // Just render components without reloading data - they should already be cleared
+        const recipeManager = this.recipeManager || window.recipeManager;
+        if (recipeManager) {
+            console.log('🔄 Rendering RecipeManager empty state...');
+            recipeManager.render();
+        }
+        if (this.itemsManager) {
+            console.log('🔄 Rendering ItemsManager empty state...');
+            this.itemsManager.render();
+        }
+        if (this.mealManager) {
+            console.log('🔄 Rendering MealManager empty state...');
+            this.mealManager.render();
+        }
+        if (this.groceryListManager) {
+            console.log('🔄 Rendering GroceryListManager empty state...');
+            this.groceryListManager.render();
+        }
+        
+        // Force refresh itinerary and calendar views to show empty state
+        Object.values(this.itineraryViews).forEach(view => {
+            console.log('🔄 Rendering itinerary view empty state...');
+            view.render();
+        });
+        Object.values(this.calendarViews).forEach(view => {
+            console.log('🔄 Rendering calendar view empty state...');
+            view.render();
+        });
+
+        console.log('✅ All components refreshed to show empty state');
     }
 
     createModal(title, content, actions = []) {
