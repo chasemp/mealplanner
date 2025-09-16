@@ -238,14 +238,6 @@
                         </button>
                     </div>
 
-                    <!-- Calendar/Itinerary View Toggle -->
-                    <div class="text-center">
-                        <button id="view-toggle-plan" class="btn-secondary text-sm px-4 py-2" data-view="calendar">
-                            📅 Calendar View
-                        </button>
-                    </div>
-
-                    
                     <!-- Scheduling Options Panel (hidden by default) -->
                     <div id="scheduling-options-panel" class="mb-8 bg-blue-50 dark:bg-blue-900 rounded-lg shadow p-6 hidden">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">📅 Scheduling Options</h3>
@@ -351,17 +343,17 @@
                             </button>
                         </div>
 
-                        <!-- Calendar/Itinerary View Toggle -->
-                        <div class="text-center">
-                            <button id="view-toggle-plan" class="btn-secondary text-sm px-4 py-2" data-view="calendar">
-                                📅 Calendar View
-                            </button>
-                        </div>
                     </div>
 
                     <!-- Meals Section -->
                     <div class="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Meals</h3>
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Meals</h3>
+                            <!-- Calendar/Itinerary View Toggle -->
+                            <button id="view-toggle-plan" class="btn-secondary text-sm px-4 py-2" data-view="calendar">
+                                📅 Calendar View
+                            </button>
+                        </div>
                     
                     <!-- Itinerary View (default) -->
                     <div id="plan-itinerary" class="meal-view">
