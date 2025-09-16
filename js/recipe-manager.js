@@ -530,7 +530,7 @@ class RecipeManager {
                         <div class="text-xs text-gray-400">
                             ${recipe.recipe_type === 'combo' ? 
                                 `${this.getCombinedItemsForCombo(recipe).length} items (from ${recipe.recipes ? recipe.recipes.length : (recipe.combo_recipes ? recipe.combo_recipes.length : 0)} recipes)` : 
-                                `${(recipe.items || recipe.ingredients || []).length} items`
+                                `${(recipe.items || []).length} items`
                             }
                         </div>
                     </div>
@@ -797,9 +797,9 @@ class RecipeManager {
     }
 
     getAllLabels() {
-        // Get all available labels from current recipes and ingredients
+        // Get all available labels from current recipes and items
         const recipeLabels = this.getUniqueLabels();
-        const ingredientLabels = this.getUniqueIngredientLabels();
+        const itemLabels = this.getUniqueItemLabels();
         
         // Only show predefined labels if we're in demo mode
         let predefinedLabels = [];
@@ -819,11 +819,11 @@ class RecipeManager {
         }
         
         // Combine and deduplicate
-        const allLabels = [...new Set([...recipeLabels, ...ingredientLabels, ...predefinedLabels])];
+        const allLabels = [...new Set([...recipeLabels, ...itemLabels, ...predefinedLabels])];
         return allLabels.sort();
     }
 
-    getUniqueIngredientLabels() {
+    getUniqueItemLabels() {
         const allLabels = new Set();
         this.items.forEach(item => {
             if (item.labels && Array.isArray(item.labels)) {
@@ -859,45 +859,45 @@ class RecipeManager {
         
         recipeRefs.forEach(recipeRef => {
             const recipe = this.recipes.find(r => r.id === parseInt(recipeRef.recipe_id));
-            if (!recipe || (!recipe.items && !recipe.ingredients)) return;
+            if (!recipe || !recipe.items) return;
             
             const portions = recipeRef.servings || 1; // How many portions of this recipe
             
-            (recipe.items || recipe.ingredients || []).forEach(ingredient => {
-                const itemName = this.getItemNameById(ingredient.item_id || ingredient.ingredient_id) || 'Unknown item';
-                const key = `${itemName}_${ingredient.unit}`;
+            (recipe.items || []).forEach(item => {
+                const itemName = this.getItemNameById(item.item_id || item.ingredient_id) || 'Unknown item';
+                const key = `${itemName}_${item.unit}`;
                 
                 if (combinedItems.has(key)) {
                     // Add to existing quantity and round it
                     const existing = combinedItems.get(key);
-                    existing.quantity = this.roundQuantity(existing.quantity + (parseFloat(ingredient.quantity) || 0) * portions);
+                    existing.quantity = this.roundQuantity(existing.quantity + (parseFloat(item.quantity) || 0) * portions);
                 } else {
                     // Add new item with rounded quantity
                     combinedItems.set(key, {
-                        name: ingredientName,
-                        quantity: this.roundQuantity((parseFloat(ingredient.quantity) || 0) * portions),
-                        unit: ingredient.unit || ''
+                        name: itemName,
+                        quantity: this.roundQuantity((parseFloat(item.quantity) || 0) * portions),
+                        unit: item.unit || ''
                     });
                 }
             });
         });
         
-        // ALSO add the combo's own additional ingredients
-        const additionalIngredients = comboRecipe.ingredients || [];
-        additionalIngredients.forEach(ingredient => {
-            const itemName = this.getItemNameById(ingredient.item_id || ingredient.ingredient_id) || 'Unknown item';
-            const key = `${itemName}_${ingredient.unit}`;
+        // ALSO add the combo's own additional items
+        const additionalItems = comboRecipe.items || [];
+        additionalItems.forEach(item => {
+            const itemName = this.getItemNameById(item.item_id || item.ingredient_id) || 'Unknown item';
+            const key = `${itemName}_${item.unit}`;
             
             if (combinedItems.has(key)) {
                 // Add to existing quantity and round it
                 const existing = combinedItems.get(key);
-                existing.quantity = this.roundQuantity(existing.quantity + (parseFloat(ingredient.quantity) || 0));
+                existing.quantity = this.roundQuantity(existing.quantity + (parseFloat(item.quantity) || 0));
             } else {
                 // Add new item with rounded quantity
                 combinedItems.set(key, {
-                    name: ingredientName,
-                    quantity: this.roundQuantity(parseFloat(ingredient.quantity) || 0),
-                    unit: ingredient.unit || ''
+                    name: itemName,
+                    quantity: this.roundQuantity(parseFloat(item.quantity) || 0),
+                    unit: item.unit || ''
                 });
             }
         });
@@ -1214,13 +1214,13 @@ class RecipeManager {
                     <div>
                         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Items</h3>
                         
-                        <div id="ingredients-container" class="space-y-3 mb-4">
+                        <div id="items-container" class="space-y-3 mb-4">
                             ${this.renderItemRows(isEdit ? recipe.items || recipe.ingredients : [], false)}
                         </div>
                         
                         <!-- Action buttons below the list -->
                         <div class="flex gap-3">
-                            <button type="button" id="add-ingredient-row" class="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md transition-colors">
+                            <button type="button" id="add-item-row" class="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md transition-colors">
                                 <span>Add</span>
                                 <span>🥕</span>
                                 </button>
@@ -1334,7 +1334,7 @@ class RecipeManager {
         }
         
         return ingredients.map((ingredient, index) => `
-            <div class="ingredient-row grid grid-cols-10 gap-2 items-end">
+            <div class="item-row grid grid-cols-10 gap-2 items-end">
                 <div class="col-span-5">
                     <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Item
@@ -1384,7 +1384,7 @@ class RecipeManager {
                 
                 <div class="col-span-1">
                     ${ingredients.length > 1 || index > 0 ? `
-                        <button type="button" class="remove-ingredient w-full p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900 rounded-md">
+                        <button type="button" class="remove-item w-full p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900 rounded-md">
                             <svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                             </svg>
@@ -1494,7 +1494,7 @@ class RecipeManager {
 
     renderSingleItemRow(ingredient, index, showRemoveButton = false, isCombo = false) {
         return `
-            <div class="ingredient-row grid grid-cols-10 gap-2 items-end">
+            <div class="item-row grid grid-cols-10 gap-2 items-end">
                 <div class="col-span-5">
                     <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Item
@@ -1541,7 +1541,7 @@ class RecipeManager {
                 
                 <div class="col-span-1">
                     ${showRemoveButton || index > 0 ? `
-                        <button type="button" class="remove-ingredient w-full p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900 rounded-md">
+                        <button type="button" class="remove-item w-full p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900 rounded-md">
                             <svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                             </svg>
@@ -1576,7 +1576,7 @@ class RecipeManager {
         }
     }
 
-    attachIngredientRowListeners(row) {
+    attachItemRowListeners(row) {
         // Ingredient selection handler
         const ingredientSelect = row.querySelector('.ingredient-select');
         const unitSelect = row.querySelector('.unit-select');
@@ -1591,7 +1591,7 @@ class RecipeManager {
         });
 
         // Remove ingredient handler
-        const removeBtn = row.querySelector('.remove-ingredient');
+        const removeBtn = row.querySelector('.remove-item');
         removeBtn?.addEventListener('click', () => {
             row.remove();
         });
@@ -1751,11 +1751,11 @@ class RecipeManager {
                 return;
             }
 
-            // Collect ingredients
+            // Collect items
             const ingredients = [];
-            const ingredientRows = form.querySelectorAll('.ingredient-row');
+            const itemRows = form.querySelectorAll('.item-row');
             
-            ingredientRows.forEach((row, index) => {
+            itemRows.forEach((row, index) => {
                 const itemId = row.querySelector(`[name="items[${index}][item_id]"]`)?.value;
                 const quantity = row.querySelector(`[name="items[${index}][quantity]"]`)?.value;
                 const unit = row.querySelector(`[name="items[${index}][unit]"]`)?.value;
@@ -1922,7 +1922,7 @@ class RecipeManager {
         this.previousView = null;
     }
 
-    showBarcodeScanner(ingredientsContainer) {
+    showBarcodeScanner(itemsContainer) {
         // Use the shared barcode scanner component
         const sharedScanner = window.SharedBarcodeScanner?.getInstance();
         if (!sharedScanner) {
@@ -1935,10 +1935,10 @@ class RecipeManager {
             (ingredient, context) => {
                 console.log('Product scanned for recipe:', ingredient);
                 
-                // Add a new ingredient row with the scanned ingredient
-                const currentRows = ingredientsContainer.querySelectorAll('.ingredient-row').length;
+                // Add a new item row with the scanned item
+                const currentRows = itemsContainer.querySelectorAll('.item-row').length;
                 const newRowHtml = this.renderSingleItemRow({
-                    ingredient_id: ingredient.id,
+                    item_id: ingredient.id,
                     name: ingredient.name,
                     quantity: '1',
                     unit: ingredient.default_unit || 'pieces',
@@ -1948,10 +1948,10 @@ class RecipeManager {
                 ingredientsContainer.insertAdjacentHTML('beforeend', newRowHtml);
                 
                 // Attach listeners to new row
-                this.attachIngredientRowListeners(ingredientsContainer.lastElementChild);
+                this.attachItemRowListeners(ingredientsContainer.lastElementChild);
                 
                 // Show success message
-                this.showNotification(`Added "${ingredient.name}" to recipe ingredients`, 'success');
+                this.showNotification(`Added "${ingredient.name}" to recipe items`, 'success');
             },
             (error) => {
                 console.error('Barcode scanner error:', error);
@@ -2017,18 +2017,18 @@ class RecipeManager {
             return;
         }
 
-        // Collect ingredients
-        const ingredientRows = form.querySelectorAll('.ingredient-row');
+        // Collect items
+        const itemRows = form.querySelectorAll('.item-row');
         const ingredients = [];
         
-        ingredientRows.forEach(row => {
+        itemRows.forEach(row => {
             const ingredientId = row.querySelector('.ingredient-select')?.value;
             const quantity = row.querySelector('input[name*="[quantity]"]')?.value;
             const unit = row.querySelector('select[name*="[unit]"]')?.value;
             const notes = row.querySelector('input[name*="[notes]"]')?.value;
             
             if (ingredientId && quantity) {
-                const ingredient = this.getIngredientById(parseInt(ingredientId));
+                const ingredient = this.getItemById(parseInt(ingredientId));
                 if (ingredient) {
                     ingredients.push({
                         ingredient_id: parseInt(ingredientId),
@@ -2042,7 +2042,7 @@ class RecipeManager {
         });
 
         if (ingredients.length === 0) {
-            this.showNotification('At least one ingredient is required', 'error');
+            this.showNotification('At least one item is required', 'error');
             return;
         }
 
@@ -2372,7 +2372,7 @@ class RecipeManager {
         if (isCombo) {
             // For combo recipes, show both recipes and additional items
             const recipes = recipe.combo_recipes || recipe.recipes || [];
-            const additionalItems = recipe.items || recipe.ingredients || [];
+            const additionalItems = recipe.items || [];
             const combinedItems = this.getCombinedItemsForCombo(recipe);
             
             console.log('🔍 Mobile view - Recipes:', recipes, 'Additional items:', additionalItems);
@@ -2453,7 +2453,7 @@ class RecipeManager {
             return comboHTML;
         } else {
             // For regular recipes, show ingredients
-            const ingredients = recipe.items || recipe.ingredients || [];
+            const ingredients = recipe.items || [];
             return `
                 <div class="mb-4">
                     <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Items (${ingredients.length})</h3>
@@ -2492,7 +2492,7 @@ class RecipeManager {
         console.log('🎯 Generating COMBO mobile HTML for:', recipe.title);
         
         const recipes = recipe.combo_recipes || recipe.recipes || [];
-        const additionalItems = recipe.items || recipe.ingredients || [];
+        const additionalItems = recipe.items || [];
         const combinedItems = this.getCombinedItemsForCombo(recipe);
         const labels = recipe.labels || [];
         
@@ -2641,7 +2641,7 @@ class RecipeManager {
         // MIGRATION: Support both 'items' (new) and 'ingredients' (legacy) during transition
         const ingredients = recipe.items || recipe.ingredients || [];
         const itemCount = ingredients.length;
-        console.log('📖 Regular recipe ingredients:', itemCount);
+        console.log('📖 Regular recipe items:', itemCount);
         
         const html = `
             <div class="min-h-screen bg-white dark:bg-gray-900">
@@ -2790,7 +2790,7 @@ class RecipeManager {
         if (recipe.recipe_type === 'combo') {
             // For combos, show both recipes and additional items
             const recipes = recipe.combo_recipes || recipe.recipes || [];
-            const additionalItems = recipe.items || recipe.ingredients || [];
+            const additionalItems = recipe.items || [];
             
             contentSection = `
                 <!-- Combo Recipes -->
@@ -3181,13 +3181,13 @@ class RecipeManager {
                             <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Additional Items</h3>
                             <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Add individual items that don't have their own recipe (e.g., watermelon, bread, etc.)</p>
                             
-                            <div id="ingredients-container" class="space-y-3 mb-4">
+                            <div id="items-container" class="space-y-3 mb-4">
                                 ${this.renderItemRows(isEdit ? recipe.items || recipe.ingredients : [], true)}
                             </div>
                             
                             <!-- Item Action buttons -->
                             <div class="flex gap-3">
-                                <button type="button" id="add-ingredient-row" class="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md transition-colors">
+                                <button type="button" id="add-item-row" class="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md transition-colors">
                                     <span>Add</span>
                                     <span>🥕</span>
                                 </button>
@@ -3202,13 +3202,13 @@ class RecipeManager {
                         <div>
                             <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Items</h3>
                             
-                            <div id="ingredients-container" class="space-y-3 mb-4">
+                            <div id="items-container" class="space-y-3 mb-4">
                                 ${this.renderItemRows(isEdit ? recipe.items || recipe.ingredients : [], false)}
                             </div>
                             
                             <!-- Action buttons below the list -->
                             <div class="flex gap-3">
-                                <button type="button" id="add-ingredient-row" class="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md transition-colors">
+                                <button type="button" id="add-item-row" class="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md transition-colors">
                                     <span>Add</span>
                                     <span>🥕</span>
                                 </button>
@@ -3435,9 +3435,9 @@ class RecipeManager {
     }
 
     attachSharedItemListeners(config) {
-        const addIngredientBtn = document.querySelector('#add-ingredient-row');
+        const addIngredientBtn = document.querySelector('#add-item-row');
         const createIngredientBtn = document.querySelector('#create-new-ingredient');
-        const ingredientsContainer = document.querySelector('#ingredients-container');
+        const ingredientsContainer = document.querySelector('#items-container');
         const isCombo = config.isCombo || false; // Get isCombo from config
 
         console.log('Attaching shared ingredient listeners:', { addIngredientBtn, createIngredientBtn, ingredientsContainer, isCombo });
@@ -3445,13 +3445,13 @@ class RecipeManager {
         // Add ingredient row
         addIngredientBtn?.addEventListener('click', () => {
             console.log('Add ingredient button clicked');
-            const currentRows = ingredientsContainer.querySelectorAll('.ingredient-row').length;
+            const currentRows = ingredientsContainer.querySelectorAll('.item-row').length;
             const newRowHtml = this.renderSingleItemRow({ ingredient_id: '', name: '', quantity: '', unit: '', notes: '' }, currentRows, true, isCombo);
             
             ingredientsContainer.insertAdjacentHTML('beforeend', newRowHtml);
             
             // Attach listeners to new row
-            this.attachIngredientRowListeners(ingredientsContainer.lastElementChild);
+            this.attachItemRowListeners(ingredientsContainer.lastElementChild);
         });
 
         // Create new ingredient button
@@ -3515,7 +3515,7 @@ class RecipeManager {
                                     this.restoreFormData(savedFormData);
                                 }
                                 
-                                const newIngredientsContainer = document.querySelector('#ingredients-container');
+                                const newIngredientsContainer = document.querySelector('#items-container');
                                 if (newIngredientsContainer) {
                                     this.addIngredientToRecipeForm(savedIngredient, newIngredientsContainer);
                                 }
@@ -3574,8 +3574,8 @@ class RecipeManager {
         });
 
         // Attach listeners to existing ingredient rows
-        ingredientsContainer?.querySelectorAll('.ingredient-row').forEach(row => {
-            this.attachIngredientRowListeners(row);
+        ingredientsContainer?.querySelectorAll('.item-row').forEach(row => {
+            this.attachItemRowListeners(row);
         });
     }
 
@@ -3608,9 +3608,9 @@ class RecipeManager {
             this.attachSharedRecipeListeners();
         } else {
             this.attachSharedItemListeners({
-                addIngredientBtn: '#add-ingredient-row',
+                addIngredientBtn: '#add-item-row',
                 createIngredientBtn: '#create-new-ingredient',
-                ingredientsContainer: '#ingredients-container',
+                ingredientsContainer: '#items-container',
                 isCombo: isCombo
             });
         }
@@ -3790,7 +3790,7 @@ class RecipeManager {
         }
 
         // Restore ingredients - this is more complex as we need to rebuild the ingredient rows
-        const ingredientsContainer = form.querySelector('#ingredients-container');
+        const ingredientsContainer = form.querySelector('#items-container');
         if (ingredientsContainer) {
             // Extract ingredient data from FormData
             const ingredientData = [];
@@ -3816,8 +3816,8 @@ class RecipeManager {
                 ingredientsContainer.innerHTML = this.renderItemRows(ingredientData, isCombo);
                 
                 // Reattach listeners to ingredient rows
-                ingredientsContainer.querySelectorAll('.ingredient-row').forEach(row => {
-                    this.attachIngredientRowListeners(row);
+                ingredientsContainer.querySelectorAll('.item-row').forEach(row => {
+                    this.attachItemRowListeners(row);
                 });
             }
         }
@@ -3834,7 +3834,7 @@ class RecipeManager {
         }
         
         // Check if there's an empty row we can use instead of adding a new one
-        const existingRows = ingredientsContainer.querySelectorAll('.ingredient-row');
+        const existingRows = ingredientsContainer.querySelectorAll('.item-row');
         let targetRow = null;
         
         // Look for an empty row (no ingredient selected)
@@ -3862,7 +3862,7 @@ class RecipeManager {
             const newRowHtml = this.renderSingleItemRow(newIngredientRow, currentRows, true, false); // false = not a combo
             ingredientsContainer.insertAdjacentHTML('beforeend', newRowHtml);
             targetRow = ingredientsContainer.lastElementChild;
-            this.attachIngredientRowListeners(targetRow);
+            this.attachItemRowListeners(targetRow);
         } else {
             // Populate the existing empty row
             console.log('🥕 Populating existing empty row');
@@ -4092,10 +4092,10 @@ class RecipeManager {
 
                 // ALSO collect ingredients for combo (additional items)
                 const ingredients = [];
-                const ingredientRows = form.querySelectorAll('.ingredient-row');
-                console.log('🥕 Found', ingredientRows.length, 'ingredient rows to process for combo');
+                const itemRows = form.querySelectorAll('.item-row');
+                console.log('🥕 Found', itemRows.length, 'ingredient rows to process for combo');
                 
-                ingredientRows.forEach((row, index) => {
+                itemRows.forEach((row, index) => {
                     const ingredientSelect = row.querySelector('.ingredient-select');
                     const quantityInput = row.querySelector('.ingredient-quantity');
                     const unitSelect = row.querySelector('.unit-select');
@@ -4123,12 +4123,12 @@ class RecipeManager {
                     recipeData.labels.push('Recipe Combo');
                 }
             } else {
-                // Collect ingredients for regular recipe
+                // Collect items for regular recipe
                 const ingredients = [];
-                const ingredientRows = form.querySelectorAll('.ingredient-row');
-                console.log('🥕 Found', ingredientRows.length, 'ingredient rows to process');
+                const itemRows = form.querySelectorAll('.item-row');
+                console.log('🥕 Found', itemRows.length, 'ingredient rows to process');
                 
-                ingredientRows.forEach((row, index) => {
+                itemRows.forEach((row, index) => {
                     const ingredientSelect = row.querySelector('.ingredient-select');
                     const quantityInput = row.querySelector('.ingredient-quantity');
                     const unitSelect = row.querySelector('.unit-select');

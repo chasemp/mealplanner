@@ -71,9 +71,8 @@ class MockSettingsManager {
 
         const sourceNames = {
             'demo': 'Demo Data',
-            'memory': 'In Memory',
-            'local': 'Local File',
-            'github': 'GitHub Sync'
+            'local': 'Local Database',
+            'github': 'GitHub Repository'
         }
 
         const sourceName = sourceNames[this.settings.sourceType] || 'Unknown'
@@ -203,7 +202,7 @@ class MockMealPlannerApp {
     }
 
     async clearAllData() {
-        console.log('🗑️ Clearing ALL application data for in-memory mode...')
+        console.log('🗑️ Clearing ALL application data for in-local mode...')
         
         // Clear all manager data
         if (this.ingredientsManager) {
@@ -415,7 +414,6 @@ describe('Database Source Switching', () => {
                 <span id="database-source-indicator">Demo Data</span>
                 <select id="source-type-select">
                     <option value="demo" selected>Demo Data</option>
-                    <option value="memory">In Memory (Clean Slate)</option>
                     <option value="local">Local File</option>
                     <option value="github">GitHub Repo</option>
                 </select>
@@ -467,17 +465,17 @@ describe('Database Source Switching', () => {
         it('should return correct database source', () => {
             expect(settingsManager.getCurrentDatabaseSource()).toBe('demo')
             
-            settingsManager.settings.sourceType = 'memory'
-            expect(settingsManager.getCurrentDatabaseSource()).toBe('memory')
+            settingsManager.settings.sourceType = 'local'
+            expect(settingsManager.getCurrentDatabaseSource()).toBe('local')
         })
 
         it('should determine if demo data should be loaded', () => {
             expect(settingsManager.shouldLoadDemoData()).toBe(true)
             
-            settingsManager.settings.sourceType = 'memory'
+            settingsManager.settings.sourceType = 'local'
             expect(settingsManager.shouldLoadDemoData()).toBe(false)
             
-            settingsManager.settings.sourceType = 'local'
+            settingsManager.settings.sourceType = 'github'
             expect(settingsManager.shouldLoadDemoData()).toBe(false)
         })
     })
@@ -495,18 +493,6 @@ describe('Database Source Switching', () => {
             expect(console.log).toHaveBeenCalledWith('✅ Recipe Manager loaded 2 recipes from demo data')
         })
 
-        it('should not load demo data when source is memory', async () => {
-            settingsManager.settings.sourceType = 'memory'
-            
-            await recipeManager.loadRecipes()
-            await ingredientsManager.loadIngredients()
-            
-            expect(recipeManager.recipes).toHaveLength(0)
-            expect(ingredientsManager.ingredients).toHaveLength(0)
-            expect(console.log).toHaveBeenCalledWith('📊 Recipe Manager - Database source: memory, should load demo: false')
-            expect(console.log).toHaveBeenCalledWith('✅ Recipe Manager initialized with empty data (source: memory)')
-        })
-
         it('should not load demo data when source is local', async () => {
             settingsManager.settings.sourceType = 'local'
             
@@ -516,7 +502,9 @@ describe('Database Source Switching', () => {
             expect(recipeManager.recipes).toHaveLength(0)
             expect(ingredientsManager.ingredients).toHaveLength(0)
             expect(console.log).toHaveBeenCalledWith('📊 Recipe Manager - Database source: local, should load demo: false')
+            expect(console.log).toHaveBeenCalledWith('✅ Recipe Manager initialized with empty data (source: local)')
         })
+
     })
 
     describe('Database Source Indicator', () => {
@@ -529,13 +517,13 @@ describe('Database Source Switching', () => {
             expect(console.log).toHaveBeenCalledWith('📊 Updated database source indicator: Demo Data')
         })
 
-        it('should update indicator text for memory source', () => {
-            settingsManager.settings.sourceType = 'memory'
+        it('should update indicator text for local source', () => {
+            settingsManager.settings.sourceType = 'local'
             settingsManager.updateDatabaseSourceIndicator()
             
             const indicator = document.getElementById('database-source-indicator')
-            expect(indicator.textContent).toBe('In Memory')
-            expect(console.log).toHaveBeenCalledWith('📊 Updated database source indicator: In Memory')
+            expect(indicator.textContent).toBe('Local Database')
+            expect(console.log).toHaveBeenCalledWith('📊 Updated database source indicator: Local Database')
         })
 
         it('should handle unknown source type', () => {
@@ -592,14 +580,14 @@ describe('Database Source Switching', () => {
     })
 
     describe('Complete Database Source Switching Workflow', () => {
-        it('should switch from demo to memory and reload correctly', async () => {
+        it('should switch from demo to local and reload correctly', async () => {
             // Start with demo data
             settingsManager.settings.sourceType = 'demo'
             await recipeManager.loadRecipes()
             expect(recipeManager.recipes).toHaveLength(2)
             
-            // Switch to memory
-            settingsManager.settings.sourceType = 'memory'
+            // Switch to local
+            settingsManager.settings.sourceType = 'local'
             settingsManager.updateDatabaseSourceIndicator()
             await settingsManager.reloadAllManagers()
             
@@ -608,12 +596,12 @@ describe('Database Source Switching', () => {
             expect(ingredientsManager.ingredients).toHaveLength(0)
             
             const indicator = document.getElementById('database-source-indicator')
-            expect(indicator.textContent).toBe('In Memory')
+            expect(indicator.textContent).toBe('Local Database')
         })
 
-        it('should switch from memory to demo and reload correctly', async () => {
-            // Start with memory (empty)
-            settingsManager.settings.sourceType = 'memory'
+        it('should switch from local to demo and reload correctly', async () => {
+            // Start with local (empty)
+            settingsManager.settings.sourceType = 'local'
             await recipeManager.loadRecipes()
             expect(recipeManager.recipes).toHaveLength(0)
             
@@ -653,7 +641,7 @@ describe('Database Source Switching', () => {
     })
 
     describe('clearAllData Functionality', () => {
-        it('should call clearAllData on all managers when switching to memory', async () => {
+        it('should call clearAllData on all managers when switching to local', async () => {
             // Set up spies
             const recipeClearSpy = vi.spyOn(recipeManager, 'clearAllData')
             const ingredientsClearSpy = vi.spyOn(ingredientsManager, 'clearAllData')
@@ -662,8 +650,8 @@ describe('Database Source Switching', () => {
             const groceryClearSpy = vi.spyOn(mealPlannerApp.groceryListManager, 'clearAllData')
             const rotationClearSpy = vi.spyOn(mealPlannerApp.mealRotationEngine, 'clearAllData')
             
-            // Switch to memory and trigger clearAllData
-            settingsManager.settings.sourceType = 'memory'
+            // Switch to local and trigger clearAllData
+            settingsManager.settings.sourceType = 'local'
             await mealPlannerApp.clearAllData()
             
             // Verify all clearAllData methods were called
@@ -675,11 +663,11 @@ describe('Database Source Switching', () => {
             expect(rotationClearSpy).toHaveBeenCalled()
             
             // Verify console logs
-            expect(console.log).toHaveBeenCalledWith('🗑️ Clearing ALL application data for in-memory mode...')
+            expect(console.log).toHaveBeenCalledWith('🗑️ Clearing ALL application data for in-local mode...')
             expect(console.log).toHaveBeenCalledWith('✅ All application data cleared successfully')
         })
 
-        it('should clear app state when switching to memory', async () => {
+        it('should clear app state when switching to local', async () => {
             // Set up initial state
             mealPlannerApp.selectedRecipes.dinner = [1, 2, 3]
             mealPlannerApp.favoriteRecipes.add(1)
@@ -734,14 +722,14 @@ describe('Database Source Switching', () => {
             expect(console.log).toHaveBeenCalledWith('✅ Dinner tab loaded 2 recipes from demo data')
         })
 
-        it('should show empty recipes when database source is memory', () => {
-            settingsManager.settings.sourceType = 'memory'
+        it('should show empty recipes when database source is local', () => {
+            settingsManager.settings.sourceType = 'local'
             
             const recipes = mealPlannerApp.renderRecipeSelection('dinner')
             
             expect(recipes).toHaveLength(0)
-            expect(console.log).toHaveBeenCalledWith('🍽️ Dinner tab - Database source: memory, should load demo: false')
-            expect(console.log).toHaveBeenCalledWith('✅ Dinner tab initialized with empty recipes (source: memory)')
+            expect(console.log).toHaveBeenCalledWith('🍽️ Dinner tab - Database source: local, should load demo: false')
+            expect(console.log).toHaveBeenCalledWith('✅ Dinner tab initialized with empty recipes (source: local)')
         })
 
         it('should be consistent with recipe manager data loading', async () => {
@@ -754,8 +742,8 @@ describe('Database Source Switching', () => {
             expect(recipeManager.recipes).toHaveLength(2)
             expect(dinnerRecipes).toHaveLength(2)
             
-            // Test memory mode consistency
-            settingsManager.settings.sourceType = 'memory'
+            // Test local mode consistency
+            settingsManager.settings.sourceType = 'local'
             
             await recipeManager.loadRecipes()
             const emptyDinnerRecipes = mealPlannerApp.renderRecipeSelection('dinner')
@@ -766,7 +754,7 @@ describe('Database Source Switching', () => {
     })
 
     describe('Complete In-Memory Database Source Workflow', () => {
-        it('should perform complete demo to memory transition', async () => {
+        it('should perform complete demo to local transition', async () => {
             // Start with demo data
             settingsManager.settings.sourceType = 'demo'
             await recipeManager.loadRecipes()
@@ -775,8 +763,8 @@ describe('Database Source Switching', () => {
             expect(recipeManager.recipes).toHaveLength(2)
             expect(ingredientsManager.ingredients).toHaveLength(2)
             
-            // Switch to memory and clear all data
-            settingsManager.settings.sourceType = 'memory'
+            // Switch to local and clear all data
+            settingsManager.settings.sourceType = 'local'
             settingsManager.updateDatabaseSourceIndicator()
             await mealPlannerApp.clearAllData()
             await settingsManager.reloadAllManagers()
@@ -788,16 +776,16 @@ describe('Database Source Switching', () => {
             expect(mealPlannerApp.favoriteRecipes.size).toBe(0)
             
             const indicator = document.getElementById('database-source-indicator')
-            expect(indicator.textContent).toBe('In Memory')
+            expect(indicator.textContent).toBe('Local Database')
             
             // Verify dinner tab shows empty state
             const dinnerRecipes = mealPlannerApp.renderRecipeSelection('dinner')
             expect(dinnerRecipes).toHaveLength(0)
         })
 
-        it('should perform complete memory to demo transition', async () => {
-            // Start with memory (empty)
-            settingsManager.settings.sourceType = 'memory'
+        it('should perform complete local to demo transition', async () => {
+            // Start with local (empty)
+            settingsManager.settings.sourceType = 'local'
             await recipeManager.loadRecipes()
             await ingredientsManager.loadIngredients()
             
@@ -838,8 +826,8 @@ describe('Database Source Switching', () => {
             expect(recipeManager.selectedLabel).toBe('vegetarian')
             expect(mealPlannerApp.mealManager.selectedLabel).toBe('healthy')
             
-            // Switch to memory and clear all data
-            settingsManager.settings.sourceType = 'memory'
+            // Switch to local and clear all data
+            settingsManager.settings.sourceType = 'local'
             await mealPlannerApp.clearAllData()
             
             // Verify label filters are reset to default
@@ -861,23 +849,23 @@ describe('Database Source Switching', () => {
             expect(demoMealLabels).toContain('healthy')
             expect(demoMealLabels).toContain('quick')
             
-            // Switch to memory mode
-            settingsManager.settings.sourceType = 'memory'
+            // Switch to local mode
+            settingsManager.settings.sourceType = 'local'
             
             // Clear data to ensure empty state
             recipeManager.recipes = []
             mealPlannerApp.mealManager.meals = []
             mealPlannerApp.mealManager.recipes = []
             
-            // Test that predefined labels are not shown in memory mode
-            const memoryLabels = recipeManager.getAllLabels()
-            const memoryMealLabels = mealPlannerApp.mealManager.getAllLabels()
+            // Test that predefined labels are not shown in local mode
+            const localLabels = recipeManager.getAllLabels()
+            const localMealLabels = mealPlannerApp.mealManager.getAllLabels()
             
             // Should not contain predefined labels when no data exists
-            expect(memoryLabels).not.toContain('vegetarian')
-            expect(memoryLabels).not.toContain('healthy')
-            expect(memoryMealLabels).not.toContain('vegetarian')
-            expect(memoryMealLabels).not.toContain('healthy')
+            expect(localLabels).not.toContain('vegetarian')
+            expect(localLabels).not.toContain('healthy')
+            expect(localMealLabels).not.toContain('vegetarian')
+            expect(localMealLabels).not.toContain('healthy')
         })
 
         it('should maintain label consistency between recipe and meal managers', () => {
@@ -903,7 +891,7 @@ describe('Database Source Switching', () => {
             const options = Array.from(select.options).map(opt => opt.value)
             
             expect(options).toContain('demo')
-            expect(options).toContain('memory')
+            expect(options).toContain('local')
             expect(options).toContain('local')
             expect(options).toContain('github')
         })

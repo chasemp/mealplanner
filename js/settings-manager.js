@@ -86,7 +86,16 @@ class SettingsManager {
         try {
             const saved = localStorage.getItem('mealplanner-settings');
             if (saved) {
-                this.settings = { ...this.settings, ...JSON.parse(saved) };
+                const loadedSettings = JSON.parse(saved);
+                
+                // Validate sourceType - ensure it's one of the valid values
+                const validSourceTypes = ['demo', 'local', 'github'];
+                if (loadedSettings.sourceType && !validSourceTypes.includes(loadedSettings.sourceType)) {
+                    console.warn(`⚠️ Invalid sourceType '${loadedSettings.sourceType}' found in settings, resetting to 'demo'`);
+                    loadedSettings.sourceType = 'demo';
+                }
+                
+                this.settings = { ...this.settings, ...loadedSettings };
             }
         } catch (error) {
             console.warn('Failed to load settings:', error);
@@ -468,10 +477,6 @@ class SettingsManager {
                 name: 'Demo Data',
                 icon: `<path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>`
             },
-            'memory': {
-                name: 'In Memory',
-                icon: `<path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>`
-            },
             'local': {
                 name: 'Local Database',
                 icon: `<path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>`
@@ -497,6 +502,12 @@ class SettingsManager {
 
     // Method for managers to check current database source
     getCurrentDatabaseSource() {
+        const validSourceTypes = ['demo', 'local', 'github'];
+        if (!validSourceTypes.includes(this.settings.sourceType)) {
+            console.warn(`⚠️ Invalid sourceType '${this.settings.sourceType}' detected, falling back to 'demo'`);
+            this.settings.sourceType = 'demo';
+            this.saveSettings(); // Save the corrected value
+        }
         return this.settings.sourceType;
     }
 
@@ -563,7 +574,8 @@ class SettingsManager {
                         data = demoData.getScheduledMeals();
                         break;
                     case 'pantryItems':
-                        data = demoData.getPantryItems ? demoData.getPantryItems() : [];
+                        // Pantry items are just items with pantry category - no separate data needed
+                        data = [];
                         break;
                     case 'meals':
                         data = demoData.getMeals ? demoData.getMeals() : [];
@@ -600,17 +612,24 @@ class SettingsManager {
         }
     }
 
-    // Clear all data from localStorage (for clean slate testing)
+    // CLEAR ALL DATA FUNCTIONALITY
     //
-    // INTENDED BEHAVIOR:
-    // - Removes all user data from localStorage
-    // - PRESERVES the mealplanner_demo_data_populated flag (critical!)
-    // - This ensures demo data does NOT auto-reload on page refresh
-    // - Data should stay cleared until user manually adds new data or resets demo data
+    // PURPOSE: Provides a "clean slate" by removing all user data while preventing demo data auto-reload
     //
-    // CURRENT BUG:
-    // - Race condition causes demo data to auto-reload despite flag preservation
-    // - Something bypasses the flag system during app initialization
+    // BEHAVIOR:
+    // 1. Removes ALL localStorage keys starting with 'mealplanner_' 
+    //    (items, recipes, scheduledMeals, meals, settings, etc.)
+    // 2. PRESERVES the 'mealplanner_demo_data_populated' flag
+    // 3. Result: Empty localStorage + flag prevents demo data from auto-populating
+    // 4. User sees completely empty state (no recipes, no items, no scheduled meals)
+    // 5. Data stays empty until user manually adds data OR explicitly resets demo data
+    //
+    // WHY PRESERVE THE FLAG:
+    // - Prevents unwanted demo data reload on page refresh
+    // - User explicitly chose "Clear All" - they want empty state, not demo data
+    // - Demo data should only load on explicit user action (Reset Demo Data button)
+    //
+    // TESTING: After Clear All, refreshing page should show empty state, not demo data
     clearAllData() {
         console.log('🗑️ COMPREHENSIVE CLEAR: Clearing ALL data while preserving demo population flag...');
         
@@ -641,7 +660,27 @@ class SettingsManager {
         }
     }
 
-    // Reset to original demo data
+    // RESET DEMO DATA FUNCTIONALITY
+    //
+    // PURPOSE: Restore fresh demo data, replacing any existing user data
+    //
+    // BEHAVIOR:
+    // 1. Clears the 'mealplanner_demo_data_populated' flag (allows demo data generation)
+    // 2. Calls clearAllData() to remove ALL existing data from localStorage
+    // 3. Calls initializeDemoData() to populate fresh demo data
+    // 4. Sets the flag again to prevent future auto-population
+    //
+    // RESULT: 
+    // - All user data is lost and replaced with fresh demo data
+    // - User sees original demo recipes, items, and scheduled meals
+    // - Flag prevents demo data from auto-loading again
+    //
+    // USE CASES:
+    // - User wants to start over with clean demo data
+    // - User accidentally deleted demo data and wants it back
+    // - Testing/development needs fresh demo state
+    //
+    // TESTING: After Reset Demo Data, should see original demo content, not user data
     resetDemoData() {
         console.log('🔄 Resetting to original demo data...');
         
@@ -725,37 +764,34 @@ class SettingsManager {
     }
     
     getDemoData(dataType) {
-        if (!window.DemoDataManager) {
-            console.warn('⚠️ DemoDataManager not available, returning empty data');
-            return [];
-        }
-        
-        try {
-            const demoData = new window.DemoDataManager();
-            switch (dataType) {
-                case 'ingredients':
-                case 'items':
-                    return demoData.getIngredients();
-                case 'recipes':
-                    return demoData.getRecipes();
-                case 'scheduledMeals':
-                    return demoData.getScheduledMeals();
-                case 'planScheduledMeals':
-                    return demoData.getPlanScheduledMeals();
-                case 'menuScheduledMeals':
-                    return demoData.getMenuScheduledMeals();
-                case 'pantryItems':
-                    return demoData.getPantryItems();
-                case 'meals':
-                    return []; // Meals are user-created, not in demo data
-                default:
-                    console.warn(`⚠️ Unknown data type: ${dataType}`);
-                    return [];
-            }
-        } catch (error) {
-            console.error(`❌ Error loading demo ${dataType}:`, error);
-            return [];
-        }
+        // DEMO DATA LIFECYCLE DOCUMENTATION:
+        // 
+        // 1. INITIALIZATION (First Load):
+        //    - App starts with sourceType='demo' (default)
+        //    - initializeFirstTimeDemo() checks if demo data was ever populated
+        //    - If not, initializeDemoData() populates localStorage with demo data
+        //    - Sets 'mealplanner_demo_data_populated' flag to 'true'
+        //
+        // 2. NORMAL OPERATION:
+        //    - All managers call getAuthoritativeData() → getDemoData() → getLocalData()
+        //    - Data comes from localStorage (user can modify, add, delete)
+        //    - Flag prevents auto-repopulation of demo data
+        //
+        // 3. CLEAR ALL DATA:
+        //    - Clears all localStorage data (items, recipes, scheduledMeals, etc.)
+        //    - PRESERVES the 'mealplanner_demo_data_populated' flag
+        //    - Result: Empty localStorage, flag prevents demo data reload
+        //    - User sees empty state until they manually add data
+        //
+        // 4. RESET DEMO DATA:
+        //    - Clears the 'mealplanner_demo_data_populated' flag
+        //    - Calls clearAllData() to remove existing data
+        //    - Calls initializeDemoData() to populate fresh demo data
+        //    - Sets flag again to prevent future auto-population
+        //
+        // This method should NEVER generate fresh demo data - that only happens during initialization
+        console.log(`📊 getDemoData(${dataType}) - reading from localStorage (demo mode)`);
+        return this.getLocalData(dataType);
     }
     
     getMemoryData(dataType) {

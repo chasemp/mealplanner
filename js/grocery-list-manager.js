@@ -87,12 +87,13 @@ class GroceryListManager {
     }
 
     async loadPantryItems() {
-        console.log('📱 Grocery List Manager loading pantry items from authoritative data source...');
+        console.log('📱 Grocery List Manager loading pantry items from items with pantry category...');
         
-        // Get pantry data from centralized authority
+        // Get all items and filter for pantry category
         if (window.mealPlannerSettings) {
-            this.pantryItems = window.mealPlannerSettings.getAuthoritativeData('pantryItems');
-            console.log(`✅ Grocery List Manager loaded ${this.pantryItems.length} pantry items from authoritative source`);
+            const allItems = window.mealPlannerSettings.getAuthoritativeData('items') || [];
+            this.pantryItems = allItems.filter(item => item.category === 'pantry');
+            console.log(`✅ Grocery List Manager loaded ${this.pantryItems.length} pantry items from items data`);
         } else {
             // Fallback if settings not available
             console.warn('⚠️ Settings manager not available, using empty pantry items');
@@ -172,9 +173,9 @@ class GroceryListManager {
                 <!-- Removed duplicative This Week's Meals section - meals are already shown in main Scheduled Meals section -->
 
                 <!-- Grocery List -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 gap-6">
                     <!-- Generated List -->
-                    <div class="lg:col-span-2">
+                    <div>
                         <div class="bg-white rounded-lg shadow">
                             <div class="p-6 border-b border-gray-200">
                                 <div class="flex items-center justify-between">
@@ -195,20 +196,7 @@ class GroceryListManager {
                         </div>
                     </div>
 
-                    <!-- Pantry Items -->
-                    <div class="bg-white rounded-lg shadow">
-                        <div class="p-6 border-b border-gray-200">
-                            <div class="flex items-center justify-between">
-                                <h4 class="font-semibold text-gray-900">Pantry Items</h4>
-                                <button id="manage-pantry-btn" class="text-sm text-blue-600 hover:text-blue-800">
-                                    Manage
-                                </button>
-                            </div>
-                        </div>
-                        <div class="p-6">
-                            ${this.renderPantryItems()}
-                        </div>
-                    </div>
+                    <!-- Pantry items are now just items with category='pantry' - managed in Items tab -->
                 </div>
             </div>
         `;
