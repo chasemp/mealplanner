@@ -4,7 +4,7 @@ class MealPlannerApp {
         this.currentTab = 'menu';
         this.previousTab = null;
         this.navigationHistory = [];
-        this.version = '2025.09.16.0826';
+        this.version = '2025.09.16.0809';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
@@ -19,15 +19,10 @@ class MealPlannerApp {
         this.serviceWorker = null;
         this.installPrompt = null;
         this.currentViews = {
-            breakfast: 'itinerary',
-            lunch: 'itinerary', 
-            dinner: 'itinerary',
             plan: 'itinerary'
         };
         this.selectedRecipes = {
-            breakfast: [],
-            lunch: [],
-            dinner: []
+            plan: []
         };
         this.favoriteRecipes = [];
         this.showFavoritesOnly = false;
@@ -142,15 +137,7 @@ class MealPlannerApp {
             this.handleGoogleCalendarAction();
         });
 
-        // View toggle buttons
-        document.getElementById('view-toggle-breakfast')?.addEventListener('click', () => {
-            this.toggleView('breakfast');
-        });
-
-        document.getElementById('view-toggle-lunch')?.addEventListener('click', () => {
-            this.toggleView('lunch');
-        });
-
+        // View toggle button
         document.getElementById('view-toggle-plan')?.addEventListener('click', () => {
             this.toggleView('plan');
         });
@@ -1033,9 +1020,9 @@ class MealPlannerApp {
     }
 
     initializeRecipeSelection() {
-        // Initialize recipe selection for dinner (can extend to other meal types later)
-        this.renderRecipeSelection('dinner');
-        this.attachRecipeSelectionListeners('dinner');
+        // Initialize recipe selection for plan
+        this.renderRecipeSelection('plan');
+        this.attachRecipeSelectionListeners('plan');
         
         // Initialize the scheduling pipeline
         this.initializeSchedulingPipeline();
@@ -1127,9 +1114,11 @@ class MealPlannerApp {
         if (selectedCategory !== 'all') {
             filtered = filtered.filter(recipe => recipe.meal_type === selectedCategory);
         } else {
-            // Default to dinner-compatible recipes for dinner meal type
-            if (mealType === 'dinner') {
+            // Default to all recipes for plan meal type
+            if (mealType === 'plan') {
+                // Plan can include any meal type
                 filtered = filtered.filter(recipe => 
+                    recipe.meal_type === 'breakfast' || recipe.meal_type === 'lunch' || 
                     recipe.meal_type === 'dinner' || recipe.meal_type === 'any'
                 );
             }
@@ -1223,7 +1212,7 @@ class MealPlannerApp {
         const sortSelect = document.getElementById('plan-recipe-sort');
 
         if (searchInput) searchInput.value = '';
-        if (categorySelect) categorySelect.value = mealType === 'dinner' ? 'dinner' : 'all';
+        if (categorySelect) categorySelect.value = mealType === 'plan' ? 'all' : 'all';
         if (typeSelect) typeSelect.value = 'all';
         if (labelSelect) labelSelect.value = 'all';
         if (sortSelect) sortSelect.value = 'name';
@@ -1535,7 +1524,7 @@ class MealPlannerApp {
 
     showSchedulingOptions() {
         const panel = document.getElementById('scheduling-options-panel');
-        const selectedCount = this.selectedRecipes['dinner'].length;
+        const selectedCount = this.selectedRecipes['plan'].length;
         
         if (panel && selectedCount > 0) {
             panel.classList.remove('hidden');
@@ -1612,8 +1601,8 @@ class MealPlannerApp {
             mode: modeSelect.value,
             skipWeekends: skipWeekendsCheck.checked,
             avoidRepeats: avoidRepeatsCheck.checked,
-            selectedRecipeIds: [...this.selectedRecipes['dinner']],
-            mealType: 'dinner'
+            selectedRecipeIds: [...this.selectedRecipes['plan']],
+            mealType: 'plan'
         };
     }
 
@@ -1744,13 +1733,13 @@ class MealPlannerApp {
 
     async applyGeneratedSchedule(schedule) {
         // Clear existing schedule for this meal type
-        this.clearMealPlanData('dinner');
+        this.clearMealPlanData('plan');
         
         // Apply new schedule
-        this.applyGeneratedPlan('dinner', schedule.meals);
+        this.applyGeneratedPlan('plan', schedule.meals);
         
         // Refresh the itinerary view
-        this.refreshItineraryView('dinner');
+        this.refreshItineraryView('plan');
     }
 
     refreshItineraryView(mealType) {
@@ -1808,7 +1797,7 @@ class MealPlannerApp {
         console.log('🍽️ Initializing meal planning controls...');
         
         // Initialize controls for each meal type
-        ['breakfast', 'lunch', 'plan'].forEach(mealType => {
+        ['plan'].forEach(mealType => {
             this.initializeMealTypeControls(mealType);
         });
         
@@ -2532,9 +2521,7 @@ class MealPlannerApp {
             
             // STEP 3: Clear local app state and UI caches
             this.selectedRecipes = {
-                breakfast: [],
-                lunch: [],
-                dinner: []
+                plan: []
             };
             
             // Clear favorites
@@ -3474,41 +3461,6 @@ class MealPlannerApp {
                 view.render();
             }
         });
-    }
-
-    async refreshAllComponentsEmptyState() {
-        console.log('🔄 Refreshing all components to show empty state (no data reload)...');
-        
-        // Just render components without reloading data - they should already be cleared
-        const recipeManager = this.recipeManager || window.recipeManager;
-        if (recipeManager) {
-            console.log('🔄 Rendering RecipeManager empty state...');
-            recipeManager.render();
-        }
-        if (this.itemsManager) {
-            console.log('🔄 Rendering ItemsManager empty state...');
-            this.itemsManager.render();
-        }
-        if (this.mealManager) {
-            console.log('🔄 Rendering MealManager empty state...');
-            this.mealManager.render();
-        }
-        if (this.groceryListManager) {
-            console.log('🔄 Rendering GroceryListManager empty state...');
-            this.groceryListManager.render();
-        }
-        
-        // Force refresh itinerary and calendar views to show empty state
-        Object.values(this.itineraryViews).forEach(view => {
-            console.log('🔄 Rendering itinerary view empty state...');
-            view.render();
-        });
-        Object.values(this.calendarViews).forEach(view => {
-            console.log('🔄 Rendering calendar view empty state...');
-            view.render();
-        });
-
-        console.log('✅ All components refreshed to show empty state');
     }
 
     createModal(title, content, actions = []) {
