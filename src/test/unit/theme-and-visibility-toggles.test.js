@@ -195,9 +195,7 @@ describe('Theme and Visibility Toggles', () => {
                         localDbPath: '',
                         githubRepo: '',
                         githubReadOnly: false,
-                        showBreakfast: false,
-                        showLunch: false,
-                        showDinner: true,
+                        showPlan: true,
                         calendarManagedMode: false,
                         calendarNotifications: false
                     };
@@ -206,26 +204,7 @@ describe('Theme and Visibility Toggles', () => {
                 }
 
                 setupEventListeners() {
-                    // Set up checkbox event listeners
-                    const breakfastCheckbox = document.getElementById('show-breakfast');
-                    const lunchCheckbox = document.getElementById('show-lunch');
-                    const dinnerCheckbox = document.getElementById('show-dinner');
-
-                    if (breakfastCheckbox) {
-                        breakfastCheckbox.addEventListener('change', (e) => {
-                            this.updateSetting('showBreakfast', e.target.checked);
-                        });
-                    }
-                    if (lunchCheckbox) {
-                        lunchCheckbox.addEventListener('change', (e) => {
-                            this.updateSetting('showLunch', e.target.checked);
-                        });
-                    }
-                    if (dinnerCheckbox) {
-                        dinnerCheckbox.addEventListener('change', (e) => {
-                            this.updateSetting('showDinner', e.target.checked);
-                        });
-                    }
+                    // No meal type visibility checkboxes in current app
                 }
 
                 loadSettings() {
@@ -249,50 +228,7 @@ describe('Theme and Visibility Toggles', () => {
                 }
 
                 applySettings() {
-                    // Apply meal type visibility
-                    this.applyMealTypeVisibility();
-                }
-
-                applyMealTypeVisibility() {
-                    const breakfastCheckbox = document.getElementById('show-breakfast');
-                    const lunchCheckbox = document.getElementById('show-lunch');
-                    const dinnerCheckbox = document.getElementById('show-dinner');
-                    
-                    const breakfastTab = document.querySelector('[data-tab="breakfast"]');
-                    const lunchTab = document.querySelector('[data-tab="lunch"]');
-                    const dinnerTab = document.querySelector('[data-tab="dinner"]');
-
-                    if (breakfastCheckbox) breakfastCheckbox.checked = this.settings.showBreakfast;
-                    if (lunchCheckbox) lunchCheckbox.checked = this.settings.showLunch;
-                    if (dinnerCheckbox) dinnerCheckbox.checked = this.settings.showDinner;
-
-                    // Check if current tab is being hidden
-                    const currentTab = document.querySelector('.nav-tab.active')?.getAttribute('data-tab');
-                    let shouldSwitchTab = false;
-
-                    if (breakfastTab) {
-                        breakfastTab.style.display = this.settings.showBreakfast ? '' : 'none';
-                        if (!this.settings.showBreakfast && currentTab === 'breakfast') {
-                            shouldSwitchTab = true;
-                        }
-                    }
-                    if (lunchTab) {
-                        lunchTab.style.display = this.settings.showLunch ? '' : 'none';
-                        if (!this.settings.showLunch && currentTab === 'lunch') {
-                            shouldSwitchTab = true;
-                        }
-                    }
-                    if (dinnerTab) {
-                        dinnerTab.style.display = this.settings.showDinner ? '' : 'none';
-                        if (!this.settings.showDinner && currentTab === 'dinner') {
-                            shouldSwitchTab = true;
-                        }
-                    }
-
-                    // Switch to recipes tab if current tab is being hidden
-                    if (shouldSwitchTab && global.window.app && global.window.app.switchTab) {
-                        global.window.app.switchTab('recipes');
-                    }
+                    // No meal type visibility functionality in current app
                 }
 
                 updateSetting(key, value) {
@@ -403,166 +339,8 @@ describe('Theme and Visibility Toggles', () => {
         });
     });
 
-    describe('Meal Type Visibility Toggles', () => {
-        let settingsManager;
-
-        beforeEach(() => {
-            settingsManager = new window.SettingsManager();
-        });
-
-        it('should default to showing only dinner tab', () => {
-            expect(settingsManager.settings.showBreakfast).toBe(false);
-            expect(settingsManager.settings.showLunch).toBe(false);
-            expect(settingsManager.settings.showDinner).toBe(true);
-        });
-
-        it('should apply default visibility settings to checkboxes', () => {
-            const breakfastInput = document.getElementById('show-breakfast');
-            const lunchInput = document.getElementById('show-lunch');
-            const dinnerInput = document.getElementById('show-dinner');
-            
-            expect(breakfastInput.checked).toBe(false);
-            expect(lunchInput.checked).toBe(false);
-            expect(dinnerInput.checked).toBe(true);
-        });
-
-        it('should apply visibility settings to meal tabs', () => {
-            settingsManager.applyMealTypeVisibility();
-            
-            const breakfastTab = document.querySelector('[data-tab="breakfast"]');
-            const lunchTab = document.querySelector('[data-tab="lunch"]');
-            const dinnerTab = document.querySelector('[data-tab="dinner"]');
-            
-            expect(breakfastTab.style.display).toBe('none');
-            expect(lunchTab.style.display).toBe('none');
-            expect(dinnerTab.style.display).toBe('');
-        });
-
-        it('should toggle breakfast visibility when checkbox changes', () => {
-            const breakfastInput = document.getElementById('show-breakfast');
-            
-            // Enable breakfast
-            breakfastInput.checked = true;
-            breakfastInput.dispatchEvent(new Event('change'));
-            
-            expect(settingsManager.settings.showBreakfast).toBe(true);
-            
-            const breakfastTab = document.querySelector('[data-tab="breakfast"]');
-            expect(breakfastTab.style.display).toBe('');
-        });
-
-        it('should toggle lunch visibility when checkbox changes', () => {
-            const lunchInput = document.getElementById('show-lunch');
-            
-            // Enable lunch
-            lunchInput.checked = true;
-            lunchInput.dispatchEvent(new Event('change'));
-            
-            expect(settingsManager.settings.showLunch).toBe(true);
-            
-            const lunchTab = document.querySelector('[data-tab="lunch"]');
-            expect(lunchTab.style.display).toBe('');
-        });
-
-        it('should toggle dinner visibility when checkbox changes', () => {
-            const dinnerInput = document.getElementById('show-dinner');
-            
-            // Disable dinner
-            dinnerInput.checked = false;
-            dinnerInput.dispatchEvent(new Event('change'));
-            
-            expect(settingsManager.settings.showDinner).toBe(false);
-            
-            const dinnerTab = document.querySelector('[data-tab="dinner"]');
-            expect(dinnerTab.style.display).toBe('none');
-        });
-
-        it('should save settings when meal type visibility changes', () => {
-            const saveSettingsSpy = vi.spyOn(settingsManager, 'saveSettings');
-            const breakfastInput = document.getElementById('show-breakfast');
-            
-            breakfastInput.checked = true;
-            breakfastInput.dispatchEvent(new Event('change'));
-            
-            expect(saveSettingsSpy).toHaveBeenCalled();
-        });
-
-        it('should switch to recipes tab when current tab is hidden', () => {
-            // Mock app with switchTab method
-            global.window.app = {
-                switchTab: vi.fn()
-            };
-            
-            // Set breakfast as active tab
-            const breakfastTab = document.querySelector('[data-tab="breakfast"]');
-            const recipesTab = document.querySelector('[data-tab="recipes"]');
-            
-            breakfastTab.classList.add('active');
-            recipesTab.classList.remove('active');
-            
-            // Hide breakfast tab
-            settingsManager.settings.showBreakfast = false;
-            settingsManager.applyMealTypeVisibility();
-            
-            expect(global.window.app.switchTab).toHaveBeenCalledWith('recipes');
-        });
-
-        it('should load saved meal type visibility settings', () => {
-            // Set up saved settings
-            localStorage.data['mealplanner-settings'] = JSON.stringify({
-                showBreakfast: true,
-                showLunch: true,
-                showDinner: false
-            });
-            
-            // Create new settings manager to load saved settings
-            const newSettingsManager = new window.SettingsManager();
-            
-            expect(newSettingsManager.settings.showBreakfast).toBe(true);
-            expect(newSettingsManager.settings.showLunch).toBe(true);
-            expect(newSettingsManager.settings.showDinner).toBe(false);
-        });
-
-        it('should handle all meal types being disabled gracefully', () => {
-            // Mock app
-            global.window.app = {
-                switchTab: vi.fn()
-            };
-            
-            // Disable all meal types
-            settingsManager.settings.showBreakfast = false;
-            settingsManager.settings.showLunch = false;
-            settingsManager.settings.showDinner = false;
-            
-            settingsManager.applyMealTypeVisibility();
-            
-            const breakfastTab = document.querySelector('[data-tab="breakfast"]');
-            const lunchTab = document.querySelector('[data-tab="lunch"]');
-            const dinnerTab = document.querySelector('[data-tab="dinner"]');
-            
-            expect(breakfastTab.style.display).toBe('none');
-            expect(lunchTab.style.display).toBe('none');
-            expect(dinnerTab.style.display).toBe('none');
-        });
-
-        it('should maintain checkbox state consistency with settings', () => {
-            // Change settings programmatically
-            settingsManager.settings.showBreakfast = true;
-            settingsManager.settings.showLunch = false;
-            settingsManager.settings.showDinner = true;
-            
-            // Apply settings to UI
-            settingsManager.applyMealTypeVisibility();
-            
-            const breakfastInput = document.getElementById('show-breakfast');
-            const lunchInput = document.getElementById('show-lunch');
-            const dinnerInput = document.getElementById('show-dinner');
-            
-            expect(breakfastInput.checked).toBe(true);
-            expect(lunchInput.checked).toBe(false);
-            expect(dinnerInput.checked).toBe(true);
-        });
-    });
+    // REMOVED: Entire 'Meal Type Visibility Toggles' test suite - functionality no longer exists
+    // The app now uses a single 'plan' tab with showPlan: true setting instead of separate breakfast/lunch/dinner tabs
 
     describe('Integration Tests', () => {
         let app;
@@ -573,28 +351,21 @@ describe('Theme and Visibility Toggles', () => {
             settingsManager = new window.SettingsManager();
         });
 
-        it('should maintain theme and meal visibility settings independently', () => {
+        it('should maintain theme settings independently', () => {
             // Set dark theme
             app.toggleTheme();
             expect(document.documentElement.classList.contains('dark')).toBe(true);
             
-            // Change meal visibility
-            const breakfastInput = document.getElementById('show-breakfast');
-            breakfastInput.checked = true;
-            breakfastInput.dispatchEvent(new Event('change'));
+            // Verify plan tab is still visible (current single tab design)
+            expect(settingsManager.settings.showPlan).toBe(true);
             
             // Theme should still be dark
             expect(document.documentElement.classList.contains('dark')).toBe(true);
-            expect(settingsManager.settings.showBreakfast).toBe(true);
         });
 
         it('should work correctly after page reload simulation', () => {
             // Set up initial state
             app.toggleTheme(); // Dark mode
-            
-            const lunchInput = document.getElementById('show-lunch');
-            lunchInput.checked = true;
-            lunchInput.dispatchEvent(new Event('change'));
             
             // Simulate page reload
             const newApp = new window.MealPlannerApp();
@@ -602,8 +373,7 @@ describe('Theme and Visibility Toggles', () => {
             
             // Verify state is maintained
             expect(document.documentElement.classList.contains('dark')).toBe(true);
-            expect(newSettingsManager.settings.showLunch).toBe(true);
-            expect(newSettingsManager.settings.showDinner).toBe(true);
+            expect(newSettingsManager.settings.showPlan).toBe(true);
         });
     });
 });
