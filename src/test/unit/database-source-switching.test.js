@@ -463,6 +463,8 @@ describe('Database Source Switching', () => {
 
     describe('Database Source Detection', () => {
         it('should return correct database source', () => {
+            // WHY: Users need the app to correctly identify which data source is active
+            // WHAT: Verifies getCurrentDatabaseSource returns the correct sourceType setting
             expect(settingsManager.getCurrentDatabaseSource()).toBe('demo')
             
             settingsManager.settings.sourceType = 'local'
@@ -470,6 +472,8 @@ describe('Database Source Switching', () => {
         })
 
         it('should determine if demo data should be loaded', () => {
+            // WHY: Demo data should only load when users are in demo mode, not when using their own data
+            // WHAT: Verifies shouldLoadDemoData correctly identifies when demo mode is active
             expect(settingsManager.shouldLoadDemoData()).toBe(true)
             
             settingsManager.settings.sourceType = 'local'
@@ -482,6 +486,8 @@ describe('Database Source Switching', () => {
 
     describe('Manager Data Loading Behavior', () => {
         it('should load demo data when source is demo', async () => {
+            // WHY: New users need sample data immediately to understand and use the app
+            // WHAT: Verifies managers load demo recipes and ingredients when sourceType is demo
             settingsManager.settings.sourceType = 'demo'
             
             await recipeManager.loadRecipes()
@@ -494,6 +500,8 @@ describe('Database Source Switching', () => {
         })
 
         it('should not load demo data when source is local', async () => {
+            // WHY: Users with their own data shouldn't have demo data mixed in unexpectedly
+            // WHAT: Verifies managers start empty when sourceType is local (user's own data)
             settingsManager.settings.sourceType = 'local'
             
             await recipeManager.loadRecipes()
@@ -509,6 +517,8 @@ describe('Database Source Switching', () => {
 
     describe('Database Source Indicator', () => {
         it('should update indicator text for demo source', () => {
+            // WHY: Users need clear visual feedback about which data source is currently active
+            // WHAT: Verifies UI indicator shows 'Demo Data' when sourceType is demo
             settingsManager.settings.sourceType = 'demo'
             settingsManager.updateDatabaseSourceIndicator()
             
@@ -518,6 +528,8 @@ describe('Database Source Switching', () => {
         })
 
         it('should update indicator text for local source', () => {
+            // WHY: Users need to know when they're working with their own local data vs demo data
+            // WHAT: Verifies UI indicator shows 'Local Database' when sourceType is local
             settingsManager.settings.sourceType = 'local'
             settingsManager.updateDatabaseSourceIndicator()
             
@@ -527,6 +539,8 @@ describe('Database Source Switching', () => {
         })
 
         it('should handle unknown source type', () => {
+            // WHY: Invalid source types shouldn't crash the app or show confusing information
+            // WHAT: Verifies UI gracefully handles unknown sourceType values with fallback text
             settingsManager.settings.sourceType = 'unknown'
             settingsManager.updateDatabaseSourceIndicator()
             
@@ -535,6 +549,8 @@ describe('Database Source Switching', () => {
         })
 
         it('should handle missing indicator element gracefully', () => {
+            // WHY: Missing DOM elements shouldn't crash the app during initialization
+            // WHAT: Verifies updateDatabaseSourceIndicator handles missing DOM elements without errors
             document.getElementById('database-source-indicator').remove()
             
             expect(() => {
@@ -545,6 +561,8 @@ describe('Database Source Switching', () => {
 
     describe('Manager Reload System', () => {
         it('should reload all managers when database source changes', async () => {
+            // WHY: Users need all components to refresh with new data when switching data sources
+            // WHAT: Verifies reloadAllManagers calls load and render on all managers and refreshes app
             const recipeLoadSpy = vi.spyOn(recipeManager, 'loadRecipes')
             const recipeRenderSpy = vi.spyOn(recipeManager, 'render')
             const ingredientsLoadSpy = vi.spyOn(ingredientsManager, 'loadIngredients')
@@ -562,6 +580,8 @@ describe('Database Source Switching', () => {
         })
 
         it('should handle missing managers gracefully', async () => {
+            // WHY: Partial app initialization shouldn't crash when switching data sources
+            // WHAT: Verifies reloadAllManagers handles null/missing managers without throwing errors
             window.app.recipeManager = null
             window.app.ingredientsManager = null
             
@@ -571,6 +591,8 @@ describe('Database Source Switching', () => {
         })
 
         it('should handle missing app gracefully', async () => {
+            // WHY: App initialization race conditions shouldn't crash data source switching
+            // WHAT: Verifies reloadAllManagers handles missing window.app without throwing errors
             window.app = null
             
             expect(async () => {
@@ -581,6 +603,8 @@ describe('Database Source Switching', () => {
 
     describe('Complete Database Source Switching Workflow', () => {
         it('should switch from demo to local and reload correctly', async () => {
+            // WHY: Users need seamless transitions when switching from demo to their own data
+            // WHAT: Verifies complete workflow from demo data to empty local state with UI updates
             // Start with demo data
             settingsManager.settings.sourceType = 'demo'
             await recipeManager.loadRecipes()

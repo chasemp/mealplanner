@@ -179,3 +179,29 @@ INSERT OR IGNORE INTO recipes (title, description, instructions, serving_count, 
 ('Chicken Stir Fry', 'Quick and healthy chicken stir fry with vegetables', 'Cut chicken into strips. Heat oil in wok, cook chicken until done. Add vegetables and stir fry sauce. Serve over rice.', 4, 15, 10, 'dinner', '["quick", "healthy", "asian"]'),
 ('Turkey Sandwich', 'Classic turkey and cheese sandwich', 'Layer turkey, cheese, lettuce, and tomato on bread. Add mayo and mustard to taste.', 1, 5, 0, 'lunch', '["quick", "cold", "sandwich"]');
 `;
+
+/**
+ * Initialize database with schema and sample data
+ * @param {Object} db - Database instance
+ * @returns {boolean} - Success status
+ */
+export function initializeDatabase(db) {
+    try {
+        // Execute schema creation
+        db.exec(DATABASE_SCHEMA);
+        
+        // Check if we need to add sample recipes
+        const result = db.exec('SELECT COUNT(*) as count FROM recipes');
+        const recipeCount = result[0]?.values[0]?.[0] || 0;
+        
+        // Only add sample recipes if database is empty
+        if (recipeCount === 0) {
+            db.exec(SAMPLE_RECIPES);
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('Failed to initialize database:', error);
+        return false;
+    }
+}

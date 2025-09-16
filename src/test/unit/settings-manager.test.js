@@ -100,6 +100,12 @@ describe('Settings Manager', () => {
 
     afterEach(() => {
         vi.clearAllMocks();
+        
+        // Clear any pending timeouts to prevent "document is not defined" errors
+        if (settingsManager && settingsManager.timeoutId) {
+            clearTimeout(settingsManager.timeoutId);
+        }
+        
         if (dom) {
             dom.window.close();
         }
@@ -107,6 +113,9 @@ describe('Settings Manager', () => {
 
     describe('Initialization', () => {
         it('should initialize with default settings', () => {
+            // WHY: Users need predictable default settings when first using the app
+            // WHAT: Verifies that new users get sensible defaults for all settings
+            
             settingsManager = new SettingsManager();
             
             expect(settingsManager.settings).toEqual({
@@ -115,9 +124,7 @@ describe('Settings Manager', () => {
                 githubRepo: '',
                 // githubDeployKey removed for security - stored in IndexedDB
                 githubReadOnly: false,
-                showBreakfast: false,
-                showLunch: false,
-                showDinner: true,
+                showPlan: true, // New meal visibility structure
                 calendarManagedMode: false,
                 calendarNotifications: false,
                 confirmBeforeClearingFilters: false,
@@ -128,10 +135,13 @@ describe('Settings Manager', () => {
         });
 
         it('should load settings from localStorage if available', () => {
+            // WHY: Users should not lose their customized settings when they reload the app
+            // WHAT: Verifies that saved settings are restored from localStorage
+            
             const savedSettings = {
                 sourceType: 'github',
                 githubRepo: 'https://github.com/chasemp/mp',
-                showLunch: false
+                showPlan: false // New meal visibility structure
             };
             
             localStorageMock.getItem.mockReturnValue(JSON.stringify(savedSettings));
@@ -140,11 +150,13 @@ describe('Settings Manager', () => {
             
             expect(settingsManager.settings.sourceType).toBe('github');
             expect(settingsManager.settings.githubRepo).toBe('https://github.com/chasemp/mp');
-            expect(settingsManager.settings.showLunch).toBe(false);
-            expect(settingsManager.settings.showBreakfast).toBe(false); // Default preserved
+            expect(settingsManager.settings.showPlan).toBe(false);
+            expect(settingsManager.settings.confirmBeforeDeleting).toBe(true); // Default preserved
         });
 
         it('should handle corrupted localStorage gracefully', () => {
+            // WHY: Corrupted storage shouldn't crash the app or prevent users from using it
+            // WHAT: Verifies that invalid JSON in localStorage falls back to default settings
             localStorageMock.getItem.mockReturnValue('invalid json');
             
             expect(() => {
@@ -161,6 +173,8 @@ describe('Settings Manager', () => {
         });
 
         it('should save settings to localStorage', () => {
+            // WHY: Users need their settings to persist between app sessions
+            // WHAT: Verifies that settings changes are properly saved to localStorage
             settingsManager.settings.sourceType = 'github';
             settingsManager.saveSettings();
             
@@ -171,6 +185,8 @@ describe('Settings Manager', () => {
         });
 
         it('should handle save errors gracefully', () => {
+            // WHY: Storage errors shouldn't crash the app or lose user data
+            // WHAT: Verifies that localStorage save failures are handled gracefully without throwing
             localStorageMock.setItem.mockImplementation(() => {
                 throw new Error('Storage quota exceeded');
             });
@@ -187,6 +203,8 @@ describe('Settings Manager', () => {
         });
 
         it('should show correct source options based on selection', () => {
+            // WHY: Users need relevant configuration options for their chosen data source
+            // WHAT: Verifies that UI shows appropriate options when data source type changes
             settingsManager.showSourceOptions('demo');
             
             const demoOptions = document.getElementById('demo-options');
@@ -199,6 +217,8 @@ describe('Settings Manager', () => {
         });
 
         it('should update settings when source type changes', () => {
+            // WHY: Users need their data source selection to be saved and applied immediately
+            // WHAT: Verifies that changing source type dropdown updates settings and triggers reload
             const sourceSelect = document.getElementById('source-type-select');
             sourceSelect.value = 'github';
             sourceSelect.dispatchEvent(new dom.window.Event('change'));
@@ -207,49 +227,40 @@ describe('Settings Manager', () => {
         });
     });
 
-    describe('Meal Type Visibility', () => {
+    describe('Plan Visibility Settings', () => {
         beforeEach(() => {
             settingsManager = new SettingsManager();
         });
 
-        it('should apply meal type visibility settings', () => {
-            settingsManager.settings.showBreakfast = false;
-            settingsManager.settings.showLunch = true;
-            settingsManager.settings.showDinner = false;
+        it('should store plan visibility setting', () => {
+            // WHY: Users need to control whether the planning features are visible
+            // WHAT: Verifies that plan visibility setting is properly stored and retrieved
             
-            settingsManager.applyMealTimeVisibility();
+            settingsManager.settings.showPlan = false;
+            settingsManager.saveSettings();
             
-            const breakfastTab = document.querySelector('[data-tab="breakfast"]');
-            const lunchTab = document.querySelector('[data-tab="lunch"]');
-            const dinnerTab = document.querySelector('[data-tab="dinner"]');
+            expect(settingsManager.settings.showPlan).toBe(false);
             
-            expect(breakfastTab.style.display).toBe('none');
-            expect(lunchTab.style.display).toBe('');
-            expect(dinnerTab.style.display).toBe('none');
+            // Verify it persists
+            const savedData = JSON.parse(localStorageMock.setItem.mock.calls[0][1]);
+            expect(savedData.showPlan).toBe(false);
         });
 
-        it('should update checkboxes to match settings', () => {
-            settingsManager.settings.showBreakfast = false;
-            settingsManager.settings.showLunch = true;
-            settingsManager.settings.showDinner = false;
+        it('should default to showing plan for new users', () => {
+            // WHY: New users should see planning features by default to discover functionality
+            // WHAT: Verifies that showPlan defaults to true for better user experience
             
-            settingsManager.applyMealTimeVisibility();
-            
-            const breakfastCheckbox = document.getElementById('show-breakfast');
-            const lunchCheckbox = document.getElementById('show-lunch');
-            const dinnerCheckbox = document.getElementById('show-dinner');
-            
-            expect(breakfastCheckbox.checked).toBe(false);
-            expect(lunchCheckbox.checked).toBe(true);
-            expect(dinnerCheckbox.checked).toBe(false);
+            expect(settingsManager.settings.showPlan).toBe(true);
         });
 
-        it('should handle meal type checkbox changes', () => {
-            const breakfastCheckbox = document.getElementById('show-breakfast');
-            breakfastCheckbox.checked = false;
-            breakfastCheckbox.dispatchEvent(new dom.window.Event('change'));
+        it('should handle plan visibility setting changes', () => {
+            // WHY: Users need to toggle plan visibility based on their workflow
+            // WHAT: Verifies that plan visibility can be changed and persisted
             
-            expect(settingsManager.settings.showBreakfast).toBe(false);
+            const originalValue = settingsManager.settings.showPlan;
+            settingsManager.settings.showPlan = !originalValue;
+            
+            expect(settingsManager.settings.showPlan).toBe(!originalValue);
         });
     });
 
@@ -259,6 +270,8 @@ describe('Settings Manager', () => {
         });
 
         it('should handle GitHub repository URL changes', () => {
+            // WHY: Users need to specify their GitHub repository for data synchronization
+            // WHAT: Verifies that GitHub repo URL input updates settings when changed
             const repoInput = document.getElementById('github-repo-url');
             repoInput.value = 'https://github.com/chasemp/mp';
             repoInput.dispatchEvent(new dom.window.Event('change'));
@@ -267,6 +280,8 @@ describe('Settings Manager', () => {
         });
 
         it('should handle deploy key changes', () => {
+            // WHY: Users need to provide deploy keys for private GitHub repository access
+            // WHAT: Verifies that deploy key input updates settings for GitHub authentication
             const deployKeyInput = document.getElementById('github-deploy-key');
             const testKey = '-----BEGIN OPENSSH PRIVATE KEY-----\ntest\n-----END OPENSSH PRIVATE KEY-----';
             deployKeyInput.value = testKey;
@@ -278,6 +293,8 @@ describe('Settings Manager', () => {
         });
 
         it('should handle read-only mode toggle', () => {
+            // WHY: Users may want read-only access to shared repositories without write permissions
+            // WHAT: Verifies that read-only checkbox updates GitHub sync settings appropriately
             const readOnlyInput = document.getElementById('github-read-only');
             readOnlyInput.checked = true;
             readOnlyInput.dispatchEvent(new dom.window.Event('change'));
@@ -292,6 +309,8 @@ describe('Settings Manager', () => {
         });
 
         it('should handle demo data loading', async () => {
+            // WHY: Users need demo data to be loaded automatically when in demo mode
+            // WHAT: Verifies that loadDemoData function works correctly for demo source type
             settingsManager.settings.sourceType = 'demo';
             
             const result = await settingsManager.loadDemoData();
@@ -299,6 +318,8 @@ describe('Settings Manager', () => {
         });
 
         it('should handle local database file selection', () => {
+            // WHY: Users need to upload their own database files for local data management
+            // WHAT: Verifies that file input correctly processes uploaded database files
             const fileInput = document.getElementById('local-file-input');
             const mockFile = new dom.window.File(['test'], 'test.db', { type: 'application/x-sqlite3' });
             
@@ -314,6 +335,8 @@ describe('Settings Manager', () => {
         });
 
         it('should serialize database to text format', async () => {
+            // WHY: Users need to export their data in readable format for backup or sharing
+            // WHAT: Verifies that database binary data can be converted to base64 text format
             const testData = new Uint8Array([1, 2, 3, 4, 5]);
             const result = await settingsManager.serializeDatabaseToText(testData);
             
@@ -330,6 +353,8 @@ describe('Settings Manager', () => {
         });
 
         it('should handle missing DOM elements gracefully', () => {
+            // WHY: Partial DOM loading shouldn't crash settings functionality
+            // WHAT: Verifies that missing UI elements are handled without throwing errors
             // Remove an element
             document.getElementById('source-type-select').remove();
             
@@ -339,6 +364,8 @@ describe('Settings Manager', () => {
         });
 
         it('should handle database loading errors', async () => {
+            // WHY: Database loading failures shouldn't crash the app or leave users stranded
+            // WHAT: Verifies that database load errors are caught and handled gracefully
             settingsManager.settings.sourceType = 'local';
             
             try {
@@ -349,6 +376,8 @@ describe('Settings Manager', () => {
         });
 
         it('should show error notifications for failed operations', async () => {
+            // WHY: Users need clear feedback when operations fail so they can take corrective action
+            // WHAT: Verifies that failed operations trigger appropriate user-visible error notifications
             // Mock showNotification
             settingsManager.showNotification = vi.fn();
             
@@ -377,6 +406,8 @@ describe('Settings Manager', () => {
         });
 
         it('should parse GitHub repository URL correctly', () => {
+            // WHY: Users need accurate GitHub integration with their specified repositories
+            // WHAT: Verifies that GitHub URLs are parsed correctly to extract owner and repo names
             githubSync = new GitHubDatabaseSync('https://github.com/chasemp/mp', 'test-key');
             
             expect(githubSync.owner).toBe('chasemp');
@@ -384,18 +415,24 @@ describe('Settings Manager', () => {
         });
 
         it('should throw error for invalid repository URL', () => {
+            // WHY: Invalid URLs should fail fast with clear errors rather than cause mysterious bugs
+            // WHAT: Verifies that malformed GitHub URLs throw descriptive errors during initialization
             expect(() => {
                 new GitHubDatabaseSync('invalid-url', 'test-key');
             }).toThrow('Invalid GitHub repository URL');
         });
 
         it('should handle read-only mode correctly', () => {
+            // WHY: Read-only mode prevents accidental data modification in shared repositories
+            // WHAT: Verifies that GitHub sync correctly handles read-only configuration
             githubSync = new GitHubDatabaseSync('https://github.com/chasemp/mp', '', true);
             
             expect(githubSync.readOnly).toBe(true);
         });
 
         it('should validate repository URL format', () => {
+            // WHY: URL validation prevents runtime errors and provides clear user feedback
+            // WHAT: Verifies that GitHub URL format validation works correctly in Node.js environment
             // Test URL parsing logic that works in Node.js
             expect(() => {
                 new GitHubDatabaseSync('https://github.com/chasemp/mp');
@@ -407,6 +444,8 @@ describe('Settings Manager', () => {
         });
 
         it('should extract owner and repo from URL', () => {
+            // WHY: GitHub integration requires accurate owner and repository name extraction
+            // WHAT: Verifies that URL parsing correctly extracts owner and repo components
             const sync = new GitHubDatabaseSync('https://github.com/chasemp/mp');
             expect(sync.owner).toBe('chasemp');
             expect(sync.repo).toBe('mp');

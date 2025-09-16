@@ -197,12 +197,15 @@ describe('Mobile Navigation', () => {
             }
 
             checkHealth() {
+                // WHY: Users need to know if mobile navigation is working properly
+                // WHAT: Verifies that mobile navigation has all required components and event handlers
+                
                 const bottomNav = document.getElementById('mobile-bottom-nav');
                 const hasHandler = bottomNav && bottomNav._mobileNavHandler;
                 const tabButtons = bottomNav ? bottomNav.querySelectorAll('.mobile-nav-tab').length : 0;
                 
                 const result = {
-                    healthy: this.isMobile && bottomNav && hasHandler && tabButtons > 0,
+                    healthy: !!(this.isMobile && bottomNav && hasHandler && tabButtons > 0),
                     bottomNavExists: !!bottomNav,
                     hasEventHandler: !!hasHandler,
                     tabButtonCount: tabButtons

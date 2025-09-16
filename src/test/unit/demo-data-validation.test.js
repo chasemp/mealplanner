@@ -16,6 +16,8 @@ describe('Demo Data Validation', () => {
 
     describe('Data Structure Integrity', () => {
         it('should have all required data arrays', () => {
+            // WHY: New users need complete sample data to understand and use the app immediately
+            // WHAT: Verifies demo data contains all required data types (items, recipes, scheduled meals)
             expect(demoData.items).toBeDefined();
             expect(Array.isArray(demoData.items)).toBe(true);
             expect(demoData.items.length).toBeGreaterThan(0);
@@ -30,6 +32,8 @@ describe('Demo Data Validation', () => {
         });
 
         it('should have at least 7 combo recipes as requested', () => {
+            // WHY: Users need diverse meal combinations to see the app's advanced meal planning capabilities
+            // WHAT: Verifies demo data includes specific combo recipes that showcase multi-course meal planning
             const comboRecipes = demoData.recipes.filter(r => r.recipe_type === 'combo');
             expect(comboRecipes.length).toBeGreaterThanOrEqual(7);
             
@@ -46,6 +50,8 @@ describe('Demo Data Validation', () => {
         });
 
         it('should have regular recipes to support combo recipes', () => {
+            // WHY: Combo recipes depend on regular recipes - users need both for full functionality
+            // WHAT: Verifies demo data includes sufficient regular recipes to support combo meal planning
             const regularRecipes = demoData.recipes.filter(r => r.recipe_type === 'regular');
             expect(regularRecipes.length).toBeGreaterThan(10);
             
@@ -64,6 +70,8 @@ describe('Demo Data Validation', () => {
 
     describe('Recipe Cross-Linking Validation', () => {
         it('should have all combo recipes reference valid basic recipes', () => {
+            // WHY: Broken recipe references would cause crashes when users try to view or cook combo meals
+            // WHAT: Verifies all combo recipe references point to existing recipes with valid data structure
             const comboRecipes = demoData.recipes.filter(r => r.recipe_type === 'combo');
             const allRecipeIds = demoData.recipes.map(r => r.id);
 
@@ -89,6 +97,8 @@ describe('Demo Data Validation', () => {
         });
 
         it('should have all recipe items reference valid items', () => {
+            // WHY: Broken ingredient references would prevent users from seeing recipe details or generating shopping lists
+            // WHAT: Verifies all recipe ingredients reference existing items with proper quantity/unit data
             const allIngredientIds = demoData.items.map(i => i.id);
 
             demoData.recipes.forEach(recipe => {
@@ -112,6 +122,8 @@ describe('Demo Data Validation', () => {
         });
 
         it('should have all scheduled meals reference valid recipes', () => {
+            // WHY: Broken meal schedule references would cause crashes when users view their meal calendar
+            // WHAT: Verifies all scheduled meals reference existing recipes with valid date structure
             const allRecipeIds = demoData.recipes.map(r => r.id);
 
             demoData.scheduledMeals.forEach(meal => {
@@ -131,6 +143,8 @@ describe('Demo Data Validation', () => {
 
     describe('Data Consistency Validation', () => {
         it('should pass built-in consistency validation', () => {
+            // WHY: Data inconsistencies would cause unpredictable app behavior and user frustration
+            // WHAT: Verifies demo data passes all internal consistency checks for referential integrity
             const issues = demoManager.validateConsistency();
             expect(issues).toBeDefined();
             expect(Array.isArray(issues)).toBe(true);
@@ -138,24 +152,32 @@ describe('Demo Data Validation', () => {
         });
 
         it('should have unique recipe IDs', () => {
+            // WHY: Duplicate IDs would cause data corruption and unpredictable recipe lookups
+            // WHAT: Verifies all recipes have unique identifiers for reliable data management
             const recipeIds = demoData.recipes.map(r => r.id);
             const uniqueIds = [...new Set(recipeIds)];
             expect(recipeIds.length).toBe(uniqueIds.length);
         });
 
         it('should have unique ingredient IDs', () => {
+            // WHY: Duplicate IDs would cause ingredient confusion and incorrect shopping lists
+            // WHAT: Verifies all items have unique identifiers for reliable inventory management
             const ingredientIds = demoData.items.map(i => i.id);
             const uniqueIds = [...new Set(ingredientIds)];
             expect(ingredientIds.length).toBe(uniqueIds.length);
         });
 
         it('should have unique scheduled meal IDs', () => {
+            // WHY: Duplicate meal IDs would cause calendar display errors and scheduling conflicts
+            // WHAT: Verifies all scheduled meals have unique identifiers for reliable calendar management
             const mealIds = demoData.scheduledMeals.map(m => m.id);
             const uniqueIds = [...new Set(mealIds)];
             expect(mealIds.length).toBe(uniqueIds.length);
         });
 
         it('should have all recipes with required fields', () => {
+            // WHY: Missing recipe fields would cause display errors and prevent users from cooking
+            // WHAT: Verifies all recipes contain essential fields needed for recipe functionality
             demoData.recipes.forEach(recipe => {
                 expect(recipe.id).toBeDefined();
                 expect(recipe.title).toBeDefined();
@@ -179,6 +201,8 @@ describe('Demo Data Validation', () => {
         });
 
         it('should have all items with required fields', () => {
+            // WHY: Missing item fields would prevent users from managing inventory and creating recipes
+            // WHAT: Verifies all items contain essential fields needed for inventory and recipe functionality
             demoData.items.forEach(ingredient => {
                 expect(ingredient.id).toBeDefined();
                 expect(ingredient.name).toBeDefined();
@@ -196,6 +220,8 @@ describe('Demo Data Validation', () => {
 
     describe('Combo Recipe Specific Validation', () => {
         it('should have combo recipes with aggregated items matching component recipes', () => {
+            // WHY: Incorrect ingredient aggregation would show wrong shopping lists for combo meals
+            // WHAT: Verifies combo recipes properly aggregate ingredients from their component recipes
             const comboRecipes = demoData.recipes.filter(r => r.recipe_type === 'combo');
             
             comboRecipes.forEach(combo => {
@@ -215,6 +241,8 @@ describe('Demo Data Validation', () => {
         });
 
         it('should have combo recipes with meaningful servings multipliers', () => {
+            // WHY: Invalid serving multipliers would create unrealistic portion sizes for combo meals
+            // WHAT: Verifies combo recipes use reasonable serving multipliers for realistic meal planning
             const comboRecipes = demoData.recipes.filter(r => r.recipe_type === 'combo');
             
             comboRecipes.forEach(combo => {
@@ -226,6 +254,8 @@ describe('Demo Data Validation', () => {
         });
 
         it('should have combo recipes scheduled in meal plan', () => {
+            // WHY: Users need to see combo recipes in action through scheduled meal examples
+            // WHAT: Verifies combo recipes are included in the demo meal schedule for user education
             const comboRecipeIds = demoData.recipes.filter(r => r.recipe_type === 'combo').map(r => r.id);
             const scheduledRecipeIds = demoData.scheduledMeals.map(m => m.recipe_id);
             
@@ -235,6 +265,8 @@ describe('Demo Data Validation', () => {
         });
 
         it('should have combo recipes with appropriate meal types', () => {
+            // WHY: Users need combo recipes to fit logically into meal planning (breakfast, lunch, dinner)
+            // WHAT: Verifies combo recipes have appropriate meal type labels for realistic meal scheduling
             const comboRecipes = demoData.recipes.filter(r => r.recipe_type === 'combo');
             
             comboRecipes.forEach(combo => {
@@ -257,6 +289,8 @@ describe('Demo Data Validation', () => {
 
     describe('Platform-Like Data Quality', () => {
         it('should have realistic ingredient quantities', () => {
+            // WHY: Unrealistic quantities would confuse users and create unusable shopping lists
+            // WHAT: Verifies all recipe ingredient quantities are within reasonable cooking ranges
             demoData.recipes.forEach(recipe => {
                 recipe.items.forEach(ingredient => {
                     expect(ingredient.quantity).toBeGreaterThan(0);
@@ -266,6 +300,8 @@ describe('Demo Data Validation', () => {
         });
 
         it('should have realistic prep and cook times', () => {
+            // WHY: Accurate timing helps users plan their cooking and meal preparation effectively
+            // WHAT: Verifies all recipes have realistic preparation and cooking time estimates
             demoData.recipes.forEach(recipe => {
                 expect(recipe.prep_time).toBeGreaterThanOrEqual(0);
                 expect(recipe.prep_time).toBeLessThan(180); // 3 hours max prep
@@ -275,6 +311,8 @@ describe('Demo Data Validation', () => {
         });
 
         it('should have meaningful recipe descriptions and instructions', () => {
+            // WHY: Users need clear descriptions and instructions to successfully prepare meals
+            // WHAT: Verifies all recipes contain sufficient descriptive content for cooking guidance
             demoData.recipes.forEach(recipe => {
                 expect(recipe.description.length).toBeGreaterThan(10);
                 // Combo recipes may have empty instructions (they rely on component recipe instructions)
@@ -291,6 +329,8 @@ describe('Demo Data Validation', () => {
         });
 
         it('should have diverse meal types and categories', () => {
+            // WHY: Users need recipes for all meal times to plan complete daily nutrition
+            // WHAT: Verifies demo data includes recipes for breakfast, lunch, dinner, and snacks
             const mealTypes = [...new Set(demoData.recipes.map(r => r.meal_type))];
             expect(mealTypes).toContain('breakfast');
             expect(mealTypes).toContain('lunch');

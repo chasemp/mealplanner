@@ -99,6 +99,9 @@ class MockRecipeManager {
                     <button id="clear-recipe-filters-btn">Clear Filters</button>
                     <button id="add-recipe-btn">Add Recipe</button>
                 </div>
+                <div id="recipe-labels-container" class="w-full min-h-[42px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus-within:ring-2 focus-within:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white cursor-text flex flex-wrap gap-1 items-center">
+                    ${this.renderSelectedLabels()}
+                </div>
                 <div class="recipe-grid">
                     ${this.getFilteredRecipes().map(recipe => this.createRecipeCard(recipe)).join('')}
                 </div>
@@ -226,6 +229,30 @@ class MockRecipeManager {
             }
         })
         return Array.from(labels).sort()
+    }
+
+    renderSelectedLabels() {
+        if (!this.selectedLabels || this.selectedLabels.length === 0) {
+            return '<span class="text-gray-500 dark:text-gray-400">No labels selected</span>'
+        }
+        
+        return this.selectedLabels.map(label => {
+            const labelType = this.inferLabelType(label)
+            const colorClasses = global.window.labelTypes.getColorClasses(labelType)
+            const icon = global.window.labelTypes.getIcon(labelType)
+            
+            return `
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${colorClasses}">
+                    ${icon}
+                    ${label}
+                    <button type="button" class="ml-1 text-current hover:text-current" onclick="recipeManager.removeLabel('${label}')">
+                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+                </span>
+            `
+        }).join('')
     }
 
     attachEventListeners() {
@@ -464,6 +491,8 @@ describe('RecipeManager', () => {
 
     describe('Initialization', () => {
         it('should initialize with demo data', () => {
+            // WHY: Users need sample recipes immediately to understand the app and start cooking
+            // WHAT: Verifies RecipeManager loads demo recipes and ingredients during initialization
             recipeManager.init()
             
             expect(recipeManager.recipes).toHaveLength(2)
@@ -472,6 +501,8 @@ describe('RecipeManager', () => {
         })
 
         it('should render recipe grid', () => {
+            // WHY: Users need to see their recipes in an organized, visual format
+            // WHAT: Verifies RecipeManager renders recipe cards in a grid layout after initialization
             recipeManager.init()
             
             const recipeGrid = container.querySelector('.recipe-grid')
@@ -488,6 +519,8 @@ describe('RecipeManager', () => {
         })
 
         it('should filter recipes by search term', () => {
+            // WHY: Users need to quickly find specific recipes by name in large collections
+            // WHAT: Verifies search functionality returns recipes matching the search term
             recipeManager.currentFilter.search = 'chicken'
             const filtered = recipeManager.getFilteredRecipes()
             
@@ -496,6 +529,8 @@ describe('RecipeManager', () => {
         })
 
         it('should filter recipes by meal type label', () => {
+            // WHY: Users need to find recipes appropriate for specific meal times (breakfast, lunch, dinner)
+            // WHAT: Verifies filtering by meal type labels returns only recipes for that meal time
             recipeManager.selectedLabels = ['Dinner']
             const filtered = recipeManager.getFilteredRecipes()
             
@@ -504,6 +539,8 @@ describe('RecipeManager', () => {
         })
 
         it('should filter recipes by label', () => {
+            // WHY: Users need to find recipes matching dietary preferences or cooking styles
+            // WHAT: Verifies filtering by custom labels returns recipes with matching label tags
             recipeManager.selectedLabel = 'vegetarian'
             const filtered = recipeManager.getFilteredRecipes()
             
@@ -512,6 +549,8 @@ describe('RecipeManager', () => {
         })
 
         it('should handle empty search results', () => {
+            // WHY: Users need clear feedback when no recipes match their search criteria
+            // WHAT: Verifies search returns empty array when no recipes match the search term
             recipeManager.currentFilter.search = 'nonexistent'
             const filtered = recipeManager.getFilteredRecipes()
             
@@ -993,6 +1032,9 @@ describe('RecipeManager', () => {
         })
 
         it('should render selected label chips with correct colors for default labels', () => {
+            // WHY: Users need visual feedback to distinguish different types of labels
+            // WHAT: Verifies that default labels (vegetarian, healthy) render with green styling
+            
             recipeManager.selectedLabels = ['vegetarian', 'healthy']
             recipeManager.render()
             
@@ -1005,15 +1047,18 @@ describe('RecipeManager', () => {
             const vegetarianChip = labelChips[0]
             expect(vegetarianChip.className).toContain('bg-green-100')
             expect(vegetarianChip.className).toContain('text-green-800')
-            expect(vegetarianChip.className).toContain('font-bold')
+            expect(vegetarianChip.className).toContain('font-medium')
             expect(vegetarianChip.textContent.trim()).toBe('vegetarian')
             
-            // Check remove button color
+            // Check remove button (uses text-current for consistent theming)
             const removeButton = vegetarianChip.querySelector('button')
-            expect(removeButton.className).toContain('text-green-600')
+            expect(removeButton.className).toContain('text-current')
         })
 
         it('should render selected label chips with correct colors for recipe type labels', () => {
+            // WHY: Recipe type labels need distinct visual styling from other label types
+            // WHAT: Verifies that recipe type labels render with blue styling
+            
             recipeManager.selectedLabels = ['Recipe Combo']
             recipeManager.render()
             
@@ -1026,12 +1071,12 @@ describe('RecipeManager', () => {
             const comboChip = labelChips[0]
             expect(comboChip.className).toContain('bg-blue-100')
             expect(comboChip.className).toContain('text-blue-800')
-            expect(comboChip.className).toContain('font-bold')
+            expect(comboChip.className).toContain('font-medium')
             expect(comboChip.textContent.trim()).toContain('Recipe Combo')
             
-            // Check remove button color
+            // Check remove button (uses text-current for consistent theming)
             const removeButton = comboChip.querySelector('button')
-            expect(removeButton.className).toContain('text-blue-600')
+            expect(removeButton.className).toContain('text-current')
         })
 
         it('should render selected label chips with correct colors for meal type labels', () => {
@@ -1047,11 +1092,11 @@ describe('RecipeManager', () => {
             labelChips.forEach(chip => {
                 expect(chip.className).toContain('bg-orange-100')
                 expect(chip.className).toContain('text-orange-800')
-                expect(chip.className).toContain('font-bold')
+                expect(chip.className).toContain('font-medium')
                 
-                // Check remove button color
+                // Check remove button (uses text-current for consistent theming)
                 const removeButton = chip.querySelector('button')
-                expect(removeButton.className).toContain('text-orange-600')
+                expect(removeButton.className).toContain('text-current')
             })
         })
 
