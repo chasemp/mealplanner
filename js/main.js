@@ -337,6 +337,7 @@ class MealPlannerApp {
 
         // Get pending recipes from localStorage
         const pendingRecipes = JSON.parse(localStorage.getItem('mealplanner_pending_recipes') || '[]');
+        console.log(`🔄 updatePendingRecipes: Found ${pendingRecipes.length} pending recipes`);
         
         if (pendingRecipes.length === 0) {
             pendingList.innerHTML = '';
@@ -382,6 +383,8 @@ class MealPlannerApp {
         
         const totalCount = pendingRecipes.length;
         const comboCount = pendingRecipes.filter(recipe => recipe.recipe_type === 'combo').length;
+        
+        console.log(`🔄 updatePlanningQueueInfo: Updating counters - ${totalCount} total, ${comboCount} combos`);
         
         // Update info bar counts (if they exist - they may have been removed)
         if (queueCountEl) {
@@ -2152,6 +2155,9 @@ class MealPlannerApp {
                 
                 // Clear the pending recipes queue since they've been scheduled
                 localStorage.removeItem('mealplanner_pending_recipes');
+                
+                // Force immediate UI update with empty array to ensure counters reset
+                this.updatePlanningQueueInfo([]);
                 this.updatePendingRecipes();
                 
                 // Show success notification with stats
