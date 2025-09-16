@@ -432,15 +432,40 @@ class MealPlannerApp {
             });
         });
 
-        // Clear all pending recipes button
+        // Clear all pending recipes button with safety toggle integration
         const clearAllBtn = document.getElementById('clear-pending-recipes');
         if (clearAllBtn) {
-            clearAllBtn.addEventListener('click', () => {
-                if (confirm('Are you sure you want to clear all recipes from the planning queue?')) {
-                    localStorage.removeItem('mealplanner_pending_recipes');
-                    this.updatePendingRecipes();
-                }
-            });
+            const clearCallback = () => {
+                localStorage.removeItem('mealplanner_pending_recipes');
+                this.updatePendingRecipes();
+            };
+            
+            // Use settings manager for clear with safety toggles, with fallback to simple confirm
+            const settingsManager = window.mealPlannerSettings || window.settingsManager;
+            if (settingsManager && settingsManager.createClearFiltersHandler) {
+                // Create a mock manager instance for the safety system
+                const mockManager = {
+                    hasActiveFilters: () => {
+                        // Check if there are any pending recipes to clear
+                        const pendingRecipes = JSON.parse(localStorage.getItem('mealplanner_pending_recipes') || '[]');
+                        return pendingRecipes.length > 0;
+                    }
+                };
+                
+                const clearHandler = settingsManager.createClearFiltersHandler(
+                    clearCallback, 
+                    '#clear-pending-recipes', 
+                    mockManager
+                );
+                clearAllBtn.addEventListener('click', clearHandler);
+            } else {
+                // Fallback to simple confirm dialog if settings manager not available
+                clearAllBtn.addEventListener('click', () => {
+                    if (confirm('Are you sure you want to clear all recipes from the planning queue?')) {
+                        clearCallback();
+                    }
+                });
+            }
         }
     }
 
