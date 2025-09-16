@@ -6,23 +6,11 @@ const dom = new JSDOM(`
     <!DOCTYPE html>
     <html>
     <body>
-        <div id="breakfast-tab" class="tab-content">
-            <button id="auto-plan-breakfast">Auto Plan</button>
-            <button id="clear-plan-breakfast">Clear</button>
-            <div id="breakfast-itinerary"></div>
-            <div id="breakfast-calendar"></div>
-        </div>
-        <div id="lunch-tab" class="tab-content">
-            <button id="auto-plan-lunch">Auto Plan</button>
-            <button id="clear-plan-lunch">Clear</button>
-            <div id="lunch-itinerary"></div>
-            <div id="lunch-calendar"></div>
-        </div>
-        <div id="dinner-tab" class="tab-content">
+        <div id="plan-tab" class="tab-content">
             <button id="auto-plan-plan">Auto Plan</button>
             <button id="clear-plan-plan">Clear</button>
-            <div id="dinner-itinerary"></div>
-            <div id="dinner-calendar"></div>
+            <div id="plan-itinerary"></div>
+            <div id="plan-calendar"></div>
         </div>
     </body>
     </html>
@@ -196,46 +184,26 @@ describe('Meal Planning Controls', () => {
         });
 
         it('should attach event listeners to Auto Plan buttons', () => {
-            const breakfastBtn = document.getElementById('auto-plan-breakfast');
-            const lunchBtn = document.getElementById('auto-plan-lunch');
-            const dinnerBtn = document.getElementById('auto-plan-plan');
+            const planBtn = document.getElementById('auto-plan-plan');
             
-            expect(breakfastBtn).toBeTruthy();
-            expect(lunchBtn).toBeTruthy();
-            expect(dinnerBtn).toBeTruthy();
+            expect(planBtn).toBeTruthy();
             
             // Check that clicking triggers the handler (we'll test the handler separately)
             const handleAutoPlanSpy = vi.spyOn(app, 'handleAutoPlan');
             
-            breakfastBtn.click();
-            expect(handleAutoPlanSpy).toHaveBeenCalledWith('breakfast');
-            
-            lunchBtn.click();
-            expect(handleAutoPlanSpy).toHaveBeenCalledWith('lunch');
-            
-            dinnerBtn.click();
+            planBtn.click();
             expect(handleAutoPlanSpy).toHaveBeenCalledWith('plan');
         });
 
         it('should attach event listeners to Clear Plan buttons', () => {
-            const breakfastBtn = document.getElementById('clear-plan-breakfast');
-            const lunchBtn = document.getElementById('clear-plan-lunch');
-            const dinnerBtn = document.getElementById('clear-plan-plan');
+            const planBtn = document.getElementById('clear-plan-plan');
             
-            expect(breakfastBtn).toBeTruthy();
-            expect(lunchBtn).toBeTruthy();
-            expect(dinnerBtn).toBeTruthy();
+            expect(planBtn).toBeTruthy();
             
             // Check that clicking triggers the handler
             const handleClearPlanSpy = vi.spyOn(app, 'handleClearPlan');
             
-            breakfastBtn.click();
-            expect(handleClearPlanSpy).toHaveBeenCalledWith('breakfast');
-            
-            lunchBtn.click();
-            expect(handleClearPlanSpy).toHaveBeenCalledWith('lunch');
-            
-            dinnerBtn.click();
+            planBtn.click();
             expect(handleClearPlanSpy).toHaveBeenCalledWith('plan');
         });
     });
