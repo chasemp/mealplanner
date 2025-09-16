@@ -380,16 +380,18 @@ class MealPlannerApp {
         const comboCountEl = document.getElementById('combo-count');
         const planningQueueCountEl = document.getElementById('planning-queue-count');
         
-        if (!queueCountEl || !comboCountEl) return;
-        
         const totalCount = pendingRecipes.length;
         const comboCount = pendingRecipes.filter(recipe => recipe.recipe_type === 'combo').length;
         
-        // Update info bar counts
-        queueCountEl.innerHTML = `<strong>${totalCount}</strong> recipe${totalCount !== 1 ? 's' : ''} queued`;
-        comboCountEl.innerHTML = `<strong>${comboCount}</strong> combo${comboCount !== 1 ? 's' : ''}`;
+        // Update info bar counts (if they exist - they may have been removed)
+        if (queueCountEl) {
+            queueCountEl.innerHTML = `<strong>${totalCount}</strong> recipe${totalCount !== 1 ? 's' : ''} queued`;
+        }
+        if (comboCountEl) {
+            comboCountEl.innerHTML = `<strong>${comboCount}</strong> combo${comboCount !== 1 ? 's' : ''}`;
+        }
         
-        // Update Planning Queue header count
+        // Update Planning Queue header count (this is the main counter we care about)
         if (planningQueueCountEl) {
             planningQueueCountEl.textContent = `(${totalCount})`;
         }
