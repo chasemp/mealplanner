@@ -59,9 +59,10 @@ class GroceryListManager {
     async loadScheduledMeals() {
         console.log('📱 Grocery List Manager loading scheduled meals from authoritative data source...');
         
-        // Load from the main scheduledMeals data source
+        // SHOPPING LIST SYNC FIX: Load from menuScheduledMeals (committed schedule) instead of legacy scheduledMeals
+        // The grocery list should be based on the committed meals in the Menu tab, not the legacy storage
         if (window.mealPlannerSettings) {
-            const allMeals = window.mealPlannerSettings.getAuthoritativeData('scheduledMeals') || [];
+            const allMeals = window.mealPlannerSettings.getAuthoritativeData('menuScheduledMeals') || [];
             
             // Filter meals by date range if endDate is set (from unified selector)
             if (this.endDate) {
@@ -212,10 +213,12 @@ class GroceryListManager {
         // Store the end date for filtering
         this.endDate = new Date(endDate);
         
-        // Reload data and re-render
+        // Reload data and automatically generate grocery list
         this.loadScheduledMeals().then(() => {
-            this.render();
-            console.log('🛒 Grocery list updated with new date range');
+            // AUTO-GENERATE GROCERY LIST: Generate grocery list from scheduled meals when date range updates
+            // This ensures the grocery list is always up-to-date with the current Menu tab meals
+            this.generateFromScheduledMeals();
+            console.log('🛒 Grocery list updated with new date range and auto-generated from scheduled meals');
         });
     }
 
