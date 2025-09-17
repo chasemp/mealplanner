@@ -2026,6 +2026,9 @@ class MealPlannerApp {
         // Initialize update menu button
         this.initializeUpdateMenuButton();
         
+        // Initialize delta view toggle
+        this.initializeDeltaViewToggle();
+        
         console.log('✅ Meal planning controls initialized');
     }
 
@@ -2223,20 +2226,60 @@ class MealPlannerApp {
     }
 
     initializeMealTypeControls(mealType) {
-        // Auto Plan button
-        const autoPlanBtn = document.getElementById(`auto-plan-${mealType}`);
-        console.log(`🔍 Looking for auto-plan-${mealType} button:`, !!autoPlanBtn);
-        if (autoPlanBtn && !autoPlanBtn.hasAttribute('data-listener-attached')) {
-            console.log(`✅ Adding click listener to auto-plan-${mealType} button`);
-            autoPlanBtn.addEventListener('click', () => {
-                console.log(`🖱️ Auto Plan button clicked for ${mealType}`);
-                this.handleAutoPlan(mealType);
+        // Plan Dropdown (only for plan mealType)
+        if (mealType === 'plan') {
+            const planDropdownBtn = document.getElementById('plan-dropdown-btn');
+            const planDropdownMenu = document.getElementById('plan-dropdown-menu');
+            const shuffleOption = document.getElementById('plan-shuffle-option');
+            const orderedOption = document.getElementById('plan-ordered-option');
+            
+            console.log(`🔍 Looking for plan dropdown elements:`, {
+                dropdownBtn: !!planDropdownBtn,
+                dropdownMenu: !!planDropdownMenu,
+                shuffleOption: !!shuffleOption,
+                orderedOption: !!orderedOption
             });
-            autoPlanBtn.setAttribute('data-listener-attached', 'true');
-        } else if (autoPlanBtn) {
-            console.log(`⚠️ auto-plan-${mealType} button already has listener attached`);
-        } else {
-            console.error(`❌ auto-plan-${mealType} button not found in DOM`);
+            
+            if (planDropdownBtn && planDropdownMenu && shuffleOption && orderedOption) {
+                // Toggle dropdown visibility
+                planDropdownBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isHidden = planDropdownMenu.classList.contains('hidden');
+                    if (isHidden) {
+                        planDropdownMenu.classList.remove('hidden');
+                    } else {
+                        planDropdownMenu.classList.add('hidden');
+                    }
+                    console.log(`🔽 Plan dropdown toggled: ${isHidden ? 'opened' : 'closed'}`);
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!planDropdownBtn.contains(e.target) && !planDropdownMenu.contains(e.target)) {
+                        planDropdownMenu.classList.add('hidden');
+                    }
+                });
+                
+                // Shuffle option (current auto plan functionality)
+                shuffleOption.addEventListener('click', () => {
+                    console.log(`🎲 Shuffle option selected for ${mealType}`);
+                    planDropdownMenu.classList.add('hidden');
+                    this.enableMealSpacingSlider(); // Enable spacing for shuffle mode
+                    this.handleAutoPlan(mealType); // Use existing auto plan logic
+                });
+                
+                // Ordered option (new functionality)
+                orderedOption.addEventListener('click', () => {
+                    console.log(`📋 Ordered option selected for ${mealType}`);
+                    planDropdownMenu.classList.add('hidden');
+                    this.disableMealSpacingSlider(); // Disable spacing for ordered mode
+                    this.handleOrderedPlan(mealType); // New method for ordered planning
+                });
+                
+                console.log(`✅ Plan dropdown initialized for ${mealType}`);
+            } else {
+                console.error(`❌ Plan dropdown elements not found in DOM`);
+            }
         }
 
         // Clear Planned button (only for plan mealType)
@@ -2381,6 +2424,226 @@ class MealPlannerApp {
         }
     }
 
+    handleOrderedPlan(mealType) {
+        console.log(`📋 Ordered planning ${mealType} meals...`);
+        
+        // Get the itinerary view for the current meal type
+        const itineraryView = this.itineraryViews[mealType];
+        if (!itineraryView) {
+            this.showNotification('Itinerary view not available. Please refresh the page.', 'error');
+            return;
+        }
+
+        // Get pending recipes from planning queue
+        const pendingRecipes = JSON.parse(localStorage.getItem('mealplanner_pending_recipes') || '[]');
+        console.log(`📋 Found ${pendingRecipes.length} recipes in planning queue for ordered planning`);
+
+        if (pendingRecipes.length === 0) {
+            this.showNotification('Please add meals to the planning queue first before using ordered planning.', 'warning');
+            return;
+        }
+
+        try {
+            // Get auto-plan control values for constraints
+            const mealsPerWeek = parseInt(document.getElementById('meals-per-week')?.value || '7');
+            const mealSpacing = parseInt(document.getElementById('meal-spacing')?.value || '3');
+            
+            // Get date range from itinerary view
+            const weeksToShow = itineraryView.weeksToShow || 4;
+            const startDate = new Date(itineraryView.startDate || new Date());
+            
+            // Calculate end date
+            const endDate = new Date(startDate);
+            endDate.setDate(endDate.getDate() + (weeksToShow * 7) - 1);
+            
+            console.log(`📅 Ordered plan scope: ${weeksToShow} weeks from ${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}`);
+            console.log(`🎛️ Ordered plan settings: ${mealsPerWeek} meals/week, ${mealSpacing} days spacing`);
+            
+            // Generate ordered meal plan
+            const orderedMeals = this.generateOrderedMealPlan(pendingRecipes, startDate, weeksToShow, mealsPerWeek, mealSpacing, mealType);
+            
+            if (orderedMeals.length === 0) {
+                this.showNotification('Could not generate ordered meal plan. Please check your settings and try again.', 'error');
+                return;
+            }
+
+            // Apply the generated plan
+            this.applyGeneratedPlan(mealType, orderedMeals);
+            
+            // Clear the planning queue after successful planning
+            localStorage.setItem('mealplanner_pending_recipes', JSON.stringify([]));
+            this.updatePendingRecipes();
+            
+            // Show success notification
+            this.showNotification(`✅ Successfully scheduled ${orderedMeals.length} meals in order from planning queue!`, 'success');
+            
+            console.log(`✅ Ordered planning completed: ${orderedMeals.length} meals scheduled`);
+            
+        } catch (error) {
+            console.error('❌ Error during ordered planning:', error);
+            this.showNotification('An error occurred during ordered planning. Please try again.', 'error');
+        }
+    }
+
+    generateOrderedMealPlan(recipes, startDate, weeks, mealsPerWeek, mealSpacing, mealType) {
+        console.log(`🔄 Generating ordered meal plan with ${recipes.length} recipes`);
+        
+        const meals = [];
+        let recipeIndex = 0;
+        let lastScheduledDates = new Map(); // Track last scheduled date for each recipe
+        
+        // Calculate total days to plan
+        const totalDays = weeks * 7;
+        const currentDate = new Date(startDate);
+        
+        // Calculate how many meals we need to schedule per week
+        const totalMealsNeeded = weeks * mealsPerWeek;
+        let mealsScheduled = 0;
+        
+        console.log(`📊 Planning ${totalMealsNeeded} meals over ${weeks} weeks (${mealsPerWeek} per week)`);
+        
+        // Iterate through each day and schedule meals according to constraints
+        for (let day = 0; day < totalDays && mealsScheduled < totalMealsNeeded; day++) {
+            const dateStr = currentDate.toISOString().split('T')[0];
+            
+            // Check if we should schedule a meal on this day based on meals per week
+            const weekNumber = Math.floor(day / 7);
+            const dayOfWeek = day % 7;
+            const mealsThisWeek = Math.floor(mealsPerWeek);
+            const extraMeal = (mealsPerWeek % 1) > 0 && dayOfWeek < (mealsPerWeek % 1) * 7;
+            
+            // Distribute meals evenly throughout the week
+            const shouldScheduleMeal = dayOfWeek < mealsThisWeek || extraMeal;
+            
+            if (shouldScheduleMeal) {
+                // Get the next recipe in order
+                const recipe = recipes[recipeIndex % recipes.length];
+                
+                // Check meal spacing constraint
+                const lastScheduled = lastScheduledDates.get(recipe.id);
+                const daysSinceLastScheduled = lastScheduled ? 
+                    Math.floor((currentDate - lastScheduled) / (1000 * 60 * 60 * 24)) : 
+                    mealSpacing + 1; // If never scheduled, allow it
+                
+                if (daysSinceLastScheduled >= mealSpacing) {
+                    // Schedule this recipe
+                    const meal = {
+                        recipe_id: recipe.id, // Use the actual recipe ID from the pending recipes
+                        date: dateStr,
+                        meal_type: mealType,
+                        notes: recipe.title,
+                        recipe_title: recipe.title,
+                        servings: recipe.servings || 4,
+                        items: recipe.items || []
+                    };
+                    
+                    meals.push(meal);
+                    lastScheduledDates.set(recipe.id, new Date(currentDate));
+                    mealsScheduled++;
+                    
+                    console.log(`📅 Scheduled "${recipe.title}" for ${dateStr} (meal ${mealsScheduled}/${totalMealsNeeded})`);
+                    
+                    // Move to next recipe in order
+                    recipeIndex++;
+                } else {
+                    console.log(`⏳ Skipping "${recipe.title}" on ${dateStr} - only ${daysSinceLastScheduled} days since last scheduled (need ${mealSpacing})`);
+                    
+                    // Try next recipe in order if spacing constraint not met
+                    let foundAlternative = false;
+                    for (let i = 1; i < recipes.length; i++) {
+                        const altRecipe = recipes[(recipeIndex + i) % recipes.length];
+                        const altLastScheduled = lastScheduledDates.get(altRecipe.id);
+                        const altDaysSince = altLastScheduled ? 
+                            Math.floor((currentDate - altLastScheduled) / (1000 * 60 * 60 * 24)) : 
+                            mealSpacing + 1;
+                        
+                        if (altDaysSince >= mealSpacing) {
+                            const meal = {
+                                recipe_id: altRecipe.id, // Use the actual recipe ID from the pending recipes
+                                date: dateStr,
+                                meal_type: mealType,
+                                notes: altRecipe.title,
+                                recipe_title: altRecipe.title,
+                                servings: altRecipe.servings || 4,
+                                items: altRecipe.items || []
+                            };
+                            
+                            meals.push(meal);
+                            lastScheduledDates.set(altRecipe.id, new Date(currentDate));
+                            mealsScheduled++;
+                            foundAlternative = true;
+                            
+                            console.log(`📅 Scheduled alternative "${altRecipe.title}" for ${dateStr} (meal ${mealsScheduled}/${totalMealsNeeded})`);
+                            break;
+                        }
+                    }
+                    
+                    if (!foundAlternative) {
+                        console.log(`⚠️ No suitable recipe found for ${dateStr} due to spacing constraints`);
+                    }
+                }
+            }
+            
+            // Move to next day
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+        
+        console.log(`✅ Generated ${meals.length} ordered meals`);
+        return meals;
+    }
+
+    enableMealSpacingSlider() {
+        const mealSpacingSlider = document.getElementById('meal-spacing');
+        const mealSpacingValue = document.getElementById('meal-spacing-value');
+        const mealSpacingContainer = mealSpacingSlider?.closest('.bg-gray-50');
+        const mealSpacingLabel = document.querySelector('label[for="meal-spacing"]');
+        
+        if (mealSpacingSlider && mealSpacingValue && mealSpacingContainer && mealSpacingLabel) {
+            // Enable the slider
+            mealSpacingSlider.disabled = false;
+            mealSpacingSlider.style.opacity = '1';
+            mealSpacingSlider.style.cursor = 'pointer';
+            
+            // Enable the value display
+            mealSpacingValue.style.opacity = '1';
+            
+            // Reset container styling
+            mealSpacingContainer.style.opacity = '1';
+            
+            // Reset label styling
+            mealSpacingLabel.style.opacity = '1';
+            mealSpacingLabel.title = '';
+            
+            console.log('✅ Meal spacing slider enabled for shuffle mode');
+        }
+    }
+
+    disableMealSpacingSlider() {
+        const mealSpacingSlider = document.getElementById('meal-spacing');
+        const mealSpacingValue = document.getElementById('meal-spacing-value');
+        const mealSpacingContainer = mealSpacingSlider?.closest('.bg-gray-50');
+        const mealSpacingLabel = document.querySelector('label[for="meal-spacing"]');
+        
+        if (mealSpacingSlider && mealSpacingValue && mealSpacingContainer && mealSpacingLabel) {
+            // Disable the slider
+            mealSpacingSlider.disabled = true;
+            mealSpacingSlider.style.opacity = '0.5';
+            mealSpacingSlider.style.cursor = 'not-allowed';
+            
+            // Grey out the value display
+            mealSpacingValue.style.opacity = '0.5';
+            
+            // Grey out the entire container
+            mealSpacingContainer.style.opacity = '0.6';
+            
+            // Grey out the label and add tooltip
+            mealSpacingLabel.style.opacity = '0.6';
+            mealSpacingLabel.title = 'Disabled in ordered planning mode - meals are scheduled in exact queue order';
+            
+            console.log('🚫 Meal spacing slider disabled for ordered mode');
+        }
+    }
+
     async handleUpdateMenu() {
         console.log('🍽️ Updating Menu from Plan tab scheduled meals...');
         
@@ -2467,6 +2730,160 @@ class MealPlannerApp {
         }
     }
 
+    initializeDeltaViewToggle() {
+        const diffBtn = document.getElementById('delta-view-diff');
+        const setBtn = document.getElementById('delta-view-set');
+        
+        if (diffBtn && setBtn) {
+            diffBtn.addEventListener('click', () => this.toggleDeltaView('diff'));
+            setBtn.addEventListener('click', () => this.toggleDeltaView('set'));
+        }
+    }
+    
+    toggleDeltaView(viewType) {
+        const diffBtn = document.getElementById('delta-view-diff');
+        const setBtn = document.getElementById('delta-view-set');
+        const diffView = document.getElementById('delta-diff-view');
+        const setView = document.getElementById('delta-set-view');
+        const mealCounts = document.getElementById('delta-meal-counts');
+        
+        if (viewType === 'diff') {
+            // Show diff view
+            if (diffView) diffView.classList.remove('hidden');
+            if (setView) setView.classList.add('hidden');
+            // Keep meal counts visible and opaque
+            if (mealCounts) {
+                mealCounts.classList.remove('opacity-0');
+                mealCounts.classList.add('opacity-100');
+            }
+            
+            // Update button styles
+            if (diffBtn) {
+                diffBtn.className = 'px-3 py-1 text-xs font-medium rounded-md transition-colors bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm';
+            }
+            if (setBtn) {
+                setBtn.className = 'px-3 py-1 text-xs font-medium rounded-md transition-colors text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white';
+            }
+        } else {
+            // Show set view
+            if (diffView) diffView.classList.add('hidden');
+            if (setView) setView.classList.remove('hidden');
+            // Keep meal counts space but make content invisible
+            if (mealCounts) {
+                mealCounts.classList.remove('opacity-100');
+                mealCounts.classList.add('opacity-0');
+            }
+            
+            // Update button styles
+            if (setBtn) {
+                setBtn.className = 'px-3 py-1 text-xs font-medium rounded-md transition-colors bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm';
+            }
+            if (diffBtn) {
+                diffBtn.className = 'px-3 py-1 text-xs font-medium rounded-md transition-colors text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white';
+            }
+            
+            // Update the set view content
+            this.updateDeltaSetView();
+        }
+    }
+    
+    updateDeltaSetView() {
+        console.log('📊 Updating Set view (final outcome)...');
+        
+        try {
+            if (!window.mealPlannerSettings) {
+                console.warn('Settings manager not available for set view');
+                return;
+            }
+            
+            // Get the date range from the plan itinerary view
+            const planItineraryView = this.itineraryViews?.plan;
+            let startDate, endDate;
+            
+            if (planItineraryView && planItineraryView.startDate && planItineraryView.weeksToShow) {
+                startDate = new Date(planItineraryView.startDate);
+                endDate = new Date(startDate);
+                endDate.setDate(endDate.getDate() + (planItineraryView.weeksToShow * 7) - 1);
+            }
+            
+            // Get the final planned meals (what the menu will become)
+            const allPlanMeals = window.mealPlannerSettings.getAuthoritativeData('planScheduledMeals') || [];
+            let planMeals = allPlanMeals;
+            
+            if (startDate && endDate) {
+                const filterByDateRange = (meals) => meals.filter(meal => {
+                    if (!meal.date) return false;
+                    const mealDate = new Date(meal.date);
+                    const mealDateNormalized = new Date(mealDate.getFullYear(), mealDate.getMonth(), mealDate.getDate());
+                    const startDateNormalized = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+                    const endDateNormalized = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+                    return mealDateNormalized >= startDateNormalized && mealDateNormalized <= endDateNormalized;
+                });
+                
+                planMeals = filterByDateRange(allPlanMeals);
+            }
+            
+            // Group meals by date
+            const mealsByDate = {};
+            planMeals.forEach(meal => {
+                const dateKey = meal.date;
+                if (!mealsByDate[dateKey]) {
+                    mealsByDate[dateKey] = [];
+                }
+                mealsByDate[dateKey].push(meal);
+            });
+            
+            // Sort dates
+            const sortedDates = Object.keys(mealsByDate).sort();
+            
+            // Populate the set view
+            const setMealSchedule = document.getElementById('set-meal-schedule');
+            if (setMealSchedule) {
+                if (sortedDates.length === 0) {
+                    setMealSchedule.innerHTML = `
+                        <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+                            <svg class="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <p class="font-medium">No meals planned</p>
+                            <p class="text-sm">Add recipes to your planning queue and use the Plan button to schedule meals.</p>
+                        </div>
+                    `;
+                } else {
+                    setMealSchedule.innerHTML = sortedDates.map(dateKey => {
+                        const meals = mealsByDate[dateKey];
+                        const date = new Date(dateKey);
+                        const formattedDate = date.toLocaleDateString('en-US', { 
+                            weekday: 'long',
+                            month: 'short', 
+                            day: 'numeric' 
+                        });
+                        
+                        return `
+                            <div class="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h5 class="font-semibold text-gray-900 dark:text-white">${formattedDate}</h5>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">${meals.length} meal${meals.length !== 1 ? 's' : ''}</span>
+                                </div>
+                                <div class="space-y-2">
+                                    ${meals.map(meal => `
+                                        <div class="flex items-center justify-between py-2 px-3 bg-gray-50 dark:bg-gray-700 rounded-md">
+                                            <span class="font-medium text-gray-900 dark:text-white">${meal.recipe_name}</span>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400 capitalize">${meal.meal_type || 'meal'}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            }
+            
+        } catch (error) {
+            console.error('Error updating set view:', error);
+        }
+    }
+
     updatePlanMenuDelta() {
         console.log('📊 Updating Plan vs Menu delta comparison...');
         
@@ -2523,10 +2940,16 @@ class MealPlannerApp {
             
             console.log(`📊 Delta (scoped): ${mealsToAdd.length} to add, ${mealsToRemove.length} to remove`);
             
-            // Update UI
+            // Update UI with improved visual design
             const deltaContainer = document.getElementById('plan-menu-delta');
+            const deltaMealCounts = document.getElementById('delta-meal-counts');
+            const deltaAdditions = document.getElementById('delta-additions');
+            const deltaRemovals = document.getElementById('delta-removals');
+            const additionsCount = document.getElementById('additions-count');
+            const removalsCount = document.getElementById('removals-count');
+            const additionsList = document.getElementById('additions-list');
+            const removalsList = document.getElementById('removals-list');
             const deltaSummary = document.getElementById('delta-summary');
-            const deltaDetails = document.getElementById('delta-details');
             
             if (mealsToAdd.length === 0 && mealsToRemove.length === 0) {
                 // No changes - hide delta
@@ -2535,22 +2958,71 @@ class MealPlannerApp {
                 // Show changes
                 if (deltaContainer) deltaContainer.classList.remove('hidden');
                 
-                if (deltaSummary) {
-                    let summary = [];
-                    if (mealsToAdd.length > 0) summary.push(`${mealsToAdd.length} meals to be added`);
-                    if (mealsToRemove.length > 0) summary.push(`${mealsToRemove.length} meals to be removed`);
-                    deltaSummary.textContent = summary.join(', ');
+                // Update meal count context (before/after)
+                if (deltaMealCounts) {
+                    const currentMenuCount = menuMeals.length;
+                    const plannedCount = planMeals.length;
+                    deltaMealCounts.innerHTML = `<span class="font-medium">${currentMenuCount}</span> → <span class="font-medium">${plannedCount}</span> meals`;
                 }
                 
-                if (deltaDetails) {
-                    let details = [];
+                // Handle additions (green)
+                if (mealsToAdd.length > 0) {
+                    if (deltaAdditions) deltaAdditions.classList.remove('hidden');
+                    if (additionsCount) additionsCount.textContent = mealsToAdd.length;
+                    if (additionsList) {
+                        additionsList.innerHTML = mealsToAdd.map(meal => {
+                            const date = new Date(meal.date).toLocaleDateString('en-US', { 
+                                month: 'short', 
+                                day: 'numeric' 
+                            });
+                            return `<div class="flex justify-between items-center">
+                                <span class="font-medium">${meal.recipe_name}</span>
+                                <span class="text-xs opacity-75">${date}</span>
+                            </div>`;
+                        }).join('');
+                    }
+                } else {
+                    if (deltaAdditions) deltaAdditions.classList.add('hidden');
+                }
+                
+                // Handle removals (red)
+                if (mealsToRemove.length > 0) {
+                    if (deltaRemovals) deltaRemovals.classList.remove('hidden');
+                    if (removalsCount) removalsCount.textContent = mealsToRemove.length;
+                    if (removalsList) {
+                        removalsList.innerHTML = mealsToRemove.map(meal => {
+                            const date = new Date(meal.date).toLocaleDateString('en-US', { 
+                                month: 'short', 
+                                day: 'numeric' 
+                            });
+                            return `<div class="flex justify-between items-center">
+                                <span class="font-medium">${meal.recipe_name}</span>
+                                <span class="text-xs opacity-75">${date}</span>
+                            </div>`;
+                        }).join('');
+                    }
+                } else {
+                    if (deltaRemovals) deltaRemovals.classList.add('hidden');
+                }
+                
+                // Update summary
+                if (deltaSummary) {
+                    let summaryParts = [];
                     if (mealsToAdd.length > 0) {
-                        details.push(`Adding: ${mealsToAdd.map(m => `${m.recipe_name} on ${m.date}`).join(', ')}`);
+                        summaryParts.push(`<span class="text-green-600 dark:text-green-400 font-medium">+${mealsToAdd.length}</span>`);
                     }
                     if (mealsToRemove.length > 0) {
-                        details.push(`Removing: ${mealsToRemove.map(m => `${m.recipe_name} on ${m.date}`).join(', ')}`);
+                        summaryParts.push(`<span class="text-red-600 dark:text-red-400 font-medium">-${mealsToRemove.length}</span>`);
                     }
-                    deltaDetails.textContent = details.join(' | ');
+                    
+                    const netChange = mealsToAdd.length - mealsToRemove.length;
+                    const netChangeText = netChange > 0 ? 
+                        `<span class="text-green-600 dark:text-green-400">+${netChange} net</span>` :
+                        netChange < 0 ? 
+                        `<span class="text-red-600 dark:text-red-400">${netChange} net</span>` :
+                        `<span class="text-gray-500">No net change</span>`;
+                    
+                    deltaSummary.innerHTML = `${summaryParts.join(' ')} (${netChangeText})`;
                 }
             }
             
@@ -2645,7 +3117,7 @@ class MealPlannerApp {
             const newScheduledMeals = meals.map((meal, index) => {
                 // Handle meal rotation engine format where recipe is nested in meal.recipe
                 const recipe = meal.recipe || meal;
-                const recipeId = recipe.id || meal.recipe_id || meal.id;
+                const recipeId = meal.recipe_id || recipe.id || meal.id;
                 const recipeName = recipe.title || recipe.name || meal.recipe_name || meal.name || meal.title;
                 
                 const scheduledMeal = {
