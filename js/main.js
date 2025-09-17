@@ -1848,15 +1848,6 @@ class MealPlannerApp {
             });
             console.log('✅ Update Menu button initialized');
         }
-
-        // Clear Plan Changes button
-        const clearPlanChangesBtn = document.getElementById('clear-plan-changes-btn');
-        if (clearPlanChangesBtn) {
-            clearPlanChangesBtn.addEventListener('click', () => {
-                this.handleClearPlanChanges();
-            });
-            console.log('✅ Clear Plan Changes button initialized');
-        }
         
         // Initialize Menu tab week selector
         this.initializeMenuWeekSelector();
@@ -2059,12 +2050,46 @@ class MealPlannerApp {
             console.error(`❌ auto-plan-${mealType} button not found in DOM`);
         }
 
-        // Clear Plan button
-        const clearPlanBtn = document.getElementById(`clear-plan-${mealType}`);
-        if (clearPlanBtn) {
-            clearPlanBtn.addEventListener('click', () => {
-                this.handleClearPlan(mealType);
-            });
+        // Clear Planned button (only for plan mealType)
+        if (mealType === 'plan') {
+            const clearPlannedBtn = document.getElementById('clear-planned-btn');
+            if (clearPlannedBtn) {
+                const clearCallback = () => {
+                    this.handleClearPlanChanges();
+                };
+                
+                // Use settings manager for clear with safety toggles
+                const settingsManager = window.mealPlannerSettings || window.settingsManager;
+                if (settingsManager && settingsManager.createClearFiltersHandler) {
+                    // Create a mock manager instance for the safety system
+                    const mockManager = {
+                        hasActiveFilters: () => {
+                            // Check if there are plan changes to clear
+                            const planMeals = settingsManager.getAuthoritativeData('planScheduledMeals') || [];
+                            const menuMeals = settingsManager.getAuthoritativeData('menuScheduledMeals') || [];
+                            return planMeals.length > 0 || menuMeals.length > 0;
+                        }
+                    };
+                    
+                    const clearHandler = settingsManager.createClearFiltersHandler(
+                        clearCallback, 
+                        '#clear-planned-btn', 
+                        mockManager,
+                        'Are you sure you want to clear all planned changes? This will revert to your committed menu.'
+                    );
+                    clearPlannedBtn.addEventListener('click', clearHandler);
+                } else {
+                    // Fallback to simple confirm dialog if settings manager not available
+                    clearPlannedBtn.addEventListener('click', () => {
+                        if (confirm('Are you sure you want to clear all planned changes? This will revert to your committed menu.')) {
+                            clearCallback();
+                        }
+                    });
+                }
+                console.log('✅ Clear Planned button initialized');
+            } else {
+                console.warn('⚠️ Clear Planned button not found');
+            }
         }
     }
 
