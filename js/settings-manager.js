@@ -634,11 +634,13 @@ class SettingsManager {
         console.log('🗑️ COMPREHENSIVE CLEAR: Clearing ALL data while preserving demo population flag...');
         
         try {
-            // Clear ALL MealPlanner localStorage keys EXCEPT the demo_data_populated flag
+            // Clear ALL MealPlanner localStorage keys EXCEPT the demo_data_populated flag and system labels
             const allKeys = Object.keys(localStorage);
             const mealPlannerKeys = allKeys.filter(key => 
                 key.startsWith('mealplanner_') && 
-                key !== 'mealplanner_demo_data_populated' // PRESERVE this flag
+                key !== 'mealplanner_demo_data_populated' && // PRESERVE this flag
+                key !== 'mealplanner_system_labels' && // PRESERVE system labels
+                key !== 'mealplanner_user_labels' // PRESERVE user labels (they're not system data but user-created labels should persist)
             );
             
             mealPlannerKeys.forEach(key => {
