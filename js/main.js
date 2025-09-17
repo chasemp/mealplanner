@@ -350,13 +350,32 @@ class MealPlannerApp {
 
         emptyState.classList.add('hidden');
         
-        // Render pending recipes
-        pendingList.innerHTML = pendingRecipes.map(pending => {
+        // Render pending recipes with drag and drop support
+        pendingList.innerHTML = pendingRecipes.map((pending, index) => {
             const addedDate = new Date(pending.addedAt).toLocaleDateString();
             const isCombo = pending.recipe_type === 'combo';
             
             return `
-                <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors ${isCombo ? 'border-l-4 border-purple-500' : ''}" data-recipe-id="${pending.id}">
+                <div class="planning-queue-item flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors ${isCombo ? 'border-l-4 border-purple-500' : ''}" 
+                     data-recipe-id="${pending.id}" 
+                     data-queue-index="${index}"
+                     draggable="true"
+                     ondragstart="window.app.handlePlanningQueueDragStart(event)"
+                     ondragover="window.app.handlePlanningQueueDragOver(event)"
+                     ondrop="window.app.handlePlanningQueueDrop(event)"
+                     ondragend="window.app.handlePlanningQueueDragEnd(event)"
+                     ontouchstart="window.app.handlePlanningQueueTouchStart(event)"
+                     ontouchmove="window.app.handlePlanningQueueTouchMove(event)"
+                     ontouchend="window.app.handlePlanningQueueTouchEnd(event)">
+                    
+                    <!-- Drag Handle -->
+                    <div class="drag-handle text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-grab active:cursor-grabbing mr-3 touch-manipulation" 
+                         title="Drag to reorder">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
+                        </svg>
+                    </div>
+                    
                     <div class="flex items-center space-x-3 flex-1 view-pending-recipe" data-recipe-id="${pending.id}">
                         <div>
                             <h4 class="font-medium text-gray-900 dark:text-white">${pending.title}</h4>
@@ -374,6 +393,176 @@ class MealPlannerApp {
 
         // Attach event listeners for pending recipe actions
         this.attachPendingRecipeListeners();
+    }
+
+    // Planning Queue Drag and Drop Handlers
+    handlePlanningQueueDragStart(event) {
+        const item = event.target.closest('.planning-queue-item');
+        if (!item) return;
+
+        const recipeId = item.dataset.recipeId;
+        const queueIndex = parseInt(item.dataset.queueIndex);
+        
+        // Store drag data
+        event.dataTransfer.setData('text/plain', JSON.stringify({
+            type: 'planning-queue-item',
+            recipeId: recipeId,
+            sourceIndex: queueIndex
+        }));
+        
+        // Visual feedback
+        item.classList.add('opacity-50');
+        
+        console.log(`🎯 Started dragging planning queue item: ${recipeId} from index ${queueIndex}`);
+    }
+
+    handlePlanningQueueDragOver(event) {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+        
+        const item = event.target.closest('.planning-queue-item');
+        if (!item) return;
+        
+        // Add visual feedback for drop zone
+        item.classList.add('border-2', 'border-blue-400', 'border-dashed');
+    }
+
+    handlePlanningQueueDrop(event) {
+        event.preventDefault();
+        
+        const targetItem = event.target.closest('.planning-queue-item');
+        if (!targetItem) return;
+        
+        // Remove visual feedback
+        targetItem.classList.remove('border-2', 'border-blue-400', 'border-dashed');
+        
+        try {
+            const dragData = JSON.parse(event.dataTransfer.getData('text/plain'));
+            
+            if (dragData.type !== 'planning-queue-item') return;
+            
+            const sourceIndex = dragData.sourceIndex;
+            const targetIndex = parseInt(targetItem.dataset.queueIndex);
+            
+            if (sourceIndex === targetIndex) return;
+            
+            console.log(`🎯 Dropping planning queue item from index ${sourceIndex} to ${targetIndex}`);
+            
+            this.reorderPlanningQueue(sourceIndex, targetIndex);
+            
+        } catch (error) {
+            console.error('Error handling planning queue drop:', error);
+        }
+    }
+
+    handlePlanningQueueDragEnd(event) {
+        const item = event.target.closest('.planning-queue-item');
+        if (!item) return;
+        
+        // Remove visual feedback
+        item.classList.remove('opacity-50');
+        
+        // Remove drag over effects from all items
+        document.querySelectorAll('.planning-queue-item').forEach(item => {
+            item.classList.remove('border-2', 'border-blue-400', 'border-dashed');
+        });
+        
+        console.log('🎯 Planning queue drag ended');
+    }
+
+    // Touch support for mobile drag and drop
+    handlePlanningQueueTouchStart(event) {
+        const item = event.target.closest('.planning-queue-item');
+        if (!item) return;
+        
+        this.touchDragData = {
+            item: item,
+            startY: event.touches[0].clientY,
+            recipeId: item.dataset.recipeId,
+            sourceIndex: parseInt(item.dataset.queueIndex)
+        };
+        
+        // Visual feedback
+        item.classList.add('opacity-75', 'scale-105', 'z-10', 'shadow-lg');
+        
+        console.log(`📱 Touch drag started for planning queue item: ${this.touchDragData.recipeId}`);
+    }
+
+    handlePlanningQueueTouchMove(event) {
+        if (!this.touchDragData) return;
+        
+        event.preventDefault();
+        
+        const touch = event.touches[0];
+        const currentY = touch.clientY;
+        
+        // Find the item under the touch point
+        const elementBelow = document.elementFromPoint(touch.clientX, currentY);
+        const targetItem = elementBelow?.closest('.planning-queue-item');
+        
+        // Remove previous hover effects
+        document.querySelectorAll('.planning-queue-item').forEach(item => {
+            item.classList.remove('border-2', 'border-blue-400', 'border-dashed');
+        });
+        
+        // Add hover effect to target
+        if (targetItem && targetItem !== this.touchDragData.item) {
+            targetItem.classList.add('border-2', 'border-blue-400', 'border-dashed');
+        }
+    }
+
+    handlePlanningQueueTouchEnd(event) {
+        if (!this.touchDragData) return;
+        
+        const touch = event.changedTouches[0];
+        const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+        const targetItem = elementBelow?.closest('.planning-queue-item');
+        
+        // Remove visual feedback
+        this.touchDragData.item.classList.remove('opacity-75', 'scale-105', 'z-10', 'shadow-lg');
+        document.querySelectorAll('.planning-queue-item').forEach(item => {
+            item.classList.remove('border-2', 'border-blue-400', 'border-dashed');
+        });
+        
+        // Perform reorder if valid target
+        if (targetItem && targetItem !== this.touchDragData.item) {
+            const sourceIndex = this.touchDragData.sourceIndex;
+            const targetIndex = parseInt(targetItem.dataset.queueIndex);
+            
+            console.log(`📱 Touch drop: moving from index ${sourceIndex} to ${targetIndex}`);
+            this.reorderPlanningQueue(sourceIndex, targetIndex);
+        }
+        
+        this.touchDragData = null;
+        console.log('📱 Touch drag ended');
+    }
+
+    // Reorder the planning queue items
+    reorderPlanningQueue(sourceIndex, targetIndex) {
+        const pendingRecipes = JSON.parse(localStorage.getItem('mealplanner_pending_recipes') || '[]');
+        
+        if (sourceIndex < 0 || sourceIndex >= pendingRecipes.length || 
+            targetIndex < 0 || targetIndex >= pendingRecipes.length) {
+            console.error('Invalid reorder indices:', sourceIndex, targetIndex);
+            return;
+        }
+        
+        // Remove item from source position
+        const [movedItem] = pendingRecipes.splice(sourceIndex, 1);
+        
+        // Insert at target position
+        pendingRecipes.splice(targetIndex, 0, movedItem);
+        
+        // Save reordered list
+        localStorage.setItem('mealplanner_pending_recipes', JSON.stringify(pendingRecipes));
+        
+        // Update the display
+        this.updatePendingRecipes();
+        
+        console.log(`✅ Reordered planning queue: moved item from ${sourceIndex} to ${targetIndex}`);
+        
+        // Show feedback
+        this.showNotification('Planning queue reordered', 'success');
     }
 
     updatePlanningQueueInfo(pendingRecipes) {
