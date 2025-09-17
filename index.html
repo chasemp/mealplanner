@@ -297,9 +297,18 @@
                             </div>
                         </div>
 
-                        <!-- Auto Plan Button -->
-                        <div class="mb-6 text-center">
-                            <button id="auto-plan-plan" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg text-sm font-medium flex items-center space-x-2 mx-auto">
+                        <!-- Planning Action Buttons -->
+                        <div class="mb-6 flex justify-between items-center space-x-4">
+                            <!-- Clear Planned Button (Left) -->
+                            <button id="clear-planned-btn" class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg text-sm font-medium flex items-center space-x-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                                <span>Clear Planned</span>
+                            </button>
+                            
+                            <!-- Auto Plan Button (Right) -->
+                            <button id="auto-plan-plan" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg text-sm font-medium flex items-center space-x-2">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
                                 </svg>
@@ -347,18 +356,12 @@
                     </div>
 
                     <!-- Plan vs Menu Action Buttons -->
-                    <div class="mt-8 text-center space-x-4">
+                    <div class="mt-8 text-center">
                         <button id="update-menu-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg text-sm font-medium inline-flex items-center space-x-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                             </svg>
                             <span>Update Menu</span>
-                        </button>
-                        <button id="clear-plan-changes-btn" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg text-sm font-medium inline-flex items-center space-x-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                            </svg>
-                            <span>Clear Plan Changes</span>
                         </button>
                     </div>
                 </div>
