@@ -82,8 +82,17 @@ class RecipeManager {
     render() {
         this.container.innerHTML = `
             <div class="recipe-manager">
-                <!-- Header with Add Buttons -->
-                <div class="flex justify-end items-center mb-4">
+                <!-- Header with Labels and Add Buttons -->
+                <div class="flex justify-between items-center mb-4">
+                    <!-- Left side: Labels button -->
+                    <button id="manage-labels-btn" class="flex items-center gap-2 px-4 py-2 rounded-md border-2 border-blue-400 dark:border-blue-500 bg-blue-50 dark:bg-blue-900 hover:bg-blue-100 dark:hover:bg-blue-800 transition-colors shadow-sm text-blue-700 dark:text-blue-200" title="Manage Labels">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                        </svg>
+                        <span class="font-medium">Labels</span>
+                    </button>
+                    
+                    <!-- Right side: Add buttons -->
                     <div class="flex gap-4">
                         <button id="add-recipe-btn" class="flex items-center gap-2 px-4 py-2 rounded-md border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors shadow-sm" title="Add Recipe">
                             <svg class="w-4 h-4 text-gray-700 dark:text-gray-300 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1120,6 +1129,542 @@ class RecipeManager {
                 this.showRecipeForm(null, true); // Pass true for isCombo
             });
         }
+
+        // Manage labels button
+        const manageLabelsBtn = this.container.querySelector('#manage-labels-btn');
+        if (manageLabelsBtn) {
+            manageLabelsBtn.addEventListener('click', () => {
+                this.showLabelManagement();
+            });
+        }
+    }
+
+    showLabelManagement() {
+        console.log('🏷️ Opening label management interface...');
+        
+        // Create full-page overlay for label management
+        const overlay = document.createElement('div');
+        overlay.id = 'label-management-overlay';
+        overlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+        
+        overlay.innerHTML = this.generateLabelManagementHTML();
+        document.body.appendChild(overlay);
+        
+        // Attach event listeners for label management
+        this.attachLabelManagementListeners();
+        
+        // Load and display existing labels
+        this.loadLabelsForManagement();
+    }
+
+    generateLabelManagementHTML() {
+        return `
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+                <!-- Header -->
+                <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Label Management</h2>
+                        <p class="text-gray-600 dark:text-gray-400 mt-1">Create, edit, and manage recipe labels</p>
+                    </div>
+                    <button id="close-label-management" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
+                        <svg class="w-6 h-6 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- Content -->
+                <div class="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+                    <!-- Create New Label Section -->
+                    <div class="mb-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Create New Label</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Label Name</label>
+                                <input type="text" id="new-label-name" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white" placeholder="Enter label name...">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Label Type</label>
+                                <select id="new-label-type" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                                    <option value="ingredient_type">Ingredient Type</option>
+                                    <option value="meal_type">Meal Type</option>
+                                    <option value="recipe_combo">Recipe Combo</option>
+                                    <option value="custom">Custom</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Color</label>
+                                <div class="flex gap-2">
+                                    <input type="color" id="new-label-color" class="w-12 h-10 border border-gray-300 dark:border-gray-600 rounded cursor-pointer" value="#3B82F6">
+                                    <input type="text" id="new-label-color-text" class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white" value="#3B82F6" placeholder="#3B82F6">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex justify-end">
+                            <button id="create-label-btn" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors">
+                                Create Label
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- User Labels Section -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">User Labels</h3>
+                        <div id="user-labels-list" class="space-y-2">
+                            <!-- User labels will be populated here -->
+                        </div>
+                    </div>
+                    
+                    <!-- System Labels Section -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">System Labels</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">These labels are automatically managed by the system and cannot be edited or deleted.</p>
+                        <div id="system-labels-list" class="space-y-2">
+                            <!-- System labels will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // System Labels Management
+    // These labels are persistent and not affected by data clearing
+    getSystemLabels() {
+        // Get system labels from localStorage (initialized at app startup)
+        const systemLabels = JSON.parse(localStorage.getItem('mealplanner_system_labels') || '[]');
+        
+        // Fallback to default system labels if not found (shouldn't happen in normal operation)
+        if (systemLabels.length === 0) {
+            console.warn('⚠️ System labels not found in localStorage, using fallback defaults');
+            return [
+                {
+                    id: 'system_recipe_combo',
+                    name: 'recipe_combo',
+                    type: 'recipe_combo',
+                    color: '#F59E0B',
+                    description: 'Automatically applied to combo recipes that combine multiple individual recipes',
+                    isSystem: true
+                },
+                {
+                    id: 'system_favorites',
+                    name: 'favorites',
+                    type: 'custom',
+                    color: '#EAB308',
+                    description: 'Automatically applied to recipes marked as favorites',
+                    isSystem: true
+                },
+                {
+                    id: 'system_breakfast',
+                    name: 'breakfast',
+                    type: 'meal_type',
+                    color: '#F97316',
+                    description: 'Recipes suitable for breakfast meals',
+                    isSystem: true
+                },
+                {
+                    id: 'system_lunch',
+                    name: 'lunch',
+                    type: 'meal_type',
+                    color: '#10B981',
+                    description: 'Recipes suitable for lunch meals',
+                    isSystem: true
+                },
+                {
+                    id: 'system_dinner',
+                    name: 'dinner',
+                    type: 'meal_type',
+                    color: '#8B5CF6',
+                    description: 'Recipes suitable for dinner meals',
+                    isSystem: true
+                }
+            ];
+        }
+        
+        return systemLabels;
+    }
+
+
+    // Get all labels (system + user)
+    getAllLabels() {
+        const systemLabels = this.getSystemLabels();
+        const userLabels = JSON.parse(localStorage.getItem('mealplanner_user_labels') || '[]');
+        return [...systemLabels, ...userLabels];
+    }
+
+    // Get user labels only
+    getUserLabels() {
+        return JSON.parse(localStorage.getItem('mealplanner_user_labels') || '[]');
+    }
+
+    // Save user labels
+    saveUserLabels(labels) {
+        localStorage.setItem('mealplanner_user_labels', JSON.stringify(labels));
+        console.log('🏷️ User labels saved:', labels.length);
+    }
+
+    // Add a new user label
+    addUserLabel(label) {
+        const userLabels = this.getUserLabels();
+        const newLabel = {
+            id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            name: label.name,
+            type: label.type,
+            color: label.color,
+            isSystem: false,
+            created_at: new Date().toISOString()
+        };
+        userLabels.push(newLabel);
+        this.saveUserLabels(userLabels);
+        return newLabel;
+    }
+
+    // Update a user label
+    updateUserLabel(labelId, updates) {
+        const userLabels = this.getUserLabels();
+        const index = userLabels.findIndex(label => label.id === labelId);
+        if (index !== -1) {
+            userLabels[index] = { ...userLabels[index], ...updates, updated_at: new Date().toISOString() };
+            this.saveUserLabels(userLabels);
+            return userLabels[index];
+        }
+        return null;
+    }
+
+    // Delete a user label
+    deleteUserLabel(labelId) {
+        const userLabels = this.getUserLabels();
+        const filteredLabels = userLabels.filter(label => label.id !== labelId);
+        this.saveUserLabels(filteredLabels);
+        return filteredLabels.length < userLabels.length;
+    }
+
+    attachLabelManagementListeners() {
+        // Close button
+        const closeBtn = document.getElementById('close-label-management');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                this.closeLabelManagement();
+            });
+        }
+
+        // Click outside to close
+        const overlay = document.getElementById('label-management-overlay');
+        if (overlay) {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    this.closeLabelManagement();
+                }
+            });
+        }
+
+        // Color picker sync
+        const colorPicker = document.getElementById('new-label-color');
+        const colorText = document.getElementById('new-label-color-text');
+        
+        if (colorPicker && colorText) {
+            colorPicker.addEventListener('input', (e) => {
+                colorText.value = e.target.value;
+            });
+            
+            colorText.addEventListener('input', (e) => {
+                if (/^#[0-9A-F]{6}$/i.test(e.target.value)) {
+                    colorPicker.value = e.target.value;
+                }
+            });
+        }
+
+        // Create label button
+        const createBtn = document.getElementById('create-label-btn');
+        if (createBtn) {
+            createBtn.addEventListener('click', () => {
+                this.createNewLabel();
+            });
+        }
+
+        // Enter key to create label
+        const nameInput = document.getElementById('new-label-name');
+        if (nameInput) {
+            nameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    this.createNewLabel();
+                }
+            });
+        }
+    }
+
+    closeLabelManagement() {
+        const overlay = document.getElementById('label-management-overlay');
+        if (overlay) {
+            overlay.remove();
+        }
+    }
+
+    loadLabelsForManagement() {
+        // Load system labels
+        this.displaySystemLabels();
+        
+        // Load user labels
+        this.displayUserLabels();
+    }
+
+    displaySystemLabels() {
+        const container = document.getElementById('system-labels-list');
+        if (!container) return;
+
+        const systemLabels = this.getSystemLabels();
+        
+        container.innerHTML = systemLabels.map(label => `
+            <div class="flex items-center justify-between p-4 bg-gray-100 dark:bg-gray-600 rounded-lg">
+                <div class="flex items-center gap-3">
+                    <div class="w-6 h-6 rounded-full border-2 border-gray-300" style="background-color: ${label.color}"></div>
+                    <div>
+                        <div class="font-medium text-gray-900 dark:text-white">${label.name}</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">${label.type} • ${label.description}</div>
+                    </div>
+                </div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium">SYSTEM</div>
+            </div>
+        `).join('');
+    }
+
+    displayUserLabels() {
+        const container = document.getElementById('user-labels-list');
+        if (!container) return;
+
+        const userLabels = this.getUserLabels();
+        
+        if (userLabels.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+                    <svg class="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                    </svg>
+                    <p>No user labels created yet</p>
+                    <p class="text-sm">Create your first label above to get started</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = userLabels.map(label => `
+            <div class="flex items-center justify-between p-4 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg">
+                <div class="flex items-center gap-3">
+                    <div class="w-6 h-6 rounded-full border-2 border-gray-300" style="background-color: ${label.color}"></div>
+                    <div>
+                        <div class="font-medium text-gray-900 dark:text-white">${label.name}</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">${label.type}</div>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="window.recipeManager.editLabel('${label.name}')" class="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900 rounded transition-colors" title="Edit">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                    </button>
+                    <button onclick="window.recipeManager.deleteLabel('${label.name}')" class="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900 rounded transition-colors" title="Delete">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    getUserLabels() {
+        try {
+            const labels = JSON.parse(localStorage.getItem('mealplanner_user_labels') || '[]');
+            return labels.filter(label => !label.isSystem);
+        } catch (error) {
+            console.error('Error loading user labels:', error);
+            return [];
+        }
+    }
+
+    saveUserLabels(labels) {
+        try {
+            localStorage.setItem('mealplanner_user_labels', JSON.stringify(labels));
+            return true;
+        } catch (error) {
+            console.error('Error saving user labels:', error);
+            return false;
+        }
+    }
+
+    createNewLabel() {
+        const nameInput = document.getElementById('new-label-name');
+        const typeSelect = document.getElementById('new-label-type');
+        const colorInput = document.getElementById('new-label-color');
+
+        if (!nameInput || !typeSelect || !colorInput) return;
+
+        const name = nameInput.value.trim();
+        const type = typeSelect.value;
+        const color = colorInput.value;
+
+        // Validation
+        if (!name) {
+            alert('Please enter a label name');
+            nameInput.focus();
+            return;
+        }
+
+        // Check for duplicates (including system labels)
+        const existingLabels = [...this.getUserLabels(), ...this.getSystemLabels()];
+        if (existingLabels.some(label => label.name.toLowerCase() === name.toLowerCase())) {
+            alert('A label with this name already exists');
+            nameInput.focus();
+            return;
+        }
+
+        // Create new label
+        const newLabel = {
+            name: name,
+            type: type,
+            color: color,
+            isSystem: false,
+            createdAt: new Date().toISOString()
+        };
+
+        // Save to storage
+        const userLabels = this.getUserLabels();
+        userLabels.push(newLabel);
+        
+        if (this.saveUserLabels(userLabels)) {
+            // Clear form
+            nameInput.value = '';
+            typeSelect.value = 'ingredient_type';
+            colorInput.value = '#3B82F6';
+            document.getElementById('new-label-color-text').value = '#3B82F6';
+            
+            // Refresh display
+            this.displayUserLabels();
+            
+            console.log('✅ Label created successfully:', newLabel);
+        } else {
+            alert('Error creating label. Please try again.');
+        }
+    }
+
+    editLabel(labelName) {
+        const userLabels = this.getUserLabels();
+        const label = userLabels.find(l => l.name === labelName);
+        
+        if (!label) return;
+
+        // Populate form with existing values
+        const nameInput = document.getElementById('new-label-name');
+        const typeSelect = document.getElementById('new-label-type');
+        const colorInput = document.getElementById('new-label-color');
+        const colorText = document.getElementById('new-label-color-text');
+
+        if (nameInput && typeSelect && colorInput && colorText) {
+            nameInput.value = label.name;
+            typeSelect.value = label.type;
+            colorInput.value = label.color;
+            colorText.value = label.color;
+
+            // Change button to update mode
+            const createBtn = document.getElementById('create-label-btn');
+            if (createBtn) {
+                createBtn.textContent = 'Update Label';
+                createBtn.onclick = () => this.updateLabel(labelName);
+            }
+        }
+    }
+
+    updateLabel(originalName) {
+        const nameInput = document.getElementById('new-label-name');
+        const typeSelect = document.getElementById('new-label-type');
+        const colorInput = document.getElementById('new-label-color');
+
+        if (!nameInput || !typeSelect || !colorInput) return;
+
+        const name = nameInput.value.trim();
+        const type = typeSelect.value;
+        const color = colorInput.value;
+
+        if (!name) {
+            alert('Please enter a label name');
+            return;
+        }
+
+        // Check for duplicates (excluding the current label)
+        const existingLabels = [...this.getUserLabels(), ...this.getSystemLabels()];
+        if (existingLabels.some(label => label.name.toLowerCase() === name.toLowerCase() && label.name !== originalName)) {
+            alert('A label with this name already exists');
+            return;
+        }
+
+        // Update label
+        const userLabels = this.getUserLabels();
+        const labelIndex = userLabels.findIndex(l => l.name === originalName);
+        
+        if (labelIndex !== -1) {
+            userLabels[labelIndex] = {
+                ...userLabels[labelIndex],
+                name: name,
+                type: type,
+                color: color,
+                updatedAt: new Date().toISOString()
+            };
+
+            if (this.saveUserLabels(userLabels)) {
+                // Reset form
+                this.resetLabelForm();
+                
+                // Refresh display
+                this.displayUserLabels();
+                
+                console.log('✅ Label updated successfully');
+            } else {
+                alert('Error updating label. Please try again.');
+            }
+        }
+    }
+
+    deleteLabel(labelName) {
+        if (!confirm(`Are you sure you want to delete the label "${labelName}"?`)) {
+            return;
+        }
+
+        const userLabels = this.getUserLabels();
+        const filteredLabels = userLabels.filter(l => l.name !== labelName);
+        
+        if (this.saveUserLabels(filteredLabels)) {
+            this.displayUserLabels();
+            console.log('✅ Label deleted successfully');
+        } else {
+            alert('Error deleting label. Please try again.');
+        }
+    }
+
+    resetLabelForm() {
+        const nameInput = document.getElementById('new-label-name');
+        const typeSelect = document.getElementById('new-label-type');
+        const colorInput = document.getElementById('new-label-color');
+        const colorText = document.getElementById('new-label-color-text');
+        const createBtn = document.getElementById('create-label-btn');
+
+        if (nameInput) nameInput.value = '';
+        if (typeSelect) typeSelect.value = 'ingredient_type';
+        if (colorInput) colorInput.value = '#3B82F6';
+        if (colorText) colorText.value = '#3B82F6';
+        if (createBtn) {
+            createBtn.textContent = 'Create Label';
+            createBtn.onclick = () => this.createNewLabel();
+        }
+    }
+
+    // Method to ensure system labels exist after data reset
+    initializeSystemLabels() {
+        const systemLabels = this.getSystemLabels();
+        const existingLabels = this.getUserLabels();
+        
+        // This method can be called after data reset to ensure system labels are available
+        // For now, system labels are defined in getSystemLabels() and don't need to be stored
+        console.log('🏷️ System labels initialized:', systemLabels.length);
     }
 
     showRecipeForm(recipe = null, isCombo = false) {

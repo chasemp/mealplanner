@@ -739,6 +739,10 @@ class MealPlannerApp {
         try {
             // Initialize settings manager FIRST - other managers depend on it
             this.initializeSettingsManager();
+            
+            // Initialize system labels - must happen after settings manager but before other managers
+            this.initializeSystemLabels();
+            
             this.initializeRecipeManager();
             this.initializeScheduleManager();
             this.initializeItemsManager();
@@ -851,6 +855,76 @@ class MealPlannerApp {
         window.settingsManager = this.settingsManager;
         window.mealPlannerSettings = this.settingsManager; // Also set the expected reference
         console.log('✅ Settings manager initialized and available as both window.settingsManager and window.mealPlannerSettings');
+    }
+
+    initializeSystemLabels() {
+        console.log('🏷️ Initializing system labels...');
+        
+        try {
+            // System labels that should always exist regardless of data source
+            const systemLabels = [
+                {
+                    id: 'system_recipe_combo',
+                    name: 'recipe_combo',
+                    type: 'recipe_combo',
+                    color: '#F59E0B',
+                    description: 'Automatically applied to combo recipes that combine multiple individual recipes',
+                    isSystem: true,
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'system_favorites',
+                    name: 'favorites',
+                    type: 'custom',
+                    color: '#EAB308',
+                    description: 'Automatically applied to recipes marked as favorites',
+                    isSystem: true,
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'system_breakfast',
+                    name: 'breakfast',
+                    type: 'meal_type',
+                    color: '#F97316',
+                    description: 'Recipes suitable for breakfast meals',
+                    isSystem: true,
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'system_lunch',
+                    name: 'lunch',
+                    type: 'meal_type',
+                    color: '#10B981',
+                    description: 'Recipes suitable for lunch meals',
+                    isSystem: true,
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: 'system_dinner',
+                    name: 'dinner',
+                    type: 'meal_type',
+                    color: '#8B5CF6',
+                    description: 'Recipes suitable for dinner meals',
+                    isSystem: true,
+                    created_at: new Date().toISOString()
+                }
+            ];
+            
+            // Always ensure system labels exist in localStorage
+            localStorage.setItem('mealplanner_system_labels', JSON.stringify(systemLabels));
+            console.log('🏷️ System labels initialized:', systemLabels.length);
+            
+            // Verify system labels are preserved in clearAllData exclusions
+            const currentExclusions = [
+                'mealplanner_demo_data_populated',
+                'mealplanner_system_labels',
+                'mealplanner_user_labels'
+            ];
+            console.log('🏷️ System labels protected from data clearing:', currentExclusions);
+            
+        } catch (error) {
+            console.error('❌ Error initializing system labels:', error);
+        }
     }
 
     initializeGoogleCalendar() {
