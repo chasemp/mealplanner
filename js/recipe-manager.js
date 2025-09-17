@@ -313,15 +313,22 @@ class RecipeManager {
             recipeGrid.offsetHeight;
             console.log('🔄 Reflow forced');
             
-            // Re-attach event listeners to the new recipe cards
-            this.attachRecipeCardListeners();
-            console.log('🔄 Event listeners reattached');
+        // Re-attach event listeners to the new recipe cards
+        this.attachRecipeCardListeners();
+        console.log('🔄 Event listeners reattached');
+        
+        // Also attach empty state listeners if no recipes
+        if (this.recipes.length === 0) {
+            this.attachEmptyStateListeners();
+        }
             
             // Update empty state visibility
             if (filteredRecipes.length > 0) {
                 emptyState.classList.add('hidden');
             } else {
                 emptyState.classList.remove('hidden');
+                // Re-attach event listener specifically for the empty state button
+                this.attachEmptyStateListeners();
             }
             
             // Update info bar content
@@ -419,6 +426,22 @@ class RecipeManager {
         const rightSide = infoBar.querySelector('.flex.items-center.space-x-3');
         if (rightSide) {
             rightSide.innerHTML = ``;
+        }
+    }
+
+    attachEmptyStateListeners() {
+        console.log('🔧 attachEmptyStateListeners called');
+        
+        // Specifically attach event listener for the "Add Your First Recipe" button
+        const addFirstRecipeBtn = this.container.querySelector('#add-first-recipe');
+        if (addFirstRecipeBtn) {
+            console.log('🔧 Found "Add Your First Recipe" button, attaching listener');
+            addFirstRecipeBtn.addEventListener('click', () => {
+                console.log('🔧 "Add Your First Recipe" button clicked');
+                this.showRecipeForm();
+            });
+        } else {
+            console.log('🔧 "Add Your First Recipe" button not found');
         }
     }
 
@@ -918,6 +941,8 @@ class RecipeManager {
     attachEventListeners() {
         console.log('🔧 attachEventListeners called');
         
+        try {
+        
         // Remove existing event listeners to prevent duplicates
         const existingFavBtn = this.container.querySelector('#favorites-filter-btn');
         if (existingFavBtn) {
@@ -1112,12 +1137,21 @@ class RecipeManager {
         console.log('🔧 About to attach recipe card listeners');
         const recipeCards = this.container.querySelectorAll('.recipe-card');
         console.log('🔧 Found recipe cards:', recipeCards.length);
-        this.attachRecipeCardListeners();
+        try {
+            this.attachRecipeCardListeners();
+            console.log('🔧 attachRecipeCardListeners completed successfully');
+        } catch (error) {
+            console.error('🔧 Error in attachRecipeCardListeners:', error);
+        }
 
         // Add recipe button
+        console.log('🔧 Continuing to Add recipe button section...');
         const addBtn = this.container.querySelector('#add-recipe-btn, #add-first-recipe');
+        console.log('🔧 Add recipe button found:', !!addBtn, addBtn?.id);
         if (addBtn) {
+            console.log('🔧 Adding click listener to add recipe button');
             addBtn.addEventListener('click', () => {
+                console.log('🔧 Add recipe button clicked!');
                 this.showRecipeForm();
             });
         }
@@ -1136,6 +1170,19 @@ class RecipeManager {
             manageLabelsBtn.addEventListener('click', () => {
                 this.showLabelManagement();
             });
+        }
+
+        // Attach empty state listeners if no recipes
+        if (this.recipes.length === 0) {
+            console.log('🔧 No recipes found, attaching empty state listeners');
+            this.attachEmptyStateListeners();
+        }
+        
+        console.log('🔧 attachEventListeners completed successfully');
+        
+        } catch (error) {
+            console.error('🔧 Error in attachEventListeners:', error);
+            console.error('🔧 Stack trace:', error.stack);
         }
     }
 
