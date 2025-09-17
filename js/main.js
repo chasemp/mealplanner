@@ -2781,10 +2781,16 @@ class MealPlannerApp {
             
             console.log(`📊 Delta (scoped): ${mealsToAdd.length} to add, ${mealsToRemove.length} to remove`);
             
-            // Update UI
+            // Update UI with improved visual design
             const deltaContainer = document.getElementById('plan-menu-delta');
+            const deltaMealCounts = document.getElementById('delta-meal-counts');
+            const deltaAdditions = document.getElementById('delta-additions');
+            const deltaRemovals = document.getElementById('delta-removals');
+            const additionsCount = document.getElementById('additions-count');
+            const removalsCount = document.getElementById('removals-count');
+            const additionsList = document.getElementById('additions-list');
+            const removalsList = document.getElementById('removals-list');
             const deltaSummary = document.getElementById('delta-summary');
-            const deltaDetails = document.getElementById('delta-details');
             
             if (mealsToAdd.length === 0 && mealsToRemove.length === 0) {
                 // No changes - hide delta
@@ -2793,22 +2799,71 @@ class MealPlannerApp {
                 // Show changes
                 if (deltaContainer) deltaContainer.classList.remove('hidden');
                 
-                if (deltaSummary) {
-                    let summary = [];
-                    if (mealsToAdd.length > 0) summary.push(`${mealsToAdd.length} meals to be added`);
-                    if (mealsToRemove.length > 0) summary.push(`${mealsToRemove.length} meals to be removed`);
-                    deltaSummary.textContent = summary.join(', ');
+                // Update meal count context (before/after)
+                if (deltaMealCounts) {
+                    const currentMenuCount = menuMeals.length;
+                    const plannedCount = planMeals.length;
+                    deltaMealCounts.innerHTML = `<span class="font-medium">${currentMenuCount}</span> → <span class="font-medium">${plannedCount}</span> meals`;
                 }
                 
-                if (deltaDetails) {
-                    let details = [];
+                // Handle additions (green)
+                if (mealsToAdd.length > 0) {
+                    if (deltaAdditions) deltaAdditions.classList.remove('hidden');
+                    if (additionsCount) additionsCount.textContent = mealsToAdd.length;
+                    if (additionsList) {
+                        additionsList.innerHTML = mealsToAdd.map(meal => {
+                            const date = new Date(meal.date).toLocaleDateString('en-US', { 
+                                month: 'short', 
+                                day: 'numeric' 
+                            });
+                            return `<div class="flex justify-between items-center">
+                                <span class="font-medium">${meal.recipe_name}</span>
+                                <span class="text-xs opacity-75">${date}</span>
+                            </div>`;
+                        }).join('');
+                    }
+                } else {
+                    if (deltaAdditions) deltaAdditions.classList.add('hidden');
+                }
+                
+                // Handle removals (red)
+                if (mealsToRemove.length > 0) {
+                    if (deltaRemovals) deltaRemovals.classList.remove('hidden');
+                    if (removalsCount) removalsCount.textContent = mealsToRemove.length;
+                    if (removalsList) {
+                        removalsList.innerHTML = mealsToRemove.map(meal => {
+                            const date = new Date(meal.date).toLocaleDateString('en-US', { 
+                                month: 'short', 
+                                day: 'numeric' 
+                            });
+                            return `<div class="flex justify-between items-center">
+                                <span class="font-medium">${meal.recipe_name}</span>
+                                <span class="text-xs opacity-75">${date}</span>
+                            </div>`;
+                        }).join('');
+                    }
+                } else {
+                    if (deltaRemovals) deltaRemovals.classList.add('hidden');
+                }
+                
+                // Update summary
+                if (deltaSummary) {
+                    let summaryParts = [];
                     if (mealsToAdd.length > 0) {
-                        details.push(`Adding: ${mealsToAdd.map(m => `${m.recipe_name} on ${m.date}`).join(', ')}`);
+                        summaryParts.push(`<span class="text-green-600 dark:text-green-400 font-medium">+${mealsToAdd.length}</span>`);
                     }
                     if (mealsToRemove.length > 0) {
-                        details.push(`Removing: ${mealsToRemove.map(m => `${m.recipe_name} on ${m.date}`).join(', ')}`);
+                        summaryParts.push(`<span class="text-red-600 dark:text-red-400 font-medium">-${mealsToRemove.length}</span>`);
                     }
-                    deltaDetails.textContent = details.join(' | ');
+                    
+                    const netChange = mealsToAdd.length - mealsToRemove.length;
+                    const netChangeText = netChange > 0 ? 
+                        `<span class="text-green-600 dark:text-green-400">+${netChange} net</span>` :
+                        netChange < 0 ? 
+                        `<span class="text-red-600 dark:text-red-400">${netChange} net</span>` :
+                        `<span class="text-gray-500">No net change</span>`;
+                    
+                    deltaSummary.innerHTML = `${summaryParts.join(' ')} (${netChangeText})`;
                 }
             }
             
