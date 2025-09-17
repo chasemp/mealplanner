@@ -210,8 +210,8 @@ class ItineraryView {
 
                 <!-- Week Selector -->
                 <div class="mb-6">
-                    <div class="flex items-center">
-                        <select id="weeks-select-${this.mealType}" class="text-sm border border-gray-300 rounded px-2 py-1 min-w-0">
+                    <div class="flex items-center justify-center">
+                        <select id="weeks-select-${this.mealType}" class="text-sm border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white min-w-0">
                             ${this.renderWeekOptions()}
                         </select>
                     </div>
