@@ -596,6 +596,13 @@ class ItineraryView {
                 this.startDate.setDate(today.getDate() - today.getDay()); // Start of current week (Sunday)
                 
                 this.render();
+                
+                // DATE RANGE SCOPING: Update delta comparison when date range changes
+                // This ensures the delta comparison reflects the new selected timeframe
+                if (this.mealType === 'plan' && window.app && window.app.updatePlanMenuDelta) {
+                    console.log(`📅 Date range changed to ${this.weeksToShow} weeks, updating delta comparison`);
+                    window.app.updatePlanMenuDelta();
+                }
             });
         }
 
@@ -605,13 +612,34 @@ class ItineraryView {
         console.log(`🗑️ Removing meal ${mealId} from ${dateStr}`);
         
         try {
-            // Get current scheduled meals from authoritative source
-            let scheduledMeals = window.mealPlannerSettings?.getAuthoritativeData('scheduledMeals') || [];
+            // PLAN VS MENU ARCHITECTURE: Use correct storage based on meal type
+            const storageKey = this.mealType === 'plan' ? 'planScheduledMeals' : 'menuScheduledMeals';
+            let scheduledMeals = window.mealPlannerSettings?.getAuthoritativeData(storageKey) || [];
+            
+            console.log(`🔍 Using storage: ${storageKey} for meal type: ${this.mealType}`);
+            console.log(`🔍 Looking for meal ID: ${mealId} (type: ${typeof mealId})`);
+            console.log(`🔍 Available meal IDs:`, scheduledMeals.map(m => ({ id: m.id, type: typeof m.id, name: m.name || m.recipe_name })));
+            
+            // DATE RANGE SCOPING: Only remove meals within the current planning timeframe
+            // This ensures consistency with delta comparison and prevents removing meals outside the selected date range
+            const targetDate = new Date(dateStr);
+            const endDate = new Date(this.startDate);
+            endDate.setDate(endDate.getDate() + (this.weeksToShow * 7) - 1);
+            
+            // Normalize dates for comparison
+            const targetDateNormalized = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+            const startDateNormalized = new Date(this.startDate.getFullYear(), this.startDate.getMonth(), this.startDate.getDate());
+            const endDateNormalized = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+            
+            console.log(`📅 Date range check: ${targetDate.toLocaleDateString()} within ${this.startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}`);
+            
+            const isInRange = targetDateNormalized >= startDateNormalized && targetDateNormalized <= endDateNormalized;
+            if (!isInRange) {
+                console.warn(`⚠️ Cannot remove meal ${mealId} - date ${dateStr} is outside current planning timeframe`);
+                return false;
+            }
             
             // Find and remove the meal (handle both string and number IDs)
-            console.log(`🔍 Looking for meal ID: ${mealId} (type: ${typeof mealId})`);
-            console.log(`🔍 Available meal IDs:`, scheduledMeals.map(m => ({ id: m.id, type: typeof m.id, name: m.name })));
-            
             const mealIndex = scheduledMeals.findIndex(meal => {
                 const match = meal.id == mealId || meal.id === parseInt(mealId) || meal.id === String(mealId);
                 console.log(`🔍 Comparing meal ${meal.id} (${typeof meal.id}) with ${mealId} (${typeof mealId}): ${match}`);
@@ -631,22 +659,26 @@ class ItineraryView {
                 scheduledMeals.splice(mealIndex, 1);
                 console.log(`🔍 After removal - scheduledMeals count: ${scheduledMeals.length}`);
                 
-                // Save back to authoritative source
+                // Save back to authoritative source using correct storage key
                 if (window.mealPlannerSettings) {
-                    window.mealPlannerSettings.saveAuthoritativeData('scheduledMeals', scheduledMeals);
-                    console.log(`💾 Saved updated scheduledMeals to authoritative source`);
+                    window.mealPlannerSettings.saveAuthoritativeData(storageKey, scheduledMeals);
+                    console.log(`💾 Saved updated ${storageKey} to authoritative source`);
                     
                     // CRITICAL CACHE SYNC: Update the schedule manager's cache immediately after saving
                     // This prevents UI refresh issues where forceRefresh() loads stale cached data
                     // instead of the updated data that was just saved to localStorage
                     if (window.scheduleManager && window.scheduleManager.scheduledMeals) {
-                        window.scheduleManager.scheduledMeals = scheduledMeals;
-                        console.log(`🔄 Updated schedule manager cache after removal with ${scheduledMeals.length} meals`);
+                        // Note: Schedule manager still uses legacy scheduledMeals for cache
+                        // Only update if we're working with legacy storage
+                        if (storageKey === 'scheduledMeals') {
+                            window.scheduleManager.scheduledMeals = scheduledMeals;
+                            console.log(`🔄 Updated schedule manager cache after removal with ${scheduledMeals.length} meals`);
+                        }
                     }
                     
                     // Verify the save worked
-                    const verifyData = window.mealPlannerSettings.getAuthoritativeData('scheduledMeals');
-                    console.log(`🔍 Verification - authoritative data now has ${verifyData.length} meals`);
+                    const verifyData = window.mealPlannerSettings.getAuthoritativeData(storageKey);
+                    console.log(`🔍 Verification - ${storageKey} now has ${verifyData.length} meals`);
                     
                     // Double-check that the removed meal is actually gone
                     const stillExists = verifyData.find(m => m.id == mealId || m.id === parseInt(mealId) || m.id === String(mealId));
@@ -919,16 +951,31 @@ class ItineraryView {
         const newMeal = {
             id: Date.now() + Math.floor(Math.random() * 1000), // Generate unique ID
             recipe_id: recipeId,
+            recipe_name: recipe.title,
             meal_type: this.mealType,
             date: dateStr,
             notes: recipe.title
         };
         
+        // SHOPPING LIST SYNC FIX: Use correct storage key based on meal type
+        // Plan tab uses planScheduledMeals (prospective), other tabs use menuScheduledMeals (committed)
+        const storageKey = this.mealType === 'plan' ? 'planScheduledMeals' : 'menuScheduledMeals';
+        console.log(`📅 Using storage key: ${storageKey} for meal type: ${this.mealType}`);
+        
         // Save to authoritative data source
         if (window.mealPlannerSettings) {
-            const currentMeals = window.mealPlannerSettings.getAuthoritativeData('scheduledMeals') || [];
+            const currentMeals = window.mealPlannerSettings.getAuthoritativeData(storageKey) || [];
             currentMeals.push(newMeal);
-            window.mealPlannerSettings.saveAuthoritativeData('scheduledMeals', currentMeals);
+            window.mealPlannerSettings.saveAuthoritativeData(storageKey, currentMeals);
+            
+            // SHOPPING LIST SYNC FIX: Update grocery list when meals added to Menu tab
+            if (storageKey === 'menuScheduledMeals' && window.groceryListManager) {
+                console.log('🛒 Triggering grocery list update after meal added to Menu');
+                // Get current Menu tab date range and update grocery list
+                if (window.app && typeof window.app.updateMenuMealsDisplay === 'function') {
+                    window.app.updateMenuMealsDisplay(); // This will trigger grocery list update
+                }
+            }
             
             // CACHE SYNC FIX: Update schedule manager cache after adding new meals
             // This prevents the UI from showing stale data when forceRefresh() is called
