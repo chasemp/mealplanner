@@ -3207,8 +3207,8 @@ class RecipeManager {
                 <div class="mb-4">
                     <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">All Items (${combinedItems.size})</h3>
                     <div class="space-y-2">
-                        ${Array.from(combinedItems.entries()).map(([ingredientId, totalQuantity]) => {
-                            const item = window.itemsManager.items.find(i => i.id === parseInt(ingredientId));
+                        ${Array.from(combinedItems.entries()).map(([itemId, totalQuantity]) => {
+                            const item = window.itemsManager.items.find(i => i.id === parseInt(itemId));
                             return `
                                 <div class="flex justify-between items-center py-1">
                                     <span class="text-gray-900 dark:text-white">${item ? item.name : 'Unknown Item'}</span>
@@ -4863,6 +4863,20 @@ class RecipeManager {
             const recipeType = formData.get('recipe_type') || 'regular';
             const isCombo = recipeType === 'combo';
 
+            // Handle labels - check if they were entered as free text or selected via dropdown
+            let labels = this.formSelectedLabels || [];
+            if (labels.length === 0) {
+                // Check if labels were entered as free text in the input field
+                const labelsInput = form.querySelector('#fullpage-recipe-labels-input');
+                if (labelsInput && labelsInput.value.trim()) {
+                    // Split by spaces and/or commas, filter out empty strings
+                    labels = labelsInput.value.trim()
+                        .split(/[\s,]+/)
+                        .filter(label => label.length > 0)
+                        .map(label => label.trim());
+                }
+            }
+
             const recipeData = {
                 title: formData.get('title').trim(),
                 description: formData.get('description').trim(),
@@ -4870,7 +4884,7 @@ class RecipeManager {
                 prep_time: parseInt(formData.get('prep_time')) || 0,
                 cook_time: parseInt(formData.get('cook_time')) || 0,
                 instructions: instructionSteps,
-                labels: this.formSelectedLabels || [],
+                labels: labels,
                 recipe_type: recipeType
             };
 
@@ -4949,9 +4963,9 @@ class RecipeManager {
                     const quantity = parseFloat(quantityInput?.value) || 0;
                     const unit = unitSelect?.value || '';
                     
-                    console.log('🥕 Processing ingredient row:', { ingredientId, quantity, unit });
+                    console.log('🥕 Processing ingredient row:', { itemId, quantity, unit });
                     
-                    if (ingredientId && quantity > 0) {
+                    if (itemId && quantity > 0) {
                         ingredients.push({
                             item_id: parseInt(itemId),
                             quantity: quantity,
