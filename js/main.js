@@ -2223,20 +2223,60 @@ class MealPlannerApp {
     }
 
     initializeMealTypeControls(mealType) {
-        // Auto Plan button
-        const autoPlanBtn = document.getElementById(`auto-plan-${mealType}`);
-        console.log(`🔍 Looking for auto-plan-${mealType} button:`, !!autoPlanBtn);
-        if (autoPlanBtn && !autoPlanBtn.hasAttribute('data-listener-attached')) {
-            console.log(`✅ Adding click listener to auto-plan-${mealType} button`);
-            autoPlanBtn.addEventListener('click', () => {
-                console.log(`🖱️ Auto Plan button clicked for ${mealType}`);
-                this.handleAutoPlan(mealType);
+        // Plan Dropdown (only for plan mealType)
+        if (mealType === 'plan') {
+            const planDropdownBtn = document.getElementById('plan-dropdown-btn');
+            const planDropdownMenu = document.getElementById('plan-dropdown-menu');
+            const shuffleOption = document.getElementById('plan-shuffle-option');
+            const orderedOption = document.getElementById('plan-ordered-option');
+            
+            console.log(`🔍 Looking for plan dropdown elements:`, {
+                dropdownBtn: !!planDropdownBtn,
+                dropdownMenu: !!planDropdownMenu,
+                shuffleOption: !!shuffleOption,
+                orderedOption: !!orderedOption
             });
-            autoPlanBtn.setAttribute('data-listener-attached', 'true');
-        } else if (autoPlanBtn) {
-            console.log(`⚠️ auto-plan-${mealType} button already has listener attached`);
-        } else {
-            console.error(`❌ auto-plan-${mealType} button not found in DOM`);
+            
+            if (planDropdownBtn && planDropdownMenu && shuffleOption && orderedOption) {
+                // Toggle dropdown visibility
+                planDropdownBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isHidden = planDropdownMenu.classList.contains('hidden');
+                    if (isHidden) {
+                        planDropdownMenu.classList.remove('hidden');
+                    } else {
+                        planDropdownMenu.classList.add('hidden');
+                    }
+                    console.log(`🔽 Plan dropdown toggled: ${isHidden ? 'opened' : 'closed'}`);
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!planDropdownBtn.contains(e.target) && !planDropdownMenu.contains(e.target)) {
+                        planDropdownMenu.classList.add('hidden');
+                    }
+                });
+                
+                // Shuffle option (current auto plan functionality)
+                shuffleOption.addEventListener('click', () => {
+                    console.log(`🎲 Shuffle option selected for ${mealType}`);
+                    planDropdownMenu.classList.add('hidden');
+                    this.enableMealSpacingSlider(); // Enable spacing for shuffle mode
+                    this.handleAutoPlan(mealType); // Use existing auto plan logic
+                });
+                
+                // Ordered option (new functionality)
+                orderedOption.addEventListener('click', () => {
+                    console.log(`📋 Ordered option selected for ${mealType}`);
+                    planDropdownMenu.classList.add('hidden');
+                    this.disableMealSpacingSlider(); // Disable spacing for ordered mode
+                    this.handleOrderedPlan(mealType); // New method for ordered planning
+                });
+                
+                console.log(`✅ Plan dropdown initialized for ${mealType}`);
+            } else {
+                console.error(`❌ Plan dropdown elements not found in DOM`);
+            }
         }
 
         // Clear Planned button (only for plan mealType)
@@ -2378,6 +2418,224 @@ class MealPlannerApp {
         } catch (error) {
             console.error('Error generating meal plan:', error);
             this.showNotification('Error generating meal plan. Please try again.', 'error');
+        }
+    }
+
+    handleOrderedPlan(mealType) {
+        console.log(`📋 Ordered planning ${mealType} meals...`);
+        
+        // Get the itinerary view for the current meal type
+        const itineraryView = this.itineraryViews[mealType];
+        if (!itineraryView) {
+            this.showNotification('Itinerary view not available. Please refresh the page.', 'error');
+            return;
+        }
+
+        // Get pending recipes from planning queue
+        const pendingRecipes = this.settingsManager.getAuthoritativeData('pendingRecipes') || [];
+        console.log(`📋 Found ${pendingRecipes.length} recipes in planning queue for ordered planning`);
+
+        if (pendingRecipes.length === 0) {
+            this.showNotification('Please add meals to the planning queue first before using ordered planning.', 'warning');
+            return;
+        }
+
+        try {
+            // Get auto-plan control values for constraints
+            const mealsPerWeek = parseInt(document.getElementById('meals-per-week')?.value || '7');
+            const mealSpacing = parseInt(document.getElementById('meal-spacing')?.value || '3');
+            
+            // Get date range from itinerary view
+            const weeksToShow = itineraryView.weeksToShow || 4;
+            const startDate = new Date(itineraryView.startDate || new Date());
+            
+            // Calculate end date
+            const endDate = new Date(startDate);
+            endDate.setDate(endDate.getDate() + (weeksToShow * 7) - 1);
+            
+            console.log(`📅 Ordered plan scope: ${weeksToShow} weeks from ${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}`);
+            console.log(`🎛️ Ordered plan settings: ${mealsPerWeek} meals/week, ${mealSpacing} days spacing`);
+            
+            // Generate ordered meal plan
+            const orderedMeals = this.generateOrderedMealPlan(pendingRecipes, startDate, weeksToShow, mealsPerWeek, mealSpacing, mealType);
+            
+            if (orderedMeals.length === 0) {
+                this.showNotification('Could not generate ordered meal plan. Please check your settings and try again.', 'error');
+                return;
+            }
+
+            // Apply the generated plan
+            this.applyGeneratedPlan(mealType, orderedMeals);
+            
+            // Clear the planning queue after successful planning
+            this.settingsManager.saveAuthoritativeData('pendingRecipes', []);
+            this.updatePendingRecipes();
+            
+            // Show success notification
+            this.showNotification(`✅ Successfully scheduled ${orderedMeals.length} meals in order from planning queue!`, 'success');
+            
+            console.log(`✅ Ordered planning completed: ${orderedMeals.length} meals scheduled`);
+            
+        } catch (error) {
+            console.error('❌ Error during ordered planning:', error);
+            this.showNotification('An error occurred during ordered planning. Please try again.', 'error');
+        }
+    }
+
+    generateOrderedMealPlan(recipes, startDate, weeks, mealsPerWeek, mealSpacing, mealType) {
+        console.log(`🔄 Generating ordered meal plan with ${recipes.length} recipes`);
+        
+        const meals = [];
+        let recipeIndex = 0;
+        let lastScheduledDates = new Map(); // Track last scheduled date for each recipe
+        
+        // Calculate total days to plan
+        const totalDays = weeks * 7;
+        const currentDate = new Date(startDate);
+        
+        // Calculate how many meals we need to schedule per week
+        const totalMealsNeeded = weeks * mealsPerWeek;
+        let mealsScheduled = 0;
+        
+        console.log(`📊 Planning ${totalMealsNeeded} meals over ${weeks} weeks (${mealsPerWeek} per week)`);
+        
+        // Iterate through each day and schedule meals according to constraints
+        for (let day = 0; day < totalDays && mealsScheduled < totalMealsNeeded; day++) {
+            const dateStr = currentDate.toISOString().split('T')[0];
+            
+            // Check if we should schedule a meal on this day based on meals per week
+            const weekNumber = Math.floor(day / 7);
+            const dayOfWeek = day % 7;
+            const mealsThisWeek = Math.floor(mealsPerWeek);
+            const extraMeal = (mealsPerWeek % 1) > 0 && dayOfWeek < (mealsPerWeek % 1) * 7;
+            
+            // Distribute meals evenly throughout the week
+            const shouldScheduleMeal = dayOfWeek < mealsThisWeek || extraMeal;
+            
+            if (shouldScheduleMeal) {
+                // Get the next recipe in order
+                const recipe = recipes[recipeIndex % recipes.length];
+                
+                // Check meal spacing constraint
+                const lastScheduled = lastScheduledDates.get(recipe.id);
+                const daysSinceLastScheduled = lastScheduled ? 
+                    Math.floor((currentDate - lastScheduled) / (1000 * 60 * 60 * 24)) : 
+                    mealSpacing + 1; // If never scheduled, allow it
+                
+                if (daysSinceLastScheduled >= mealSpacing) {
+                    // Schedule this recipe
+                    const meal = {
+                        id: Date.now() + Math.random(), // Generate unique ID
+                        recipe_id: recipe.id,
+                        date: dateStr,
+                        meal_type: mealType,
+                        notes: recipe.title,
+                        recipe_title: recipe.title
+                    };
+                    
+                    meals.push(meal);
+                    lastScheduledDates.set(recipe.id, new Date(currentDate));
+                    mealsScheduled++;
+                    
+                    console.log(`📅 Scheduled "${recipe.title}" for ${dateStr} (meal ${mealsScheduled}/${totalMealsNeeded})`);
+                    
+                    // Move to next recipe in order
+                    recipeIndex++;
+                } else {
+                    console.log(`⏳ Skipping "${recipe.title}" on ${dateStr} - only ${daysSinceLastScheduled} days since last scheduled (need ${mealSpacing})`);
+                    
+                    // Try next recipe in order if spacing constraint not met
+                    let foundAlternative = false;
+                    for (let i = 1; i < recipes.length; i++) {
+                        const altRecipe = recipes[(recipeIndex + i) % recipes.length];
+                        const altLastScheduled = lastScheduledDates.get(altRecipe.id);
+                        const altDaysSince = altLastScheduled ? 
+                            Math.floor((currentDate - altLastScheduled) / (1000 * 60 * 60 * 24)) : 
+                            mealSpacing + 1;
+                        
+                        if (altDaysSince >= mealSpacing) {
+                            const meal = {
+                                id: Date.now() + Math.random(),
+                                recipe_id: altRecipe.id,
+                                date: dateStr,
+                                meal_type: mealType,
+                                notes: altRecipe.title,
+                                recipe_title: altRecipe.title
+                            };
+                            
+                            meals.push(meal);
+                            lastScheduledDates.set(altRecipe.id, new Date(currentDate));
+                            mealsScheduled++;
+                            foundAlternative = true;
+                            
+                            console.log(`📅 Scheduled alternative "${altRecipe.title}" for ${dateStr} (meal ${mealsScheduled}/${totalMealsNeeded})`);
+                            break;
+                        }
+                    }
+                    
+                    if (!foundAlternative) {
+                        console.log(`⚠️ No suitable recipe found for ${dateStr} due to spacing constraints`);
+                    }
+                }
+            }
+            
+            // Move to next day
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+        
+        console.log(`✅ Generated ${meals.length} ordered meals`);
+        return meals;
+    }
+
+    enableMealSpacingSlider() {
+        const mealSpacingSlider = document.getElementById('meal-spacing');
+        const mealSpacingValue = document.getElementById('meal-spacing-value');
+        const mealSpacingContainer = mealSpacingSlider?.closest('.bg-gray-50');
+        const mealSpacingLabel = document.querySelector('label[for="meal-spacing"]');
+        
+        if (mealSpacingSlider && mealSpacingValue && mealSpacingContainer && mealSpacingLabel) {
+            // Enable the slider
+            mealSpacingSlider.disabled = false;
+            mealSpacingSlider.style.opacity = '1';
+            mealSpacingSlider.style.cursor = 'pointer';
+            
+            // Enable the value display
+            mealSpacingValue.style.opacity = '1';
+            
+            // Reset container styling
+            mealSpacingContainer.style.opacity = '1';
+            
+            // Reset label styling
+            mealSpacingLabel.style.opacity = '1';
+            mealSpacingLabel.title = '';
+            
+            console.log('✅ Meal spacing slider enabled for shuffle mode');
+        }
+    }
+
+    disableMealSpacingSlider() {
+        const mealSpacingSlider = document.getElementById('meal-spacing');
+        const mealSpacingValue = document.getElementById('meal-spacing-value');
+        const mealSpacingContainer = mealSpacingSlider?.closest('.bg-gray-50');
+        const mealSpacingLabel = document.querySelector('label[for="meal-spacing"]');
+        
+        if (mealSpacingSlider && mealSpacingValue && mealSpacingContainer && mealSpacingLabel) {
+            // Disable the slider
+            mealSpacingSlider.disabled = true;
+            mealSpacingSlider.style.opacity = '0.5';
+            mealSpacingSlider.style.cursor = 'not-allowed';
+            
+            // Grey out the value display
+            mealSpacingValue.style.opacity = '0.5';
+            
+            // Grey out the entire container
+            mealSpacingContainer.style.opacity = '0.6';
+            
+            // Grey out the label and add tooltip
+            mealSpacingLabel.style.opacity = '0.6';
+            mealSpacingLabel.title = 'Disabled in ordered planning mode - meals are scheduled in exact queue order';
+            
+            console.log('🚫 Meal spacing slider disabled for ordered mode');
         }
     }
 
