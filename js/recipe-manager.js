@@ -1164,10 +1164,16 @@ class RecipeManager {
             });
         }
 
-        // Manage labels button
+        // Manage labels button - remove existing listeners first
         const manageLabelsBtn = this.container.querySelector('#manage-labels-btn');
         if (manageLabelsBtn) {
-            manageLabelsBtn.addEventListener('click', () => {
+            // Clone and replace to remove all existing event listeners
+            const newManageLabelsBtn = manageLabelsBtn.cloneNode(true);
+            manageLabelsBtn.parentNode.replaceChild(newManageLabelsBtn, manageLabelsBtn);
+            
+            // Add fresh event listener
+            newManageLabelsBtn.addEventListener('click', () => {
+                console.log('🏷️ Labels button clicked - single event listener');
                 this.showLabelManagement();
             });
         }
@@ -1189,13 +1195,21 @@ class RecipeManager {
     showLabelManagement() {
         console.log('🏷️ Opening label management interface...');
         
-        // Create full-page overlay for label management
-        const overlay = document.createElement('div');
-        overlay.id = 'label-management-overlay';
-        overlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+        // Prevent multiple calls in rapid succession (aggressive debounce)
+        const now = Date.now();
+        if (this.lastLabelManagementCall && (now - this.lastLabelManagementCall) < 1000) {
+            console.log('🏷️ Label management called too recently, ignoring duplicate call');
+            return;
+        }
         
-        overlay.innerHTML = this.generateLabelManagementHTML();
-        document.body.appendChild(overlay);
+        this.lastLabelManagementCall = now;
+        this.labelManagementOpen = true;
+        
+        // Store current recipe content for restoration
+        this.originalRecipeContent = this.container.innerHTML;
+        
+        // Replace the entire recipe tab content with label management (full-page approach)
+        this.container.innerHTML = this.generateLabelManagementHTML();
         
         // Attach event listeners for label management
         this.attachLabelManagementListeners();
@@ -1205,9 +1219,14 @@ class RecipeManager {
     }
 
     generateLabelManagementHTML() {
+        const presetColors = [
+            '#EF4444', '#F97316', '#F59E0B', '#EAB308', '#84CC16', '#22C55E',
+            '#10B981', '#06B6D4', '#0EA5E9', '#3B82F6', '#6366F1', '#A855F7'
+        ];
+
         return `
-            <!-- Mobile-optimized full-screen layout -->
-            <div class="bg-white dark:bg-gray-800 w-full h-full md:rounded-lg md:shadow-xl md:max-w-4xl md:max-h-[90vh] md:overflow-hidden flex flex-col">
+            <!-- Mobile-optimized full-page layout -->
+            <div class="bg-white dark:bg-gray-800 w-full min-h-screen flex flex-col">
                 <!-- Header matching recipe form navigation -->
                 <div class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
                     <div class="max-w-4xl mx-auto px-4 py-4">
@@ -1463,15 +1482,7 @@ class RecipeManager {
             });
         }
 
-        // Click outside to close
-        const overlay = document.getElementById('label-management-overlay');
-        if (overlay) {
-            overlay.addEventListener('click', (e) => {
-                if (e.target === overlay) {
-                    this.closeLabelManagement();
-                }
-            });
-        }
+        // No click-outside-to-close for full-page approach
 
         // Dual-mode color picker functionality
         this.setupColorPicker();
@@ -1514,9 +1525,20 @@ class RecipeManager {
     }
 
     closeLabelManagement() {
-        const overlay = document.getElementById('label-management-overlay');
-        if (overlay) {
-            overlay.remove();
+        console.log('🏷️ Closing label management interface...');
+        
+        // Reset the flag to allow opening again
+        this.labelManagementOpen = false;
+        
+        // Restore the original recipe content
+        if (this.originalRecipeContent) {
+            this.container.innerHTML = this.originalRecipeContent;
+            
+            // Re-attach event listeners for the restored content
+            this.attachEventListeners();
+            
+            // Clear the stored content
+            this.originalRecipeContent = null;
         }
     }
 
