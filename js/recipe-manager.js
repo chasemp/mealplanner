@@ -1224,7 +1224,7 @@ class RecipeManager {
                                 <span>Add</span>
                                 <span>🥕</span>
                                 </button>
-                            <button type="button" id="create-new-ingredient" class="flex items-center gap-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 rounded-md transition-colors">
+                            <button type="button" id="create-new-item" class="flex items-center gap-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 rounded-md transition-colors">
                                 <span>Create</span>
                                 <span>🥕</span>
                                 </button>
@@ -1328,18 +1328,18 @@ class RecipeManager {
      * @param {boolean} isCombo - If true, additional items are optional; if false (regular recipe), first item is required
      * @returns {string} HTML string for item rows
      */
-    renderItemRows(ingredients = [], isCombo = false) {
-        if (ingredients.length === 0) {
-            ingredients = [{ ingredient_id: '', name: '', quantity: '', unit: '', notes: '' }];
+    renderItemRows(items = [], isCombo = false) {
+        if (items.length === 0) {
+            items = [{ item_id: '', name: '', quantity: '', unit: '', notes: '' }];
         }
-        
-        return ingredients.map((ingredient, index) => `
+
+        return items.map((item, index) => `
             <div class="item-row grid grid-cols-10 gap-2 items-end">
                 <div class="col-span-5">
                     <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Item
                     </label>
-                    <select class="ingredient-select w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                    <select class="item-select w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                             name="items[${index}][item_id]" ${!isCombo && index === 0 ? 'required' : ''}>
                             <!-- VALIDATION LOGIC: 
                                  - Regular recipes: First item is required (at least one item needed)
@@ -1347,7 +1347,7 @@ class RecipeManager {
                         <option value="">Select item...</option>
                         ${this.items.map(ing => `
                             <option value="${ing.id}" data-unit="${ing.default_unit}" 
-                                    ${ingredient.ingredient_id == ing.id ? 'selected' : ''}>
+                                    ${item.item_id == ing.id ? 'selected' : ''}>
                                 ${ing.name}
                             </option>
                         `).join('')}
@@ -1359,9 +1359,9 @@ class RecipeManager {
                         Quantity
                     </label>
                     <input type="number" step="0.25" min="0" 
-                           class="ingredient-quantity w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                           class="item-quantity w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                            name="items[${index}][quantity]" 
-                           value="${ingredient.quantity}"
+                           value="${item.quantity}"
                            placeholder="1.5" ${!isCombo && index === 0 ? 'required' : ''}>
                 </div>
                 
@@ -1371,19 +1371,19 @@ class RecipeManager {
                     </label>
                     <select class="unit-select w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                             name="items[${index}][unit]">
-                        <option value="pieces" ${ingredient.unit === 'pieces' ? 'selected' : ''}>pieces</option>
-                        <option value="cups" ${ingredient.unit === 'cups' ? 'selected' : ''}>cups</option>
-                        <option value="tbsp" ${ingredient.unit === 'tbsp' ? 'selected' : ''}>tbsp</option>
-                        <option value="tsp" ${ingredient.unit === 'tsp' ? 'selected' : ''}>tsp</option>
-                        <option value="lbs" ${ingredient.unit === 'lbs' ? 'selected' : ''}>lbs</option>
-                        <option value="oz" ${ingredient.unit === 'oz' ? 'selected' : ''}>oz</option>
-                        <option value="cloves" ${ingredient.unit === 'cloves' ? 'selected' : ''}>cloves</option>
-                        <option value="slices" ${ingredient.unit === 'slices' ? 'selected' : ''}>slices</option>
+                        <option value="pieces" ${item.unit === 'pieces' ? 'selected' : ''}>pieces</option>
+                        <option value="cups" ${item.unit === 'cups' ? 'selected' : ''}>cups</option>
+                        <option value="tbsp" ${item.unit === 'tbsp' ? 'selected' : ''}>tbsp</option>
+                        <option value="tsp" ${item.unit === 'tsp' ? 'selected' : ''}>tsp</option>
+                        <option value="lbs" ${item.unit === 'lbs' ? 'selected' : ''}>lbs</option>
+                        <option value="oz" ${item.unit === 'oz' ? 'selected' : ''}>oz</option>
+                        <option value="cloves" ${item.unit === 'cloves' ? 'selected' : ''}>cloves</option>
+                        <option value="slices" ${item.unit === 'slices' ? 'selected' : ''}>slices</option>
                     </select>
                 </div>
                 
                 <div class="col-span-1">
-                    ${ingredients.length > 1 || index > 0 ? `
+                    ${items.length > 1 || index > 0 ? `
                         <button type="button" class="remove-item w-full p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900 rounded-md">
                             <svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -1492,19 +1492,19 @@ class RecipeManager {
         return recipeDetails || '<div class="text-gray-500 dark:text-gray-400 text-sm italic">Recipe details will appear here as you add recipes.</div>';
     }
 
-    renderSingleItemRow(ingredient, index, showRemoveButton = false, isCombo = false) {
+    renderSingleItemRow(item, index, showRemoveButton = false, isCombo = false) {
         return `
             <div class="item-row grid grid-cols-10 gap-2 items-end">
                 <div class="col-span-5">
                     <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Item
                     </label>
-                    <select class="ingredient-select w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                    <select class="item-select w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                             name="items[${index}][item_id]" ${!isCombo && index === 0 ? 'required' : ''}>
                         <option value="">Select item...</option>
                         ${this.items.map(ing => `
                             <option value="${ing.id}" data-unit="${ing.default_unit}" 
-                                    ${ingredient.ingredient_id == ing.id ? 'selected' : ''}>
+                                    ${item.item_id == ing.id ? 'selected' : ''}>
                                 ${ing.name}
                             </option>
                         `).join('')}
@@ -1516,9 +1516,9 @@ class RecipeManager {
                         Quantity
                     </label>
                     <input type="number" step="0.25" min="0" 
-                           class="ingredient-quantity w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                           class="item-quantity w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                            name="items[${index}][quantity]" 
-                           value="${ingredient.quantity}"
+                           value="${item.quantity}"
                            placeholder="1.5" ${!isCombo && index === 0 ? 'required' : ''}>
                 </div>
                 
@@ -1528,14 +1528,14 @@ class RecipeManager {
                     </label>
                     <select class="unit-select w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                             name="items[${index}][unit]">
-                        <option value="pieces" ${ingredient.unit === 'pieces' ? 'selected' : ''}>pieces</option>
-                        <option value="cups" ${ingredient.unit === 'cups' ? 'selected' : ''}>cups</option>
-                        <option value="tbsp" ${ingredient.unit === 'tbsp' ? 'selected' : ''}>tbsp</option>
-                        <option value="tsp" ${ingredient.unit === 'tsp' ? 'selected' : ''}>tsp</option>
-                        <option value="lbs" ${ingredient.unit === 'lbs' ? 'selected' : ''}>lbs</option>
-                        <option value="oz" ${ingredient.unit === 'oz' ? 'selected' : ''}>oz</option>
-                        <option value="cloves" ${ingredient.unit === 'cloves' ? 'selected' : ''}>cloves</option>
-                        <option value="slices" ${ingredient.unit === 'slices' ? 'selected' : ''}>slices</option>
+                        <option value="pieces" ${item.unit === 'pieces' ? 'selected' : ''}>pieces</option>
+                        <option value="cups" ${item.unit === 'cups' ? 'selected' : ''}>cups</option>
+                        <option value="tbsp" ${item.unit === 'tbsp' ? 'selected' : ''}>tbsp</option>
+                        <option value="tsp" ${item.unit === 'tsp' ? 'selected' : ''}>tsp</option>
+                        <option value="lbs" ${item.unit === 'lbs' ? 'selected' : ''}>lbs</option>
+                        <option value="oz" ${item.unit === 'oz' ? 'selected' : ''}>oz</option>
+                        <option value="cloves" ${item.unit === 'cloves' ? 'selected' : ''}>cloves</option>
+                        <option value="slices" ${item.unit === 'slices' ? 'selected' : ''}>slices</option>
                     </select>
                 </div>
                 
@@ -1577,11 +1577,11 @@ class RecipeManager {
     }
 
     attachItemRowListeners(row) {
-        // Ingredient selection handler
-        const ingredientSelect = row.querySelector('.ingredient-select');
+        // Item selection handler
+        const itemSelect = row.querySelector('.item-select');
         const unitSelect = row.querySelector('.unit-select');
         
-        ingredientSelect?.addEventListener('change', (e) => {
+        itemSelect?.addEventListener('change', (e) => {
             const selectedOption = e.target.selectedOptions[0];
             const defaultUnit = selectedOption?.dataset.unit;
             
@@ -1590,7 +1590,7 @@ class RecipeManager {
             }
         });
 
-        // Remove ingredient handler
+        // Remove item handler
         const removeBtn = row.querySelector('.remove-item');
         removeBtn?.addEventListener('click', () => {
             row.remove();
@@ -1752,7 +1752,7 @@ class RecipeManager {
             }
 
             // Collect items
-            const ingredients = [];
+            const items = [];
             const itemRows = form.querySelectorAll('.item-row');
             
             itemRows.forEach((row, index) => {
@@ -1762,14 +1762,14 @@ class RecipeManager {
                 const notes = row.querySelector(`[name="items[${index}][notes]"]`)?.value;
 
                 if (itemId && quantity) {
-                    const ingredient = this.items.find(ing => ing.id == itemId);
-                    if (ingredient) {
-                        ingredients.push({
+                    const item = this.items.find(ing => ing.id == itemId);
+                    if (item) {
+                        items.push({
                             item_id: parseInt(itemId),
                             ingredient_id: parseInt(itemId), // Backward compatibility
-                            name: ingredient.name,
+                            name: item.name,
                             quantity: parseFloat(quantity),
-                            unit: unit || ingredient.default_unit,
+                            unit: unit || item.default_unit,
                             notes: notes || ''
                         });
                     }
@@ -1777,7 +1777,7 @@ class RecipeManager {
             });
 
             // Add items to recipe data (consistent naming)
-            recipeData.items = ingredients;
+            recipeData.items = items;
             
             // Add labels (convert from tags for now)
             recipeData.labels = recipeData.tags || [];
@@ -1932,26 +1932,26 @@ class RecipeManager {
 
         // Show the scanner with recipe context
         sharedScanner.show('recipe', 
-            (ingredient, context) => {
-                console.log('Product scanned for recipe:', ingredient);
+            (scannedItem, context) => {
+                console.log('Product scanned for recipe:', scannedItem);
                 
                 // Add a new item row with the scanned item
                 const currentRows = itemsContainer.querySelectorAll('.item-row').length;
                 const newRowHtml = this.renderSingleItemRow({
-                    item_id: ingredient.id,
-                    name: ingredient.name,
+                    item_id: scannedItem.id,
+                    name: scannedItem.name,
                     quantity: '1',
-                    unit: ingredient.default_unit || 'pieces',
+                    unit: scannedItem.default_unit || 'pieces',
                     notes: ''
                 }, currentRows, true, false); // false = not a combo
                 
-                ingredientsContainer.insertAdjacentHTML('beforeend', newRowHtml);
+                itemsContainer.insertAdjacentHTML('beforeend', newRowHtml);
                 
                 // Attach listeners to new row
-                this.attachItemRowListeners(ingredientsContainer.lastElementChild);
+                this.attachItemRowListeners(itemsContainer.lastElementChild);
                 
                 // Show success message
-                this.showNotification(`Added "${ingredient.name}" to recipe items`, 'success');
+                this.showNotification(`Added "${scannedItem.name}" to recipe items`, 'success');
             },
             (error) => {
                 console.error('Barcode scanner error:', error);
@@ -2019,34 +2019,35 @@ class RecipeManager {
 
         // Collect items
         const itemRows = form.querySelectorAll('.item-row');
-        const ingredients = [];
+        const items = [];
         
         itemRows.forEach(row => {
-            const ingredientId = row.querySelector('.ingredient-select')?.value;
+            const itemId = row.querySelector('.item-select')?.value;
             const quantity = row.querySelector('input[name*="[quantity]"]')?.value;
             const unit = row.querySelector('select[name*="[unit]"]')?.value;
             const notes = row.querySelector('input[name*="[notes]"]')?.value;
             
-            if (ingredientId && quantity) {
-                const ingredient = this.getItemById(parseInt(ingredientId));
-                if (ingredient) {
-                    ingredients.push({
-                        ingredient_id: parseInt(ingredientId),
-                        name: ingredient.name,
+            if (itemId && quantity) {
+                const item = this.getItemById(parseInt(itemId));
+                if (item) {
+                    items.push({
+                        item_id: parseInt(itemId),
+                        ingredient_id: parseInt(itemId), // Backward compatibility
+                        name: item.name,
                         quantity: this.roundQuantity(parseFloat(quantity)),
-                        unit: unit || ingredient.default_unit,
+                        unit: unit || item.default_unit,
                         notes: notes || ''
                     });
                 }
             }
         });
 
-        if (ingredients.length === 0) {
+        if (items.length === 0) {
             this.showNotification('At least one item is required', 'error');
             return;
         }
 
-        recipeData.items = ingredients;
+        recipeData.items = items;
 
         try {
             // Save recipe
@@ -2419,10 +2420,10 @@ class RecipeManager {
                         <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Additional Items (${additionalItems.length})</h3>
                         <div class="space-y-2">
                             ${additionalItems.map(ing => {
-                                const ingredient = window.itemsManager.items.find(i => i.id === ing.ingredient_id);
+                                const item = window.itemsManager.items.find(i => i.id === ing.ingredient_id);
                                 return `
                                     <div class="flex justify-between items-center py-1">
-                                        <span class="text-gray-900 dark:text-white">${ingredient ? ingredient.name : 'Unknown Item'}</span>
+                                        <span class="text-gray-900 dark:text-white">${item ? item.name : 'Unknown Item'}</span>
                                         <span class="text-gray-600 dark:text-gray-400">${ing.quantity} ${ing.unit || ''}</span>
                                     </div>
                                 `;
@@ -2436,10 +2437,10 @@ class RecipeManager {
                     <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">All Items (${combinedItems.size})</h3>
                     <div class="space-y-2">
                         ${Array.from(combinedItems.entries()).map(([ingredientId, totalQuantity]) => {
-                            const ingredient = window.itemsManager.items.find(i => i.id === parseInt(ingredientId));
+                            const item = window.itemsManager.items.find(i => i.id === parseInt(ingredientId));
                             return `
                                 <div class="flex justify-between items-center py-1">
-                                    <span class="text-gray-900 dark:text-white">${ingredient ? ingredient.name : 'Unknown Item'}</span>
+                                    <span class="text-gray-900 dark:text-white">${item ? item.name : 'Unknown Item'}</span>
                                     <span class="text-gray-600 dark:text-gray-400">${totalQuantity}</span>
                                 </div>
                             `;
@@ -2452,17 +2453,17 @@ class RecipeManager {
             console.log('🎯 COMBO HTML preview:', comboHTML.substring(0, 200) + '...');
             return comboHTML;
         } else {
-            // For regular recipes, show ingredients
-            const ingredients = recipe.items || [];
+            // For regular recipes, show items
+            const items = recipe.items || [];
             return `
                 <div class="mb-4">
-                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Items (${ingredients.length})</h3>
+                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Items (${items.length})</h3>
                     <div class="space-y-2">
-                        ${ingredients.map(ing => {
-                            const ingredient = window.itemsManager.items.find(i => i.id === ing.ingredient_id);
+                        ${items.map(ing => {
+                            const item = window.itemsManager.items.find(i => i.id === ing.ingredient_id);
                             return `
                                 <div class="flex justify-between items-center py-1">
-                                    <span class="text-gray-900 dark:text-white">${ingredient ? ingredient.name : 'Unknown Item'}</span>
+                                    <span class="text-gray-900 dark:text-white">${item ? item.name : 'Unknown Item'}</span>
                                     <span class="text-gray-600 dark:text-gray-400">${ing.quantity} ${ing.unit || ''}</span>
                                 </div>
                             `;
@@ -2585,10 +2586,10 @@ class RecipeManager {
                             <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Additional Items (${additionalItems.length})</h3>
                             <div class="space-y-2">
                                 ${additionalItems.map(ing => {
-                                    const ingredient = window.itemsManager.items.find(i => i.id === ing.ingredient_id);
+                                    const item = window.itemsManager.items.find(i => i.id === ing.ingredient_id);
                                     return `
                                         <div class="flex justify-between items-center py-1">
-                                            <span class="text-gray-900 dark:text-white">${ingredient ? ingredient.name : 'Unknown Item'}</span>
+                                            <span class="text-gray-900 dark:text-white">${item ? item.name : 'Unknown Item'}</span>
                                             <span class="text-gray-600 dark:text-gray-400">${ing.quantity} ${ing.unit || ''}</span>
                                         </div>
                                     `;
@@ -2639,8 +2640,8 @@ class RecipeManager {
         
         // For regular recipes, keep it simple - no complex content generation
         // MIGRATION: Support both 'items' (new) and 'ingredients' (legacy) during transition
-        const ingredients = recipe.items || recipe.ingredients || [];
-        const itemCount = ingredients.length;
+        const items = recipe.items || recipe.ingredients || [];
+        const itemCount = items.length;
         console.log('📖 Regular recipe items:', itemCount);
         
         const html = `
@@ -2700,15 +2701,15 @@ class RecipeManager {
 
                     <!-- Items -->
                     <div class="mb-4">
-                        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Items (${ingredients.length})</h3>
+                        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Items (${items.length})</h3>
                         <div class="space-y-2">
-                            ${ingredients.length === 0 ? 
+                            ${items.length === 0 ? 
                                 '<div class="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 rounded-lg p-2">No items added</div>' :
-                                ingredients.map(ing => {
-                                    const ingredient = window.itemsManager?.ingredients?.find(i => i.id === ing.ingredient_id);
+                                items.map(ing => {
+                                    const item = window.itemsManager?.items?.find(i => i.id === ing.ingredient_id);
                                     return `
                                         <div class="flex justify-between items-center py-1">
-                                            <span class="text-gray-900 dark:text-white">${ingredient ? ingredient.name : 'Unknown Item'}</span>
+                                            <span class="text-gray-900 dark:text-white">${item ? item.name : 'Unknown Item'}</span>
                                             <span class="text-gray-600 dark:text-gray-400">${ing.quantity} ${ing.unit || ''}</span>
                                         </div>
                                     `;
@@ -2779,8 +2780,8 @@ class RecipeManager {
         // Format labels/tags and calculate item count
         const labels = recipe.labels || recipe.tags || [];
         // MIGRATION: Support both 'items' (new) and 'ingredients' (legacy) during transition
-        const ingredients = recipe.items || recipe.ingredients || [];
-        const itemCount = ingredients.length;
+        const items = recipe.items || recipe.ingredients || [];
+        const itemCount = items.length;
 
         // Generate content sections
         let contentSection = '';
@@ -2820,8 +2821,8 @@ class RecipeManager {
                         <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 space-y-2">
                             ${additionalItems.map(item => {
                                 // Look up the actual item by ID to get the name
-                                const foundItem = this.items.find(ingredient => ingredient.id === (item.item_id || item.ingredient_id));
-                                const itemName = foundItem ? foundItem.name : `Item ID ${item.ingredient_id}`;
+                                const foundItem = this.items.find(itemData => itemData.id === (item.item_id || item.ingredient_id));
+                                const itemName = foundItem ? foundItem.name : `Item ID ${item.item_id || item.ingredient_id}`;
                                 return `
                                     <div class="flex justify-between items-center text-xs">
                                         <span class="text-gray-700 dark:text-gray-300">${itemName}</span>
@@ -2834,17 +2835,17 @@ class RecipeManager {
                 ` : ''}
             `;
         } else {
-            // For regular recipes, show ingredients/items
+            // For regular recipes, show items
             contentSection = `
                 <!-- Items -->
-                ${ingredients.length > 0 ? `
+                ${items.length > 0 ? `
                     <div class="mb-4">
-                        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Items (${ingredients.length})</h3>
+                        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Items (${items.length})</h3>
                         <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 space-y-2">
                             ${ingredients.map(item => {
                                 // Look up the actual item by ID to get the name
-                                const foundItem = this.items.find(ingredient => ingredient.id === (item.item_id || item.ingredient_id));
-                                const itemName = foundItem ? foundItem.name : `Item ID ${item.ingredient_id}`;
+                                const foundItem = this.items.find(itemData => itemData.id === (item.item_id || item.ingredient_id));
+                                const itemName = foundItem ? foundItem.name : `Item ID ${item.item_id || item.ingredient_id}`;
                                 return `
                                     <div class="flex justify-between items-center text-xs">
                                         <span class="text-gray-700 dark:text-gray-300">${itemName}</span>
@@ -3191,7 +3192,7 @@ class RecipeManager {
                                     <span>Add</span>
                                     <span>🥕</span>
                                 </button>
-                                <button type="button" id="create-new-ingredient" class="flex items-center gap-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 rounded-md transition-colors">
+                                <button type="button" id="create-new-item" class="flex items-center gap-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 rounded-md transition-colors">
                                     <span>Create</span>
                                     <span>🥕</span>
                                 </button>
@@ -3212,7 +3213,7 @@ class RecipeManager {
                                     <span>Add</span>
                                     <span>🥕</span>
                                 </button>
-                                <button type="button" id="create-new-ingredient" class="flex items-center gap-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 rounded-md transition-colors">
+                                <button type="button" id="create-new-item" class="flex items-center gap-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 rounded-md transition-colors">
                                     <span>Create</span>
                                     <span>🥕</span>
                                 </button>
@@ -3435,30 +3436,30 @@ class RecipeManager {
     }
 
     attachSharedItemListeners(config) {
-        const addIngredientBtn = document.querySelector('#add-item-row');
-        const createIngredientBtn = document.querySelector('#create-new-ingredient');
-        const ingredientsContainer = document.querySelector('#items-container');
+        const addItemBtn = document.querySelector('#add-item-row');
+        const createItemBtn = document.querySelector('#create-new-item');
+        const itemsContainer = document.querySelector('#items-container');
         const isCombo = config.isCombo || false; // Get isCombo from config
 
-        console.log('Attaching shared ingredient listeners:', { addIngredientBtn, createIngredientBtn, ingredientsContainer, isCombo });
+        console.log('Attaching shared item listeners:', { addItemBtn, createItemBtn, itemsContainer, isCombo });
 
-        // Add ingredient row
-        addIngredientBtn?.addEventListener('click', () => {
-            console.log('Add ingredient button clicked');
-            const currentRows = ingredientsContainer.querySelectorAll('.item-row').length;
-            const newRowHtml = this.renderSingleItemRow({ ingredient_id: '', name: '', quantity: '', unit: '', notes: '' }, currentRows, true, isCombo);
+        // Add item row
+        addItemBtn?.addEventListener('click', () => {
+            console.log('Add item button clicked');
+            const currentRows = itemsContainer.querySelectorAll('.item-row').length;
+            const newRowHtml = this.renderSingleItemRow({ item_id: '', name: '', quantity: '', unit: '', notes: '' }, currentRows, true, isCombo);
             
-            ingredientsContainer.insertAdjacentHTML('beforeend', newRowHtml);
+            itemsContainer.insertAdjacentHTML('beforeend', newRowHtml);
             
             // Attach listeners to new row
-            this.attachItemRowListeners(ingredientsContainer.lastElementChild);
+            this.attachItemRowListeners(itemsContainer.lastElementChild);
         });
 
-        // Create new ingredient button
-        createIngredientBtn?.addEventListener('click', () => {
-            console.log('🥕 Create new ingredient clicked');
+        // Create new item button
+        createItemBtn?.addEventListener('click', () => {
+            console.log('🥕 Create new item clicked');
             console.log('🥕 window.itemsManager available:', !!window.itemsManager);
-            console.log('🥕 ingredientsContainer:', ingredientsContainer);
+            console.log('🥕 itemsContainer:', itemsContainer);
             
             // Open the items manager form with callback to add to recipe
             if (window.itemsManager && window.app) {
@@ -3470,8 +3471,8 @@ class RecipeManager {
                     console.log('🥕 Storing current form data before switching to items');
                 }
                 
-                const onSaveCallback = (savedIngredient) => {
-                    console.log('🥕 New ingredient saved, determining return destination:', savedIngredient);
+                const onSaveCallback = (savedItem) => {
+                    console.log('🥕 New item saved, determining return destination:', savedItem);
                     console.log('🥕 editingFromMobileView:', this.editingFromMobileView);
                     console.log('🥕 editingRecipe:', !!this.editingRecipe);
                     
@@ -3480,17 +3481,17 @@ class RecipeManager {
                     
                     setTimeout(() => {
                         if (this.editingFromMobileView && this.editingRecipe) {
-                            // Add ingredient to the existing recipe and return to mobile view
-                            console.log('🥕 Adding ingredient to existing recipe and returning to mobile view');
+                            // Add item to the existing recipe and return to mobile view
+                            console.log('🥕 Adding item to existing recipe and returning to mobile view');
                             
-                            // Add ingredient to the recipe data
-                            if (!this.editingRecipe.ingredients) {
-                                this.editingRecipe.ingredients = [];
+                            // Add item to the recipe data
+                            if (!this.editingRecipe.items) {
+                                this.editingRecipe.items = [];
                             }
-                            this.editingRecipe.ingredients.push({
-                                ingredient_id: savedIngredient.id,
+                            this.editingRecipe.items.push({
+                                item_id: savedItem.id,
                                 quantity: 1,
-                                unit: savedIngredient.default_unit || 'pieces'
+                                unit: savedItem.default_unit || 'pieces'
                             });
                             
                             // Save the updated recipe
@@ -3506,8 +3507,8 @@ class RecipeManager {
                                 this.showMobileRecipePage(this.editingRecipe);
                             }, 50);
                         } else {
-                            // Re-open the recipe form and add the ingredient (for new recipes)
-                            console.log('🥕 Re-opening recipe form and adding ingredient');
+                            // Re-open the recipe form and add the item (for new recipes)
+                            console.log('🥕 Re-opening recipe form and adding item');
                             this.showRecipeForm(); // Re-open the form
                             setTimeout(() => {
                                 // Restore form data if we had it
@@ -3515,9 +3516,9 @@ class RecipeManager {
                                     this.restoreFormData(savedFormData);
                                 }
                                 
-                                const newIngredientsContainer = document.querySelector('#items-container');
-                                if (newIngredientsContainer) {
-                                    this.addIngredientToRecipeForm(savedIngredient, newIngredientsContainer);
+                                const newItemsContainer = document.querySelector('#items-container');
+                                if (newItemsContainer) {
+                                    this.addItemToRecipeForm(savedItem, newItemsContainer);
                                 }
                             }, 100);
                         }
@@ -3573,8 +3574,8 @@ class RecipeManager {
             }
         });
 
-        // Attach listeners to existing ingredient rows
-        ingredientsContainer?.querySelectorAll('.item-row').forEach(row => {
+        // Attach listeners to existing item rows
+        itemsContainer?.querySelectorAll('.item-row').forEach(row => {
             this.attachItemRowListeners(row);
         });
     }
@@ -3789,34 +3790,34 @@ class RecipeManager {
             }
         }
 
-        // Restore ingredients - this is more complex as we need to rebuild the ingredient rows
-        const ingredientsContainer = form.querySelector('#items-container');
-        if (ingredientsContainer) {
-            // Extract ingredient data from FormData
-            const ingredientData = [];
+        // Restore items - this is more complex as we need to rebuild the item rows
+        const itemsContainer = form.querySelector('#items-container');
+        if (itemsContainer) {
+            // Extract item data from FormData
+            const itemData = [];
             let index = 0;
             while (formData.has(`items[${index}][item_id]`)) {
-                const ingredient = {
+                const item = {
                     item_id: formData.get(`items[${index}][item_id]`),
                     ingredient_id: formData.get(`items[${index}][item_id]`), // Backward compatibility
                     quantity: formData.get(`items[${index}][quantity]`),
                     unit: formData.get(`items[${index}][unit]`)
                 };
-                if (ingredient.item_id) { // Only add if item is selected
-                    ingredientData.push(ingredient);
+                if (item.item_id) { // Only add if item is selected
+                    itemData.push(item);
                 }
                 index++;
             }
 
-            // Rebuild ingredient rows
-            if (ingredientData.length > 0) {
-                console.log('🥕 Restoring', ingredientData.length, 'ingredients');
+            // Rebuild item rows
+            if (itemData.length > 0) {
+                console.log('🥕 Restoring', itemData.length, 'items');
                 // Check if this is a combo form by looking for recipe rows
                 const isCombo = form.querySelector('.recipe-row') !== null;
-                ingredientsContainer.innerHTML = this.renderItemRows(ingredientData, isCombo);
+                itemsContainer.innerHTML = this.renderItemRows(itemData, isCombo);
                 
-                // Reattach listeners to ingredient rows
-                ingredientsContainer.querySelectorAll('.item-row').forEach(row => {
+                // Reattach listeners to item rows
+                itemsContainer.querySelectorAll('.item-row').forEach(row => {
                     this.attachItemRowListeners(row);
                 });
             }
@@ -3825,21 +3826,24 @@ class RecipeManager {
         console.log('🥕 Form data restoration complete');
     }
 
-    addIngredientToRecipeForm(savedIngredient, ingredientsContainer) {
-        console.log('🥕 Adding ingredient to recipe form:', savedIngredient);
+    addItemToRecipeForm(savedItem, itemsContainer) {
+        console.log('🥕 Adding item to recipe form:', savedItem);
         
-        // Add the new ingredient to the ingredients list (for the select dropdown)
-        if (!this.items.find(ing => ing.id === savedIngredient.id)) {
-            this.items.push(savedIngredient);
+        // Add the new item to the items list (for the select dropdown)
+        if (!this.items.find(item => item.id === savedItem.id)) {
+            this.items.push(savedItem);
+            
+            // Refresh all item dropdowns in the form to include the new item
+            this.refreshItemDropdowns(itemsContainer);
         }
         
         // Check if there's an empty row we can use instead of adding a new one
-        const existingRows = ingredientsContainer.querySelectorAll('.item-row');
+        const existingRows = itemsContainer.querySelectorAll('.item-row');
         let targetRow = null;
         
-        // Look for an empty row (no ingredient selected)
+        // Look for an empty row (no item selected)
         for (const row of existingRows) {
-            const select = row.querySelector('.ingredient-select');
+            const select = row.querySelector('.item-select');
             if (select && (!select.value || select.value === '')) {
                 targetRow = row;
                 console.log('🥕 Found empty row to populate');
@@ -3849,30 +3853,30 @@ class RecipeManager {
         
         // If no empty row found, create a new one
         if (!targetRow) {
-            console.log('🥕 Creating new ingredient row');
+            console.log('🥕 Creating new item row');
             const currentRows = existingRows.length;
-            const newIngredientRow = {
-                ingredient_id: savedIngredient.id,
-                name: savedIngredient.name,
+            const newItemRow = {
+                item_id: savedItem.id,
+                name: savedItem.name,
                 quantity: '1',
-                unit: savedIngredient.default_unit || 'pieces',
+                unit: savedItem.default_unit || 'pieces',
                 notes: ''
             };
             
-            const newRowHtml = this.renderSingleItemRow(newIngredientRow, currentRows, true, false); // false = not a combo
-            ingredientsContainer.insertAdjacentHTML('beforeend', newRowHtml);
-            targetRow = ingredientsContainer.lastElementChild;
+            const newRowHtml = this.renderSingleItemRow(newItemRow, currentRows, true, false); // false = not a combo
+            itemsContainer.insertAdjacentHTML('beforeend', newRowHtml);
+            targetRow = itemsContainer.lastElementChild;
             this.attachItemRowListeners(targetRow);
         } else {
             // Populate the existing empty row
             console.log('🥕 Populating existing empty row');
-            const select = targetRow.querySelector('.ingredient-select');
-            const quantityInput = targetRow.querySelector('.ingredient-quantity');
+            const select = targetRow.querySelector('.item-select');
+            const quantityInput = targetRow.querySelector('.item-quantity');
             const unitSelect = targetRow.querySelector('.unit-select');
             
-            if (select) select.value = savedIngredient.id;
+            if (select) select.value = savedItem.id;
             if (quantityInput) quantityInput.value = '1';
-            if (unitSelect) unitSelect.value = savedIngredient.default_unit || 'pieces';
+            if (unitSelect) unitSelect.value = savedItem.default_unit || 'pieces';
         }
         
         // Scroll to the Items section
@@ -3887,9 +3891,9 @@ class RecipeManager {
                 }
             }
             
-            // Fallback to the ingredients container
+            // Fallback to the items container
             if (!itemsSection) {
-                itemsSection = ingredientsContainer.closest('div');
+                itemsSection = itemsContainer.closest('div');
             }
             
             if (itemsSection) {
@@ -3898,7 +3902,7 @@ class RecipeManager {
             }
             
             // Focus on the quantity input for easy editing
-            const quantityInput = targetRow.querySelector('.ingredient-quantity');
+            const quantityInput = targetRow.querySelector('.item-quantity');
             if (quantityInput) {
                 setTimeout(() => {
                     quantityInput.focus();
@@ -3908,6 +3912,43 @@ class RecipeManager {
         }, 100);
     }
 
+    refreshItemDropdowns(itemsContainer) {
+        console.log('🥕 Refreshing item dropdowns with updated items list');
+        
+        // Find all item select dropdowns in the container
+        const itemSelects = itemsContainer.querySelectorAll('.item-select');
+        
+        itemSelects.forEach(select => {
+            // Store the current selection
+            const currentValue = select.value;
+            
+            // Clear existing options
+            select.innerHTML = '';
+            
+            // Add default option
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'Select item...';
+            select.appendChild(defaultOption);
+            
+            // Add all items as options
+            this.items.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.id;
+                option.setAttribute('data-unit', item.default_unit);
+                option.textContent = item.name;
+                
+                // Restore selection if it matches
+                if (item.id === currentValue) {
+                    option.selected = true;
+                }
+                
+                select.appendChild(option);
+            });
+            
+            console.log(`🥕 Updated dropdown with ${this.items.length} items, current selection: ${currentValue}`);
+        });
+    }
 
     attachFullPageLabelListeners() {
         const labelInput = document.querySelector('#fullpage-recipe-labels-input');
@@ -4091,24 +4132,24 @@ class RecipeManager {
                 console.log('🍳 Final combo recipe data:', recipeData);
 
                 // ALSO collect ingredients for combo (additional items)
-                const ingredients = [];
+                const items = [];
                 const itemRows = form.querySelectorAll('.item-row');
                 console.log('🥕 Found', itemRows.length, 'ingredient rows to process for combo');
                 
                 itemRows.forEach((row, index) => {
-                    const ingredientSelect = row.querySelector('.ingredient-select');
-                    const quantityInput = row.querySelector('.ingredient-quantity');
+                    const itemSelect = row.querySelector('.item-select');
+                    const quantityInput = row.querySelector('.item-quantity');
                     const unitSelect = row.querySelector('.unit-select');
                     
-                    const ingredientId = ingredientSelect?.value;
+                    const itemId = itemSelect?.value;
                     const quantity = parseFloat(quantityInput?.value) || 0;
                     const unit = unitSelect?.value || '';
                     
-                    console.log('🥕 Processing combo ingredient row:', { ingredientId, quantity, unit });
+                    console.log('🥕 Processing combo item row:', { itemId, quantity, unit });
                     
-                    if (ingredientId && quantity > 0) {
+                    if (itemId && quantity > 0) {
                         ingredients.push({
-                            ingredient_id: parseInt(ingredientId),
+                            item_id: parseInt(itemId),
                             quantity: quantity,
                             unit: unit
                         });
@@ -4124,16 +4165,16 @@ class RecipeManager {
                 }
             } else {
                 // Collect items for regular recipe
-                const ingredients = [];
+                const items = [];
                 const itemRows = form.querySelectorAll('.item-row');
                 console.log('🥕 Found', itemRows.length, 'ingredient rows to process');
                 
                 itemRows.forEach((row, index) => {
-                    const ingredientSelect = row.querySelector('.ingredient-select');
-                    const quantityInput = row.querySelector('.ingredient-quantity');
+                    const itemSelect = row.querySelector('.item-select');
+                    const quantityInput = row.querySelector('.item-quantity');
                     const unitSelect = row.querySelector('.unit-select');
                     
-                    const ingredientId = ingredientSelect?.value;
+                    const itemId = itemSelect?.value;
                     const quantity = parseFloat(quantityInput?.value) || 0;
                     const unit = unitSelect?.value || '';
                     
@@ -4141,7 +4182,7 @@ class RecipeManager {
                     
                     if (ingredientId && quantity > 0) {
                         ingredients.push({
-                            ingredient_id: parseInt(ingredientId),
+                            item_id: parseInt(itemId),
                             quantity: quantity,
                             unit: unit
                         });
