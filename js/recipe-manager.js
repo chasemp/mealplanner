@@ -4306,15 +4306,20 @@ class RecipeManager {
         console.log(`📅 Scheduling recipe "${recipe.title}" for specific date:`, context.targetDate);
         
         try {
+            // SHOPPING LIST SYNC FIX: Use correct storage key based on context
+            // Plan tab uses planScheduledMeals (prospective), Menu tab uses menuScheduledMeals (committed)
+            const storageKey = context.mealType === 'plan' ? 'planScheduledMeals' : 'menuScheduledMeals';
+            console.log(`📅 Using storage key: ${storageKey} for context mealType: ${context.mealType}`);
+            
             // Get current scheduled meals
-            let scheduledMeals = window.mealPlannerSettings?.getAuthoritativeData('scheduledMeals') || [];
+            let scheduledMeals = window.mealPlannerSettings?.getAuthoritativeData(storageKey) || [];
             
             // Create new scheduled meal
             const newMeal = {
                 id: Date.now(), // Simple ID generation
                 recipe_id: recipe.id,
-                name: recipe.title,
-                meal_type: context.mealType === 'plan' ? 'plan' : context.mealType, // Keep plan as plan
+                recipe_name: recipe.title,
+                meal_type: context.mealType, // Use the context mealType directly
                 date: new Date(context.targetDate).toISOString(),
                 created_at: new Date().toISOString()
             };
@@ -4324,7 +4329,17 @@ class RecipeManager {
             
             // Save back to authoritative source
             if (window.mealPlannerSettings) {
-                window.mealPlannerSettings.saveAuthoritativeData('scheduledMeals', scheduledMeals);
+                window.mealPlannerSettings.saveAuthoritativeData(storageKey, scheduledMeals);
+                console.log(`💾 Saved scheduled meal to authoritative data source: ${storageKey}`);
+                
+                // SHOPPING LIST SYNC FIX: Update grocery list when meals added to Menu tab
+                if (storageKey === 'menuScheduledMeals' && window.groceryListManager) {
+                    console.log('🛒 Triggering grocery list update after recipe scheduled to Menu');
+                    // Get current Menu tab date range and update grocery list
+                    if (window.app && typeof window.app.updateMenuMealsDisplay === 'function') {
+                        window.app.updateMenuMealsDisplay(); // This will trigger grocery list update
+                    }
+                }
                 
                 // CRITICAL CROSS-PAGE CACHE SYNC: Update schedule manager cache after scheduling from Recipe page
                 // This fixes the issue where scheduling a meal from Recipe page doesn't update Plan tab itinerary

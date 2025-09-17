@@ -1635,7 +1635,7 @@ class GitHubDatabaseSync {
     }
     
     // Centralized clear filters utility with confirmation and double press protection
-    static createClearFiltersHandler(clearCallback, buttonSelector, managerInstance) {
+    static createClearFiltersHandler(clearCallback, buttonSelector, managerInstance, customConfirmMessage = null) {
         return function() {
             const settings = window.mealPlannerSettings?.settings;
             const requireDoublePress = settings?.requireDoublePressForClearFilters;
@@ -1697,7 +1697,8 @@ class GitHubDatabaseSync {
                 }
                 
                 if (hasActiveFilters) {
-                    const confirmed = confirm('Are you sure you want to clear all filters? This will reset your search, selected labels, favorites filter, and sort settings.');
+                    const confirmMessage = customConfirmMessage || 'Are you sure you want to clear all filters? This will reset your search, selected labels, favorites filter, and sort settings.';
+                    const confirmed = confirm(confirmMessage);
                     if (!confirmed) {
                         return; // User cancelled, don't clear filters
                     }

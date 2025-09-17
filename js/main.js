@@ -339,6 +339,9 @@ class MealPlannerApp {
         const pendingRecipes = JSON.parse(localStorage.getItem('mealplanner_pending_recipes') || '[]');
         console.log(`🔄 updatePendingRecipes: Found ${pendingRecipes.length} pending recipes`);
         
+        // Update planning queue info bar FIRST (before early return)
+        this.updatePlanningQueueInfo(pendingRecipes);
+        
         if (pendingRecipes.length === 0) {
             pendingList.innerHTML = '';
             emptyState.classList.remove('hidden');
@@ -371,9 +374,6 @@ class MealPlannerApp {
 
         // Attach event listeners for pending recipe actions
         this.attachPendingRecipeListeners();
-
-        // Update planning queue info bar
-        this.updatePlanningQueueInfo(pendingRecipes);
     }
 
     updatePlanningQueueInfo(pendingRecipes) {
@@ -458,7 +458,8 @@ class MealPlannerApp {
                 const clearHandler = settingsManager.createClearFiltersHandler(
                     clearCallback, 
                     '#clear-pending-recipes', 
-                    mockManager
+                    mockManager,
+                    'Are you sure you want to clear all recipes from the planning queue?'
                 );
                 clearAllBtn.addEventListener('click', clearHandler);
             } else {
@@ -1831,19 +1832,7 @@ class MealPlannerApp {
             this.initializeMealTypeControls(mealType);
         });
         
-        // Add a delayed retry for the plan button specifically (in case of timing issues)
-        setTimeout(() => {
-            const planBtn = document.getElementById('auto-plan-plan');
-            console.log('🔍 Delayed check for auto-plan-plan button:', !!planBtn);
-            if (planBtn && !planBtn.hasAttribute('data-listener-attached')) {
-                console.log('🔧 Adding delayed click listener to auto-plan-plan button');
-                planBtn.addEventListener('click', () => {
-                    console.log('🖱️ Auto Plan button clicked (delayed listener)');
-                    this.handleAutoPlan('plan');
-                });
-                planBtn.setAttribute('data-listener-attached', 'true');
-            }
-        }, 1000);
+        // Removed delayed retry for auto-plan button - primary listener in initializeMealTypeControls should be sufficient
         
         // Initialize update menu button
         this.initializeUpdateMenuButton();
@@ -2002,13 +1991,13 @@ class MealPlannerApp {
             meals.forEach(meal => {
                 // Use string concatenation instead of template strings to avoid truncation issues
                 const recipeId = meal.recipe_id;
-                const mealType = JSON.stringify(meal.meal_type);
-                const mealId = JSON.stringify(meal.id);
+                const mealType = meal.meal_type;
+                const mealId = meal.id;
                 const recipeName = meal.recipe_name || 'Unknown Recipe';
                 const servings = meal.servings || 4;
                 
                 mealsHTML += '<div class="flex items-center justify-between bg-white dark:bg-gray-600 rounded p-3 border border-gray-200 dark:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500 cursor-pointer transition-colors" ' +
-                    'onclick="window.app.viewScheduledMeal(' + recipeId + ', ' + mealType + ', ' + mealId + ')" ' +
+                    'onclick="window.app.viewScheduledMeal(' + recipeId + ', \'' + mealType + '\', \'' + mealId + '\')" ' +
                     'title="Click to view recipe details">' +
                     '<div>' +
                         '<div class="font-medium text-gray-900 dark:text-white">' + recipeName + '</div>' +
@@ -2057,12 +2046,15 @@ class MealPlannerApp {
         // Auto Plan button
         const autoPlanBtn = document.getElementById(`auto-plan-${mealType}`);
         console.log(`🔍 Looking for auto-plan-${mealType} button:`, !!autoPlanBtn);
-        if (autoPlanBtn) {
+        if (autoPlanBtn && !autoPlanBtn.hasAttribute('data-listener-attached')) {
             console.log(`✅ Adding click listener to auto-plan-${mealType} button`);
             autoPlanBtn.addEventListener('click', () => {
                 console.log(`🖱️ Auto Plan button clicked for ${mealType}`);
                 this.handleAutoPlan(mealType);
             });
+            autoPlanBtn.setAttribute('data-listener-attached', 'true');
+        } else if (autoPlanBtn) {
+            console.log(`⚠️ auto-plan-${mealType} button already has listener attached`);
         } else {
             console.error(`❌ auto-plan-${mealType} button not found in DOM`);
         }
@@ -2270,11 +2262,43 @@ class MealPlannerApp {
                 return;
             }
             
-            // Get Plan and Menu schedules
-            const planMeals = window.mealPlannerSettings.getAuthoritativeData('planScheduledMeals') || [];
-            const menuMeals = window.mealPlannerSettings.getAuthoritativeData('menuScheduledMeals') || [];
+            // Get the date range from the plan itinerary view to scope the delta comparison
+            const planItineraryView = this.itineraryViews?.plan;
+            let startDate, endDate;
             
-            console.log(`📊 Plan has ${planMeals.length} meals, Menu has ${menuMeals.length} meals`);
+            if (planItineraryView && planItineraryView.startDate && planItineraryView.weeksToShow) {
+                startDate = new Date(planItineraryView.startDate);
+                endDate = new Date(startDate);
+                endDate.setDate(endDate.getDate() + (planItineraryView.weeksToShow * 7) - 1);
+                console.log(`📊 Delta comparison scoped to: ${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}`);
+            } else {
+                console.warn('📊 No date range available from plan itinerary view, comparing all meals');
+            }
+            
+            // Get Plan and Menu schedules
+            const allPlanMeals = window.mealPlannerSettings.getAuthoritativeData('planScheduledMeals') || [];
+            const allMenuMeals = window.mealPlannerSettings.getAuthoritativeData('menuScheduledMeals') || [];
+            
+            // Filter meals by date range if available (same logic as itinerary view)
+            let planMeals = allPlanMeals;
+            let menuMeals = allMenuMeals;
+            
+            if (startDate && endDate) {
+                const filterByDateRange = (meals) => meals.filter(meal => {
+                    if (!meal.date) return false;
+                    const mealDate = new Date(meal.date);
+                    const mealDateNormalized = new Date(mealDate.getFullYear(), mealDate.getMonth(), mealDate.getDate());
+                    const startDateNormalized = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+                    const endDateNormalized = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+                    return mealDateNormalized >= startDateNormalized && mealDateNormalized <= endDateNormalized;
+                });
+                
+                planMeals = filterByDateRange(allPlanMeals);
+                menuMeals = filterByDateRange(allMenuMeals);
+                console.log(`📊 Filtered to date range - Plan: ${planMeals.length}/${allPlanMeals.length} meals, Menu: ${menuMeals.length}/${allMenuMeals.length} meals`);
+            } else {
+                console.log(`📊 Plan has ${planMeals.length} meals, Menu has ${menuMeals.length} meals (all meals, no date filter)`);
+            }
             
             // Calculate delta
             const planMealIds = new Set(planMeals.map(m => `${m.recipe_id}-${m.date}-${m.meal_type}`));
@@ -2283,7 +2307,7 @@ class MealPlannerApp {
             const mealsToAdd = planMeals.filter(m => !menuMealIds.has(`${m.recipe_id}-${m.date}-${m.meal_type}`));
             const mealsToRemove = menuMeals.filter(m => !planMealIds.has(`${m.recipe_id}-${m.date}-${m.meal_type}`));
             
-            console.log(`📊 Delta: ${mealsToAdd.length} to add, ${mealsToRemove.length} to remove`);
+            console.log(`📊 Delta (scoped): ${mealsToAdd.length} to add, ${mealsToRemove.length} to remove`);
             
             // Update UI
             const deltaContainer = document.getElementById('plan-menu-delta');
@@ -2568,6 +2592,11 @@ class MealPlannerApp {
             
             // STEP 4: Force refresh all components to show empty state
             await this.refreshAllComponents();
+            
+            // MENU TAB FIX: Explicitly refresh menu meals display after clearing data
+            // The refreshAllComponents() method doesn't call updateMenuMealsDisplay()
+            // which is needed to refresh the Menu tab's scheduled meals display
+            this.updateMenuMealsDisplay();
             
             console.log('✅ COMPREHENSIVE CLEAR completed successfully');
             console.log('🚫 Demo data auto-population PREVENTED - will only load on explicit user reset');
@@ -3494,6 +3523,10 @@ class MealPlannerApp {
                 view.render();
             }
         });
+
+        // PLANNING QUEUE COUNTER FIX: Update pending recipes counter after refreshing components
+        // This ensures the planning queue counter reflects the current state after clear all / reset demo data
+        this.updatePendingRecipes();
     }
 
     createModal(title, content, actions = []) {
