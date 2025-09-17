@@ -9,6 +9,8 @@ class GroceryListManager {
         this.recipes = [];
         this.items = [];
         this.currentWeek = this.getCurrentWeek();
+        this.displayMode = 'week'; // 'week' or 'meal'
+        this.groceryItems = []; // For storing generated grocery items
         this.init();
     }
 
@@ -179,13 +181,24 @@ class GroceryListManager {
                     <div>
                         <div class="bg-white rounded-lg shadow">
                             <div class="p-6 border-b border-gray-200">
-                                <div class="flex items-center justify-between">
-                                    <h4 class="font-semibold text-gray-900">Shopping List</h4>
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+                                    <div class="flex items-center space-x-4">
+                                        <h4 class="font-semibold text-gray-900 dark:text-white">Shopping List</h4>
+                                        <!-- Display Mode Toggle -->
+                                        <div class="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+                                            <button id="shopping-list-meal-mode" class="px-3 py-1 text-xs font-medium rounded-md transition-colors ${this.displayMode === 'meal' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}">
+                                                Meal
+                                            </button>
+                                            <button id="shopping-list-week-mode" class="px-3 py-1 text-xs font-medium rounded-md transition-colors ${this.displayMode === 'week' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}">
+                                                Week
+                                            </button>
+                                        </div>
+                                    </div>
                                     <div class="flex items-center space-x-2">
-                                        <button id="export-list-btn" class="text-sm text-blue-600 hover:text-blue-800">
+                                        <button id="export-list-btn" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
                                             Export
                                         </button>
-                                        <button id="print-list-btn" class="text-sm text-blue-600 hover:text-blue-800">
+                                        <button id="print-list-btn" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
                                             Print
                                         </button>
                                     </div>
@@ -247,7 +260,7 @@ class GroceryListManager {
         if (this.scheduledMeals.length === 0) return '';
 
         return this.scheduledMeals.map(meal => {
-            const recipe = this.recipes.find(r => r.id === meal.recipe_id);
+            const recipe = this.recipes.find(r => r.id === meal.recipeId);
             if (!recipe) return '';
 
             if (!meal.date) {
@@ -273,64 +286,172 @@ class GroceryListManager {
     }
 
     renderGroceryList() {
+        if (this.displayMode === 'meal') {
+            return this.renderMealModeList();
+        } else {
+            return this.renderWeekModeList();
+        }
+    }
+
+    renderMealModeList() {
+        // Group ingredients by meal/recipe
+        const mealGroups = this.groupIngredientsByMeal();
+        
+        if (mealGroups.length === 0) {
+            return this.renderEmptyState();
+        }
+
+        return mealGroups.map(mealGroup => `
+            <div class="mb-6 last:mb-0">
+                <div class="flex items-center justify-between mb-3">
+                    <h5 class="font-medium text-gray-900 dark:text-white">${mealGroup.recipeName}</h5>
+                    <span class="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                        ${mealGroup.date}
+                    </span>
+                </div>
+                <div class="space-y-2 pl-4 border-l-2 border-gray-200 dark:border-gray-600">
+                    ${mealGroup.items.map(item => this.renderGroceryItem(item)).join('')}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    renderWeekModeList() {
         const groceryItems = this.generateGroceryItems();
         
         if (groceryItems.length === 0) {
-            return `
-                <div class="text-center py-8">
-                    <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l-1 12H6L5 9z"></path>
-                    </svg>
-                    <p class="text-gray-500">No grocery list generated</p>
-                    <p class="text-sm text-gray-400">Click "Generate List" to create a shopping list from your meal plan</p>
-                </div>
-            `;
+            return this.renderEmptyState();
         }
 
-        // Group by category
+        // Group by category and date range
         const groupedItems = this.groupItemsByCategory(groceryItems);
         
         return Object.entries(groupedItems).map(([category, items]) => `
             <div class="mb-6 last:mb-0">
-                <h5 class="font-medium text-gray-900 mb-3 capitalize">${category}</h5>
+                <h5 class="font-medium text-gray-900 dark:text-white mb-3 capitalize">${category}</h5>
                 <div class="space-y-2">
-                    ${items.map(item => `
-                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <div class="flex items-center space-x-3">
-                                <input type="checkbox" 
-                                       class="grocery-item-checkbox" 
-                                       data-item-id="${item.id}"
-                                       ${item.checked ? 'checked' : ''}>
-                                <div class="flex-1">
-                                    <div class="font-medium text-gray-900 ${item.checked ? 'line-through text-gray-500' : ''}">
-                                        ${item.name}
-                                    </div>
-                                    <div class="text-sm text-gray-500">
-                                        ${item.quantity} ${item.unit}
-                                        ${item.pantry_quantity > 0 ? `
-                                            <span class="text-green-600">
-                                                (have ${item.pantry_quantity} ${item.pantry_unit})
-                                            </span>
-                                        ` : ''}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                ${item.adjusted_quantity !== item.quantity ? `
-                                    <div class="text-sm">
-                                        <span class="line-through text-gray-400">${item.quantity}</span>
-                                        <span class="font-medium text-green-600">${item.adjusted_quantity}</span>
-                                    </div>
-                                ` : `
-                                    <div class="text-sm font-medium">${item.quantity}</div>
-                                `}
-                                <div class="text-xs text-gray-400">${item.unit}</div>
-                            </div>
-                        </div>
-                    `).join('')}
+                    ${items.map(item => this.renderGroceryItem(item, true)).join('')}
                 </div>
             </div>
         `).join('');
+    }
+
+    renderEmptyState() {
+        return `
+            <div class="text-center py-8">
+                <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l-1 12H6L5 9z"></path>
+                </svg>
+                <p class="text-gray-500 dark:text-gray-400">No grocery list generated</p>
+                <p class="text-sm text-gray-400 dark:text-gray-500">Add some scheduled meals to generate a shopping list</p>
+            </div>
+        `;
+    }
+
+    renderGroceryItem(item, showQuantityControls = false) {
+        const itemId = item.ingredient_id || item.id || Math.random().toString(36).substr(2, 9);
+        const adjustedQuantity = item.adjusted_quantity || item.quantity;
+        
+        return `
+            <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div class="flex items-center space-x-3 flex-1">
+                    <input type="checkbox" 
+                           class="grocery-item-checkbox w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" 
+                           data-item-id="${itemId}"
+                           ${item.checked ? 'checked' : ''}>
+                    <div class="flex-1 min-w-0">
+                        <div class="font-medium text-gray-900 dark:text-white ${item.checked ? 'line-through text-gray-500 dark:text-gray-400' : ''}">
+                            ${item.name}
+                        </div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">
+                            ${showQuantityControls ? '' : `${item.quantity} ${item.unit}`}
+                            ${item.pantry_quantity > 0 ? `
+                                <span class="text-green-600 dark:text-green-400">
+                                    (have ${item.pantry_quantity} ${item.pantry_unit})
+                                </span>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+                ${showQuantityControls ? `
+                    <div class="flex items-center space-x-2">
+                        <button class="quantity-decrease w-8 h-8 flex items-center justify-center bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-full text-gray-600 dark:text-gray-300 transition-colors" data-item-id="${itemId}">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                            </svg>
+                        </button>
+                        <div class="text-center min-w-[60px]">
+                            <div class="text-sm font-medium text-gray-900 dark:text-white">${adjustedQuantity}</div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400">${item.unit}</div>
+                        </div>
+                        <button class="quantity-increase w-8 h-8 flex items-center justify-center bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-full text-gray-600 dark:text-gray-300 transition-colors" data-item-id="${itemId}">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                        </button>
+                    </div>
+                ` : `
+                    <div class="text-right">
+                        ${adjustedQuantity !== item.quantity ? `
+                            <div class="text-sm">
+                                <span class="line-through text-gray-400 dark:text-gray-500">${item.quantity}</span>
+                                <span class="font-medium text-green-600 dark:text-green-400">${adjustedQuantity}</span>
+                            </div>
+                        ` : `
+                            <div class="text-sm font-medium text-gray-900 dark:text-white">${item.quantity}</div>
+                        `}
+                        <div class="text-xs text-gray-400 dark:text-gray-500">${item.unit}</div>
+                    </div>
+                `}
+            </div>
+        `;
+    }
+
+    groupIngredientsByMeal() {
+        const mealGroups = [];
+        
+        // Get scheduled meals in the current date range
+        const filteredMeals = this.scheduledMeals.filter(meal => {
+            const mealDate = new Date(meal.date);
+            const startDate = new Date(this.currentWeek);
+            const endDate = this.endDate || new Date(startDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+            return mealDate >= startDate && mealDate <= endDate;
+        });
+
+        filteredMeals.forEach(meal => {
+            const recipe = this.recipes.find(r => r.id === meal.recipeId);
+            if (!recipe || !recipe.items) return;
+
+            const mealDate = new Date(meal.date);
+            const formattedDate = mealDate.toLocaleDateString('en-US', { 
+                weekday: 'short', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+
+            const items = recipe.items.map(ingredient => {
+                const ingredientData = this.items.find(i => i.id === ingredient.item_id);
+                return {
+                    id: ingredient.item_id,
+                    ingredient_id: ingredient.item_id,
+                    name: ingredientData ? ingredientData.name : 'Unknown Ingredient',
+                    quantity: ingredient.quantity || 0,
+                    unit: ingredient.unit || '',
+                    category: this.getIngredientCategory(ingredient.item_id),
+                    checked: false,
+                    pantry_quantity: 0,
+                    adjusted_quantity: ingredient.quantity || 0
+                };
+            });
+
+            mealGroups.push({
+                recipeName: recipe.title || 'Unknown Recipe',
+                date: formattedDate,
+                items: items
+            });
+        });
+
+        return mealGroups;
     }
 
     renderPantryItems() {
@@ -377,22 +498,22 @@ class GroceryListManager {
 
         // Aggregate ingredients from all scheduled meals
         this.scheduledMeals.forEach(meal => {
-            const recipe = this.recipes.find(r => r.id === meal.recipe_id);
+            const recipe = this.recipes.find(r => r.id === meal.recipeId);
             if (!recipe) return;
 
             recipe.items.forEach(ingredient => {
-                const key = `${ingredient.ingredient_id}-${ingredient.unit}`;
+                const key = `${ingredient.item_id}-${ingredient.unit}`;
                 if (!ingredientTotals[key]) {
                     // Look up ingredient name from items database
-                    const ingredientData = this.items.find(i => i.id === ingredient.ingredient_id);
+                    const ingredientData = this.items.find(i => i.id === ingredient.item_id);
                     const ingredientName = ingredientData ? ingredientData.name : ingredient.name || 'Unknown Ingredient';
                     
                     ingredientTotals[key] = {
-                        ingredient_id: ingredient.ingredient_id,
+                        ingredient_id: ingredient.item_id,
                         name: ingredientName,
                         quantity: 0,
                         unit: ingredient.unit,
-                        category: this.getIngredientCategory(ingredient.ingredient_id)
+                        category: this.getIngredientCategory(ingredient.item_id)
                     };
                 }
                 ingredientTotals[key].quantity = this.roundQuantity(
@@ -518,12 +639,67 @@ class GroceryListManager {
             });
         }
 
+        // Display mode toggle buttons
+        const mealModeBtn = this.container.querySelector('#shopping-list-meal-mode');
+        const weekModeBtn = this.container.querySelector('#shopping-list-week-mode');
+        
+        if (mealModeBtn) {
+            mealModeBtn.addEventListener('click', () => {
+                this.setDisplayMode('meal');
+            });
+        }
+        
+        if (weekModeBtn) {
+            weekModeBtn.addEventListener('click', () => {
+                this.setDisplayMode('week');
+            });
+        }
+
         // Grocery item checkboxes
         this.container.querySelectorAll('.grocery-item-checkbox').forEach(checkbox => {
             checkbox.addEventListener('change', (e) => {
-                this.toggleGroceryItem(parseInt(e.target.dataset.itemId), e.target.checked);
+                this.toggleGroceryItem(e.target.dataset.itemId, e.target.checked);
             });
         });
+
+        // Quantity control buttons
+        this.container.querySelectorAll('.quantity-decrease').forEach(button => {
+            button.addEventListener('click', (e) => {
+                this.adjustQuantity(e.target.closest('button').dataset.itemId, -0.25);
+            });
+        });
+
+        this.container.querySelectorAll('.quantity-increase').forEach(button => {
+            button.addEventListener('click', (e) => {
+                this.adjustQuantity(e.target.closest('button').dataset.itemId, 0.25);
+            });
+        });
+    }
+
+    setDisplayMode(mode) {
+        this.displayMode = mode;
+        this.render();
+        this.attachEventListeners(); // Re-attach event listeners after re-render
+    }
+
+    adjustQuantity(itemId, adjustment) {
+        // Find the item in groceryItems and adjust its quantity
+        if (!this.groceryItems) return;
+        
+        const item = this.groceryItems.find(item => 
+            (item.ingredient_id && item.ingredient_id.toString() === itemId.toString()) ||
+            (item.id && item.id.toString() === itemId.toString())
+        );
+        
+        if (item) {
+            const currentQuantity = item.adjusted_quantity || item.quantity || 0;
+            const newQuantity = Math.max(0, currentQuantity + adjustment);
+            item.adjusted_quantity = this.roundQuantity(newQuantity);
+            
+            // Re-render to show the updated quantity
+            this.render();
+            this.attachEventListeners(); // Re-attach event listeners after re-render
+        }
     }
 
     generateGroceryList() {
