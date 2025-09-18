@@ -313,15 +313,22 @@ class RecipeManager {
             recipeGrid.offsetHeight;
             console.log('🔄 Reflow forced');
             
-            // Re-attach event listeners to the new recipe cards
-            this.attachRecipeCardListeners();
-            console.log('🔄 Event listeners reattached');
+        // Re-attach event listeners to the new recipe cards
+        this.attachRecipeCardListeners();
+        console.log('🔄 Event listeners reattached');
+        
+        // Also attach empty state listeners if no recipes
+        if (this.recipes.length === 0) {
+            this.attachEmptyStateListeners();
+        }
             
             // Update empty state visibility
             if (filteredRecipes.length > 0) {
                 emptyState.classList.add('hidden');
             } else {
                 emptyState.classList.remove('hidden');
+                // Re-attach event listener specifically for the empty state button
+                this.attachEmptyStateListeners();
             }
             
             // Update info bar content
@@ -419,6 +426,22 @@ class RecipeManager {
         const rightSide = infoBar.querySelector('.flex.items-center.space-x-3');
         if (rightSide) {
             rightSide.innerHTML = ``;
+        }
+    }
+
+    attachEmptyStateListeners() {
+        console.log('🔧 attachEmptyStateListeners called');
+        
+        // Specifically attach event listener for the "Add Your First Recipe" button
+        const addFirstRecipeBtn = this.container.querySelector('#add-first-recipe');
+        if (addFirstRecipeBtn) {
+            console.log('🔧 Found "Add Your First Recipe" button, attaching listener');
+            addFirstRecipeBtn.addEventListener('click', () => {
+                console.log('🔧 "Add Your First Recipe" button clicked');
+                this.showRecipeForm();
+            });
+        } else {
+            console.log('🔧 "Add Your First Recipe" button not found');
         }
     }
 
@@ -918,6 +941,8 @@ class RecipeManager {
     attachEventListeners() {
         console.log('🔧 attachEventListeners called');
         
+        try {
+        
         // Remove existing event listeners to prevent duplicates
         const existingFavBtn = this.container.querySelector('#favorites-filter-btn');
         if (existingFavBtn) {
@@ -1112,12 +1137,21 @@ class RecipeManager {
         console.log('🔧 About to attach recipe card listeners');
         const recipeCards = this.container.querySelectorAll('.recipe-card');
         console.log('🔧 Found recipe cards:', recipeCards.length);
-        this.attachRecipeCardListeners();
+        try {
+            this.attachRecipeCardListeners();
+            console.log('🔧 attachRecipeCardListeners completed successfully');
+        } catch (error) {
+            console.error('🔧 Error in attachRecipeCardListeners:', error);
+        }
 
         // Add recipe button
+        console.log('🔧 Continuing to Add recipe button section...');
         const addBtn = this.container.querySelector('#add-recipe-btn, #add-first-recipe');
+        console.log('🔧 Add recipe button found:', !!addBtn, addBtn?.id);
         if (addBtn) {
+            console.log('🔧 Adding click listener to add recipe button');
             addBtn.addEventListener('click', () => {
+                console.log('🔧 Add recipe button clicked!');
                 this.showRecipeForm();
             });
         }
@@ -1130,25 +1164,52 @@ class RecipeManager {
             });
         }
 
-        // Manage labels button
+        // Manage labels button - remove existing listeners first
         const manageLabelsBtn = this.container.querySelector('#manage-labels-btn');
         if (manageLabelsBtn) {
-            manageLabelsBtn.addEventListener('click', () => {
+            // Clone and replace to remove all existing event listeners
+            const newManageLabelsBtn = manageLabelsBtn.cloneNode(true);
+            manageLabelsBtn.parentNode.replaceChild(newManageLabelsBtn, manageLabelsBtn);
+            
+            // Add fresh event listener
+            newManageLabelsBtn.addEventListener('click', () => {
+                console.log('🏷️ Labels button clicked - single event listener');
                 this.showLabelManagement();
             });
+        }
+
+        // Attach empty state listeners if no recipes
+        if (this.recipes.length === 0) {
+            console.log('🔧 No recipes found, attaching empty state listeners');
+            this.attachEmptyStateListeners();
+        }
+        
+        console.log('🔧 attachEventListeners completed successfully');
+        
+        } catch (error) {
+            console.error('🔧 Error in attachEventListeners:', error);
+            console.error('🔧 Stack trace:', error.stack);
         }
     }
 
     showLabelManagement() {
         console.log('🏷️ Opening label management interface...');
         
-        // Create full-page overlay for label management
-        const overlay = document.createElement('div');
-        overlay.id = 'label-management-overlay';
-        overlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+        // Prevent multiple calls in rapid succession (aggressive debounce)
+        const now = Date.now();
+        if (this.lastLabelManagementCall && (now - this.lastLabelManagementCall) < 1000) {
+            console.log('🏷️ Label management called too recently, ignoring duplicate call');
+            return;
+        }
         
-        overlay.innerHTML = this.generateLabelManagementHTML();
-        document.body.appendChild(overlay);
+        this.lastLabelManagementCall = now;
+        this.labelManagementOpen = true;
+        
+        // Store current recipe content for restoration
+        this.originalRecipeContent = this.container.innerHTML;
+        
+        // Replace the entire recipe tab content with label management (full-page approach)
+        this.container.innerHTML = this.generateLabelManagementHTML();
         
         // Attach event listeners for label management
         this.attachLabelManagementListeners();
@@ -1158,9 +1219,14 @@ class RecipeManager {
     }
 
     generateLabelManagementHTML() {
+        const presetColors = [
+            '#EF4444', '#F97316', '#F59E0B', '#EAB308', '#84CC16', '#22C55E',
+            '#10B981', '#06B6D4', '#0EA5E9', '#3B82F6', '#6366F1', '#A855F7'
+        ];
+
         return `
-            <!-- Mobile-optimized full-screen layout -->
-            <div class="bg-white dark:bg-gray-800 w-full h-full md:rounded-lg md:shadow-xl md:max-w-4xl md:max-h-[90vh] md:overflow-hidden flex flex-col">
+            <!-- Mobile-optimized full-page layout -->
+            <div class="bg-white dark:bg-gray-800 w-full min-h-screen flex flex-col">
                 <!-- Header matching recipe form navigation -->
                 <div class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
                     <div class="max-w-4xl mx-auto px-4 py-4">
@@ -1416,15 +1482,7 @@ class RecipeManager {
             });
         }
 
-        // Click outside to close
-        const overlay = document.getElementById('label-management-overlay');
-        if (overlay) {
-            overlay.addEventListener('click', (e) => {
-                if (e.target === overlay) {
-                    this.closeLabelManagement();
-                }
-            });
-        }
+        // No click-outside-to-close for full-page approach
 
         // Dual-mode color picker functionality
         this.setupColorPicker();
@@ -1467,9 +1525,20 @@ class RecipeManager {
     }
 
     closeLabelManagement() {
-        const overlay = document.getElementById('label-management-overlay');
-        if (overlay) {
-            overlay.remove();
+        console.log('🏷️ Closing label management interface...');
+        
+        // Reset the flag to allow opening again
+        this.labelManagementOpen = false;
+        
+        // Restore the original recipe content
+        if (this.originalRecipeContent) {
+            this.container.innerHTML = this.originalRecipeContent;
+            
+            // Re-attach event listeners for the restored content
+            this.attachEventListeners();
+            
+            // Clear the stored content
+            this.originalRecipeContent = null;
         }
     }
 
@@ -3138,8 +3207,8 @@ class RecipeManager {
                 <div class="mb-4">
                     <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">All Items (${combinedItems.size})</h3>
                     <div class="space-y-2">
-                        ${Array.from(combinedItems.entries()).map(([ingredientId, totalQuantity]) => {
-                            const item = window.itemsManager.items.find(i => i.id === parseInt(ingredientId));
+                        ${Array.from(combinedItems.entries()).map(([itemId, totalQuantity]) => {
+                            const item = window.itemsManager.items.find(i => i.id === parseInt(itemId));
                             return `
                                 <div class="flex justify-between items-center py-1">
                                     <span class="text-gray-900 dark:text-white">${item ? item.name : 'Unknown Item'}</span>
@@ -3544,7 +3613,7 @@ class RecipeManager {
                     <div class="mb-4">
                         <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Items (${items.length})</h3>
                         <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 space-y-2">
-                            ${ingredients.map(item => {
+                            ${items.map(item => {
                                 // Look up the actual item by ID to get the name
                                 const foundItem = this.items.find(itemData => itemData.id === (item.item_id || item.ingredient_id));
                                 const itemName = foundItem ? foundItem.name : `Item ID ${item.item_id || item.ingredient_id}`;
@@ -4313,7 +4382,7 @@ class RecipeManager {
             this.attachSharedItemListeners({
                 addIngredientBtn: '#add-item-row',
                 createIngredientBtn: '#create-new-ingredient',
-                ingredientsContainer: '#items-container',
+                itemsContainer: '#items-container',
                 isCombo: isCombo
             });
         }
@@ -4794,6 +4863,20 @@ class RecipeManager {
             const recipeType = formData.get('recipe_type') || 'regular';
             const isCombo = recipeType === 'combo';
 
+            // Handle labels - check if they were entered as free text or selected via dropdown
+            let labels = this.formSelectedLabels || [];
+            if (labels.length === 0) {
+                // Check if labels were entered as free text in the input field
+                const labelsInput = form.querySelector('#fullpage-recipe-labels-input');
+                if (labelsInput && labelsInput.value.trim()) {
+                    // Split by spaces and/or commas, filter out empty strings
+                    labels = labelsInput.value.trim()
+                        .split(/[\s,]+/)
+                        .filter(label => label.length > 0)
+                        .map(label => label.trim());
+                }
+            }
+
             const recipeData = {
                 title: formData.get('title').trim(),
                 description: formData.get('description').trim(),
@@ -4801,7 +4884,7 @@ class RecipeManager {
                 prep_time: parseInt(formData.get('prep_time')) || 0,
                 cook_time: parseInt(formData.get('cook_time')) || 0,
                 instructions: instructionSteps,
-                labels: this.formSelectedLabels || [],
+                labels: labels,
                 recipe_type: recipeType
             };
 
@@ -4833,10 +4916,10 @@ class RecipeManager {
                 console.log('🍳 Final recipes array:', recipes);
                 console.log('🍳 Final combo recipe data:', recipeData);
 
-                // ALSO collect ingredients for combo (additional items)
+                // ALSO collect items for combo (additional items)
                 const items = [];
                 const itemRows = form.querySelectorAll('.item-row');
-                console.log('🥕 Found', itemRows.length, 'ingredient rows to process for combo');
+                console.log('🥕 Found', itemRows.length, 'item rows to process for combo');
                 
                 itemRows.forEach((row, index) => {
                     const itemSelect = row.querySelector('.item-select');
@@ -4850,7 +4933,7 @@ class RecipeManager {
                     console.log('🥕 Processing combo item row:', { itemId, quantity, unit });
                     
                     if (itemId && quantity > 0) {
-                        ingredients.push({
+                        items.push({
                             item_id: parseInt(itemId),
                             quantity: quantity,
                             unit: unit
@@ -4858,8 +4941,8 @@ class RecipeManager {
                     }
                 });
 
-                recipeData.items = ingredients;
-                console.log('🥕 Final combo ingredients array:', ingredients);
+                recipeData.items = items;
+                console.log('🥕 Final combo items array:', items);
 
                 // Auto-add Recipe Combo label if not already present
                 if (!recipeData.labels.includes('Recipe Combo')) {
@@ -4869,7 +4952,7 @@ class RecipeManager {
                 // Collect items for regular recipe
                 const items = [];
                 const itemRows = form.querySelectorAll('.item-row');
-                console.log('🥕 Found', itemRows.length, 'ingredient rows to process');
+                console.log('🥕 Found', itemRows.length, 'item rows to process');
                 
                 itemRows.forEach((row, index) => {
                     const itemSelect = row.querySelector('.item-select');
@@ -4880,10 +4963,10 @@ class RecipeManager {
                     const quantity = parseFloat(quantityInput?.value) || 0;
                     const unit = unitSelect?.value || '';
                     
-                    console.log('🥕 Processing ingredient row:', { ingredientId, quantity, unit });
+                    console.log('🥕 Processing item row:', { itemId, quantity, unit });
                     
-                    if (ingredientId && quantity > 0) {
-                        ingredients.push({
+                    if (itemId && quantity > 0) {
+                        items.push({
                             item_id: parseInt(itemId),
                             quantity: quantity,
                             unit: unit
@@ -4891,8 +4974,8 @@ class RecipeManager {
                     }
                 });
 
-                recipeData.items = ingredients;
-                console.log('🥕 Final ingredients array:', ingredients);
+                recipeData.items = items;
+                console.log('🥕 Final items array:', items);
             }
 
             // Validate required fields
