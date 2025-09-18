@@ -3613,7 +3613,7 @@ class RecipeManager {
                     <div class="mb-4">
                         <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Items (${items.length})</h3>
                         <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 space-y-2">
-                            ${ingredients.map(item => {
+                            ${items.map(item => {
                                 // Look up the actual item by ID to get the name
                                 const foundItem = this.items.find(itemData => itemData.id === (item.item_id || item.ingredient_id));
                                 const itemName = foundItem ? foundItem.name : `Item ID ${item.item_id || item.ingredient_id}`;
@@ -4382,7 +4382,7 @@ class RecipeManager {
             this.attachSharedItemListeners({
                 addIngredientBtn: '#add-item-row',
                 createIngredientBtn: '#create-new-ingredient',
-                ingredientsContainer: '#items-container',
+                itemsContainer: '#items-container',
                 isCombo: isCombo
             });
         }
@@ -4916,10 +4916,10 @@ class RecipeManager {
                 console.log('🍳 Final recipes array:', recipes);
                 console.log('🍳 Final combo recipe data:', recipeData);
 
-                // ALSO collect ingredients for combo (additional items)
+                // ALSO collect items for combo (additional items)
                 const items = [];
                 const itemRows = form.querySelectorAll('.item-row');
-                console.log('🥕 Found', itemRows.length, 'ingredient rows to process for combo');
+                console.log('🥕 Found', itemRows.length, 'item rows to process for combo');
                 
                 itemRows.forEach((row, index) => {
                     const itemSelect = row.querySelector('.item-select');
@@ -4933,7 +4933,7 @@ class RecipeManager {
                     console.log('🥕 Processing combo item row:', { itemId, quantity, unit });
                     
                     if (itemId && quantity > 0) {
-                        ingredients.push({
+                        items.push({
                             item_id: parseInt(itemId),
                             quantity: quantity,
                             unit: unit
@@ -4941,8 +4941,8 @@ class RecipeManager {
                     }
                 });
 
-                recipeData.items = ingredients;
-                console.log('🥕 Final combo ingredients array:', ingredients);
+                recipeData.items = items;
+                console.log('🥕 Final combo items array:', items);
 
                 // Auto-add Recipe Combo label if not already present
                 if (!recipeData.labels.includes('Recipe Combo')) {
@@ -4952,7 +4952,7 @@ class RecipeManager {
                 // Collect items for regular recipe
                 const items = [];
                 const itemRows = form.querySelectorAll('.item-row');
-                console.log('🥕 Found', itemRows.length, 'ingredient rows to process');
+                console.log('🥕 Found', itemRows.length, 'item rows to process');
                 
                 itemRows.forEach((row, index) => {
                     const itemSelect = row.querySelector('.item-select');
@@ -4963,10 +4963,10 @@ class RecipeManager {
                     const quantity = parseFloat(quantityInput?.value) || 0;
                     const unit = unitSelect?.value || '';
                     
-                    console.log('🥕 Processing ingredient row:', { itemId, quantity, unit });
+                    console.log('🥕 Processing item row:', { itemId, quantity, unit });
                     
                     if (itemId && quantity > 0) {
-                        ingredients.push({
+                        items.push({
                             item_id: parseInt(itemId),
                             quantity: quantity,
                             unit: unit
@@ -4974,8 +4974,8 @@ class RecipeManager {
                     }
                 });
 
-                recipeData.items = ingredients;
-                console.log('🥕 Final ingredients array:', ingredients);
+                recipeData.items = items;
+                console.log('🥕 Final items array:', items);
             }
 
             // Validate required fields
