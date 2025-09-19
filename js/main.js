@@ -3220,6 +3220,16 @@ class MealPlannerApp {
             if (window.mealPlannerSettings) {
                 window.mealPlannerSettings.saveAuthoritativeData('planScheduledMeals', scheduledMeals);
                 console.log(`💾 Saved ${scheduledMeals.length} meals to PLAN authoritative data source`);
+                
+                // Dispatch events for each new meal to trigger grocery list updates
+                newScheduledMeals.forEach(meal => {
+                    document.dispatchEvent(new CustomEvent('mealScheduled', {
+                        detail: { 
+                            scheduledMeal: meal,
+                            mealType: mealType
+                        }
+                    }));
+                });
             } else {
                 console.error('❌ Cannot save scheduled meals - settings manager not available');
                 throw new Error('Settings manager not available for saving scheduled meals');
@@ -3415,7 +3425,20 @@ class MealPlannerApp {
             
             this.saveScheduledMeals(scheduledMeals);
             
-            console.log(`✅ Removed ${originalCount - scheduledMeals.length} meal(s) from schedule`);
+            // Dispatch event for other components to update (like grocery list)
+            const removedCount = originalCount - scheduledMeals.length;
+            if (removedCount > 0) {
+                document.dispatchEvent(new CustomEvent('mealUnscheduled', {
+                    detail: { 
+                        mealId: mealId,
+                        date: dateStr,
+                        mealType: mealType,
+                        removedCount: removedCount
+                    }
+                }));
+            }
+            
+            console.log(`✅ Removed ${removedCount} meal(s) from schedule`);
             
             return true;
         } catch (error) {

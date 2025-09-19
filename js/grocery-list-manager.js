@@ -71,21 +71,42 @@ class GroceryListManager {
         // SHOPPING LIST SYNC FIX: Load from menuScheduledMeals (committed schedule) instead of legacy scheduledMeals
         // The grocery list should be based on the committed meals in the Menu tab, not the legacy storage
         if (window.mealPlannerSettings) {
-            const allMeals = window.mealPlannerSettings.getAuthoritativeData('menuScheduledMeals') || [];
+            // Load from both menuScheduledMeals (committed) and planScheduledMeals (prospective)
+            const menuMeals = window.mealPlannerSettings.getAuthoritativeData('menuScheduledMeals') || [];
+            const planMeals = window.mealPlannerSettings.getAuthoritativeData('planScheduledMeals') || [];
+            console.log('🛒 DEBUG: Loaded menuScheduledMeals:', menuMeals.length, 'meals');
+            console.log('🛒 DEBUG: Loaded planScheduledMeals:', planMeals.length, 'meals');
+            console.log('🛒 DEBUG: Menu meals:', menuMeals.map(m => ({ id: m.id, recipe_name: m.recipe_name, date: m.date })));
+            console.log('🛒 DEBUG: Plan meals:', planMeals.map(m => ({ id: m.id, recipe_name: m.recipe_name, date: m.date })));
+            
+            // Combine both sources for comprehensive grocery list and deduplicate by ID
+            const combinedMeals = [...menuMeals, ...planMeals];
+            const allMeals = combinedMeals.filter((meal, index, arr) => 
+                arr.findIndex(m => m.id === meal.id) === index
+            );
+            console.log('🛒 DEBUG: Combined meals before dedup:', combinedMeals.length);
+            console.log('🛒 DEBUG: Combined meals after dedup:', allMeals.length);
             
             // Filter meals by date range if endDate is set (from unified selector)
             if (this.endDate) {
+                console.log('🛒 DEBUG: Filtering with endDate:', this.endDate);
+                console.log('🛒 DEBUG: currentWeek:', this.currentWeek);
                 this.scheduledMeals = allMeals.filter(meal => {
                     const mealDate = new Date(meal.date);
-                    return mealDate >= this.currentWeek && mealDate <= this.endDate;
+                    const inRange = mealDate >= this.currentWeek && mealDate <= this.endDate;
+                    console.log(`🛒 DEBUG: Meal ${meal.id} date ${meal.date} -> ${mealDate} in range: ${inRange}`);
+                    return inRange;
                 });
                 console.log(`✅ Grocery List Manager loaded ${this.scheduledMeals.length} scheduled meals (filtered by date range) from authoritative source`);
             } else {
                 // Default to current week if no range specified
                 const weekEnd = this.addDays(this.currentWeek, 6);
+                console.log('🛒 DEBUG: Filtering with current week range:', this.currentWeek, 'to', weekEnd);
                 this.scheduledMeals = allMeals.filter(meal => {
                     const mealDate = new Date(meal.date);
-                    return mealDate >= this.currentWeek && mealDate <= weekEnd;
+                    const inRange = mealDate >= this.currentWeek && mealDate <= weekEnd;
+                    console.log(`🛒 DEBUG: Meal ${meal.id} date ${meal.date} -> ${mealDate} in range: ${inRange}`);
+                    return inRange;
                 });
                 console.log(`✅ Grocery List Manager loaded ${this.scheduledMeals.length} scheduled meals (current week) from authoritative source`);
             }
@@ -754,6 +775,26 @@ class GroceryListManager {
     }
 
     attachEventListeners() {
+        console.log('🛒 Attaching grocery list event listeners...');
+        
+        // SHOPPING LIST AUTO-UPDATE: Listen for meal changes to automatically update grocery list
+        document.addEventListener('mealScheduled', (event) => {
+            console.log('🛒 Meal scheduled event received - updating grocery list', event.detail);
+            this.generateFromScheduledMeals();
+        });
+
+        document.addEventListener('mealUnscheduled', (event) => {
+            console.log('🛒 Meal unscheduled event received - updating grocery list', event.detail);
+            this.generateFromScheduledMeals();
+        });
+
+        document.addEventListener('mealUpdated', (event) => {
+            console.log('🛒 Meal updated event received - updating grocery list', event.detail);
+            this.generateFromScheduledMeals();
+        });
+        
+        console.log('✅ Grocery list event listeners attached');
+
         // Copy list button
         const copyBtn = this.container.querySelector('#copy-list-btn');
         if (copyBtn) {
