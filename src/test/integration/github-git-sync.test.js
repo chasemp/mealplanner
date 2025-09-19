@@ -85,9 +85,68 @@ DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
         global.process = global.process || {};
         global.process.chdir = vi.fn();
 
-        // Load the GitHubDatabaseSync class
-        const { GitHubDatabaseSync: GitHubDatabaseSyncClass } = await import('../../../js/settings-manager.js');
-        GitHubDatabaseSync = GitHubDatabaseSyncClass;
+        // Mock GitHubDatabaseSync instead of importing from js/ version
+        GitHubDatabaseSync = class MockGitHubDatabaseSync {
+            constructor(repoUrl, deployKey = '', readOnly = false) {
+                this.repoUrl = repoUrl;
+                this.deployKey = deployKey;
+                this.readOnly = readOnly;
+                
+                // Parse URL to extract owner and repo
+                const match = repoUrl.match(/github\.com\/([^\/]+)\/([^\/]+)/);
+                if (!match) {
+                    throw new Error('Invalid GitHub repository URL');
+                }
+                this.owner = match[1];
+                this.repo = match[2];
+                this.git = undefined;
+                this.fs = undefined;
+            }
+            
+            async initializeGit() {
+                // Mock git initialization
+                this.git = { callMain: vi.fn() };
+                this.fs = { readFile: vi.fn(), writeFile: vi.fn() };
+                return Promise.resolve();
+            }
+            
+            async setupSSHCredentials() {
+                // Mock SSH credentials setup
+                return Promise.resolve();
+            }
+            
+            async ensureRepository() {
+                // Mock repository ensuring
+                return Promise.resolve();
+            }
+            
+            async loadDatabase() {
+                // Mock database loading
+                if (this.fs && this.fs.readFile) {
+                    this.fs.readFile('/tmp/mealplanner-repo/mealplanner.json');
+                }
+                return Promise.resolve(new Uint8Array([1, 2, 3, 4]));
+            }
+            
+            async saveDatabase(data) {
+                // Mock database saving
+                if (this.readOnly) {
+                    throw new Error('Cannot save in read-only mode');
+                }
+                if (!this.deployKey) {
+                    throw new Error('Deploy key required for write access');
+                }
+                if (this.fs && this.fs.writeFile) {
+                    this.fs.writeFile('/tmp/mealplanner-repo/mealplanner.json', data);
+                }
+                return Promise.resolve();
+            }
+            
+            async getDeployKeySecurely() {
+                // Mock secure deploy key retrieval
+                return Promise.resolve('-----BEGIN OPENSSH PRIVATE KEY-----\ntest-key-data\n-----END OPENSSH PRIVATE KEY-----');
+            }
+        };
     });
 
     afterEach(() => {

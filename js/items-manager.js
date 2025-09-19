@@ -851,12 +851,12 @@ class ItemsManager {
             // Reload data from authoritative source to ensure consistency
             await this.loadItems();
 
-            // CRITICAL FIX: Notify RecipeManager to refresh its ingredients when items change
+            // CRITICAL FIX: Notify RecipeManager to refresh its items when items change
             // This prevents demo data pollution in recipe forms after adding/updating items
-            if (window.app && window.app.recipeManager && window.app.recipeManager.loadIngredients) {
-                console.log('🔄 ITEMS CHANGED: Refreshing RecipeManager ingredients...');
-                await window.app.recipeManager.loadIngredients();
-                console.log('✅ RecipeManager ingredients refreshed successfully');
+            if (window.app && window.app.recipeManager && window.app.recipeManager.loadItems) {
+                console.log('🔄 ITEMS CHANGED: Refreshing RecipeManager items...');
+                await window.app.recipeManager.loadItems();
+                console.log('✅ RecipeManager items refreshed successfully');
             }
 
             // Show success notification
@@ -1019,12 +1019,12 @@ class ItemsManager {
             // Save to persistent storage
             this.saveItems();
             
-            // CRITICAL FIX: Notify RecipeManager to refresh its ingredients when items are deleted
+            // CRITICAL FIX: Notify RecipeManager to refresh its items when items are deleted
             // This prevents stale ingredient references in recipe forms
-            if (window.app && window.app.recipeManager && window.app.recipeManager.loadIngredients) {
-                console.log('🔄 ITEM DELETED: Refreshing RecipeManager ingredients...');
-                await window.app.recipeManager.loadIngredients();
-                console.log('✅ RecipeManager ingredients refreshed after deletion');
+            if (window.app && window.app.recipeManager && window.app.recipeManager.loadItems) {
+                console.log('🔄 ITEM DELETED: Refreshing RecipeManager items...');
+                await window.app.recipeManager.loadItems();
+                console.log('✅ RecipeManager items refreshed after deletion');
             }
             
             this.applyFilters();
@@ -1123,3 +1123,6 @@ if (typeof global !== 'undefined') {
 
 // Global registry for items manager
 window.itemsManager = null;
+
+// Browser-only: No exports needed - classes are available as global variables
+// Tests should use src/components/ versions which are proper ES6 modules
