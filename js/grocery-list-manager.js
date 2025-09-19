@@ -866,16 +866,28 @@ class GroceryListManager {
         const mealModeBtn = this.container.querySelector('#shopping-list-meal-mode');
         const weekModeBtn = this.container.querySelector('#shopping-list-week-mode');
         
+        console.log('🛒 DEBUG: Looking for mode toggle buttons...');
+        console.log('🛒 DEBUG: mealModeBtn found:', !!mealModeBtn, mealModeBtn);
+        console.log('🛒 DEBUG: weekModeBtn found:', !!weekModeBtn, weekModeBtn);
+        
         if (mealModeBtn) {
             mealModeBtn.addEventListener('click', () => {
+                console.log('🛒 DEBUG: Meal mode button clicked!');
                 this.setDisplayMode('meal');
             });
+            console.log('🛒 DEBUG: Meal mode event listener attached');
+        } else {
+            console.warn('🛒 WARNING: Meal mode button not found!');
         }
         
         if (weekModeBtn) {
             weekModeBtn.addEventListener('click', () => {
+                console.log('🛒 DEBUG: Week mode button clicked!');
                 this.setDisplayMode('week');
             });
+            console.log('🛒 DEBUG: Week mode event listener attached');
+        } else {
+            console.warn('🛒 WARNING: Week mode button not found!');
         }
 
         // Grocery item checkboxes
