@@ -830,10 +830,23 @@ class MealPlannerApp {
         console.log('🛒 Initializing grocery list manager...');
         
         const container = document.getElementById('grocery-list-container');
+        console.log('🛒 DEBUG: grocery-list-container found:', !!container, container);
+        
         if (container) {
             this.groceryListManager = new GroceryListManager(container);
             window.groceryListManager = this.groceryListManager;
             console.log('✅ Grocery list manager initialized');
+            
+            // Initialize the grocery list manager
+            if (this.groceryListManager.init) {
+                this.groceryListManager.init().then(() => {
+                    console.log('✅ Grocery list manager init completed');
+                }).catch(error => {
+                    console.error('❌ Error initializing grocery list manager:', error);
+                });
+            }
+        } else {
+            console.error('❌ grocery-list-container not found!');
         }
     }
 
