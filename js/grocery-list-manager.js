@@ -51,6 +51,13 @@ class GroceryListManager {
         if (window.mealPlannerSettings) {
             this.recipes = window.mealPlannerSettings.getAuthoritativeData('recipes');
             console.log(`✅ Grocery List Manager loaded ${this.recipes.length} recipes from authoritative source`);
+            
+            // CRITICAL DEBUG: Log recipe IDs for grocery list troubleshooting
+            if (this.recipes && this.recipes.length > 0) {
+                console.log('🛒 DEBUG: Loaded recipe IDs:', this.recipes.map(r => ({ id: r.id, title: r.title })));
+            } else {
+                console.log('🚨 CRITICAL: Grocery List Manager has no recipes after loading from authoritative source!');
+            }
         } else {
             // Fallback if settings not available
             console.warn('⚠️ Settings manager not available, using empty recipes');
@@ -294,7 +301,7 @@ class GroceryListManager {
     }
 
     renderMealModeList() {
-        // Group ingredients by meal/recipe
+        // Group items by meal/recipe
         const mealGroups = this.groupIngredientsByMeal();
         
         if (mealGroups.length === 0) {
@@ -349,7 +356,7 @@ class GroceryListManager {
     }
 
     renderGroceryItem(item, showQuantityControls = false) {
-        const itemId = item.ingredient_id || item.id || Math.random().toString(36).substr(2, 9);
+        const itemId = item.item_id || item.id || Math.random().toString(36).substr(2, 9);
         const adjustedQuantity = item.adjusted_quantity || item.quantity;
         
         return `
@@ -418,9 +425,11 @@ class GroceryListManager {
             return mealDate >= startDate && mealDate <= endDate;
         });
 
-        filteredMeals.forEach(meal => {
-            const recipe = this.recipes.find(r => r.id === meal.recipeId);
-            if (!recipe || !recipe.items) return;
+            filteredMeals.forEach(meal => {
+                // CRITICAL FIX: Use recipe_id (snake_case) instead of recipeId (camelCase)
+                const recipeId = meal.recipe_id || meal.recipeId;
+                const recipe = this.recipes.find(r => r.id === recipeId);
+                if (!recipe) return;
 
             const mealDate = new Date(meal.date);
             const formattedDate = mealDate.toLocaleDateString('en-US', { 
@@ -429,26 +438,86 @@ class GroceryListManager {
                 day: 'numeric' 
             });
 
-            const items = recipe.items.map(ingredient => {
-                const ingredientData = this.items.find(i => i.id === ingredient.item_id);
-                return {
-                    id: ingredient.item_id,
-                    ingredient_id: ingredient.item_id,
-                    name: ingredientData ? ingredientData.name : 'Unknown Ingredient',
-                    quantity: ingredient.quantity || 0,
-                    unit: ingredient.unit || '',
-                    category: this.getIngredientCategory(ingredient.item_id),
-                    checked: false,
-                    pantry_quantity: 0,
-                    adjusted_quantity: ingredient.quantity || 0
-                };
-            });
+            let allItems = [];
 
-            mealGroups.push({
-                recipeName: recipe.title || 'Unknown Recipe',
-                date: formattedDate,
-                items: items
-            });
+            // Handle combo recipes differently
+            if (recipe.recipe_type === 'combo') {
+                console.log('🛒 [By Meal] Processing COMBO recipe:', recipe.title);
+                
+                // Get items from sub-recipes in the combo
+                const recipeRefs = recipe.recipes || recipe.combo_recipes || [];
+                
+                recipeRefs.forEach(recipeRef => {
+                    const subRecipe = this.recipes.find(r => r.id === parseInt(recipeRef.recipe_id));
+                    if (!subRecipe || !subRecipe.items) return;
+                    
+                    const portions = recipeRef.servings || 1;
+                    
+                    (subRecipe.items || []).forEach(item => {
+                        const itemData = this.items.find(i => i.id === item.item_id);
+                        const adjustedQuantity = (item.quantity || 0) * portions;
+                        
+                        allItems.push({
+                            id: item.item_id,
+                            item_id: item.item_id,
+                            name: itemData ? itemData.name : 'Unknown Item',
+                            quantity: adjustedQuantity,
+                            unit: item.unit || '',
+                            category: this.getItemCategory(item.item_id),
+                            checked: false,
+                            pantry_quantity: 0,
+                            adjusted_quantity: adjustedQuantity,
+                            source: `${subRecipe.title} (${portions}x)`
+                        });
+                    });
+                });
+
+                // Add any additional items from the combo itself
+                if (recipe.items && recipe.items.length > 0) {
+                    recipe.items.forEach(item => {
+                        const itemData = this.items.find(i => i.id === item.item_id);
+                        allItems.push({
+                            id: ingredient.item_id,
+                            ingredient_id: ingredient.item_id,
+                            name: ingredientData ? ingredientData.name : 'Unknown Ingredient',
+                            quantity: ingredient.quantity || 0,
+                            unit: ingredient.unit || '',
+                            category: this.getItemCategory(ingredient.item_id),
+                            checked: false,
+                            pantry_quantity: 0,
+                            adjusted_quantity: ingredient.quantity || 0,
+                            source: 'Additional'
+                        });
+                    });
+                }
+            } else {
+                // Handle regular recipes
+                if (recipe.items && recipe.items.length > 0) {
+                    allItems = recipe.items.map(ingredient => {
+                        const ingredientData = this.items.find(i => i.id === ingredient.item_id);
+                        return {
+                            id: ingredient.item_id,
+                            ingredient_id: ingredient.item_id,
+                            name: ingredientData ? ingredientData.name : 'Unknown Ingredient',
+                            quantity: ingredient.quantity || 0,
+                            unit: ingredient.unit || '',
+                            category: this.getItemCategory(ingredient.item_id),
+                            checked: false,
+                            pantry_quantity: 0,
+                            adjusted_quantity: ingredient.quantity || 0
+                        };
+                    });
+                }
+            }
+
+            if (allItems.length > 0) {
+                mealGroups.push({
+                    recipeName: recipe.title || 'Unknown Recipe',
+                    date: formattedDate,
+                    items: allItems,
+                    recipeType: recipe.recipe_type || 'recipe'
+                });
+            }
         });
 
         return mealGroups;
@@ -496,31 +565,126 @@ class GroceryListManager {
         const items = [];
         const ingredientTotals = {};
 
-        // Aggregate ingredients from all scheduled meals
-        this.scheduledMeals.forEach(meal => {
-            const recipe = this.recipes.find(r => r.id === meal.recipeId);
-            if (!recipe) return;
+        console.log('🛒 generateGroceryItems called with', this.scheduledMeals.length, 'scheduled meals');
+        
+        // CRITICAL FIX: Ensure recipes are loaded before processing
+        if (!this.recipes || this.recipes.length === 0) {
+            console.log('🚨 CRITICAL: No recipes available in grocery list manager, attempting to reload...');
+            if (window.mealPlannerSettings) {
+                this.recipes = window.mealPlannerSettings.getAuthoritativeData('recipes');
+                console.log('🛒 Emergency reload: Now have', this.recipes?.length || 0, 'recipes');
+            }
+        }
+        
+        console.log('🛒 Processing with', this.recipes?.length || 0, 'available recipes');
 
-            recipe.items.forEach(ingredient => {
-                const key = `${ingredient.item_id}-${ingredient.unit}`;
-                if (!ingredientTotals[key]) {
-                    // Look up ingredient name from items database
-                    const ingredientData = this.items.find(i => i.id === ingredient.item_id);
-                    const ingredientName = ingredientData ? ingredientData.name : ingredient.name || 'Unknown Ingredient';
-                    
-                    ingredientTotals[key] = {
-                        ingredient_id: ingredient.item_id,
-                        name: ingredientName,
-                        quantity: 0,
-                        unit: ingredient.unit,
-                        category: this.getIngredientCategory(ingredient.item_id)
-                    };
+            // Aggregate ingredients from all scheduled meals
+            this.scheduledMeals.forEach(meal => {
+                // CRITICAL FIX: Use recipe_id (snake_case) instead of recipeId (camelCase)
+                const recipeId = meal.recipe_id || meal.recipeId;
+                const recipe = this.recipes.find(r => r.id === recipeId);
+                if (!recipe) {
+                    console.log('🚨 Recipe not found for meal:', meal);
+                    console.log('🛒 Looking for recipe ID:', recipeId, 'from meal property:', meal.recipe_id || meal.recipeId);
+                    console.log('🛒 Available recipe IDs:', this.recipes.map(r => r.id));
+                    return;
                 }
-                ingredientTotals[key].quantity = this.roundQuantity(
-                    ingredientTotals[key].quantity + ingredient.quantity
-                );
-            });
+
+            console.log('🛒 Processing recipe:', recipe.title, 'Type:', recipe.recipe_type);
+
+            // Handle combo recipes differently
+            if (recipe.recipe_type === 'combo') {
+                console.log('🛒 Processing COMBO recipe:', recipe.title);
+                
+                // Get items from sub-recipes in the combo
+                const recipeRefs = recipe.recipes || recipe.combo_recipes || [];
+                console.log('🛒 Combo has', recipeRefs.length, 'sub-recipes');
+                
+                recipeRefs.forEach(recipeRef => {
+                    const subRecipe = this.recipes.find(r => r.id === parseInt(recipeRef.recipe_id));
+                    if (!subRecipe || !subRecipe.items) {
+                        console.log('🚨 Sub-recipe not found or has no items:', recipeRef.recipe_id);
+                        return;
+                    }
+                    
+                    console.log('🛒 Processing sub-recipe:', subRecipe.title, 'with', subRecipe.items.length, 'items');
+                    const portions = recipeRef.servings || 1;
+                    
+                    (subRecipe.items || []).forEach(ingredient => {
+                        const key = `${ingredient.item_id}-${ingredient.unit}`;
+                        if (!ingredientTotals[key]) {
+                            // Look up ingredient name from items database
+                            const ingredientData = this.items.find(i => i.id === ingredient.item_id);
+                            const ingredientName = ingredientData ? ingredientData.name : ingredient.name || 'Unknown Ingredient';
+                            
+                            ingredientTotals[key] = {
+                                ingredient_id: ingredient.item_id,
+                                name: ingredientName,
+                                quantity: 0,
+                                unit: ingredient.unit,
+                                category: this.getIngredientCategory(ingredient.item_id)
+                            };
+                        }
+                        const adjustedQuantity = (ingredient.quantity || 0) * portions;
+                        ingredientTotals[key].quantity = this.roundQuantity(
+                            ingredientTotals[key].quantity + adjustedQuantity
+                        );
+                        console.log('🛒 Added ingredient:', ingredientTotals[key].name, adjustedQuantity, ingredient.unit);
+                    });
+                });
+                
+                // Also add the combo's own additional items
+                const additionalItems = recipe.items || [];
+                console.log('🛒 Combo has', additionalItems.length, 'additional items');
+                additionalItems.forEach(ingredient => {
+                    const key = `${ingredient.item_id}-${ingredient.unit}`;
+                    if (!ingredientTotals[key]) {
+                        // Look up ingredient name from items database
+                        const ingredientData = this.items.find(i => i.id === ingredient.item_id);
+                        const ingredientName = ingredientData ? ingredientData.name : ingredient.name || 'Unknown Ingredient';
+                        
+                        ingredientTotals[key] = {
+                            ingredient_id: ingredient.item_id,
+                            name: ingredientName,
+                            quantity: 0,
+                            unit: ingredient.unit,
+                            category: this.getIngredientCategory(ingredient.item_id)
+                        };
+                    }
+                    ingredientTotals[key].quantity = this.roundQuantity(
+                        ingredientTotals[key].quantity + (ingredient.quantity || 0)
+                    );
+                    console.log('🛒 Added additional item:', ingredientTotals[key].name, ingredient.quantity, ingredient.unit);
+                });
+                
+            } else {
+                // Handle regular recipes
+                console.log('🛒 Processing REGULAR recipe:', recipe.title, 'with', (recipe.items || []).length, 'items');
+                (recipe.items || []).forEach(ingredient => {
+                    const key = `${ingredient.item_id}-${ingredient.unit}`;
+                    if (!ingredientTotals[key]) {
+                        // Look up ingredient name from items database
+                        const ingredientData = this.items.find(i => i.id === ingredient.item_id);
+                        const ingredientName = ingredientData ? ingredientData.name : ingredient.name || 'Unknown Ingredient';
+                        
+                        ingredientTotals[key] = {
+                            ingredient_id: ingredient.item_id,
+                            name: ingredientName,
+                            quantity: 0,
+                            unit: ingredient.unit,
+                            category: this.getIngredientCategory(ingredient.item_id)
+                        };
+                    }
+                    ingredientTotals[key].quantity = this.roundQuantity(
+                        ingredientTotals[key].quantity + (ingredient.quantity || 0)
+                    );
+                    console.log('🛒 Added ingredient:', ingredientTotals[key].name, ingredient.quantity, ingredient.unit);
+                });
+            }
         });
+
+        console.log('🛒 Final ingredient totals:', Object.keys(ingredientTotals).length, 'unique ingredients');
+        console.log('🛒 Ingredient totals:', ingredientTotals);
 
         // Convert to grocery items and adjust for pantry
         Object.values(ingredientTotals).forEach((item, index) => {
@@ -545,9 +709,9 @@ class GroceryListManager {
         return items.filter(item => item.adjusted_quantity > 0);
     }
 
-    getIngredientCategory(ingredientId) {
-        const ingredient = this.items.find(i => i.id === ingredientId);
-        return ingredient ? ingredient.category : 'other';
+    getItemCategory(itemId) {
+        const item = this.items.find(i => i.id === itemId);
+        return item ? item.category : 'other';
     }
 
     // Generate grocery list from current scheduled meals (called when meals change)

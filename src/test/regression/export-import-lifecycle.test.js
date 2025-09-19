@@ -557,3 +557,25 @@ if (typeof module !== 'undefined' && module.exports) {
 if (typeof window !== 'undefined') {
     window.ExportImportLifecycleTests = ExportImportLifecycleTests;
 }
+
+// Add Vitest test structure
+import { describe, it, expect, beforeEach } from 'vitest';
+
+describe('Export/Import Lifecycle', () => {
+    let testRunner;
+
+    beforeEach(() => {
+        testRunner = new ExportImportLifecycleTests();
+    });
+
+    it('should run all export/import lifecycle tests', async () => {
+        const results = await testRunner.runAllTests();
+        
+        // Verify all tests passed
+        const failedTests = results.filter(result => !result.passed);
+        expect(failedTests).toHaveLength(0);
+        
+        // Verify we have the expected number of tests
+        expect(results).toHaveLength(6);
+    });
+});
