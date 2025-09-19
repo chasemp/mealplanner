@@ -689,7 +689,13 @@ class ItineraryView {
                 this.forceRefresh();
                 
                 // Dispatch event for other components to update
-                window.dispatchEvent(new CustomEvent('mealUnscheduled', {
+                console.log('🛒 Dispatching mealUnscheduled event for grocery list update', { 
+                    scheduledMeal: removedMeal,
+                    mealId: mealId,
+                    date: dateStr,
+                    mealType: this.mealType
+                });
+                document.dispatchEvent(new CustomEvent('mealUnscheduled', {
                     detail: { 
                         scheduledMeal: removedMeal,
                         mealId: mealId,
@@ -993,6 +999,7 @@ class ItineraryView {
         this.showNotification(`Added ${recipe.title} to ${this.mealType} on ${new Date(dateStr).toLocaleDateString()}`, 'success');
         
         // Dispatch event for other components
+        console.log('🛒 Dispatching mealScheduled event for grocery list update', { meal: newMeal, recipe: recipe });
         document.dispatchEvent(new CustomEvent('mealScheduled', {
             detail: { meal: newMeal, recipe: recipe }
         }));

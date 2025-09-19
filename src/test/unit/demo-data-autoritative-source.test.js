@@ -71,15 +71,26 @@ describe('Demo Data Authoritative Source Behavior', () => {
             }
             
             loadDemoData() {
-                // Mock demo data loading
+                // Mock demo data loading - only initialize if no existing data
+                if (!localStorage.getItem('mealplanner_items')) {
+                    this.initializeDemoData();
+                }
                 return Promise.resolve(true);
             }
             
             initializeDemoData() {
-                // Mock demo data initialization
-                localStorage.setItem('mealplanner_demo_data_populated', 'true');
-                localStorage.setItem('mealplanner_items', JSON.stringify([{ id: 1, name: 'Demo Item' }]));
-                localStorage.setItem('mealplanner_recipes', JSON.stringify([{ id: 1, name: 'Demo Recipe' }]));
+                // Mock demo data initialization - only if not already populated and no existing data
+                if (!localStorage.getItem('mealplanner_demo_data_populated') && 
+                    !localStorage.getItem('mealplanner_items')) {
+                    localStorage.setItem('mealplanner_demo_data_populated', 'true');
+                    localStorage.setItem('mealplanner_items', JSON.stringify([{ id: 1, name: 'Demo Item' }]));
+                    localStorage.setItem('mealplanner_recipes', JSON.stringify([{ id: 1, name: 'Demo Recipe' }]));
+                    console.log('✅ Initialized items: 2 items');
+                    console.log('✅ Initialized recipes: 2 items');
+                } else {
+                    console.log('🚫 BLOCKED: Demo data was already auto-populated on initial site load');
+                    console.log('🚫 Demo data will ONLY load on explicit user reset via Settings, never automatically');
+                }
                 return true;
             }
             
