@@ -643,7 +643,7 @@ class GroceryListManager {
                                 name: ingredientName,
                                 quantity: 0,
                                 unit: ingredient.unit,
-                                category: this.getIngredientCategory(ingredient.item_id)
+                                category: this.getItemCategory(ingredient.item_id)
                             };
                         }
                         const adjustedQuantity = (ingredient.quantity || 0) * portions;
@@ -669,7 +669,7 @@ class GroceryListManager {
                             name: ingredientName,
                             quantity: 0,
                             unit: ingredient.unit,
-                            category: this.getIngredientCategory(ingredient.item_id)
+                            category: this.getItemCategory(ingredient.item_id)
                         };
                     }
                     ingredientTotals[key].quantity = this.roundQuantity(
@@ -693,7 +693,7 @@ class GroceryListManager {
                             name: ingredientName,
                             quantity: 0,
                             unit: ingredient.unit,
-                            category: this.getIngredientCategory(ingredient.item_id)
+                            category: this.getItemCategory(ingredient.item_id)
                         };
                     }
                     ingredientTotals[key].quantity = this.roundQuantity(
