@@ -444,6 +444,7 @@ class GroceryListManager {
     }
 
     groupIngredientsByMeal() {
+        console.log(`🛒 [Meal Mode] Grouping ingredients by meal for ${this.scheduledMeals.length} scheduled meals`);
         const mealGroups = [];
         
         // Get scheduled meals in the current date range
@@ -451,10 +452,18 @@ class GroceryListManager {
             const mealDate = new Date(meal.date);
             const startDate = new Date(this.currentWeek);
             const endDate = this.endDate || new Date(startDate.getTime() + 7 * 24 * 60 * 60 * 1000);
-            return mealDate >= startDate && mealDate <= endDate;
+            
+            // Normalize dates to ignore time component for proper comparison
+            const mealDateNormalized = new Date(mealDate.getFullYear(), mealDate.getMonth(), mealDate.getDate());
+            const startDateNormalized = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+            const endDateNormalized = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+            
+            return mealDateNormalized >= startDateNormalized && mealDateNormalized <= endDateNormalized;
         });
 
-            filteredMeals.forEach(meal => {
+        console.log(`🛒 [Meal Mode] Filtered to ${filteredMeals.length} meals in date range`);
+
+        filteredMeals.forEach(meal => {
                 // CRITICAL FIX: Use recipe_id (snake_case) instead of recipeId (camelCase)
                 const recipeId = meal.recipe_id || meal.recipeId;
                 const recipe = this.recipes.find(r => r.id === recipeId);
@@ -549,6 +558,7 @@ class GroceryListManager {
             }
         });
 
+        console.log(`🛒 [Meal Mode] Generated ${mealGroups.length} meal groups`);
         return mealGroups;
     }
 
@@ -890,9 +900,11 @@ class GroceryListManager {
     }
 
     setDisplayMode(mode) {
+        console.log(`🛒 Switching display mode from ${this.displayMode} to ${mode}`);
         this.displayMode = mode;
         this.render();
         this.attachEventListeners(); // Re-attach event listeners after re-render
+        console.log(`✅ Display mode switched to ${mode}`);
     }
 
     adjustQuantity(itemId, adjustment) {
