@@ -38,6 +38,9 @@ class RecipeManager {
             console.warn('⚠️ Settings manager not available, using empty items');
             this.items = [];
         }
+        
+        // Refresh any existing item dropdowns to reflect the updated items list
+        this.refreshAllItemDropdowns();
     }
 
     async loadRecipes() {
@@ -4186,6 +4189,12 @@ class RecipeManager {
 
         console.log('Attaching shared item listeners:', { addItemBtn, createItemBtn, itemsContainer, isCombo });
 
+        // Check if listeners are already attached to prevent duplicates
+        if (addItemBtn && addItemBtn.dataset.listenersAttached === 'true') {
+            console.log('Add item button listeners already attached, skipping');
+            return;
+        }
+
         // Add item row
         addItemBtn?.addEventListener('click', () => {
             console.log('Add item button clicked');
@@ -4197,6 +4206,17 @@ class RecipeManager {
             // Attach listeners to new row
             this.attachItemRowListeners(itemsContainer.lastElementChild);
         });
+
+        // Mark as attached to prevent duplicates
+        if (addItemBtn) {
+            addItemBtn.dataset.listenersAttached = 'true';
+        }
+
+        // Check if create item button listeners are already attached
+        if (createItemBtn && createItemBtn.dataset.listenersAttached === 'true') {
+            console.log('Create item button listeners already attached, skipping');
+            return;
+        }
 
         // Create new item button
         createItemBtn?.addEventListener('click', () => {
@@ -4316,6 +4336,11 @@ class RecipeManager {
                 console.log('🥕 Available on window:', Object.keys(window).filter(k => k.includes('items') || k.includes('Items') || k.includes('app')));
             }
         });
+
+        // Mark create item button as attached to prevent duplicates
+        if (createItemBtn) {
+            createItemBtn.dataset.listenersAttached = 'true';
+        }
 
         // Attach listeners to existing item rows
         itemsContainer?.querySelectorAll('.item-row').forEach(row => {
@@ -4653,6 +4678,44 @@ class RecipeManager {
                 }, 300); // Wait for scroll to complete
             }
         }, 100);
+    }
+
+    refreshAllItemDropdowns() {
+        console.log('🥕 Refreshing all item dropdowns with updated items list');
+        
+        // Find all item select dropdowns on the page
+        const itemSelects = document.querySelectorAll('.item-select');
+        
+        itemSelects.forEach(select => {
+            // Store the current selection
+            const currentValue = select.value;
+            
+            // Clear existing options
+            select.innerHTML = '';
+            
+            // Add default option
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'Select item...';
+            select.appendChild(defaultOption);
+            
+            // Add all items as options
+            this.items.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.id;
+                option.setAttribute('data-unit', item.default_unit);
+                option.textContent = item.name;
+                
+                // Restore selection if it matches
+                if (item.id === currentValue) {
+                    option.selected = true;
+                }
+                
+                select.appendChild(option);
+            });
+            
+            console.log(`🥕 Updated dropdown with ${this.items.length} items, current selection: ${currentValue}`);
+        });
     }
 
     refreshItemDropdowns(itemsContainer) {
@@ -5630,3 +5693,6 @@ if (typeof global !== 'undefined') {
 
 // Global registry for recipe manager
 window.recipeManager = null;
+
+// Browser-only: No exports needed - classes are available as global variables
+// Tests should use src/components/ versions which are proper ES6 modules

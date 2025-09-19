@@ -514,6 +514,24 @@ class ExportImportLifecycleTests {
         });
     }
 
+    checkItemsTabDisplay() {
+        // Mock check for items tab display
+        const items = this.getItemsFromStorage();
+        return items.length > 0;
+    }
+
+    checkRecipesTabDisplay() {
+        // Mock check for recipes tab display
+        const recipes = this.getRecipesFromStorage();
+        return recipes.length > 0;
+    }
+
+    checkPlanTabDisplay() {
+        // Mock check for plan tab display
+        const scheduledMeals = this.getScheduledMealsFromStorage();
+        return scheduledMeals.length > 0;
+    }
+
     recordTestResult(testName, passed, message) {
         this.testResults.push({
             test: testName,
@@ -571,8 +589,13 @@ describe('Export/Import Lifecycle', () => {
     it('should run all export/import lifecycle tests', async () => {
         const results = await testRunner.runAllTests();
         
+        // Debug: Print out the results
+        console.log('Test results:', results);
+        console.log('Number of results:', results.length);
+        
         // Verify all tests passed
         const failedTests = results.filter(result => !result.passed);
+        console.log('Failed tests:', failedTests);
         expect(failedTests).toHaveLength(0);
         
         // Verify we have the expected number of tests

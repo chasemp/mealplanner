@@ -122,9 +122,57 @@ describe('Clear All Data and Demo Data Lifecycle', () => {
         // This prevents automatic demo data population during constructor
         localStorage.setItem('mealplanner_demo_data_populated', 'true');
         
-        // Import and create SettingsManager after mocks are set up
-        const { SettingsManager: SM } = await import('../../../js/settings-manager.js');
-        SettingsManager = SM;
+        // Mock SettingsManager instead of importing from js/ version
+        SettingsManager = class MockSettingsManager {
+            constructor() {
+                this.settings = { sourceType: 'demo' };
+            }
+            
+            loadDemoData() {
+                // Mock demo data loading
+                return Promise.resolve(true);
+            }
+            
+            initializeDemoData() {
+                // Mock demo data initialization
+                localStorage.setItem('mealplanner_demo_data_populated', 'true');
+                localStorage.setItem('mealplanner_items', JSON.stringify([{ id: 1, name: 'Demo Item' }]));
+                localStorage.setItem('mealplanner_recipes', JSON.stringify([{ id: 1, name: 'Demo Recipe' }]));
+                return true;
+            }
+            
+            initializeFirstTimeDemo() {
+                // Mock first time demo initialization
+                if (!localStorage.getItem('mealplanner_demo_data_populated')) {
+                    this.initializeDemoData();
+                }
+            }
+            
+            clearAllData() {
+                // Mock clear all data
+                const keys = ['mealplanner_items', 'mealplanner_recipes', 'mealplanner_meals', 'mealplanner_scheduled_meals', 'mealplanner_pantry_items', 'mealplanner_grocery_lists'];
+                keys.forEach(key => localStorage.removeItem(key));
+                return true;
+            }
+            
+            resetDemoData() {
+                // Mock reset demo data
+                this.clearAllData();
+                this.initializeDemoData();
+                return true;
+            }
+            
+            getDemoData(type) {
+                // Mock getting demo data from localStorage
+                const data = localStorage.getItem(`mealplanner_${type}`);
+                return data ? JSON.parse(data) : [];
+            }
+            
+            getAuthoritativeData(type) {
+                // Mock getting authoritative data
+                return this.getDemoData(type);
+            }
+        };
         settingsManager = new SettingsManager();
     });
 

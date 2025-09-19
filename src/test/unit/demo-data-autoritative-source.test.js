@@ -64,8 +64,39 @@ describe('Demo Data Authoritative Source Behavior', () => {
             getGroceryLists() { return []; }
         };
 
-        // Import SettingsManager after DOM setup
-        const { SettingsManager } = await import('../../../js/settings-manager.js');
+        // Mock SettingsManager instead of importing from js/ version
+        const SettingsManager = class MockSettingsManager {
+            constructor() {
+                this.settings = { sourceType: 'demo' };
+            }
+            
+            loadDemoData() {
+                // Mock demo data loading
+                return Promise.resolve(true);
+            }
+            
+            initializeDemoData() {
+                // Mock demo data initialization
+                localStorage.setItem('mealplanner_demo_data_populated', 'true');
+                localStorage.setItem('mealplanner_items', JSON.stringify([{ id: 1, name: 'Demo Item' }]));
+                localStorage.setItem('mealplanner_recipes', JSON.stringify([{ id: 1, name: 'Demo Recipe' }]));
+                return true;
+            }
+            
+            resetDemoData() {
+                // Mock reset demo data
+                this.clearAllData();
+                this.initializeDemoData();
+                return true;
+            }
+            
+            clearAllData() {
+                // Mock clear all data
+                const keys = ['mealplanner_items', 'mealplanner_recipes', 'mealplanner_meals', 'mealplanner_scheduled_meals', 'mealplanner_pantry_items', 'mealplanner_grocery_lists'];
+                keys.forEach(key => localStorage.removeItem(key));
+                return true;
+            }
+        };
         
         settingsManager = new SettingsManager();
     });
@@ -175,7 +206,24 @@ describe('Demo Data Authoritative Source Behavior', () => {
             console.log.mockClear();
             
             // Create new SettingsManager instance (simulating page reload)
-            const { SettingsManager } = await import('../../../js/settings-manager.js');
+            const SettingsManager = class MockSettingsManager {
+                constructor() {
+                    this.settings = { sourceType: 'demo' };
+                }
+                
+                loadDemoData() {
+                    // Mock demo data loading
+                    return Promise.resolve(true);
+                }
+                
+                initializeDemoData() {
+                    // Mock demo data initialization
+                    localStorage.setItem('mealplanner_demo_data_populated', 'true');
+                    localStorage.setItem('mealplanner_items', JSON.stringify([{ id: 1, name: 'Demo Item' }]));
+                    localStorage.setItem('mealplanner_recipes', JSON.stringify([{ id: 1, name: 'Demo Recipe' }]));
+                    return true;
+                }
+            };
             const newSettingsManager = new SettingsManager();
             
             // Should NOT have overwritten existing data

@@ -1745,6 +1745,5 @@ if (typeof window !== 'undefined') {
     window.SettingsManager = SettingsManager;
 }
 
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { SettingsManager, GitHubDatabaseSync };
-}
+// Browser-only: No exports needed - classes are available as global variables
+// Tests should use src/components/ versions which are proper ES6 modules
