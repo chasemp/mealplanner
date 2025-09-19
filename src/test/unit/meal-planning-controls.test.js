@@ -92,23 +92,23 @@ describe('Meal Planning Controls', () => {
     beforeEach(async () => {
         // Reset DOM
         document.body.innerHTML = `
-            <div id="breakfast-tab" class="tab-content">
-                <button id="auto-plan-breakfast">Auto Plan</button>
-                <button id="clear-plan-breakfast">Clear</button>
-                <div id="breakfast-itinerary"></div>
-                <div id="breakfast-calendar"></div>
-            </div>
-            <div id="lunch-tab" class="tab-content">
-                <button id="auto-plan-lunch">Auto Plan</button>
-                <button id="clear-plan-lunch">Clear</button>
-                <div id="lunch-itinerary"></div>
-                <div id="lunch-calendar"></div>
-            </div>
-            <div id="dinner-tab" class="tab-content">
-                <button id="auto-plan-plan">Auto Plan</button>
-                <button id="clear-plan-plan">Clear</button>
-                <div id="dinner-itinerary"></div>
-                <div id="dinner-calendar"></div>
+            <div id="plan-tab" class="tab-content">
+                <button id="clear-planned-btn" class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg text-sm font-medium flex items-center space-x-2">
+                    Clear Planned
+                </button>
+                <button id="plan-dropdown-btn" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg text-sm font-medium flex items-center space-x-2">
+                    Auto Plan
+                </button>
+                <div id="plan-dropdown-menu" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg z-10">
+                    <div id="plan-shuffle-option" class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                        Shuffle (Random)
+                    </div>
+                    <div id="plan-ordered-option" class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                        Ordered (Sequential)
+                    </div>
+                </div>
+                <div id="plan-itinerary"></div>
+                <div id="plan-calendar"></div>
             </div>
         `;
         
@@ -184,27 +184,32 @@ describe('Meal Planning Controls', () => {
         });
 
         it('should attach event listeners to Auto Plan buttons', () => {
-            const planBtn = document.getElementById('auto-plan-plan');
+            const planBtn = document.getElementById('plan-dropdown-btn');
             
             expect(planBtn).toBeTruthy();
             
-            // Check that clicking triggers the handler (we'll test the handler separately)
+            // The plan dropdown button toggles the dropdown, not directly calls handleAutoPlan
+            // The actual auto plan is triggered by the shuffle option
+            const shuffleOption = document.getElementById('plan-shuffle-option');
+            expect(shuffleOption).toBeTruthy();
+            
+            // Check that clicking shuffle option triggers the handler
             const handleAutoPlanSpy = vi.spyOn(app, 'handleAutoPlan');
             
-            planBtn.click();
+            shuffleOption.click();
             expect(handleAutoPlanSpy).toHaveBeenCalledWith('plan');
         });
 
         it('should attach event listeners to Clear Plan buttons', () => {
-            const planBtn = document.getElementById('clear-plan-plan');
+            const planBtn = document.getElementById('clear-planned-btn');
             
             expect(planBtn).toBeTruthy();
             
             // Check that clicking triggers the handler
-            const handleClearPlanSpy = vi.spyOn(app, 'handleClearPlan');
+            const handleClearPlanChangesSpy = vi.spyOn(app, 'handleClearPlanChanges');
             
             planBtn.click();
-            expect(handleClearPlanSpy).toHaveBeenCalledWith('plan');
+            expect(handleClearPlanChangesSpy).toHaveBeenCalled();
         });
     });
 

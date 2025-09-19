@@ -1,9 +1,9 @@
 // MealPlanner Service Worker
 // Provides offline functionality, caching, and PWA features
 
-const CACHE_NAME = 'mealplanner-v2025.09.05.1012';
-const STATIC_CACHE_NAME = 'mealplanner-static-v2025.09.05.1012';
-const DYNAMIC_CACHE_NAME = 'mealplanner-dynamic-v2025.09.05.1012';
+const CACHE_NAME = 'mealplanner-v2025.09.18.0925';
+const STATIC_CACHE_NAME = 'mealplanner-static-v2025.09.18.0925';
+const DYNAMIC_CACHE_NAME = 'mealplanner-dynamic-v2025.09.18.0925';
 
 // Files to cache for offline functionality
 const STATIC_ASSETS = [

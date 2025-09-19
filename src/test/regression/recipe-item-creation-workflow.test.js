@@ -78,9 +78,9 @@ describe('Recipe Item Creation Workflow Regression Test', () => {
     ]);
 
     // Import and initialize managers
-    const { default: RecipeManagerClass } = await import('../../js/recipe-manager.js');
-    const { default: ItemsManagerClass } = await import('../../js/items-manager.js');
-    const { default: SettingsManagerClass } = await import('../../js/settings-manager.js');
+    const { default: RecipeManagerClass } = await import('../../../js/recipe-manager.js');
+    const { default: ItemsManagerClass } = await import('../../../js/items-manager.js');
+    const { default: SettingsManagerClass } = await import('../../../js/settings-manager.js');
     
     RecipeManager = RecipeManagerClass;
     ItemsManager = ItemsManagerClass;

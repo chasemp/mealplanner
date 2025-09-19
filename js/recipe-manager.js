@@ -1219,136 +1219,108 @@ class RecipeManager {
     }
 
     generateLabelManagementHTML() {
+        console.log('🏷️ generateLabelManagementHTML called - using MOBILE-OPTIMIZED version');
+        
         const presetColors = [
             '#EF4444', '#F97316', '#F59E0B', '#EAB308', '#84CC16', '#22C55E',
             '#10B981', '#06B6D4', '#0EA5E9', '#3B82F6', '#6366F1', '#A855F7'
         ];
 
         return `
-            <!-- Mobile-optimized full-page layout -->
+            <!-- MOBILE-OPTIMIZED FULL-PAGE LAYOUT -->
             <div class="bg-white dark:bg-gray-800 w-full min-h-screen flex flex-col">
-                <!-- Header matching recipe form navigation -->
-                <div class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-                    <div class="max-w-4xl mx-auto px-4 py-4">
-                        <!-- Title Row -->
-                        <div class="flex items-center space-x-3 mb-4">
-                            <button id="back-to-recipes-from-labels" class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                                </svg>
-                            </button>
-                            <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
-                                Recipe Labels
-                            </h1>
-                        </div>
-                        
-                        <!-- Action Buttons Row -->
-                        <div class="flex items-center justify-end space-x-3">
-                            <button type="button" id="close-label-management" class="bg-gray-500 text-white px-6 py-2 rounded-lg text-sm hover:bg-gray-600 transition-colors font-medium min-w-[80px] flex items-center justify-center">
-                                Close
-                            </button>
+                <!-- Mobile-first Header with Navigation -->
+                <div class="flex items-center justify-between p-4 md:p-6 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 sticky top-0 z-10">
+                    <div class="flex items-center gap-3">
+                        <!-- Back button for mobile (same as recipe forms) -->
+                        <button id="back-to-recipes-from-labels" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors md:hidden">
+                            <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                        </button>
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Label Management</h2>
+                            <p class="text-gray-600 dark:text-gray-400 mt-1">Create, edit, and manage recipe labels</p>
                         </div>
                     </div>
+                    <!-- Close button for desktop and as an alternative on mobile (same as recipe forms) -->
+                    <button id="close-label-management" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
+                        <svg class="w-6 h-6 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
                 </div>
-                
-                <!-- Content with proper mobile scrolling -->
-                <div class="flex-1 overflow-y-auto p-4 md:p-6">
-                    <!-- Create New Label Section -->
-                    <div class="mb-6 md:mb-8 p-4 md:p-6 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <h3 class="text-base md:text-lg font-semibold text-gray-900 dark:text-white mb-4">Create New Label</h3>
-                        
-                        <!-- Mobile-first responsive form -->
-                        <div class="space-y-4">
-                            <!-- Label Name - Full width on mobile -->
+
+                <!-- Main Content Area with Mobile Scrolling -->
+                <div class="flex-grow overflow-y-auto p-4 md:p-6">
+                    <!-- Create/Edit Label Form -->
+                    <section class="mb-8 p-4 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Create/Edit Label</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Label Name</label>
-                                <input type="text" id="new-label-name" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white" placeholder="Enter label name...">
+                                <label for="new-label-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Label Name</label>
+                                <input type="text" id="new-label-name" placeholder="e.g., Vegetarian, Quick Meal"
+                                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
                             </div>
-                            
-                            <!-- Type and Color in row on larger screens -->
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Label Type</label>
-                                    <select id="new-label-type" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
-                                        <option value="ingredient_type">Ingredient Type</option>
-                                        <option value="meal_type">Meal Type</option>
-                                        <option value="recipe_combo">Recipe Combo</option>
-                                        <option value="custom">Custom</option>
-                                    </select>
+                            <div>
+                                <label for="new-label-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type</label>
+                                <select id="new-label-type"
+                                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                                    <option value="custom">Custom</option>
+                                    <option value="meal_type">Meal Type</option>
+                                    <option value="dietary">Dietary</option>
+                                    <option value="cuisine">Cuisine</option>
+                                    <option value="occasion">Occasion</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Color</label>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <div id="color-preview" class="w-8 h-8 rounded-full border-2 border-gray-300 dark:border-gray-600" style="background-color: #3B82F6;"></div>
+                                    <input type="color" id="new-label-color" value="#3B82F6"
+                                           class="w-12 h-8 p-0 border-0 rounded-md overflow-hidden cursor-pointer hidden">
+                                    <input type="text" id="new-label-color-text" value="#3B82F6"
+                                           class="w-24 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white uppercase">
+                                    <button id="toggle-color-mode" class="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                                        <span class="custom-mode-text">Presets</span><span class="preset-mode-text hidden">Custom</span>
+                                    </button>
                                 </div>
-                                
-                                <!-- Enhanced Color Picker with dual mode -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Color</label>
-                                    <div class="space-y-2">
-                                        <!-- Color mode toggle -->
-                                        <div class="flex items-center gap-2 mb-2">
-                                            <span class="text-xs text-gray-600 dark:text-gray-400">Presets</span>
-                                            <label class="relative inline-flex items-center cursor-pointer">
-                                                <input type="checkbox" id="color-mode-toggle" class="sr-only peer" checked>
-                                                <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                                            </label>
-                                            <span class="text-xs text-gray-600 dark:text-gray-400">Custom</span>
-                                        </div>
-                                        
-                                        <!-- Preset colors (default mode) -->
-                                        <div id="preset-colors" class="grid grid-cols-6 gap-2">
-                                            <button type="button" class="preset-color w-8 h-8 rounded-full border-2 border-gray-300 hover:border-gray-500 transition-colors" style="background-color: #3B82F6" data-color="#3B82F6" title="Blue"></button>
-                                            <button type="button" class="preset-color w-8 h-8 rounded-full border-2 border-gray-300 hover:border-gray-500 transition-colors" style="background-color: #10B981" data-color="#10B981" title="Green"></button>
-                                            <button type="button" class="preset-color w-8 h-8 rounded-full border-2 border-gray-300 hover:border-gray-500 transition-colors" style="background-color: #F59E0B" data-color="#F59E0B" title="Amber"></button>
-                                            <button type="button" class="preset-color w-8 h-8 rounded-full border-2 border-gray-300 hover:border-gray-500 transition-colors" style="background-color: #EF4444" data-color="#EF4444" title="Red"></button>
-                                            <button type="button" class="preset-color w-8 h-8 rounded-full border-2 border-gray-300 hover:border-gray-500 transition-colors" style="background-color: #8B5CF6" data-color="#8B5CF6" title="Purple"></button>
-                                            <button type="button" class="preset-color w-8 h-8 rounded-full border-2 border-gray-300 hover:border-gray-500 transition-colors" style="background-color: #F97316" data-color="#F97316" title="Orange"></button>
-                                            <button type="button" class="preset-color w-8 h-8 rounded-full border-2 border-gray-300 hover:border-gray-500 transition-colors" style="background-color: #06B6D4" data-color="#06B6D4" title="Cyan"></button>
-                                            <button type="button" class="preset-color w-8 h-8 rounded-full border-2 border-gray-300 hover:border-gray-500 transition-colors" style="background-color: #84CC16" data-color="#84CC16" title="Lime"></button>
-                                            <button type="button" class="preset-color w-8 h-8 rounded-full border-2 border-gray-300 hover:border-gray-500 transition-colors" style="background-color: #EC4899" data-color="#EC4899" title="Pink"></button>
-                                            <button type="button" class="preset-color w-8 h-8 rounded-full border-2 border-gray-300 hover:border-gray-500 transition-colors" style="background-color: #6B7280" data-color="#6B7280" title="Gray"></button>
-                                            <button type="button" class="preset-color w-8 h-8 rounded-full border-2 border-gray-300 hover:border-gray-500 transition-colors" style="background-color: #DC2626" data-color="#DC2626" title="Dark Red"></button>
-                                            <button type="button" class="preset-color w-8 h-8 rounded-full border-2 border-gray-300 hover:border-gray-500 transition-colors" style="background-color: #059669" data-color="#059669" title="Dark Green"></button>
-                                        </div>
-                                        
-                                        <!-- Custom color inputs (hidden by default) -->
-                                        <div id="custom-color-inputs" class="hidden space-y-2">
-                                            <div class="flex gap-2">
-                                                <input type="color" id="new-label-color" class="w-12 h-10 border border-gray-300 dark:border-gray-600 rounded cursor-pointer" value="#3B82F6">
-                                                <input type="text" id="new-label-color-text" class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white" value="#3B82F6" placeholder="#3B82F6" pattern="^#[0-9A-Fa-f]{6}$">
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Selected color preview -->
-                                        <div class="flex items-center gap-2">
-                                            <div id="selected-color-preview" class="w-6 h-6 rounded-full border-2 border-gray-300" style="background-color: #3B82F6"></div>
-                                            <span id="selected-color-value" class="text-sm text-gray-600 dark:text-gray-400">#3B82F6</span>
-                                        </div>
-                                    </div>
+                                <div id="preset-colors" class="flex flex-wrap gap-2 mb-4">
+                                    ${presetColors.map(color => `
+                                        <button class="preset-color-btn w-8 h-8 rounded-full border-2 border-gray-300 dark:border-gray-600 hover:border-blue-500 transition-all"
+                                                style="background-color: ${color};" data-color="${color}" title="${color}">
+                                            <svg class="w-full h-full text-white opacity-0 flex items-center justify-center" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                            </svg>
+                                        </button>
+                                    `).join('')}
                                 </div>
                             </div>
                         </div>
-                        
-                        <!-- Create button - mobile optimized -->
-                        <div class="mt-4 flex justify-end">
-                            <button id="create-label-btn" class="w-full sm:w-auto px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors">
+                        <div class="flex justify-end mt-4">
+                            <button id="create-label-btn"
+                                    class="px-5 py-2 bg-blue-600 text-white font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors">
                                 Create Label
                             </button>
                         </div>
-                    </div>
-                    
-                    <!-- User Labels Section -->
-                    <div class="mb-6 md:mb-8">
-                        <h3 class="text-base md:text-lg font-semibold text-gray-900 dark:text-white mb-4">Your Labels</h3>
-                        <div id="user-labels-list" class="space-y-2">
-                            <!-- User labels will be populated here -->
+                    </section>
+
+                    <!-- User Labels List -->
+                    <section class="mb-8">
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Your Labels</h3>
+                        <div id="user-labels-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- User labels will be rendered here -->
                         </div>
-                    </div>
-                    
-                    <!-- System Labels Section -->
-                    <div class="mb-4">
-                        <h3 class="text-base md:text-lg font-semibold text-gray-900 dark:text-white mb-4">System Labels</h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">These labels are automatically managed by the system and cannot be edited or deleted.</p>
-                        <div id="system-labels-list" class="space-y-2">
-                            <!-- System labels will be populated here -->
+                        <p id="no-user-labels" class="text-gray-500 dark:text-gray-400 text-center py-4 hidden">No user-created labels yet.</p>
+                    </section>
+
+                    <!-- System Labels List -->
+                    <section>
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">System Labels</h3>
+                        <div id="system-labels-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- System labels will be rendered here -->
                         </div>
-                    </div>
+                    </section>
                 </div>
             </div>
         `;
@@ -2447,7 +2419,7 @@ class RecipeManager {
 
         const availableLabels = this.getAllLabels().filter(label => 
             !this.formSelectedLabels.includes(label) &&
-            (!this.formLabelSearchTerm || label.toLowerCase().includes(this.formLabelSearchTerm.toLowerCase()))
+            (!this.formLabelSearchTerm || (label.name || label).toLowerCase().includes(this.formLabelSearchTerm.toLowerCase()))
         );
 
         if (availableLabels.length === 0 || !this.formLabelSearchTerm) {
@@ -4780,7 +4752,7 @@ class RecipeManager {
 
         const availableLabels = this.getAllLabels().filter(label => 
             !this.formSelectedLabels.includes(label) &&
-            (!this.formLabelSearchTerm || label.toLowerCase().includes(this.formLabelSearchTerm.toLowerCase()))
+            (!this.formLabelSearchTerm || (label.name || label).toLowerCase().includes(this.formLabelSearchTerm.toLowerCase()))
         );
 
         if (availableLabels.length === 0 || !this.formLabelSearchTerm) {
@@ -5520,7 +5492,7 @@ class RecipeManager {
 
         const availableLabels = this.getAllLabels().filter(label => 
             !this.formSelectedLabels.includes(label) &&
-            (!this.formLabelSearchTerm || label.toLowerCase().includes(this.formLabelSearchTerm.toLowerCase()))
+            (!this.formLabelSearchTerm || (label.name || label).toLowerCase().includes(this.formLabelSearchTerm.toLowerCase()))
         );
 
         if (availableLabels.length === 0) {
@@ -5581,12 +5553,12 @@ class RecipeManager {
             filteredLabels = availableLabels;
         } else {
             filteredLabels = availableLabels.filter(label => 
-                label.toLowerCase().includes(this.labelSearchTerm.toLowerCase())
+                (label.name || label).toLowerCase().includes(this.labelSearchTerm.toLowerCase())
             );
         }
         
         // Sort labels alphabetically (case-insensitive)
-        return filteredLabels.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+        return filteredLabels.sort((a, b) => (a.name || a).toLowerCase().localeCompare((b.name || b).toLowerCase()));
     }
 
     // Update dropdown content based on current search
