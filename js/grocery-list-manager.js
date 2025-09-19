@@ -93,8 +93,12 @@ class GroceryListManager {
                 console.log('🛒 DEBUG: currentWeek:', this.currentWeek);
                 this.scheduledMeals = allMeals.filter(meal => {
                     const mealDate = new Date(meal.date);
-                    const inRange = mealDate >= this.currentWeek && mealDate <= this.endDate;
-                    console.log(`🛒 DEBUG: Meal ${meal.id} date ${meal.date} -> ${mealDate} in range: ${inRange}`);
+                    // Normalize dates to ignore time component for proper comparison
+                    const mealDateNormalized = new Date(mealDate.getFullYear(), mealDate.getMonth(), mealDate.getDate());
+                    const startDateNormalized = new Date(this.currentWeek.getFullYear(), this.currentWeek.getMonth(), this.currentWeek.getDate());
+                    const endDateNormalized = new Date(this.endDate.getFullYear(), this.endDate.getMonth(), this.endDate.getDate());
+                    const inRange = mealDateNormalized >= startDateNormalized && mealDateNormalized <= endDateNormalized;
+                    console.log(`🛒 DEBUG: Meal ${meal.id} date ${meal.date} -> ${mealDate} normalized: ${mealDateNormalized} in range: ${inRange}`);
                     return inRange;
                 });
                 console.log(`✅ Grocery List Manager loaded ${this.scheduledMeals.length} scheduled meals (filtered by date range) from authoritative source`);
@@ -104,8 +108,12 @@ class GroceryListManager {
                 console.log('🛒 DEBUG: Filtering with current week range:', this.currentWeek, 'to', weekEnd);
                 this.scheduledMeals = allMeals.filter(meal => {
                     const mealDate = new Date(meal.date);
-                    const inRange = mealDate >= this.currentWeek && mealDate <= weekEnd;
-                    console.log(`🛒 DEBUG: Meal ${meal.id} date ${meal.date} -> ${mealDate} in range: ${inRange}`);
+                    // Normalize dates to ignore time component for proper comparison
+                    const mealDateNormalized = new Date(mealDate.getFullYear(), mealDate.getMonth(), mealDate.getDate());
+                    const startDateNormalized = new Date(this.currentWeek.getFullYear(), this.currentWeek.getMonth(), this.currentWeek.getDate());
+                    const endDateNormalized = new Date(weekEnd.getFullYear(), weekEnd.getMonth(), weekEnd.getDate());
+                    const inRange = mealDateNormalized >= startDateNormalized && mealDateNormalized <= endDateNormalized;
+                    console.log(`🛒 DEBUG: Meal ${meal.id} date ${meal.date} -> ${mealDate} normalized: ${mealDateNormalized} in range: ${inRange}`);
                     return inRange;
                 });
                 console.log(`✅ Grocery List Manager loaded ${this.scheduledMeals.length} scheduled meals (current week) from authoritative source`);
