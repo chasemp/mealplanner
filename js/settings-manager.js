@@ -692,15 +692,24 @@ class SettingsManager {
             localStorage.removeItem('mealplanner_demo_data_populated');
             console.log('🚩 CLEARED demo_data_populated flag - user explicitly requested demo data reset');
             
+            // CRITICAL FIX: Clear existing data first so initializeDemoData can overwrite it
+            console.log('🗑️ Clearing existing data to allow fresh demo data initialization...');
+            const dataTypes = ['items', 'recipes', 'scheduledMeals', 'pantryItems', 'meals', 'menuScheduledMeals', 'planScheduledMeals'];
+            dataTypes.forEach(dataType => {
+                const storageKey = `mealplanner_${dataType}`;
+                localStorage.removeItem(storageKey);
+                console.log(`🗑️ Cleared ${dataType} from localStorage`);
+            });
+            
             if (!this.originalDemoData || Object.keys(this.originalDemoData).length === 0) {
                 console.warn('⚠️ Original demo data not available, reinitializing...');
                 this.initializeDemoData();
                 return true;
             }
             
-            const dataTypes = ['items', 'recipes', 'scheduledMeals', 'pantryItems', 'meals'];
+            const originalDataTypes = ['items', 'recipes', 'scheduledMeals', 'pantryItems', 'meals'];
             
-            dataTypes.forEach(dataType => {
+            originalDataTypes.forEach(dataType => {
                 const storageKey = `mealplanner_${dataType}`;
                 const originalData = this.originalDemoData[dataType] || [];
                 
