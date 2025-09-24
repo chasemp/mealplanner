@@ -76,9 +76,48 @@ class RecipeManager {
                 console.warn('⚠️ Settings manager not available, falling back to localStorage');
             localStorage.setItem('mealplanner-recipes', JSON.stringify(this.recipes));
             }
+            
+            // Update recipe counts in items after saving recipes
+            this.updateItemRecipeCounts();
+            
             console.log('✅ Recipes saved successfully');
         } catch (error) {
             console.error('❌ Error saving recipes:', error);
+        }
+    }
+
+    /**
+     * Updates the recipe_count field in items based on actual recipe usage
+     */
+    updateItemRecipeCounts() {
+        if (!window.itemsManager || !window.itemsManager.items) {
+            console.log('🔢 Items manager not available, skipping recipe count update');
+            return;
+        }
+
+        console.log('🔢 Updating recipe counts for items...');
+        
+        // Reset all recipe counts to 0
+        window.itemsManager.items.forEach(item => {
+            item.recipe_count = 0;
+        });
+
+        // Count how many recipes each item is used in
+        this.recipes.forEach(recipe => {
+            if (recipe.items && Array.isArray(recipe.items)) {
+                recipe.items.forEach(recipeItem => {
+                    const item = window.itemsManager.items.find(i => i.id === recipeItem.item_id);
+                    if (item) {
+                        item.recipe_count = (item.recipe_count || 0) + 1;
+                    }
+                });
+            }
+        });
+
+        // Save updated items
+        if (window.itemsManager.saveItems) {
+            window.itemsManager.saveItems();
+            console.log('✅ Recipe counts updated and saved');
         }
     }
 
@@ -1995,19 +2034,21 @@ class RecipeManager {
                         <div class="relative">
                             <div id="recipe-form-labels-container" class="w-full h-10 px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md focus-within:ring-2 focus-within:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white cursor-text flex items-center gap-1 overflow-x-auto" style="min-height: 2.5rem; max-height: 2.5rem;">
                                 ${isEdit && recipe.labels ? recipe.labels.map(label => {
-                                    const labelType = this.inferLabelType(label);
+                                    // Extract label name properly
+                                    const labelName = typeof label === 'string' ? label : (label.name || String(label));
+                                    const labelType = this.inferLabelType(labelName);
                                     const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
                                     const colors = window.labelTypes ? window.labelTypes.getColorClasses(labelType) : 
                                         'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
                                     const buttonColors = this.getLabelButtonColors(labelType);
                                     return `
                                     <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-bold ${colors} rounded-full">
-                                        ${icon}${typeof label === 'string' ? label : label.name || label}
-                                        <button type="button" class="ml-1 ${buttonColors}" onclick="window.recipeManager.removeFormLabel('${typeof label === 'string' ? label : label.name || label}')">
+                                        ${icon}${labelName}
+                                        <button type="button" class="ml-1 ${buttonColors}" onclick="window.recipeManager.removeFormLabel('${labelName}')">
                                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                             </svg>
-                                </button>
+                                    </button>
                                     </span>
                                     `;
                                 }).join('') : ''}
@@ -3986,15 +4027,17 @@ class RecipeManager {
                             <div class="relative">
                                 <div id="fullpage-recipe-labels-container" class="w-full min-h-[42px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus-within:ring-2 focus-within:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white cursor-text flex flex-wrap gap-1 items-center">
                                     ${isEdit && recipe.labels ? recipe.labels.map(label => {
-                                        const labelType = this.inferLabelType(label);
+                                        // Extract label name properly
+                                        const labelName = typeof label === 'string' ? label : (label.name || String(label));
+                                        const labelType = this.inferLabelType(labelName);
                                         const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
                                         const colors = window.labelTypes ? window.labelTypes.getColorClasses(labelType) : 
                                             'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
                                         const buttonColors = this.getLabelButtonColors(labelType);
                                         return `
                                         <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-bold ${colors} rounded-full">
-                                            ${icon}${typeof label === 'string' ? label : label.name || label}
-                                            <button type="button" class="ml-1 ${buttonColors}" onclick="window.recipeManager.removeFormLabel('${typeof label === 'string' ? label : label.name || label}'); window.recipeManager.updateFullPageLabelsDisplay();">
+                                            ${icon}${labelName}
+                                            <button type="button" class="ml-1 ${buttonColors}" onclick="window.recipeManager.removeFormLabel('${labelName}'); window.recipeManager.updateFullPageLabelsDisplay();">
                                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                                 </svg>
@@ -5553,10 +5596,12 @@ class RecipeManager {
                         document.querySelector('#fullpage-recipe-labels-dropdown');
         if (!dropdown) return;
 
-        const availableLabels = this.getAllLabels().filter(label => 
-            !this.formSelectedLabels.includes(label) &&
-            (!this.formLabelSearchTerm || (label.name || label).toLowerCase().includes(this.formLabelSearchTerm.toLowerCase()))
-        );
+        const availableLabels = this.getAllLabels().filter(label => {
+            // Extract label name for filtering (getAllLabels returns strings)
+            const labelName = typeof label === 'string' ? label : (label.name || String(label));
+            return !this.formSelectedLabels.includes(labelName) &&
+                (!this.formLabelSearchTerm || labelName.toLowerCase().includes(this.formLabelSearchTerm.toLowerCase()));
+        });
 
         if (availableLabels.length === 0) {
             dropdown.innerHTML = `
@@ -5570,17 +5615,19 @@ class RecipeManager {
 
         dropdown.classList.remove('hidden');
         dropdown.innerHTML = availableLabels.slice(0, 10).map((label, index) => {
-            const labelType = this.inferLabelType(label);
+            // Extract label name for dropdown display
+            const labelName = typeof label === 'string' ? label : (label.name || String(label));
+            const labelType = this.inferLabelType(labelName);
             const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
             const colorClasses = this.getLabelColorClasses(labelType);
             
             return `
             <div class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm text-gray-900 dark:text-gray-100 ${index === 0 ? 'bg-gray-50 dark:bg-gray-700' : ''}" 
-                 data-label="${label}" 
-                 onclick="window.recipeManager.addFormLabel('${label}')">
+                 data-label="${labelName}" 
+                 onclick="window.recipeManager.addFormLabel('${labelName}')">
                 <div class="flex items-center space-x-2">
                     ${icon && labelType !== 'default' ? `<span class="flex-shrink-0">${icon}</span>` : ''}
-                    <span class="font-bold flex-1">${label}</span>
+                    <span class="font-bold flex-1">${labelName}</span>
                     <span class="inline-flex items-center px-2 py-1 ${colorClasses} rounded-full text-xs flex-shrink-0">
                         ${labelType !== 'default' ? this.getShortLabelTypeName(labelType) : 'label'}
                     </span>
