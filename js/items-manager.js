@@ -859,6 +859,14 @@ class ItemsManager {
                 console.log('✅ RecipeManager items refreshed successfully');
             }
 
+            // GROCERY LIST SYNC FIX: Notify GroceryListManager to refresh its items when items change
+            // This prevents "unknown" items in grocery list until page refresh
+            if (window.app && window.app.groceryListManager && window.app.groceryListManager.loadItems) {
+                console.log('🔄 ITEMS CHANGED: Refreshing GroceryListManager items...');
+                await window.app.groceryListManager.loadItems();
+                console.log('✅ GroceryListManager items refreshed successfully');
+            }
+
             // Show success notification
             if (existingItem) {
                 this.showNotification(`"${savedIngredient.name}" has been updated!`, 'success');
@@ -961,6 +969,22 @@ class ItemsManager {
             
             // Reload data from authoritative source to ensure consistency
             await this.loadItems();
+
+            // CRITICAL FIX: Notify RecipeManager to refresh its items when items change
+            // This prevents demo data pollution in recipe forms after adding/updating items
+            if (window.app && window.app.recipeManager && window.app.recipeManager.loadItems) {
+                console.log('🔄 ITEMS CHANGED: Refreshing RecipeManager items...');
+                await window.app.recipeManager.loadItems();
+                console.log('✅ RecipeManager items refreshed successfully');
+            }
+
+            // GROCERY LIST SYNC FIX: Notify GroceryListManager to refresh its items when items change
+            // This prevents "unknown" items in grocery list until page refresh
+            if (window.app && window.app.groceryListManager && window.app.groceryListManager.loadItems) {
+                console.log('🔄 ITEMS CHANGED: Refreshing GroceryListManager items...');
+                await window.app.groceryListManager.loadItems();
+                console.log('✅ GroceryListManager items refreshed successfully');
+            }
             
             // Return to items list view after successful save using navigation stack
             console.log('🔄 Attempting to return to items list view...');

@@ -11,6 +11,7 @@ class GroceryListManager {
         this.currentWeek = this.getCurrentWeek();
         this.displayMode = 'week'; // 'week' or 'meal'
         this.groceryItems = []; // For storing generated grocery items
+        this.pantryAdjustments = {}; // Store pantry quantities per ingredient (ingredient-centric)
         this.init();
     }
 
@@ -28,6 +29,7 @@ class GroceryListManager {
         await this.loadScheduledMeals();
         await this.loadPantryItems();
         await this.loadGroceryLists();
+        this.loadPantryAdjustments();
     }
 
     async loadItems() {
@@ -176,8 +178,8 @@ class GroceryListManager {
                 <!-- Header -->
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 space-y-4 lg:space-y-0">
                     <div>
-                        <h3 class="text-lg font-semibold text-gray-900">Grocery Lists</h3>
-                        <p class="text-gray-600 text-sm">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Grocery Lists</h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm">
                             Generate shopping lists from your meal plans
                         </p>
                     </div>
@@ -206,6 +208,16 @@ class GroceryListManager {
                                 <span class="hidden sm:inline">Share</span>
                             </button>
                         </div>
+                        
+                        <!-- Pantry Management -->
+                        <div class="flex items-center space-x-2 mt-2 sm:mt-0">
+                            <button id="clear-pantry-btn" class="btn-secondary text-xs flex items-center justify-center space-x-1 px-3 py-2" title="Clear all pantry adjustments">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                                <span class="hidden sm:inline">Clear Pantry</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -215,8 +227,8 @@ class GroceryListManager {
                 <div class="grid grid-cols-1 gap-6">
                     <!-- Generated List -->
                     <div>
-                        <div class="bg-white rounded-lg shadow">
-                            <div class="p-6 border-b border-gray-200">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
+                            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
                                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
                                     <div class="flex items-center space-x-4">
                                         <h4 class="font-semibold text-gray-900 dark:text-white">Shopping List</h4>
@@ -250,6 +262,9 @@ class GroceryListManager {
                 </div>
             </div>
         `;
+        
+        // Re-attach event listeners after rendering
+        this.attachEventListeners();
     }
 
     // Method called by unified Menu tab date selector
@@ -400,28 +415,38 @@ class GroceryListManager {
                             ${item.name}
                         </div>
                         <div class="text-sm text-gray-500 dark:text-gray-400">
-                            ${showQuantityControls ? '' : `${item.quantity} ${item.unit}`}
+                            ${showQuantityControls ? '' : 
+                                item.pantry_quantity > 0 ? `
+                                    <span class="line-through text-gray-400 dark:text-gray-500">${item.quantity} ${item.unit}</span>
+                                    <span class="text-green-600 dark:text-green-400 font-medium"> → ${item.adjusted_quantity} ${item.unit} needed</span>
+                                ` : `${item.quantity} ${item.unit}`
+                            }
                             ${item.pantry_quantity > 0 ? `
-                                <span class="text-green-600 dark:text-green-400">
-                                    (have ${item.pantry_quantity} ${item.pantry_unit})
-                                </span>
+                                <div class="text-xs text-green-600 dark:text-green-400 mt-1">
+                                    ✓ Have ${item.pantry_quantity} ${item.pantry_unit} in pantry
+                                </div>
                             ` : ''}
                         </div>
                     </div>
                 </div>
                 ${showQuantityControls ? `
                     <div class="flex items-center space-x-2">
-                        <button class="quantity-decrease w-8 h-8 flex items-center justify-center bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-full text-gray-600 dark:text-gray-300 transition-colors" data-item-id="${itemId}">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button class="quantity-decrease w-10 h-10 sm:w-8 sm:h-8 flex items-center justify-center bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-full text-gray-600 dark:text-gray-300 transition-colors touch-manipulation" data-item-id="${itemId}">
+                            <svg class="w-5 h-5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
                             </svg>
                         </button>
-                        <div class="text-center min-w-[60px]">
-                            <div class="text-sm font-medium text-gray-900 dark:text-white">${adjustedQuantity}</div>
+                        <div class="text-center min-w-[80px] px-2">
+                            ${item.pantry_quantity > 0 ? `
+                                <div class="text-xs text-gray-400 dark:text-gray-500 line-through">${item.quantity}</div>
+                                <div class="text-sm font-medium text-green-600 dark:text-green-400">${adjustedQuantity}</div>
+                            ` : `
+                                <div class="text-sm font-medium text-gray-900 dark:text-white">${adjustedQuantity}</div>
+                            `}
                             <div class="text-xs text-gray-500 dark:text-gray-400">${item.unit}</div>
                         </div>
-                        <button class="quantity-increase w-8 h-8 flex items-center justify-center bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-full text-gray-600 dark:text-gray-300 transition-colors" data-item-id="${itemId}">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button class="quantity-increase w-10 h-10 sm:w-8 sm:h-8 flex items-center justify-center bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-full text-gray-600 dark:text-gray-300 transition-colors touch-manipulation" data-item-id="${itemId}">
+                            <svg class="w-5 h-5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                             </svg>
                         </button>
@@ -603,6 +628,7 @@ class GroceryListManager {
     generateGroceryItems() {
         const items = [];
         const ingredientTotals = {};
+        const ingredientMealContributions = {}; // Track which meals contribute to each item
 
         console.log('🛒 generateGroceryItems called with', this.scheduledMeals.length, 'scheduled meals');
         
@@ -614,8 +640,17 @@ class GroceryListManager {
                 console.log('🛒 Emergency reload: Now have', this.recipes?.length || 0, 'recipes');
             }
         }
+
+        // CRITICAL FIX: Ensure items are loaded before processing
+        if (!this.items || this.items.length === 0) {
+            console.log('🚨 CRITICAL: No items available in grocery list manager, attempting to reload...');
+            if (window.mealPlannerSettings) {
+                this.items = window.mealPlannerSettings.getAuthoritativeData('items');
+                console.log('🛒 Emergency reload: Now have', this.items?.length || 0, 'items');
+            }
+        }
         
-        console.log('🛒 Processing with', this.recipes?.length || 0, 'available recipes');
+        console.log('🛒 Processing with', this.recipes?.length || 0, 'available recipes and', this.items?.length || 0, 'available items');
 
             // Aggregate ingredients from all scheduled meals
             this.scheduledMeals.forEach(meal => {
@@ -654,16 +689,37 @@ class GroceryListManager {
                         if (!ingredientTotals[key]) {
                             // Look up ingredient name from items database
                             const ingredientData = this.items.find(i => i.id === ingredient.item_id);
-                            const ingredientName = ingredientData ? ingredientData.name : ingredient.name || 'Unknown Ingredient';
+                            let ingredientName;
+                            if (ingredientData) {
+                                ingredientName = ingredientData.name;
+                            } else if (ingredient.name) {
+                                ingredientName = ingredient.name;
+                            } else {
+                                // More descriptive fallback
+                                ingredientName = `Unknown Item (ID: ${ingredient.item_id})`;
+                                console.warn('🚨 Item not found in database:', ingredient.item_id, 'Available items:', this.items.map(i => i.id));
+                            }
                             
                             ingredientTotals[key] = {
                                 ingredient_id: ingredient.item_id,
+                                item_id: ingredient.item_id,
                                 name: ingredientName,
                                 quantity: 0,
                                 unit: ingredient.unit,
                                 category: this.getItemCategory(ingredient.item_id)
                             };
+                            
+                            // Initialize meal contributions tracking
+                            ingredientMealContributions[key] = [];
                         }
+                        
+                        // Track this meal's contribution
+                        ingredientMealContributions[key].push({
+                            mealId: meal.id,
+                            mealDate: meal.date,
+                            quantity: (ingredient.quantity || 0) * portions,
+                            recipeTitle: recipe.title
+                        });
                         const adjustedQuantity = (ingredient.quantity || 0) * portions;
                         ingredientTotals[key].quantity = this.roundQuantity(
                             ingredientTotals[key].quantity + adjustedQuantity
@@ -680,16 +736,37 @@ class GroceryListManager {
                     if (!ingredientTotals[key]) {
                         // Look up ingredient name from items database
                         const ingredientData = this.items.find(i => i.id === ingredient.item_id);
-                        const ingredientName = ingredientData ? ingredientData.name : ingredient.name || 'Unknown Ingredient';
+                        let ingredientName;
+                        if (ingredientData) {
+                            ingredientName = ingredientData.name;
+                        } else if (ingredient.name) {
+                            ingredientName = ingredient.name;
+                        } else {
+                            // More descriptive fallback
+                            ingredientName = `Unknown Item (ID: ${ingredient.item_id})`;
+                            console.warn('🚨 Item not found in database:', ingredient.item_id, 'Available items:', this.items.map(i => i.id));
+                        }
                         
                         ingredientTotals[key] = {
                             ingredient_id: ingredient.item_id,
+                            item_id: ingredient.item_id,
                             name: ingredientName,
                             quantity: 0,
                             unit: ingredient.unit,
                             category: this.getItemCategory(ingredient.item_id)
                         };
+                        
+                        // Initialize meal contributions tracking
+                        ingredientMealContributions[key] = [];
                     }
+                    
+                    // Track this meal's contribution
+                    ingredientMealContributions[key].push({
+                        mealId: meal.id,
+                        mealDate: meal.date,
+                        quantity: ingredient.quantity || 0,
+                        recipeTitle: recipe.title
+                    });
                     ingredientTotals[key].quantity = this.roundQuantity(
                         ingredientTotals[key].quantity + (ingredient.quantity || 0)
                     );
@@ -704,7 +781,16 @@ class GroceryListManager {
                     if (!ingredientTotals[key]) {
                         // Look up ingredient name from items database
                         const ingredientData = this.items.find(i => i.id === ingredient.item_id);
-                        const ingredientName = ingredientData ? ingredientData.name : ingredient.name || 'Unknown Ingredient';
+                        let ingredientName;
+                        if (ingredientData) {
+                            ingredientName = ingredientData.name;
+                        } else if (ingredient.name) {
+                            ingredientName = ingredient.name;
+                        } else {
+                            // More descriptive fallback
+                            ingredientName = `Unknown Item (ID: ${ingredient.item_id})`;
+                            console.warn('🚨 Item not found in database:', ingredient.item_id, 'Available items:', this.items.map(i => i.id));
+                        }
                         
                         ingredientTotals[key] = {
                             ingredient_id: ingredient.item_id,
@@ -725,27 +811,33 @@ class GroceryListManager {
         console.log('🛒 Final ingredient totals:', Object.keys(ingredientTotals).length, 'unique ingredients');
         console.log('🛒 Ingredient totals:', ingredientTotals);
 
-        // Convert to grocery items and adjust for pantry
+        // Convert to grocery items and apply ingredient-centric pantry adjustments
         Object.values(ingredientTotals).forEach((item, index) => {
-            const pantryItem = this.pantryItems.find(p => p.ingredient_id === item.ingredient_id);
-            const pantryQuantity = pantryItem ? pantryItem.quantity : 0;
+            const itemId = item.item_id || item.ingredient_id;
+            const pantryAdjustment = this.pantryAdjustments[itemId];
+            const pantryQuantity = pantryAdjustment ? pantryAdjustment.pantryQuantity : 0;
+            
+            // Calculate how much we still need to buy after pantry reduction
             const adjustedQuantity = this.roundQuantity(Math.max(0, item.quantity - pantryQuantity));
 
             items.push({
                 id: index + 1,
                 ingredient_id: item.ingredient_id,
+                item_id: itemId,
                 name: item.name,
-                quantity: item.quantity,
-                adjusted_quantity: adjustedQuantity,
+                quantity: item.quantity, // Original total needed
+                adjusted_quantity: adjustedQuantity, // What we need to buy
                 unit: item.unit,
                 category: item.category,
-                pantry_quantity: pantryQuantity,
-                pantry_unit: pantryItem ? pantryItem.unit : item.unit,
-                checked: false
+                pantry_quantity: pantryQuantity, // What we have in pantry
+                pantry_unit: item.unit,
+                checked: false,
+                mealContributions: ingredientMealContributions[`${itemId}-${item.unit}`] || []
             });
         });
 
-        return items.filter(item => item.adjusted_quantity > 0);
+        // Return all items (including those with 0 adjusted quantity for display purposes)
+        return items;
     }
 
     getItemCategory(itemId) {
@@ -837,6 +929,16 @@ class GroceryListManager {
             });
         }
 
+        // Clear pantry adjustments button
+        const clearPantryBtn = this.container.querySelector('#clear-pantry-btn');
+        if (clearPantryBtn) {
+            clearPantryBtn.addEventListener('click', () => {
+                if (confirm('Clear all pantry adjustments? This will reset all shopping list quantities to their original values.')) {
+                    this.clearAllPantryAdjustments();
+                }
+            });
+        }
+
         // Note: Week selector removed - now controlled by unified Menu tab selector
 
         // Export and print buttons
@@ -915,28 +1017,69 @@ class GroceryListManager {
         console.log(`🛒 Switching display mode from ${this.displayMode} to ${mode}`);
         this.displayMode = mode;
         this.render();
-        this.attachEventListeners(); // Re-attach event listeners after re-render
         console.log(`✅ Display mode switched to ${mode}`);
     }
 
     adjustQuantity(itemId, adjustment) {
-        // Find the item in groceryItems and adjust its quantity
+        // Adjust pantry quantity for an ingredient (ingredient-centric approach)
         if (!this.groceryItems) return;
         
         const item = this.groceryItems.find(item => 
             (item.ingredient_id && item.ingredient_id.toString() === itemId.toString()) ||
-            (item.id && item.id.toString() === itemId.toString())
+            (item.id && item.id.toString() === itemId.toString()) ||
+            (item.item_id && item.item_id.toString() === itemId.toString())
         );
         
         if (item) {
-            const currentQuantity = item.adjusted_quantity || item.quantity || 0;
-            const newQuantity = Math.max(0, currentQuantity + adjustment);
-            item.adjusted_quantity = this.roundQuantity(newQuantity);
+            const actualItemId = item.item_id || item.ingredient_id || item.id;
+            const unit = item.unit;
             
-            // Re-render to show the updated quantity
+            // Initialize pantry adjustment for this ingredient if needed
+            if (!this.pantryAdjustments[actualItemId]) {
+                this.pantryAdjustments[actualItemId] = {
+                    pantryQuantity: 0,
+                    unit: unit,
+                    lastUpdated: new Date().toISOString()
+                };
+            }
+            
+            const pantryData = this.pantryAdjustments[actualItemId];
+            
+            // Adjust pantry quantity (what we have in pantry)
+            const newPantryQuantity = Math.max(0, pantryData.pantryQuantity + adjustment);
+            
+            pantryData.pantryQuantity = this.roundQuantity(newPantryQuantity);
+            pantryData.lastUpdated = new Date().toISOString();
+            
+            // Save adjustments to localStorage
+            this.savePantryAdjustments();
+            
+            // Re-render to show the updated display
             this.render();
-            this.attachEventListeners(); // Re-attach event listeners after re-render
         }
+    }
+
+    savePantryAdjustments() {
+        localStorage.setItem('mealplanner_pantry_adjustments', JSON.stringify(this.pantryAdjustments));
+    }
+
+    loadPantryAdjustments() {
+        const saved = localStorage.getItem('mealplanner_pantry_adjustments');
+        if (saved) {
+            try {
+                this.pantryAdjustments = JSON.parse(saved);
+            } catch (error) {
+                console.warn('Error loading pantry adjustments:', error);
+                this.pantryAdjustments = {};
+            }
+        }
+    }
+
+    clearAllPantryAdjustments() {
+        this.pantryAdjustments = {};
+        this.savePantryAdjustments();
+        this.render();
+        this.showNotification('All pantry adjustments cleared', 'success');
     }
 
     generateGroceryList() {
