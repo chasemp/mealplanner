@@ -455,6 +455,23 @@ class SharedBarcodeScanner {
             // Add to the ingredients array
             window.itemsManager.items.push(ingredient);
             
+            // Save to persistent storage
+            window.itemsManager.saveItems();
+            
+            // CRITICAL FIX: Notify other managers when items change
+            if (window.app && window.app.recipeManager && window.app.recipeManager.loadItems) {
+                console.log('🔄 BARCODE SCAN: Refreshing RecipeManager items...');
+                await window.app.recipeManager.loadItems();
+                console.log('✅ RecipeManager items refreshed successfully');
+            }
+
+            // GROCERY LIST SYNC FIX: Notify GroceryListManager to refresh its items when items change
+            if (window.app && window.app.groceryListManager && window.app.groceryListManager.loadItems) {
+                console.log('🔄 BARCODE SCAN: Refreshing GroceryListManager items...');
+                await window.app.groceryListManager.loadItems();
+                console.log('✅ GroceryListManager items refreshed successfully');
+            }
+            
             // Refresh the items view if it's currently displayed
             if (window.itemsManager.container && !window.itemsManager.container.classList.contains('hidden')) {
                 window.itemsManager.applyFilters();
