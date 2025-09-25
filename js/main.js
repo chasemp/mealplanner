@@ -4,7 +4,7 @@ class MealPlannerApp {
         this.currentTab = 'menu';
         this.previousTab = null;
         this.navigationHistory = [];
-        this.version = '2025.09.24.2052';
+        this.version = '2025.09.24.2102';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;

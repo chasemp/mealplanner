@@ -1671,7 +1671,7 @@ class RecipeManager {
 
         // Validation
         if (!name) {
-            alert('Please enter a label name');
+            this.showCustomAlert('Label Name Required', 'Please enter a label name before creating.');
             nameInput.focus();
             return;
         }
@@ -1709,7 +1709,7 @@ class RecipeManager {
             
             console.log('✅ Label created successfully:', newLabel);
         } else {
-            alert('Error creating label. Please try again.');
+            this.showCustomAlert('Error Creating Label', 'There was an error creating the label. Please try again.');
         }
     }
 
@@ -1763,7 +1763,7 @@ class RecipeManager {
         const color = colorInput.value;
 
         if (!name) {
-            alert('Please enter a label name');
+            this.showCustomAlert('Label Name Required', 'Please enter a label name before updating.');
             return;
         }
 
@@ -1771,7 +1771,7 @@ class RecipeManager {
         const existingLabels = [...this.getUserLabels(), ...this.getSystemLabels()];
         const isDuplicate = existingLabels.some(label => 
             label.name.toLowerCase() === name.toLowerCase() && 
-            label.name.trim() !== originalName.trim()
+            label.name !== originalName
         );
         
         if (isDuplicate) {
@@ -1801,7 +1801,7 @@ class RecipeManager {
                 
                 console.log('✅ Label updated successfully');
             } else {
-                alert('Error updating label. Please try again.');
+                this.showCustomAlert('Error Updating Label', 'There was an error updating the label. Please try again.');
             }
         }
     }
@@ -1963,7 +1963,7 @@ class RecipeManager {
             this.displayUserLabels();
             console.log('✅ Label deleted successfully');
         } else {
-            alert('Error deleting label. Please try again.');
+            this.showCustomAlert('Error Deleting Label', 'There was an error deleting the label. Please try again.');
         }
     }
 
