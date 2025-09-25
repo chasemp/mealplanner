@@ -78,7 +78,7 @@ class ItemsManager {
         this.container.innerHTML = `
             <div class="space-y-6">
                 <!-- Header with controls -->
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div class="flex flex-row justify-between items-center gap-4">
                     <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Items</h2>
                     <div class="flex flex-wrap gap-3">
                         <button id="add-item-btn" class="btn-primary flex items-center space-x-2">
