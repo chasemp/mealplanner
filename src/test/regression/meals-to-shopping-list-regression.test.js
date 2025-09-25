@@ -237,7 +237,7 @@ describe('Meals to Shopping List Regression Tests', () => {
                                         name: ingredientName,
                                         quantity: 0,
                                         unit: ingredient.unit,
-                                        category: this.getIngredientCategory(ingredient.item_id)
+                                        category: this.getItemCategory(ingredient.item_id)
                                     };
                                 }
                                 const adjustedQuantity = (ingredient.quantity || 0) * portions;
@@ -260,7 +260,7 @@ describe('Meals to Shopping List Regression Tests', () => {
                                     name: ingredientName,
                                     quantity: 0,
                                     unit: ingredient.unit,
-                                    category: this.getIngredientCategory(ingredient.item_id)
+                                    category: this.getItemCategory(ingredient.item_id)
                                 };
                             }
                             ingredientTotals[key].quantity = this.roundQuantity(
@@ -281,7 +281,7 @@ describe('Meals to Shopping List Regression Tests', () => {
                                     name: ingredientName,
                                     quantity: 0,
                                     unit: ingredient.unit,
-                                    category: this.getIngredientCategory(ingredient.item_id)
+                                    category: this.getItemCategory(ingredient.item_id)
                                 };
                             }
                             ingredientTotals[key].quantity = this.roundQuantity(
@@ -310,7 +310,7 @@ describe('Meals to Shopping List Regression Tests', () => {
                 return items;
             }
 
-            getIngredientCategory(ingredientId) {
+            getItemCategory(ingredientId) {
                 const ingredient = this.items.find(i => i.id === ingredientId);
                 return ingredient ? ingredient.category : 'other';
             }

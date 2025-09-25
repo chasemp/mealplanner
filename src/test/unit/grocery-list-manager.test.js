@@ -132,7 +132,7 @@ class MockGroceryListManager {
                         name: ingredient.name,
                         quantity: 0,
                         unit: ingredient.unit,
-                        category: this.getIngredientCategory(ingredient.ingredient_id)
+                        category: this.getItemCategory(ingredient.ingredient_id)
                     }
                 }
                 ingredientTotals[key].quantity += ingredient.quantity
@@ -161,7 +161,7 @@ class MockGroceryListManager {
         return items.filter(item => item.adjusted_quantity > 0)
     }
 
-    getIngredientCategory(ingredientId) {
+    getItemCategory(ingredientId) {
         const ingredient = this.ingredients.find(i => i.id === ingredientId)
         return ingredient ? ingredient.category : 'other'
     }
@@ -420,12 +420,12 @@ describe('GroceryListManager', () => {
 
     describe('utility functions', () => {
         it('should get ingredient category correctly', () => {
-            const category = groceryListManager.getIngredientCategory(1)
+            const category = groceryListManager.getItemCategory(1)
             expect(category).toBe('meat')
         })
 
         it('should return other for unknown ingredient', () => {
-            const category = groceryListManager.getIngredientCategory(999)
+            const category = groceryListManager.getItemCategory(999)
             expect(category).toBe('other')
         })
 
