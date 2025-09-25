@@ -335,6 +335,28 @@ class MealManager {
         return this.recipes.find(recipe => recipe.id === recipeId);
     }
 
+    getValidatedLabels(labelsInput) {
+        if (!labelsInput || !labelsInput.trim()) return [];
+        
+        // Parse comma-separated labels
+        const inputLabels = labelsInput.split(',').map(label => label.trim()).filter(label => label);
+        
+        // Get all available labels from the system
+        const allAvailableLabels = this.getAllLabels();
+        
+        // Only return labels that exist in the system
+        const validLabels = inputLabels.filter(label => allAvailableLabels.includes(label));
+        
+        // Log warning for invalid labels
+        const invalidLabels = inputLabels.filter(label => !allAvailableLabels.includes(label));
+        if (invalidLabels.length > 0) {
+            console.warn('⚠️ Invalid labels detected in meal:', invalidLabels);
+            console.warn('💡 Labels must be created through the Labels management interface first');
+        }
+        
+        return validLabels;
+    }
+
     getMealTypeBadgeClass(type) {
         const classes = {
             breakfast: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
@@ -704,7 +726,7 @@ class MealManager {
                 recipes: this.getCurrentFormRecipes(),
                 totalServings: servingsInput ? parseInt(servingsInput.value) || 4 : 4,
                 mealTypes: Array.from(mealTypeInputs).map(input => input.value),
-                labels: labelsInput ? labelsInput.value.split(',').map(label => label.trim()).filter(label => label) : [],
+                labels: this.getValidatedLabels(labelsInput ? labelsInput.value : ''),
                 tags: tagsInput ? tagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag) : [],
                 estimatedTime: 0, // Will be calculated from recipes
                 createdAt: this.currentMeal ? this.currentMeal.createdAt : new Date().toISOString(),

@@ -4049,7 +4049,7 @@ class RecipeManager {
                                         type="text" 
                                         id="fullpage-recipe-labels-input" 
                                         class="flex-1 min-w-[100px] bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-none outline-none text-sm placeholder-gray-500 dark:placeholder-gray-400" 
-                                        placeholder="${isEdit && recipe.labels && recipe.labels.length > 0 ? 'Type to add more...' : 'Type to search labels...'}"
+                                        placeholder="${isEdit && recipe.labels && recipe.labels.length > 0 ? 'Type to search and add existing labels...' : 'Type to search existing labels...'}"
                                         autocomplete="off"
                                     />
                                 </div>
@@ -4941,18 +4941,18 @@ class RecipeManager {
             const recipeType = formData.get('recipe_type') || 'regular';
             const isCombo = recipeType === 'combo';
 
-            // Handle labels - check if they were entered as free text or selected via dropdown
+            // Handle labels - only use properly selected labels from dropdown
+            // NO FREEFORM TEXT INPUT ALLOWED - labels must be created through proper management interface
             let labels = this.formSelectedLabels || [];
-            if (labels.length === 0) {
-                // Check if labels were entered as free text in the input field
-                const labelsInput = form.querySelector('#fullpage-recipe-labels-input');
-                if (labelsInput && labelsInput.value.trim()) {
-                    // Split by spaces and/or commas, filter out empty strings
-                    labels = labelsInput.value.trim()
-                        .split(/[\s,]+/)
-                        .filter(label => label.length > 0)
-                        .map(label => label.trim());
-                }
+            
+            // Validate that all labels exist in the system
+            const allAvailableLabels = this.getAllLabels();
+            const invalidLabels = labels.filter(label => !allAvailableLabels.includes(label));
+            
+            if (invalidLabels.length > 0) {
+                console.warn('⚠️ Invalid labels detected:', invalidLabels);
+                // Remove invalid labels to prevent data corruption
+                labels = labels.filter(label => allAvailableLabels.includes(label));
             }
 
             const recipeData = {
