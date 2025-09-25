@@ -1321,8 +1321,6 @@ class RecipeManager {
                                     <div id="color-preview" class="w-8 h-8 rounded-full border-2 border-gray-300 dark:border-gray-600" style="background-color: #3B82F6;"></div>
                                     <input type="color" id="new-label-color" value="#3B82F6"
                                            class="w-12 h-8 p-0 border-0 rounded-md overflow-hidden cursor-pointer hidden">
-                                    <input type="text" id="new-label-color-text" value="#3B82F6"
-                                           class="w-24 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white uppercase">
                                     <button id="toggle-color-mode" class="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
                                         <span class="custom-mode-text">Presets</span><span class="preset-mode-text hidden">Custom</span>
                                     </button>
@@ -1337,13 +1335,25 @@ class RecipeManager {
                                         </button>
                                     `).join('')}
                                 </div>
+                                <!-- Bottom row with hex input on left and buttons on right -->
+                                <div class="flex justify-between items-center mt-4">
+                                    <div class="flex items-center gap-2">
+                                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Hex:</label>
+                                        <input type="text" id="new-label-color-text" value="#3B82F6"
+                                               class="w-24 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white uppercase">
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <button id="cancel-label-btn"
+                                                class="px-4 py-2 bg-gray-500 text-white font-medium rounded-md shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors hidden">
+                                            Cancel
+                                        </button>
+                                        <button id="create-label-btn"
+                                                class="px-5 py-2 bg-blue-600 text-white font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors">
+                                            Create Label
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="flex justify-end mt-4">
-                            <button id="create-label-btn"
-                                    class="px-5 py-2 bg-blue-600 text-white font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors">
-                                Create Label
-                            </button>
                         </div>
                     </section>
 
@@ -1669,7 +1679,7 @@ class RecipeManager {
         // Check for duplicates (including system labels)
         const existingLabels = [...this.getUserLabels(), ...this.getSystemLabels()];
         if (existingLabels.some(label => label.name.toLowerCase() === name.toLowerCase())) {
-            alert('A label with this name already exists');
+            this.showCustomAlert('A label with this name already exists', 'Please choose a different name for your label.');
             nameInput.focus();
             return;
         }
@@ -1725,11 +1735,18 @@ class RecipeManager {
             this.updateColorPreview(label.color);
             this.selectPresetColor(label.color);
 
-            // Change button to update mode
+            // Change button to update mode and show cancel button
             const createBtn = document.getElementById('create-label-btn');
+            const cancelBtn = document.getElementById('cancel-label-btn');
+            
             if (createBtn) {
-                createBtn.textContent = 'Update Label';
-                createBtn.onclick = () => this.updateLabel(labelName);
+                createBtn.textContent = 'Update';
+                createBtn.onclick = () => this.updateLabel(label.name);
+            }
+            
+            if (cancelBtn) {
+                cancelBtn.classList.remove('hidden');
+                cancelBtn.onclick = () => this.cancelLabelEdit();
             }
         }
     }
@@ -1752,8 +1769,13 @@ class RecipeManager {
 
         // Check for duplicates (excluding the current label)
         const existingLabels = [...this.getUserLabels(), ...this.getSystemLabels()];
-        if (existingLabels.some(label => label.name.toLowerCase() === name.toLowerCase() && label.name !== originalName)) {
-            alert('A label with this name already exists');
+        const isDuplicate = existingLabels.some(label => 
+            label.name.toLowerCase() === name.toLowerCase() && 
+            label.name.trim() !== originalName.trim()
+        );
+        
+        if (isDuplicate) {
+            this.showCustomAlert('A label with this name already exists', 'Please choose a different name for your label.');
             return;
         }
 
@@ -1784,10 +1806,155 @@ class RecipeManager {
         }
     }
 
+    cancelLabelEdit() {
+        // Reset form without saving changes
+        this.resetLabelForm();
+        console.log('❌ Label edit cancelled');
+    }
+
+    showCustomAlert(title, message) {
+        // Create modal overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+        overlay.id = 'custom-alert-overlay';
+        
+        // Create modal content
+        const modal = document.createElement('div');
+        modal.className = 'bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 transform transition-all';
+        modal.innerHTML = `
+            <div class="p-6">
+                <div class="flex items-center mb-4">
+                    <div class="flex-shrink-0">
+                        <svg class="h-6 w-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white">${title}</h3>
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <p class="text-sm text-gray-600 dark:text-gray-300">${message}</p>
+                </div>
+                <div class="flex justify-end">
+                    <button id="custom-alert-ok" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors">
+                        OK
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+        
+        // Add event listener for OK button
+        const okButton = document.getElementById('custom-alert-ok');
+        const closeModal = () => {
+            document.body.removeChild(overlay);
+        };
+        
+        okButton.addEventListener('click', closeModal);
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                closeModal();
+            }
+        });
+        
+        // Focus the OK button for accessibility
+        okButton.focus();
+        
+        // Add escape key listener
+        const handleEscape = (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+                document.removeEventListener('keydown', handleEscape);
+            }
+        };
+        document.addEventListener('keydown', handleEscape);
+    }
+
+    showCustomConfirm(title, message, onConfirm) {
+        // Create modal overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+        overlay.id = 'custom-confirm-overlay';
+        
+        // Create modal content
+        const modal = document.createElement('div');
+        modal.className = 'bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 transform transition-all';
+        modal.innerHTML = `
+            <div class="p-6">
+                <div class="flex items-center mb-4">
+                    <div class="flex-shrink-0">
+                        <svg class="h-6 w-6 text-yellow-600 dark:text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white">${title}</h3>
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <p class="text-sm text-gray-600 dark:text-gray-300">${message}</p>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button id="custom-confirm-cancel" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-md hover:bg-gray-400 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors">
+                        Cancel
+                    </button>
+                    <button id="custom-confirm-ok" class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors">
+                        Delete
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+        
+        // Add event listeners
+        const okButton = document.getElementById('custom-confirm-ok');
+        const cancelButton = document.getElementById('custom-confirm-cancel');
+        
+        const closeModal = () => {
+            document.body.removeChild(overlay);
+        };
+        
+        okButton.addEventListener('click', () => {
+            closeModal();
+            onConfirm();
+        });
+        
+        cancelButton.addEventListener('click', closeModal);
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                closeModal();
+            }
+        });
+        
+        // Focus the cancel button for safety
+        cancelButton.focus();
+        
+        // Add escape key listener
+        const handleEscape = (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+                document.removeEventListener('keydown', handleEscape);
+            }
+        };
+        document.addEventListener('keydown', handleEscape);
+    }
+
     deleteLabel(labelName) {
-        if (!confirm(`Are you sure you want to delete the label "${labelName}"?`)) {
-            return;
-        }
+        this.showCustomConfirm(
+            'Delete Label',
+            `Are you sure you want to delete the label "${labelName}"? This action cannot be undone.`,
+            () => {
+                this.performLabelDeletion(labelName);
+            }
+        );
+    }
+
+    performLabelDeletion(labelName) {
 
         const userLabels = this.getUserLabels();
         const filteredLabels = userLabels.filter(l => l.name !== labelName);
@@ -1818,6 +1985,12 @@ class RecipeManager {
         // Reset preset color selection
         this.selectPresetColor('#3B82F6');
         
+        // Reset buttons
+        const cancelBtn = document.getElementById('cancel-label-btn');
+        if (cancelBtn) {
+            cancelBtn.classList.add('hidden');
+        }
+        
         if (createBtn) {
             createBtn.textContent = 'Create Label';
             createBtn.onclick = () => this.createNewLabel();
@@ -1845,10 +2018,10 @@ class RecipeManager {
         }
         
         // Preset color buttons
-        const presetColorButtons = document.querySelectorAll('.preset-color');
+        const presetColorButtons = document.querySelectorAll('.preset-color-btn');
         presetColorButtons.forEach(button => {
             button.addEventListener('click', (e) => {
-                const color = e.target.dataset.color;
+                const color = e.currentTarget.dataset.color;
                 this.selectPresetColor(color);
                 this.updateColorPreview(color);
             });
@@ -1867,13 +2040,13 @@ class RecipeManager {
     
     selectPresetColor(color) {
         // Remove selection from all preset colors
-        const presetColorButtons = document.querySelectorAll('.preset-color');
+        const presetColorButtons = document.querySelectorAll('.preset-color-btn');
         presetColorButtons.forEach(button => {
             button.classList.remove('ring-4', 'ring-blue-500', 'ring-offset-2');
         });
         
         // Add selection to the chosen color
-        const selectedButton = document.querySelector(`.preset-color[data-color="${color}"]`);
+        const selectedButton = document.querySelector(`.preset-color-btn[data-color="${color}"]`);
         if (selectedButton) {
             selectedButton.classList.add('ring-4', 'ring-blue-500', 'ring-offset-2');
         }
@@ -1886,14 +2059,10 @@ class RecipeManager {
     }
     
     updateColorPreview(color) {
-        const preview = document.getElementById('selected-color-preview');
-        const value = document.getElementById('selected-color-value');
+        const preview = document.getElementById('color-preview');
         
         if (preview) {
             preview.style.backgroundColor = color;
-        }
-        if (value) {
-            value.textContent = color;
         }
     }
 
