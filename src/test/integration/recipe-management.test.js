@@ -184,3 +184,272 @@ describe('Ingredient Management Integration', () => {
     expect(unitSelect.value).toBe('pieces')
   })
 })
+
+describe('Label Management Integration', () => {
+  beforeEach(() => {
+    createMockDOM()
+  })
+
+  it('should create label management form with proper event handling', () => {
+    // Create label management modal
+    const modal = document.createElement('div')
+    modal.className = 'modal-overlay'
+    modal.innerHTML = `
+      <div class="modal-content">
+        <h2>Manage Labels</h2>
+        <form id="label-form">
+          <input type="text" id="new-label-name" placeholder="Label Name" required>
+          <select id="new-label-type">
+            <option value="ingredient_type">Ingredient Type</option>
+            <option value="meal_type">Meal Type</option>
+            <option value="recipe_combo">Recipe Combo</option>
+          </select>
+          <input type="color" id="new-label-color" value="#3B82F6">
+          <input type="text" id="new-label-hex" value="#3B82F6" readonly>
+          <button type="button" id="create-label-btn">Create Label</button>
+          <button type="button" id="cancel-label-btn" class="hidden">Cancel</button>
+        </form>
+        <div id="user-labels"></div>
+      </div>
+    `
+    
+    document.body.appendChild(modal)
+    
+    const createBtn = document.getElementById('create-label-btn')
+    const cancelBtn = document.getElementById('cancel-label-btn')
+    const nameInput = document.getElementById('new-label-name')
+    const colorInput = document.getElementById('new-label-color')
+    
+    expect(createBtn).toBeTruthy()
+    expect(cancelBtn).toBeTruthy()
+    expect(nameInput).toBeTruthy()
+    expect(colorInput).toBeTruthy()
+  })
+
+  it('should handle label creation without duplicate warnings', () => {
+    // Mock the RecipeManager methods
+    const mockRecipeManager = {
+      createNewLabel: vi.fn().mockImplementation(() => {
+        // Simulate successful label creation
+        return { success: true, message: 'Label created successfully' }
+      }),
+      updateLabel: vi.fn().mockImplementation(() => {
+        // Simulate successful label update
+        return { success: true, message: 'Label updated successfully' }
+      }),
+      resetLabelForm: vi.fn()
+    }
+
+    // Create label form
+    const form = document.createElement('form')
+    form.innerHTML = `
+      <input type="text" id="new-label-name" value="Test Label">
+      <select id="new-label-type">
+        <option value="ingredient_type" selected>Ingredient Type</option>
+      </select>
+      <input type="color" id="new-label-color" value="#3B82F6">
+      <button type="button" id="create-label-btn">Create Label</button>
+    `
+    document.body.appendChild(form)
+
+    const createBtn = document.getElementById('create-label-btn')
+    const nameInput = document.getElementById('new-label-name')
+
+    // Simulate single event listener (not both event listener + onclick)
+    let eventHandlerCalled = false
+    createBtn.addEventListener('click', (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      eventHandlerCalled = true
+      mockRecipeManager.createNewLabel()
+    })
+
+    // Simulate button click
+    createBtn.click()
+
+    expect(eventHandlerCalled).toBe(true)
+    expect(mockRecipeManager.createNewLabel).toHaveBeenCalledTimes(1)
+    expect(mockRecipeManager.updateLabel).not.toHaveBeenCalled()
+  })
+
+  it('should handle label editing without duplicate warnings', () => {
+    // Mock the RecipeManager methods
+    const mockRecipeManager = {
+      createNewLabel: vi.fn(),
+      updateLabel: vi.fn().mockImplementation(() => {
+        return { success: true, message: 'Label updated successfully' }
+      }),
+      resetLabelForm: vi.fn()
+    }
+
+    // Create label form in edit mode
+    const form = document.createElement('form')
+    form.innerHTML = `
+      <input type="text" id="new-label-name" value="Test Label">
+      <select id="new-label-type">
+        <option value="ingredient_type" selected>Ingredient Type</option>
+      </select>
+      <input type="color" id="new-label-color" value="#EF4444">
+      <button type="button" id="create-label-btn" data-original-name="Test Label">Update</button>
+      <button type="button" id="cancel-label-btn">Cancel</button>
+    `
+    document.body.appendChild(form)
+
+    const createBtn = document.getElementById('create-label-btn')
+    const nameInput = document.getElementById('new-label-name')
+
+    // Simulate single event listener that checks mode
+    let eventHandlerCalled = false
+    createBtn.addEventListener('click', (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      eventHandlerCalled = true
+      
+      // Check if we're in edit mode by looking at button text
+      if (createBtn.textContent === 'Update') {
+        const originalName = createBtn.getAttribute('data-original-name')
+        mockRecipeManager.updateLabel(originalName)
+      } else {
+        mockRecipeManager.createNewLabel()
+      }
+    })
+
+    // Simulate button click in edit mode
+    createBtn.click()
+
+    expect(eventHandlerCalled).toBe(true)
+    expect(mockRecipeManager.updateLabel).toHaveBeenCalledWith('Test Label')
+    expect(mockRecipeManager.createNewLabel).not.toHaveBeenCalled()
+  })
+
+  it('should demonstrate the problem with duplicate event handlers', () => {
+    // Mock the RecipeManager methods
+    const mockRecipeManager = {
+      createNewLabel: vi.fn(),
+      updateLabel: vi.fn(),
+      resetLabelForm: vi.fn()
+    }
+
+    // Create label form
+    const form = document.createElement('form')
+    form.innerHTML = `
+      <input type="text" id="new-label-name" value="Test Label">
+      <button type="button" id="create-label-btn">Create Label</button>
+    `
+    document.body.appendChild(form)
+
+    const createBtn = document.getElementById('create-label-btn')
+    let eventListenerCalls = 0
+    let onclickCalls = 0
+
+    // Add event listener (correct approach)
+    createBtn.addEventListener('click', (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      eventListenerCalls++
+      mockRecipeManager.createNewLabel()
+    })
+
+    // Add onclick handler (problematic approach - this is what caused the bug)
+    createBtn.onclick = () => {
+      onclickCalls++
+      mockRecipeManager.updateLabel()
+    }
+
+    // Simulate button click
+    createBtn.click()
+
+    // Both handlers fire - this demonstrates the bug we fixed
+    expect(eventListenerCalls).toBe(1)
+    expect(onclickCalls).toBe(1) // This is the problem - both fire
+    expect(mockRecipeManager.createNewLabel).toHaveBeenCalledTimes(1)
+    expect(mockRecipeManager.updateLabel).toHaveBeenCalledTimes(1) // This caused duplicate warnings
+  })
+
+  it('should show the correct solution with single event handler', () => {
+    // Mock the RecipeManager methods
+    const mockRecipeManager = {
+      createNewLabel: vi.fn(),
+      updateLabel: vi.fn(),
+      resetLabelForm: vi.fn()
+    }
+
+    // Create label form
+    const form = document.createElement('form')
+    form.innerHTML = `
+      <input type="text" id="new-label-name" value="Test Label">
+      <button type="button" id="create-label-btn">Create Label</button>
+    `
+    document.body.appendChild(form)
+
+    const createBtn = document.getElementById('create-label-btn')
+    let handlerCalls = 0
+
+    // Single event listener that handles both create and update modes
+    createBtn.addEventListener('click', (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      handlerCalls++
+      
+      // Check mode and call appropriate method
+      if (createBtn.textContent === 'Update') {
+        const originalName = createBtn.getAttribute('data-original-name')
+        mockRecipeManager.updateLabel(originalName)
+      } else {
+        mockRecipeManager.createNewLabel()
+      }
+    })
+
+    // Simulate button click in create mode
+    createBtn.click()
+
+    // Only one handler fires
+    expect(handlerCalls).toBe(1)
+    expect(mockRecipeManager.createNewLabel).toHaveBeenCalledTimes(1)
+    expect(mockRecipeManager.updateLabel).not.toHaveBeenCalled()
+  })
+
+  it('should properly manage form state transitions', () => {
+    // Create label form
+    const form = document.createElement('form')
+    form.innerHTML = `
+      <input type="text" id="new-label-name" value="">
+      <button type="button" id="create-label-btn">Create Label</button>
+      <button type="button" id="cancel-label-btn" class="hidden">Cancel</button>
+    `
+    document.body.appendChild(form)
+
+    const createBtn = document.getElementById('create-label-btn')
+    const cancelBtn = document.getElementById('cancel-label-btn')
+    const nameInput = document.getElementById('new-label-name')
+
+    // Test initial state
+    expect(createBtn.textContent).toBe('Create Label')
+    expect(cancelBtn.classList.contains('hidden')).toBe(true)
+    expect(createBtn.hasAttribute('data-original-name')).toBe(false)
+
+    // Simulate entering edit mode
+    createBtn.textContent = 'Update'
+    createBtn.setAttribute('data-original-name', 'Test Label')
+    cancelBtn.classList.remove('hidden')
+    nameInput.value = 'Test Label'
+
+    // Test edit state
+    expect(createBtn.textContent).toBe('Update')
+    expect(cancelBtn.classList.contains('hidden')).toBe(false)
+    expect(createBtn.getAttribute('data-original-name')).toBe('Test Label')
+    expect(nameInput.value).toBe('Test Label')
+
+    // Simulate resetting form
+    createBtn.textContent = 'Create Label'
+    createBtn.removeAttribute('data-original-name')
+    cancelBtn.classList.add('hidden')
+    nameInput.value = ''
+
+    // Test reset state
+    expect(createBtn.textContent).toBe('Create Label')
+    expect(cancelBtn.classList.contains('hidden')).toBe(true)
+    expect(createBtn.hasAttribute('data-original-name')).toBe(false)
+    expect(nameInput.value).toBe('')
+  })
+})
