@@ -78,7 +78,7 @@ class ItemsManager {
         this.container.innerHTML = `
             <div class="space-y-6">
                 <!-- Header with controls -->
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div class="flex flex-row justify-between items-center gap-4">
                     <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Items</h2>
                     <div class="flex flex-wrap gap-3">
                         <button id="add-item-btn" class="btn-primary flex items-center space-x-2">
@@ -853,17 +853,17 @@ class ItemsManager {
 
             // CRITICAL FIX: Notify RecipeManager to refresh its items when items change
             // This prevents demo data pollution in recipe forms after adding/updating items
-            if (window.app && window.app.recipeManager && window.app.recipeManager.loadItems) {
+            if (window.recipeManager && window.recipeManager.loadItems) {
                 console.log('🔄 ITEMS CHANGED: Refreshing RecipeManager items...');
-                await window.app.recipeManager.loadItems();
+                await window.recipeManager.loadItems();
                 console.log('✅ RecipeManager items refreshed successfully');
             }
 
             // GROCERY LIST SYNC FIX: Notify GroceryListManager to refresh its items when items change
             // This prevents "unknown" items in grocery list until page refresh
-            if (window.app && window.app.groceryListManager && window.app.groceryListManager.loadItems) {
+            if (window.groceryListManager && window.groceryListManager.loadItems) {
                 console.log('🔄 ITEMS CHANGED: Refreshing GroceryListManager items...');
-                await window.app.groceryListManager.loadItems();
+                await window.groceryListManager.loadItems();
                 console.log('✅ GroceryListManager items refreshed successfully');
             }
 
@@ -972,17 +972,17 @@ class ItemsManager {
 
             // CRITICAL FIX: Notify RecipeManager to refresh its items when items change
             // This prevents demo data pollution in recipe forms after adding/updating items
-            if (window.app && window.app.recipeManager && window.app.recipeManager.loadItems) {
+            if (window.recipeManager && window.recipeManager.loadItems) {
                 console.log('🔄 ITEMS CHANGED: Refreshing RecipeManager items...');
-                await window.app.recipeManager.loadItems();
+                await window.recipeManager.loadItems();
                 console.log('✅ RecipeManager items refreshed successfully');
             }
 
             // GROCERY LIST SYNC FIX: Notify GroceryListManager to refresh its items when items change
             // This prevents "unknown" items in grocery list until page refresh
-            if (window.app && window.app.groceryListManager && window.app.groceryListManager.loadItems) {
+            if (window.groceryListManager && window.groceryListManager.loadItems) {
                 console.log('🔄 ITEMS CHANGED: Refreshing GroceryListManager items...');
-                await window.app.groceryListManager.loadItems();
+                await window.groceryListManager.loadItems();
                 console.log('✅ GroceryListManager items refreshed successfully');
             }
             
@@ -1045,9 +1045,9 @@ class ItemsManager {
             
             // CRITICAL FIX: Notify RecipeManager to refresh its items when items are deleted
             // This prevents stale ingredient references in recipe forms
-            if (window.app && window.app.recipeManager && window.app.recipeManager.loadItems) {
+            if (window.recipeManager && window.recipeManager.loadItems) {
                 console.log('🔄 ITEM DELETED: Refreshing RecipeManager items...');
-                await window.app.recipeManager.loadItems();
+                await window.recipeManager.loadItems();
                 console.log('✅ RecipeManager items refreshed after deletion');
             }
             
