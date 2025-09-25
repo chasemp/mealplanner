@@ -1767,17 +1767,7 @@ class RecipeManager {
             return;
         }
 
-        // Check for duplicates (excluding the current label)
-        const existingLabels = [...this.getUserLabels(), ...this.getSystemLabels()];
-        const isDuplicate = existingLabels.some(label => 
-            label.name.toLowerCase() === name.toLowerCase() && 
-            label.name.trim() !== originalName.trim()
-        );
-        
-        if (isDuplicate) {
-            this.showCustomAlert('A label with this name already exists', 'Please choose a different name for your label.');
-            return;
-        }
+        // No duplicate check needed for updates - user can keep the same name
 
         // Update label
         const userLabels = this.getUserLabels();
