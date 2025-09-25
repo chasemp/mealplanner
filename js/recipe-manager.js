@@ -1771,7 +1771,7 @@ class RecipeManager {
         const existingLabels = [...this.getUserLabels(), ...this.getSystemLabels()];
         const isDuplicate = existingLabels.some(label => 
             label.name.toLowerCase() === name.toLowerCase() && 
-            label.name !== originalName
+            label.name.trim() !== originalName.trim()
         );
         
         if (isDuplicate) {
