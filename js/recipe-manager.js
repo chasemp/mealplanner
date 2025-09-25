@@ -1529,11 +1529,24 @@ class RecipeManager {
             });
         }
 
-        // Create label button
+        // Create/Update label button - use single handler that checks current mode
         const createBtn = document.getElementById('create-label-btn');
         if (createBtn) {
-            createBtn.addEventListener('click', () => {
-                this.createNewLabel();
+            createBtn.addEventListener('click', (e) => {
+                // Prevent the onclick handler from also firing
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Check if we're in edit mode by looking at button text
+                if (createBtn.textContent === 'Update') {
+                    // Get the original label name from the button's data attribute
+                    const originalName = createBtn.getAttribute('data-original-name');
+                    if (originalName) {
+                        this.updateLabel(originalName);
+                    }
+                } else {
+                    this.createNewLabel();
+                }
             });
         }
 
@@ -1741,7 +1754,9 @@ class RecipeManager {
             
             if (createBtn) {
                 createBtn.textContent = 'Update';
-                createBtn.onclick = () => this.updateLabel(label.name);
+                createBtn.setAttribute('data-original-name', label.name);
+                // Remove any existing onclick handler since we're using the event listener
+                createBtn.onclick = null;
             }
             
             if (cancelBtn) {
@@ -1983,7 +1998,8 @@ class RecipeManager {
         
         if (createBtn) {
             createBtn.textContent = 'Create Label';
-            createBtn.onclick = () => this.createNewLabel();
+            createBtn.removeAttribute('data-original-name');
+            createBtn.onclick = null; // Event listener handles the click
         }
     }
 
