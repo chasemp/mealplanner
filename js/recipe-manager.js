@@ -2271,11 +2271,7 @@ class RecipeManager {
         // Attach event listeners
         this.attachRecipeFormListeners(modal, recipe);
         
-        // Focus on title input
-        setTimeout(() => {
-            const titleInput = modal.querySelector('#recipe-title');
-            if (titleInput) titleInput.focus();
-        }, 100);
+        // Note: Removed automatic focus to prevent mobile keyboard from opening
     }
 
     /**
