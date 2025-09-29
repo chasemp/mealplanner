@@ -850,35 +850,57 @@ class ItineraryView {
         return [];
     }
 
+    isRecipeFavorite(recipeId) {
+        // Check if recipe is marked as favorite
+        if (window.app && window.app.isRecipeFavorite) {
+            return window.app.isRecipeFavorite(recipeId);
+        }
+        return false;
+    }
+
     renderRecipeOptions(recipes) {
         if (recipes.length === 0) {
             return '<p class="text-gray-500 text-center py-8">No recipes available for this meal type.</p>';
         }
         
-        return recipes.map(recipe => `
-            <div class="recipe-option border border-gray-200 dark:border-gray-600 rounded-lg p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" 
-                 data-recipe-id="${recipe.id}">
-                <div class="flex items-start justify-between">
-                    <div class="flex-1">
-                        <h3 class="font-medium text-gray-900 dark:text-white">${recipe.title}</h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">${recipe.description || ''}</p>
-                        <div class="flex items-center mt-2 space-x-4 text-xs text-gray-500">
-                            <span>⏱️ ${recipe.prep_time + recipe.cook_time} min</span>
-                            <span>👥 ${recipe.serving_count || 4} servings</span>
-                            ${recipe.type === 'combo' ? '<span class="px-2 py-1 bg-purple-100 text-purple-800 rounded-full">COMBO</span>' : ''}
+        // Get scheduled meals to check which recipes are already scheduled
+        const scheduledMeals = window.mealPlannerSettings?.getAuthoritativeData('planScheduledMeals') || [];
+        const scheduledRecipeIds = new Set(scheduledMeals.map(meal => meal.recipe_id));
+        
+        return recipes.map(recipe => {
+            const isScheduled = scheduledRecipeIds.has(recipe.id);
+            const isFavorite = this.isRecipeFavorite(recipe.id);
+            
+            return `
+                <div class="recipe-option border border-gray-200 dark:border-gray-600 rounded-lg p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${isScheduled ? 'bg-green-50 dark:bg-green-900 border-green-300 dark:border-green-600' : ''}" 
+                     data-recipe-id="${recipe.id}">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <h3 class="font-medium text-gray-900 dark:text-white">${recipe.title}</h3>
+                                ${isFavorite ? '<span class="text-red-500 text-xs">❤️</span>' : ''}
+                                ${recipe.type === 'combo' ? '<span class="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">COMBO</span>' : ''}
+                                ${isScheduled ? '<span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">SCHEDULED</span>' : ''}
+                            </div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">${recipe.description || ''}</p>
+                            <div class="flex items-center mt-2 space-x-4 text-xs text-gray-500">
+                                <span>⏱️ ${(recipe.prep_time || 0) + (recipe.cook_time || 0)} min</span>
+                                <span>👥 ${recipe.serving_count || 4} servings</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1 mt-2">
+                                ${(recipe.labels || []).slice(0, 3).map(label => 
+                                    `<span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">${label}</span>`
+                                ).join('')}
+                            </div>
                         </div>
-                        <div class="flex flex-wrap gap-1 mt-2">
-                            ${(recipe.labels || []).slice(0, 3).map(label => 
-                                `<span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">${label}</span>`
-                            ).join('')}
+                        <div class="ml-4 flex flex-col items-center space-y-2">
+                            <div class="w-4 h-4 border-2 border-gray-300 rounded-full recipe-checkbox"></div>
+                            ${isScheduled ? '<span class="text-xs text-green-600 dark:text-green-400">Already scheduled</span>' : ''}
                         </div>
-                    </div>
-                    <div class="ml-4">
-                        <div class="w-4 h-4 border-2 border-gray-300 rounded-full recipe-checkbox"></div>
                     </div>
                 </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     setupMealSelectionListeners(modal, dateStr) {
