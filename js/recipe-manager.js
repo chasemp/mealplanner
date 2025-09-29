@@ -2225,12 +2225,22 @@ class RecipeManager {
                     
                     <!-- Instructions Section -->
                     <div>
-                        <label for="recipe-instructions" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Instructions *
-                        </label>
-                        <textarea id="recipe-instructions" name="instructions" required rows="6" 
-                                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm sm:text-base"
-                                  placeholder="Enter step-by-step cooking instructions...">${isEdit ? recipe.instructions : ''}</textarea>
+                        <div class="flex items-center justify-between mb-2">
+                            <label for="recipe-instructions" class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Instructions *
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" id="use-step-instructions" name="use_step_instructions" 
+                                       class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
+                                       ${isEdit && recipe.use_step_instructions ? 'checked' : ''}>
+                                <span class="text-xs text-gray-600 dark:text-gray-400">Use step-by-step format</span>
+                            </label>
+                        </div>
+                        <div id="instructions-container">
+                            <textarea id="recipe-instructions" name="instructions" required rows="6" 
+                                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm sm:text-base"
+                                      placeholder="Enter step-by-step cooking instructions...">${isEdit ? recipe.instructions : ''}</textarea>
+                        </div>
                         <p class="text-xs text-gray-500 mt-1">Tip: Number your steps (1., 2., 3.) for better readability</p>
                     </div>
                     
@@ -2738,6 +2748,7 @@ class RecipeManager {
                 prep_time: parseInt(formData.get('prep_time')) || 0,
                 cook_time: parseInt(formData.get('cook_time')) || 0,
                 instructions: formData.get('instructions').trim(),
+                use_step_instructions: formData.get('use_step_instructions') === 'on',
                 labels: this.formSelectedLabels || []
             };
 
@@ -3002,6 +3013,7 @@ class RecipeManager {
             prep_time: prepTimeInput ? parseInt(prepTimeInput.value) || 0 : 0,
             cook_time: cookTimeInput ? parseInt(cookTimeInput.value) || 0 : 0,
             instructions: instructionsInput ? instructionsInput.value.trim() : '',
+            use_step_instructions: form.querySelector('#use-step-instructions') ? form.querySelector('#use-step-instructions').checked : false,
             labels: this.processUserLabels(tagsInput ? tagsInput.value.trim().split(',').map(tag => tag.trim()).filter(tag => tag) : []),
             difficulty: difficultyInput ? difficultyInput.value || 'easy' : 'easy',
             cuisine: cuisineInput ? cuisineInput.value.trim() : '',
@@ -3720,31 +3732,33 @@ class RecipeManager {
                     </div>
 
                     <!-- Instructions -->
-                    <div class="mb-4">
-                        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Instructions</h3>
-                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 space-y-3">
-                            ${recipe.instructions && recipe.instructions.length > 0 ? 
-                                (Array.isArray(recipe.instructions) ? 
-                                    recipe.instructions.map((step, index) => `
-                                        <div class="flex gap-2">
-                                            <span class="flex-shrink-0 w-5 h-5 bg-blue-500 text-white text-xs font-bold rounded-full flex items-center justify-center">${index + 1}</span>
-                                            <span class="text-xs text-gray-900 dark:text-white leading-relaxed">${step}</span>
-                                        </div>
-                                    `).join('') :
-                                    (typeof recipe.instructions === 'string' ? 
-                                        recipe.instructions.split(',').map((step, index) => `
+                    ${recipe.use_step_instructions ? `
+                        <div class="mb-4">
+                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Instructions</h3>
+                            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 space-y-3">
+                                ${recipe.instructions && recipe.instructions.length > 0 ? 
+                                    (Array.isArray(recipe.instructions) ? 
+                                        recipe.instructions.map((step, index) => `
                                             <div class="flex gap-2">
                                                 <span class="flex-shrink-0 w-5 h-5 bg-blue-500 text-white text-xs font-bold rounded-full flex items-center justify-center">${index + 1}</span>
-                                                <span class="text-xs text-gray-900 dark:text-white leading-relaxed">${step.trim()}</span>
+                                                <span class="text-xs text-gray-900 dark:text-white leading-relaxed">${step}</span>
                                             </div>
                                         `).join('') :
-                                        '<div class="text-xs text-gray-500 dark:text-gray-400">No instructions available</div>'
-                                    )
-                                ) :
-                                '<div class="text-xs text-gray-500 dark:text-gray-400">No instructions available</div>'
-                            }
+                                        (typeof recipe.instructions === 'string' ? 
+                                            recipe.instructions.split(',').map((step, index) => `
+                                                <div class="flex gap-2">
+                                                    <span class="flex-shrink-0 w-5 h-5 bg-blue-500 text-white text-xs font-bold rounded-full flex items-center justify-center">${index + 1}</span>
+                                                    <span class="text-xs text-gray-900 dark:text-white leading-relaxed">${step.trim()}</span>
+                                                </div>
+                                            `).join('') :
+                                            '<div class="text-xs text-gray-500 dark:text-gray-400">No instructions available</div>'
+                                        )
+                                    ) :
+                                    '<div class="text-xs text-gray-500 dark:text-gray-400">No instructions available</div>'
+                                }
+                            </div>
                         </div>
-                    </div>
+                    ` : ''}
 
                     <!-- Labels -->
                     <div class="mb-4">
@@ -3958,12 +3972,14 @@ class RecipeManager {
                     ${contentSection}
 
                     <!-- Instructions -->
-                    <div class="mb-4">
-                        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Instructions</h3>
-                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 space-y-3">
-                            ${instructionsSection}
+                    ${recipe.use_step_instructions ? `
+                        <div class="mb-4">
+                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Instructions</h3>
+                            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 space-y-3">
+                                ${instructionsSection}
+                            </div>
                         </div>
-                    </div>
+                    ` : ''}
 
                     <!-- Labels/Tags -->
                     <div class="mb-4">
@@ -4338,6 +4354,14 @@ class RecipeManager {
         // Attach change listeners to form inputs
         form.addEventListener('input', trackChanges);
         form.addEventListener('change', trackChanges);
+
+        // Add checkbox event listener for step-by-step instructions toggle
+        const stepInstructionsCheckbox = form.querySelector('#use-step-instructions');
+        if (stepInstructionsCheckbox) {
+            stepInstructionsCheckbox.addEventListener('change', (e) => {
+                this.toggleInstructionsFormat(e.target.checked);
+            });
+        }
 
         // Close/Cancel handlers with confirmation
         const handleClose = () => {
@@ -5589,6 +5613,78 @@ class RecipeManager {
         return parseFloat(rounded.toFixed(2));
     }
 
+    // Toggle between step-by-step and freeform instructions
+    toggleInstructionsFormat(useStepFormat) {
+        const instructionsContainer = document.getElementById('instructions-container');
+        if (!instructionsContainer) return;
+
+        if (useStepFormat) {
+            // Switch to step-by-step format
+            const currentInstructions = document.getElementById('recipe-instructions');
+            const currentValue = currentInstructions ? currentInstructions.value : '';
+            
+            // Parse existing instructions into steps
+            let steps = [];
+            if (currentValue) {
+                if (Array.isArray(currentValue)) {
+                    steps = currentValue;
+                } else if (typeof currentValue === 'string') {
+                    // Split by newlines or numbered steps
+                    steps = currentValue.split(/\n+|\d+\.\s*/).filter(step => step.trim());
+                }
+            }
+            
+            // Ensure at least one step
+            if (steps.length === 0) {
+                steps = [''];
+            }
+            
+            // Replace textarea with step-by-step format
+            instructionsContainer.innerHTML = this.renderInstructionSteps(steps);
+            
+            // Attach event listeners to new step elements
+            this.attachInstructionStepListeners();
+        } else {
+            // Switch to freeform textarea
+            const currentSteps = instructionsContainer.querySelectorAll('.instruction-step textarea');
+            let combinedInstructions = '';
+            
+            if (currentSteps.length > 0) {
+                // Combine all steps into a single text
+                combinedInstructions = Array.from(currentSteps)
+                    .map(textarea => textarea.value.trim())
+                    .filter(step => step)
+                    .join('\n\n');
+            }
+            
+            // Replace with textarea
+            instructionsContainer.innerHTML = `
+                <textarea id="recipe-instructions" name="instructions" required rows="6" 
+                          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm sm:text-base"
+                          placeholder="Enter step-by-step cooking instructions...">${combinedInstructions}</textarea>
+            `;
+        }
+    }
+
+    // Attach event listeners to instruction step elements
+    attachInstructionStepListeners() {
+        // Add step button
+        const addStepBtn = document.querySelector('#add-instruction-step');
+        if (addStepBtn) {
+            addStepBtn.addEventListener('click', () => {
+                this.addInstructionStep();
+            });
+        }
+
+        // Remove step buttons
+        document.querySelectorAll('.remove-instruction-step').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const stepNumber = parseInt(e.target.dataset.step);
+                this.removeInstructionStep(stepNumber);
+            });
+        });
+    }
+
     // Instruction steps methods
     renderInstructionSteps(instructions = null) {
         let steps = [];
@@ -5607,7 +5703,16 @@ class RecipeManager {
             steps = [''];
         }
         
-        return steps.map((step, index) => this.renderInstructionStep(step, index + 1)).join('');
+        const stepsHtml = steps.map((step, index) => this.renderInstructionStep(step, index + 1)).join('');
+        
+        return `
+            <div class="space-y-3">
+                ${stepsHtml}
+                <button type="button" id="add-instruction-step" class="w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-md text-sm font-medium border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 transition-colors">
+                    + Add Step
+                </button>
+            </div>
+        `;
     }
     
     renderInstructionStep(content = '', stepNumber = 1) {

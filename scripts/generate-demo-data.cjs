@@ -807,6 +807,7 @@ class DemoDataGenerator {
             cook_time: this.getRandomElement(template.cook_time),
             created_at: '', // Will be set by caller
             instructions: this.generateInstructions(template, selectedIngredients),
+            use_step_instructions: Math.random() < 0.7, // 70% chance of using step format
             labels: labels,
             items: this.generateRecipeIngredients(selectedIngredients),
             favorite: this.shouldBeFavorite(template.title)
@@ -966,6 +967,7 @@ class DemoDataGenerator {
                 'Coordinate cooking times to serve everything together',
                 'Plate and serve as a complete meal'
             ],
+            use_step_instructions: true, // Combo recipes always use step format
             labels: labels,
             combo_recipes: selectedRecipes,
             items: aggregatedIngredients
