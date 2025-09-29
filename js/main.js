@@ -2591,7 +2591,6 @@ class MealPlannerApp {
         
         const meals = [];
         let recipeIndex = 0;
-        let lastScheduledDates = new Map(); // Track last scheduled date for each recipe
         
         // Calculate total days to plan
         const totalDays = weeks * 7;
@@ -2601,87 +2600,70 @@ class MealPlannerApp {
         const totalMealsNeeded = weeks * mealsPerWeek;
         let mealsScheduled = 0;
         
-        console.log(`📊 Planning ${totalMealsNeeded} meals over ${weeks} weeks (${mealsPerWeek} per week)`);
+        console.log(`📊 Planning ${totalMealsNeeded} meals over ${weeks} weeks (${mealsPerWeek} per week) with ${mealSpacing} days spacing`);
         
-        // Calculate meal distribution across the week
-        const mealsPerWeekInt = Math.floor(mealsPerWeek);
-        const extraMealFraction = mealsPerWeek % 1;
-        
-        // Create a list of days when we should schedule meals
+        // Create a list of days when we should schedule meals, respecting spacing
         const mealDays = [];
+        let lastMealDay = -mealSpacing - 1; // Start before the first possible day
+        
         for (let week = 0; week < weeks; week++) {
             const weekStartDay = week * 7;
+            const weekEndDay = weekStartDay + 6;
             
-            // Add regular meal days
-            for (let i = 0; i < mealsPerWeekInt; i++) {
-                mealDays.push(weekStartDay + i);
-            }
+            // Calculate how many meals we can fit in this week with the given spacing
+            const mealsThisWeek = Math.min(mealsPerWeek, Math.floor(7 / (mealSpacing + 1)));
             
-            // Add extra meal day if needed
-            if (extraMealFraction > 0) {
-                const extraDay = weekStartDay + Math.floor(extraMealFraction * 7);
-                if (extraDay < weekStartDay + 7) {
-                    mealDays.push(extraDay);
+            console.log(`📅 Week ${week + 1}: Can fit ${mealsThisWeek} meals with ${mealSpacing} days spacing`);
+            
+            // Add meal days for this week, respecting spacing
+            for (let i = 0; i < mealsThisWeek; i++) {
+                // Find the next available day that respects spacing
+                let nextMealDay = Math.max(weekStartDay, lastMealDay + mealSpacing + 1);
+                
+                // If we can't fit this meal in the current week, skip to next week
+                if (nextMealDay > weekEndDay) {
+                    console.log(`⏭️ Skipping meal ${i + 1} in week ${week + 1} - no space with ${mealSpacing} days spacing`);
+                    break;
                 }
+                
+                mealDays.push(nextMealDay);
+                lastMealDay = nextMealDay;
+                
+                console.log(`📅 Added meal day ${nextMealDay} (day ${nextMealDay - weekStartDay + 1} of week ${week + 1})`);
             }
         }
         
-        console.log(`📅 Meal days: ${mealDays.map(d => `Day ${d}`).join(', ')}`);
+        console.log(`📅 Total meal days: ${mealDays.map(d => `Day ${d}`).join(', ')}`);
         
-        // Iterate through each meal day and schedule meals
+        // Iterate through each meal day and schedule meals in order
         for (const day of mealDays) {
             if (mealsScheduled >= totalMealsNeeded) break;
+            if (recipeIndex >= recipes.length) {
+                console.log(`🔄 Wrapping around to start of recipe list`);
+                recipeIndex = 0;
+            }
             
             const dateStr = new Date(startDate.getTime() + day * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+            const recipe = recipes[recipeIndex];
             
-            // Try to find a suitable recipe for this day
-            let scheduled = false;
-            let attempts = 0;
-            const maxAttempts = recipes.length;
+            // Schedule this recipe
+            const meal = {
+                recipe_id: recipe.id, // Use the actual recipe ID from the pending recipes
+                date: dateStr,
+                meal_type: mealType,
+                notes: recipe.title,
+                recipe_title: recipe.title,
+                servings: recipe.servings || 4,
+                items: recipe.items || []
+            };
             
-            while (!scheduled && attempts < maxAttempts) {
-                const recipe = recipes[recipeIndex % recipes.length];
-                
-                // Check meal spacing constraint
-                const lastScheduled = lastScheduledDates.get(recipe.id);
-                const daysSinceLastScheduled = lastScheduled ? 
-                    Math.floor((new Date(dateStr) - lastScheduled) / (1000 * 60 * 60 * 24)) : 
-                    mealSpacing + 1; // If never scheduled, allow it
-                
-                if (daysSinceLastScheduled >= mealSpacing) {
-                    // Schedule this recipe
-                    const meal = {
-                        recipe_id: recipe.id, // Use the actual recipe ID from the pending recipes
-                        date: dateStr,
-                        meal_type: mealType,
-                        notes: recipe.title,
-                        recipe_title: recipe.title,
-                        servings: recipe.servings || 4,
-                        items: recipe.items || []
-                    };
-                    
-                    meals.push(meal);
-                    lastScheduledDates.set(recipe.id, new Date(dateStr));
-                    mealsScheduled++;
-                    scheduled = true;
-                    
-                    console.log(`📅 Scheduled "${recipe.title}" for ${dateStr} (meal ${mealsScheduled}/${totalMealsNeeded})`);
-                    
-                    // Move to next recipe in order
-                    recipeIndex++;
-                } else {
-                    console.log(`⏳ Skipping "${recipe.title}" on ${dateStr} - only ${daysSinceLastScheduled} days since last scheduled (need ${mealSpacing})`);
-                }
-                
-                attempts++;
-                if (!scheduled) {
-                    recipeIndex++;
-                }
-            }
+            meals.push(meal);
+            mealsScheduled++;
             
-            if (!scheduled) {
-                console.log(`⚠️ No suitable recipe found for ${dateStr} due to spacing constraints`);
-            }
+            console.log(`📅 Scheduled "${recipe.title}" for ${dateStr} (meal ${mealsScheduled}/${totalMealsNeeded})`);
+            
+            // Move to next recipe in order
+            recipeIndex++;
         }
         
         console.log(`✅ Generated ${meals.length} ordered meals`);
