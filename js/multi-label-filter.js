@@ -20,12 +20,11 @@ class MultiLabelFilter {
             <div class="relative">
                 <div id="${this.containerId}" class="w-full min-h-[42px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus-within:ring-2 focus-within:ring-blue-500 dark:bg-gray-700 dark:text-white cursor-text flex flex-wrap gap-1 items-center">
                     ${this.selectedLabels.map(label => {
-                        const labelType = this.getLabelType(label);
-                        const colorClasses = this.getLabelColorClasses(labelType);
+                        const displayProps = this.getLabelDisplayProperties(label);
                         return `
-                        <span class="inline-flex items-center px-2 py-1 text-xs ${colorClasses} rounded-full">
-                            ${label}
-                            <button type="button" class="ml-1 hover:opacity-75" onclick="window.multiLabelFilter_${this.containerId}.removeLabel('${label}')">
+                        <span class="inline-flex items-center px-2 py-1 text-xs ${displayProps.colors} rounded-full" ${displayProps.inlineStyle ? `style="${displayProps.inlineStyle}"` : ''}>
+                            ${displayProps.icon}${label}
+                            <button type="button" class="ml-1 ${displayProps.buttonColors}" onclick="window.multiLabelFilter_${this.containerId}.removeLabel('${label}')">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                 </svg>
@@ -206,6 +205,45 @@ class MultiLabelFilter {
         }
     }
 
+    // Get unified label display properties (colors, icon, etc.)
+    getLabelDisplayProperties(labelName) {
+        // Check if we have access to the recipe manager's unified function
+        if (typeof window !== 'undefined' && window.recipeManager && window.recipeManager.getLabelDisplayProperties) {
+            return window.recipeManager.getLabelDisplayProperties(labelName);
+        }
+        
+        // Fallback to basic type-based colors
+        const labelType = this.getLabelType(labelName);
+        const icon = typeof window !== 'undefined' && window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
+        const colors = this.getLabelColorClasses(labelType);
+        
+        return {
+            labelType,
+            icon,
+            colors,
+            inlineStyle: '',
+            buttonColors: 'hover:opacity-75'
+        };
+    }
+
+    // Get short label type name for display
+    getShortLabelTypeName(labelType) {
+        switch (labelType) {
+            case 'recipe_type':
+                return 'type';
+            case 'meal_type':
+                return 'meal';
+            case 'dietary':
+                return 'diet';
+            case 'cuisine':
+                return 'cuisine';
+            case 'occasion':
+                return 'occasion';
+            default:
+                return 'label';
+        }
+    }
+
     // Get filtered labels for dropdown based on search term
     getFilteredLabelsForDropdown() {
         const availableLabels = this.getAllLabels().filter(label => !this.selectedLabels.includes(label));
@@ -233,13 +271,22 @@ class MultiLabelFilter {
                 </div>
             `;
         } else {
-            dropdown.innerHTML = filteredLabels.map((label, index) => `
+            dropdown.innerHTML = filteredLabels.map((label, index) => {
+                const displayProps = this.getLabelDisplayProperties(label);
+                return `
                 <div class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm ${index === 0 ? 'bg-gray-50 dark:bg-gray-700' : ''}" 
                      data-label="${label}" 
                      onclick="window.multiLabelFilter_${this.containerId}.addLabel('${label}')">
-                    ${label}
+                    <div class="flex items-center space-x-2">
+                        ${displayProps.icon ? `<span class="flex-shrink-0">${displayProps.icon}</span>` : ''}
+                        <span class="font-bold flex-1">${label}</span>
+                        <span class="inline-flex items-center px-2 py-1 ${displayProps.colors} rounded-full text-xs flex-shrink-0" ${displayProps.inlineStyle ? `style="${displayProps.inlineStyle}"` : ''}>
+                            ${displayProps.labelType !== 'default' ? this.getShortLabelTypeName(displayProps.labelType) : 'label'}
+                        </span>
+                    </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         // Clear search input after updating dropdown
