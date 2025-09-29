@@ -1435,16 +1435,48 @@ class RecipeManager {
     }
 
 
-    // Get all labels (system + user)
+    // Get all labels (system + user) - returns label names as strings
     getAllLabels() {
         const systemLabels = this.getSystemLabels();
         const userLabels = JSON.parse(localStorage.getItem('mealplanner_user_labels') || '[]');
-        return [...systemLabels, ...userLabels];
+        
+        // Extract label names from both system and user labels
+        const allLabelNames = [
+            ...systemLabels.map(label => label.name || label),
+            ...userLabels.map(label => label.name || label)
+        ];
+        
+        return [...new Set(allLabelNames)].sort();
     }
 
     // Get user labels only
     getUserLabels() {
         return JSON.parse(localStorage.getItem('mealplanner_user_labels') || '[]');
+    }
+
+    // Get full label object by name (checks both system and user labels)
+    getLabelObject(labelName) {
+        // Check system labels first
+        const systemLabels = this.getSystemLabels();
+        const systemLabel = systemLabels.find(label => label.name === labelName);
+        if (systemLabel) {
+            return systemLabel;
+        }
+
+        // Check user labels
+        const userLabels = this.getUserLabels();
+        const userLabel = userLabels.find(label => label.name === labelName);
+        if (userLabel) {
+            return userLabel;
+        }
+
+        // Return null if not found
+        return null;
+    }
+
+    // Convert hex color to inline style for background
+    getLabelInlineStyle(hexColor) {
+        return `background-color: ${hexColor}; color: white;`;
     }
 
     // Save user labels
@@ -2211,13 +2243,24 @@ class RecipeManager {
                                 ${isEdit && recipe.labels ? recipe.labels.map(label => {
                                     // Extract label name properly
                                     const labelName = typeof label === 'string' ? label : (label.name || String(label));
-                                    const labelType = this.inferLabelType(labelName);
+                                    const labelObject = this.getLabelObject(labelName);
+                                    const labelType = labelObject ? labelObject.type : this.inferLabelType(labelName);
                                     const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
-                                    const colors = window.labelTypes ? window.labelTypes.getColorClasses(labelType) : 
-                                        'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+                                    
+                                    // Use the actual label color if available, otherwise fall back to type-based color
+                                    let colors, inlineStyle = '';
+                                    if (labelObject && labelObject.color) {
+                                        // Use inline style for custom colors
+                                        inlineStyle = this.getLabelInlineStyle(labelObject.color);
+                                        colors = 'rounded-full'; // Just the rounded class, color comes from inline style
+                                    } else {
+                                        colors = window.labelTypes ? window.labelTypes.getColorClasses(labelType) : 
+                                            'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+                                    }
+                                    
                                     const buttonColors = this.getLabelButtonColors(labelType);
                                     return `
-                                    <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-bold ${colors} rounded-full">
+                                    <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-bold ${colors}" ${inlineStyle ? `style="${inlineStyle}"` : ''}>
                                         ${icon}${labelName}
                                         <button type="button" class="ml-1 ${buttonColors}" onclick="window.recipeManager.removeFormLabel('${labelName}')">
                                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -4200,13 +4243,24 @@ class RecipeManager {
                                     ${isEdit && recipe.labels ? recipe.labels.map(label => {
                                         // Extract label name properly
                                         const labelName = typeof label === 'string' ? label : (label.name || String(label));
-                                        const labelType = this.inferLabelType(labelName);
+                                        const labelObject = this.getLabelObject(labelName);
+                                        const labelType = labelObject ? labelObject.type : this.inferLabelType(labelName);
                                         const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
-                                        const colors = window.labelTypes ? window.labelTypes.getColorClasses(labelType) : 
-                                            'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+                                        
+                                        // Use the actual label color if available, otherwise fall back to type-based color
+                                        let colors, inlineStyle = '';
+                                        if (labelObject && labelObject.color) {
+                                            // Use inline style for custom colors
+                                            inlineStyle = this.getLabelInlineStyle(labelObject.color);
+                                            colors = 'rounded-full'; // Just the rounded class, color comes from inline style
+                                        } else {
+                                            colors = window.labelTypes ? window.labelTypes.getColorClasses(labelType) : 
+                                                'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+                                        }
+                                        
                                         const buttonColors = this.getLabelButtonColors(labelType);
                                         return `
-                                        <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-bold ${colors} rounded-full">
+                                        <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-bold ${colors}" ${inlineStyle ? `style="${inlineStyle}"` : ''}>
                                             ${icon}${labelName}
                                             <button type="button" class="ml-1 ${buttonColors}" onclick="window.recipeManager.removeFormLabel('${labelName}'); window.recipeManager.updateFullPageLabelsDisplay();">
                                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -5071,14 +5125,29 @@ class RecipeManager {
 
         // Add chips for selected labels
         this.formSelectedLabels.forEach(label => {
-            const labelType = this.inferLabelType(label);
+            // Get the full label object to access the actual color
+            const labelObject = this.getLabelObject(label);
+            const labelType = labelObject ? labelObject.type : this.inferLabelType(label);
             const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
-            const colors = window.labelTypes ? window.labelTypes.getColorClasses(labelType) : 
-                'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+            
+            // Use the actual label color if available, otherwise fall back to type-based color
+            let colors, inlineStyle = '';
+            if (labelObject && labelObject.color) {
+                // Use inline style for custom colors
+                inlineStyle = this.getLabelInlineStyle(labelObject.color);
+                colors = 'rounded-full'; // Just the rounded class, color comes from inline style
+            } else {
+                colors = window.labelTypes ? window.labelTypes.getColorClasses(labelType) : 
+                    'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+            }
+            
             const buttonColors = this.getLabelButtonColors(labelType);
             
             const chip = document.createElement('span');
-            chip.className = `inline-flex items-center px-1.5 py-0.5 text-xs font-bold ${colors} rounded-full`;
+            chip.className = `inline-flex items-center px-1.5 py-0.5 text-xs font-bold ${colors}`;
+            if (inlineStyle) {
+                chip.style.cssText = inlineStyle;
+            }
             chip.innerHTML = `
                 ${icon}${label}
                 <button type="button" class="ml-1 ${buttonColors}" onclick="window.recipeManager.removeFormLabel('${label}'); window.recipeManager.updateFullPageLabelsDisplay();">
@@ -5736,14 +5805,29 @@ class RecipeManager {
 
         // Add chips for selected labels
         this.formSelectedLabels.forEach(label => {
-            const labelType = this.inferLabelType(label);
+            // Get the full label object to access the actual color
+            const labelObject = this.getLabelObject(label);
+            const labelType = labelObject ? labelObject.type : this.inferLabelType(label);
             const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
-            const colors = window.labelTypes ? window.labelTypes.getColorClasses(labelType) : 
-                'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+            
+            // Use the actual label color if available, otherwise fall back to type-based color
+            let colors, inlineStyle = '';
+            if (labelObject && labelObject.color) {
+                // Use inline style for custom colors
+                inlineStyle = this.getLabelInlineStyle(labelObject.color);
+                colors = 'rounded-full'; // Just the rounded class, color comes from inline style
+            } else {
+                colors = window.labelTypes ? window.labelTypes.getColorClasses(labelType) : 
+                    'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+            }
+            
             const buttonColors = this.getLabelButtonColors(labelType);
             
             const chip = document.createElement('span');
-            chip.className = `inline-flex items-center px-1.5 py-0.5 text-xs font-bold ${colors} rounded-full`;
+            chip.className = `inline-flex items-center px-1.5 py-0.5 text-xs font-bold ${colors}`;
+            if (inlineStyle) {
+                chip.style.cssText = inlineStyle;
+            }
             chip.innerHTML = `
                 ${icon}${label}
                 <button type="button" class="ml-1 ${buttonColors}" onclick="window.recipeManager.removeFormLabel('${label}')">
