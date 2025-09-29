@@ -245,9 +245,14 @@ class ScheduleManager {
      * @param {Object} scheduledMeal - New format scheduled meal
      */
     toLegacyFormat(scheduledMeal) {
+        // Get recipe name from the first recipe in the meal
+        const firstRecipe = scheduledMeal.recipes?.[0];
+        const recipeName = firstRecipe?.title || firstRecipe?.name || scheduledMeal.meal_name || scheduledMeal.notes;
+        
         return {
             id: scheduledMeal.id,
-            recipe_id: scheduledMeal.recipes?.[0]?.recipe_id || scheduledMeal.meal_id,
+            recipe_id: firstRecipe?.recipe_id || scheduledMeal.meal_id,
+            recipe_name: recipeName,
             meal_type: scheduledMeal.meal_type,
             date: scheduledMeal.date,
             notes: scheduledMeal.meal_name || scheduledMeal.notes

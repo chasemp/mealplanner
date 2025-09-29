@@ -3008,9 +3008,31 @@ class MealPlannerApp {
             const allPlanMeals = window.mealPlannerSettings.getAuthoritativeData('planScheduledMeals') || [];
             const allMenuMeals = window.mealPlannerSettings.getAuthoritativeData('menuScheduledMeals') || [];
             
+            // Convert meals to consistent format for delta comparison
+            const convertMealForDelta = (meal) => {
+                // If meal already has recipe_name, use it as-is
+                if (meal.recipe_name) {
+                    return meal;
+                }
+                
+                // Convert from new format to legacy format
+                if (window.scheduleManager && meal.recipes) {
+                    return window.scheduleManager.toLegacyFormat(meal);
+                }
+                
+                // Fallback: try to construct recipe_name from available properties
+                return {
+                    ...meal,
+                    recipe_name: meal.meal_name || meal.name || meal.title || meal.notes || 'Unknown Recipe'
+                };
+            };
+            
+            const convertedPlanMeals = allPlanMeals.map(convertMealForDelta);
+            const convertedMenuMeals = allMenuMeals.map(convertMealForDelta);
+            
             // Filter meals by date range if available (same logic as itinerary view)
-            let planMeals = allPlanMeals;
-            let menuMeals = allMenuMeals;
+            let planMeals = convertedPlanMeals;
+            let menuMeals = convertedMenuMeals;
             
             if (startDate && endDate) {
                 const filterByDateRange = (meals) => meals.filter(meal => {
@@ -3022,9 +3044,9 @@ class MealPlannerApp {
                     return mealDateNormalized >= startDateNormalized && mealDateNormalized <= endDateNormalized;
                 });
                 
-                planMeals = filterByDateRange(allPlanMeals);
-                menuMeals = filterByDateRange(allMenuMeals);
-                console.log(`📊 Filtered to date range - Plan: ${planMeals.length}/${allPlanMeals.length} meals, Menu: ${menuMeals.length}/${allMenuMeals.length} meals`);
+                planMeals = filterByDateRange(convertedPlanMeals);
+                menuMeals = filterByDateRange(convertedMenuMeals);
+                console.log(`📊 Filtered to date range - Plan: ${planMeals.length}/${convertedPlanMeals.length} meals, Menu: ${menuMeals.length}/${convertedMenuMeals.length} meals`);
             } else {
                 console.log(`📊 Plan has ${planMeals.length} meals, Menu has ${menuMeals.length} meals (all meals, no date filter)`);
             }
