@@ -10,7 +10,7 @@ class GroceryListManager {
         this.items = [];
         this.currentWeek = this.getCurrentWeek();
         this.displayMode = 'week'; // 'week' or 'meal'
-        this.editMode = false; // false = display mode, true = edit mode
+        this.editMode = false; // false = view mode, true = edit mode
         this.groceryItems = []; // For storing generated grocery items
         this.pantryAdjustments = {}; // Store pantry quantities per ingredient (ingredient-centric)
         this.init();
@@ -244,10 +244,10 @@ class GroceryListManager {
                                         </div>
                                         <!-- Edit Mode Toggle -->
                                         <div class="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-                                            <button id="shopping-list-display-mode" class="px-3 py-1 text-xs font-medium rounded-md transition-colors ${!this.editMode ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}">
+                                            <button id="shopping-list-display-mode" class="px-3 py-1 text-xs font-medium rounded-md transition-colors ${!this.editMode ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}" title="View mode - read-only shopping list">
                                                 📋 View
                                             </button>
-                                            <button id="shopping-list-edit-mode" class="px-3 py-1 text-xs font-medium rounded-md transition-colors ${this.editMode ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}">
+                                            <button id="shopping-list-edit-mode" class="px-3 py-1 text-xs font-medium rounded-md transition-colors ${this.editMode ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}" title="Edit mode - adjust quantities based on pantry">
                                                 ✏️ Edit
                                             </button>
                                         </div>
@@ -396,7 +396,7 @@ class GroceryListManager {
             <div class="mb-6 last:mb-0">
                 <h5 class="font-medium text-gray-900 dark:text-white mb-3 capitalize">${category}</h5>
                 <div class="space-y-2">
-                    ${items.map(item => this.renderGroceryItem(item, true)).join('')}
+                    ${items.map(item => this.renderGroceryItem(item)).join('')}
                 </div>
             </div>
         `).join('');
@@ -416,6 +416,7 @@ class GroceryListManager {
 
     renderGroceryItem(item, showQuantityControls = null) {
         // Use editMode if showQuantityControls not explicitly set
+        // In view mode, never show quantity controls
         if (showQuantityControls === null) {
             showQuantityControls = this.editMode;
         }
@@ -432,7 +433,7 @@ class GroceryListManager {
                     <div class="flex-1 min-w-0">
                         <div class="font-medium text-gray-900 dark:text-white ${item.checked ? 'line-through text-gray-500 dark:text-gray-400' : ''} flex items-center gap-2">
                             ${item.name}
-                            ${showQuantityControls ? '<span class="text-xs text-blue-600 dark:text-blue-400">✏️</span>' : ''}
+                            ${showQuantityControls ? '<span class="text-xs text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-1 py-0.5 rounded" title="Editable in edit mode">✏️</span>' : ''}
                         </div>
                         <div class="text-sm text-gray-500 dark:text-gray-400">
                             ${showQuantityControls ? '' : 
@@ -993,7 +994,9 @@ class GroceryListManager {
         console.log('🛒 DEBUG: weekModeBtn found:', !!weekModeBtn, weekModeBtn);
         
         if (mealModeBtn) {
-            mealModeBtn.addEventListener('click', () => {
+            mealModeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 console.log('🛒 DEBUG: Meal mode button clicked!');
                 this.setDisplayMode('meal');
             });
@@ -1003,7 +1006,9 @@ class GroceryListManager {
         }
         
         if (weekModeBtn) {
-            weekModeBtn.addEventListener('click', () => {
+            weekModeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 console.log('🛒 DEBUG: Week mode button clicked!');
                 this.setDisplayMode('week');
             });
@@ -1021,7 +1026,9 @@ class GroceryListManager {
         console.log('🛒 DEBUG: editModeBtn found:', !!editModeBtn, editModeBtn);
         
         if (displayModeBtn) {
-            displayModeBtn.addEventListener('click', () => {
+            displayModeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 console.log('🛒 DEBUG: Display mode button clicked!');
                 this.setEditMode(false);
             });
@@ -1031,7 +1038,9 @@ class GroceryListManager {
         }
         
         if (editModeBtn) {
-            editModeBtn.addEventListener('click', () => {
+            editModeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 console.log('🛒 DEBUG: Edit mode button clicked!');
                 this.setEditMode(true);
             });
@@ -1047,15 +1056,17 @@ class GroceryListManager {
             });
         });
 
-        // Quantity control buttons
+        // Quantity control buttons (only in edit mode)
         this.container.querySelectorAll('.quantity-decrease').forEach(button => {
             button.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                this.adjustQuantity(e.target.closest('button').dataset.itemId, -0.25);
-                // Add visual feedback
-                button.classList.add('scale-95');
-                setTimeout(() => button.classList.remove('scale-95'), 150);
+                if (this.editMode) {
+                    this.adjustQuantity(e.target.closest('button').dataset.itemId, -0.25);
+                    // Add visual feedback
+                    button.classList.add('scale-95');
+                    setTimeout(() => button.classList.remove('scale-95'), 150);
+                }
             });
         });
 
@@ -1063,10 +1074,12 @@ class GroceryListManager {
             button.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                this.adjustQuantity(e.target.closest('button').dataset.itemId, 0.25);
-                // Add visual feedback
-                button.classList.add('scale-95');
-                setTimeout(() => button.classList.remove('scale-95'), 150);
+                if (this.editMode) {
+                    this.adjustQuantity(e.target.closest('button').dataset.itemId, 0.25);
+                    // Add visual feedback
+                    button.classList.add('scale-95');
+                    setTimeout(() => button.classList.remove('scale-95'), 150);
+                }
             });
         });
     }
