@@ -2955,18 +2955,7 @@ class MealPlannerApp {
                                 <div class="space-y-2">
                                     ${meals.map(meal => `
                                         <div class="flex items-center justify-between py-2 px-3 bg-gray-50 dark:bg-gray-700 rounded-md">
-                                            <span class="font-medium text-gray-900 dark:text-white">${(() => {
-                                                let recipeName = meal.recipe_name || meal.name || meal.meal_name || meal.title;
-                                                if (!recipeName && meal.recipe_id && window.recipeManager) {
-                                                    try {
-                                                        const recipe = window.recipeManager.getRecipeById(meal.recipe_id);
-                                                        recipeName = recipe ? (recipe.title || recipe.name) : null;
-                                                    } catch (e) {
-                                                        console.warn('Could not fetch recipe name for meal:', meal);
-                                                    }
-                                                }
-                                                return recipeName || 'Unknown Recipe';
-                                            })()}</span>
+                                            <span class="font-medium text-gray-900 dark:text-white">${meal.recipe_name}</span>
                                             <span class="text-xs text-gray-500 dark:text-gray-400 capitalize">${meal.meal_type || 'meal'}</span>
                                         </div>
                                     `).join('')}
@@ -3008,31 +2997,21 @@ class MealPlannerApp {
             const allPlanMeals = window.mealPlannerSettings.getAuthoritativeData('planScheduledMeals') || [];
             const allMenuMeals = window.mealPlannerSettings.getAuthoritativeData('menuScheduledMeals') || [];
             
-            // Convert meals to consistent format for delta comparison
-            const convertMealForDelta = (meal) => {
-                // If meal already has recipe_name, use it as-is
-                if (meal.recipe_name) {
-                    return meal;
+            // Validate that all meals have required properties
+            const validateMeal = (meal, source) => {
+                if (!meal.recipe_name) {
+                    console.error(`❌ Meal missing recipe_name in ${source}:`, meal);
+                    throw new Error(`Meal ${meal.id} in ${source} is missing required recipe_name property`);
                 }
-                
-                // Convert from new format to legacy format
-                if (window.scheduleManager && meal.recipes) {
-                    return window.scheduleManager.toLegacyFormat(meal);
-                }
-                
-                // Fallback: try to construct recipe_name from available properties
-                return {
-                    ...meal,
-                    recipe_name: meal.meal_name || meal.name || meal.title || meal.notes || 'Unknown Recipe'
-                };
+                return meal;
             };
             
-            const convertedPlanMeals = allPlanMeals.map(convertMealForDelta);
-            const convertedMenuMeals = allMenuMeals.map(convertMealForDelta);
+            const validatedPlanMeals = allPlanMeals.map(meal => validateMeal(meal, 'planScheduledMeals'));
+            const validatedMenuMeals = allMenuMeals.map(meal => validateMeal(meal, 'menuScheduledMeals'));
             
             // Filter meals by date range if available (same logic as itinerary view)
-            let planMeals = convertedPlanMeals;
-            let menuMeals = convertedMenuMeals;
+            let planMeals = validatedPlanMeals;
+            let menuMeals = validatedMenuMeals;
             
             if (startDate && endDate) {
                 const filterByDateRange = (meals) => meals.filter(meal => {
@@ -3044,9 +3023,9 @@ class MealPlannerApp {
                     return mealDateNormalized >= startDateNormalized && mealDateNormalized <= endDateNormalized;
                 });
                 
-                planMeals = filterByDateRange(convertedPlanMeals);
-                menuMeals = filterByDateRange(convertedMenuMeals);
-                console.log(`📊 Filtered to date range - Plan: ${planMeals.length}/${convertedPlanMeals.length} meals, Menu: ${menuMeals.length}/${convertedMenuMeals.length} meals`);
+                planMeals = filterByDateRange(validatedPlanMeals);
+                menuMeals = filterByDateRange(validatedMenuMeals);
+                console.log(`📊 Filtered to date range - Plan: ${planMeals.length}/${validatedPlanMeals.length} meals, Menu: ${menuMeals.length}/${validatedMenuMeals.length} meals`);
             } else {
                 console.log(`📊 Plan has ${planMeals.length} meals, Menu has ${menuMeals.length} meals (all meals, no date filter)`);
             }
@@ -3095,22 +3074,8 @@ class MealPlannerApp {
                                 month: 'short', 
                                 day: 'numeric' 
                             });
-                            // Get recipe name with fallback logic
-                            let recipeName = meal.recipe_name || meal.name || meal.meal_name || meal.title;
-                            
-                            // If still no name and we have a recipe_id, try to get it from the recipe manager
-                            if (!recipeName && meal.recipe_id && window.recipeManager) {
-                                try {
-                                    const recipe = window.recipeManager.getRecipeById(meal.recipe_id);
-                                    recipeName = recipe ? (recipe.title || recipe.name) : null;
-                                } catch (e) {
-                                    console.warn('Could not fetch recipe name for meal:', meal);
-                                }
-                            }
-                            
-                            recipeName = recipeName || 'Unknown Recipe';
                             return `<div class="flex justify-between items-center">
-                                <span class="font-medium">${recipeName}</span>
+                                <span class="font-medium">${meal.recipe_name}</span>
                                 <span class="text-xs opacity-75">${date}</span>
                             </div>`;
                         }).join('');
@@ -3129,22 +3094,8 @@ class MealPlannerApp {
                                 month: 'short', 
                                 day: 'numeric' 
                             });
-                            // Get recipe name with fallback logic
-                            let recipeName = meal.recipe_name || meal.name || meal.meal_name || meal.title;
-                            
-                            // If still no name and we have a recipe_id, try to get it from the recipe manager
-                            if (!recipeName && meal.recipe_id && window.recipeManager) {
-                                try {
-                                    const recipe = window.recipeManager.getRecipeById(meal.recipe_id);
-                                    recipeName = recipe ? (recipe.title || recipe.name) : null;
-                                } catch (e) {
-                                    console.warn('Could not fetch recipe name for meal:', meal);
-                                }
-                            }
-                            
-                            recipeName = recipeName || 'Unknown Recipe';
                             return `<div class="flex justify-between items-center">
-                                <span class="font-medium">${recipeName}</span>
+                                <span class="font-medium">${meal.recipe_name}</span>
                                 <span class="text-xs opacity-75">${date}</span>
                             </div>`;
                         }).join('');

@@ -953,6 +953,11 @@ class ItineraryView {
             return;
         }
         
+        if (!recipe.title) {
+            console.error('Recipe missing title:', recipe);
+            throw new Error(`Recipe ${recipeId} is missing required title property`);
+        }
+        
         // Create new scheduled meal
         const newMeal = {
             id: Date.now() + Math.floor(Math.random() * 1000), // Generate unique ID

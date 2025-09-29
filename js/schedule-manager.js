@@ -52,10 +52,17 @@ class ScheduleManager {
      * @param {Object} options - Additional options (servings, notes)
      */
     scheduleMeal(meal, date, options = {}) {
+        // Ensure we have a recipe_name for consistency
+        const recipeName = meal.recipes?.[0]?.title || meal.recipes?.[0]?.name || meal.name;
+        if (!recipeName) {
+            throw new Error(`Cannot schedule meal ${meal.id}: missing recipe name`);
+        }
+        
         const scheduledMeal = {
             id: Date.now() + Math.floor(Math.random() * 1000),
             meal_id: meal.id,
             meal_name: meal.name,
+            recipe_name: recipeName, // Always include recipe_name for consistency
             meal_type: meal.meal_type, // This comes from the meal, not individual recipes
             date: date,
             servings: options.servings || meal.servings || 4,
@@ -91,6 +98,8 @@ class ScheduleManager {
             meal_type: mealType,
             recipes: [{
                 recipe_id: recipe.id,
+                title: recipe.title, // Include title for recipe_name extraction
+                name: recipe.name,   // Include name for recipe_name extraction
                 servings: options.servings || recipe.servings || 4
             }],
             servings: options.servings || recipe.servings || 4,
