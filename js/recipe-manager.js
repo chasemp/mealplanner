@@ -2303,13 +2303,13 @@ class RecipeManager {
                     </label>
                     <select class="item-select w-full px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                             name="items[${index}][item_id]" ${!isCombo && index === 0 ? 'required' : ''}>
-                            <!-- VALIDATION LOGIC: 
-                                 - Regular recipes: First item is required (at least one item needed)
-                                 - Combos: All additional items are optional (recipes provide the base) -->
+                        <!-- VALIDATION LOGIC: 
+                             - Regular recipes: First item is required (at least one item needed)
+                             - Combos: All additional items are optional (recipes provide the base) -->
                         <option value="">Select item...</option>
                         ${this.items.map(ing => `
                             <option value="${ing.id}" data-unit="${ing.default_unit}" 
-                                    ${item.item_id == ing.id ? 'selected' : ''}>
+                                    ${(item.item_id == ing.id || item.ingredient_id == ing.id) ? 'selected' : ''}>
                                 ${ing.name}
                             </option>
                         `).join('')}
@@ -2466,7 +2466,7 @@ class RecipeManager {
                         <option value="">Select item...</option>
                         ${this.items.map(ing => `
                             <option value="${ing.id}" data-unit="${ing.default_unit}" 
-                                    ${item.item_id == ing.id ? 'selected' : ''}>
+                                    ${(item.item_id == ing.id || item.ingredient_id == ing.id) ? 'selected' : ''}>
                                 ${ing.name}
                             </option>
                         `).join('')}
@@ -3382,7 +3382,7 @@ class RecipeManager {
                         <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Additional Items (${additionalItems.length})</h3>
                         <div class="space-y-2">
                             ${additionalItems.map(ing => {
-                                const item = window.itemsManager.items.find(i => i.id === ing.ingredient_id);
+                                const item = window.itemsManager.items.find(i => i.id === (ing.ingredient_id || ing.item_id));
                                 return `
                                     <div class="flex justify-between items-center py-1">
                                         <span class="text-gray-900 dark:text-white">${item ? item.name : 'Unknown Item'}</span>
@@ -3422,7 +3422,7 @@ class RecipeManager {
                     <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Items (${items.length})</h3>
                     <div class="space-y-2">
                         ${items.map(ing => {
-                            const item = window.itemsManager.items.find(i => i.id === ing.ingredient_id);
+                            const item = window.itemsManager.items.find(i => i.id === (ing.ingredient_id || ing.item_id));
                             return `
                                 <div class="flex justify-between items-center py-1">
                                     <span class="text-gray-900 dark:text-white">${item ? item.name : 'Unknown Item'}</span>
@@ -3548,7 +3548,7 @@ class RecipeManager {
                             <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Additional Items (${additionalItems.length})</h3>
                             <div class="space-y-2">
                                 ${additionalItems.map(ing => {
-                                    const item = window.itemsManager.items.find(i => i.id === ing.ingredient_id);
+                                    const item = window.itemsManager.items.find(i => i.id === (ing.ingredient_id || ing.item_id));
                                     return `
                                         <div class="flex justify-between items-center py-1">
                                             <span class="text-gray-900 dark:text-white">${item ? item.name : 'Unknown Item'}</span>
@@ -3668,7 +3668,7 @@ class RecipeManager {
                             ${items.length === 0 ? 
                                 '<div class="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 rounded-lg p-2">No items added</div>' :
                                 items.map(ing => {
-                                    const item = window.itemsManager?.items?.find(i => i.id === ing.ingredient_id);
+                                    const item = window.itemsManager?.items?.find(i => i.id === (ing.ingredient_id || ing.item_id));
                                     return `
                                         <div class="flex justify-between items-center py-1">
                                             <span class="text-gray-900 dark:text-white">${item ? item.name : 'Unknown Item'}</span>
