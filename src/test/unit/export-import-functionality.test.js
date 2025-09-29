@@ -102,7 +102,7 @@ describe('Export/Import Functionality', () => {
                     ],
                     scheduledMeals: [],
                     planScheduledMeals: [
-                        { id: 'plan-1', recipe_id: 1, recipe_name: 'Chicken and Rice', mealDate: '2025-09-08T17:00:00.000Z' }
+                        { id: 'plan-1', recipe_id: 1, mealDate: '2025-09-08T17:00:00.000Z' }
                     ],
                     menuScheduledMeals: [],
                     pantryItems: [],

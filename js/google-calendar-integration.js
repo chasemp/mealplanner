@@ -382,7 +382,7 @@ class GoogleCalendarIntegration {
                     if (!this.managedMode && !options.clearExisting) {
                         const hasConflict = await this.checkForConflicts(meal);
                         if (hasConflict) {
-                            console.warn(`⚠️ Skipping ${meal.name} due to time conflict`);
+                            console.warn(`⚠️ Skipping ${window.app ? window.app.getMealDisplayName(meal) : 'Unknown Recipe'} due to time conflict`);
                             continue;
                         }
                     }
@@ -390,7 +390,7 @@ class GoogleCalendarIntegration {
                     const event = await this.createMealEvent(meal, options);
                     createdEvents.push(event);
                 } catch (error) {
-                    console.error(`❌ Failed to create event for meal: ${meal.name}`, error);
+                    console.error(`❌ Failed to create event for meal: ${window.app ? window.app.getMealDisplayName(meal) : 'Unknown Recipe'}`, error);
                 }
             }
 
@@ -474,7 +474,7 @@ class GoogleCalendarIntegration {
         endDate.setHours(times.end, 0, 0, 0);
 
         const eventResource = {
-            summary: `${this.capitalizeMealType(meal.mealType)}: ${meal.name}`,
+            summary: `${this.capitalizeMealType(meal.mealType)}: ${window.app ? window.app.getMealDisplayName(meal) : 'Unknown Recipe'}`,
             description: this.createEventDescription(meal, options),
             start: {
                 dateTime: startDate.toISOString(),

@@ -322,7 +322,7 @@ class ExportImportLifecycleTests {
             throw new Error(`Expected 2 scheduled meals, got ${scheduledMeals.length}`);
         }
         
-        const requiredFields = ['id', 'recipe_id', 'recipe_name', 'meal_type', 'date'];
+        const requiredFields = ['id', 'recipe_id', 'meal_type', 'date'];
         scheduledMeals.forEach(meal => {
             requiredFields.forEach(field => {
                 if (!meal[field]) {

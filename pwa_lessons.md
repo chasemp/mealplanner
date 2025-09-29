@@ -2646,7 +2646,7 @@ viewScheduledMeal(recipeId, mealType, scheduledMealId) {
 // ❌ PROBLEMATIC: Template strings can truncate
 mealsHTML += `
     <div onclick="window.app.viewScheduledMeal(${meal.recipe_id}, ${JSON.stringify(meal.meal_type)}, ${JSON.stringify(meal.id)})">
-        ${meal.recipe_name}
+        ${window.app ? window.app.getMealDisplayName(meal) : 'Unknown Recipe'}
     </div>
 `;
 
@@ -2658,7 +2658,7 @@ const mealId = JSON.stringify(meal.id);
 mealsHTML += '<div class="meal-item" ' +
     'onclick="window.app.viewScheduledMeal(' + recipeId + ', ' + mealType + ', ' + mealId + ')" ' +
     'title="Click to view recipe details">' +
-    '<div class="meal-name">' + meal.recipe_name + '</div>' +
+    '<div class="meal-name">' + (window.app ? window.app.getMealDisplayName(meal) : 'Unknown Recipe') + '</div>' +
     '</div>';
 ```
 

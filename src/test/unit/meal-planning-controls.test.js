@@ -69,9 +69,9 @@ global.MealRotationEngine = vi.fn().mockImplementation(() => ({
 // Mock DemoDataManager
 const mockDemoDataInstance = {
     getScheduledMeals: vi.fn().mockReturnValue([
-        { id: 1, meal_type: 'breakfast', recipe_name: 'Test Breakfast' },
-        { id: 2, meal_type: 'lunch', recipe_name: 'Test Lunch' },
-        { id: 3, meal_type: 'dinner', recipe_name: 'Test Dinner' }
+        { id: 1, recipe_id: 1, meal_type: 'breakfast' },
+        { id: 2, recipe_id: 2, meal_type: 'lunch' },
+        { id: 3, recipe_id: 3, meal_type: 'dinner' }
     ]),
     getRecipes: vi.fn().mockReturnValue([
         { id: 1, title: 'Recipe 1', meal_type: 'breakfast' },
@@ -122,9 +122,9 @@ describe('Meal Planning Controls', () => {
         
         // Reset the mock return values
         mockDemoDataInstance.getScheduledMeals.mockReturnValue([
-            { id: 1, meal_type: 'breakfast', recipe_name: 'Test Breakfast' },
-            { id: 2, meal_type: 'lunch', recipe_name: 'Test Lunch' },
-            { id: 3, meal_type: 'dinner', recipe_name: 'Test Dinner' }
+            { id: 1, recipe_id: 1, meal_type: 'breakfast' },
+            { id: 2, recipe_id: 2, meal_type: 'lunch' },
+            { id: 3, recipe_id: 3, meal_type: 'dinner' }
         ]);
         mockDemoDataInstance.getRecipes.mockReturnValue([
             { id: 1, title: 'Recipe 1', meal_type: 'breakfast' },
@@ -158,9 +158,9 @@ describe('Meal Planning Controls', () => {
         // Mock methods that might be called during initialization
         app.renderRecipeSelection = vi.fn();
         app.getScheduledMeals = vi.fn().mockReturnValue([
-            { id: 1, meal_type: 'breakfast', recipe_name: 'Test Breakfast' },
-            { id: 2, meal_type: 'lunch', recipe_name: 'Test Lunch' },
-            { id: 3, meal_type: 'dinner', recipe_name: 'Test Dinner' }
+            { id: 1, recipe_id: 1, meal_type: 'breakfast' },
+            { id: 2, recipe_id: 2, meal_type: 'lunch' },
+            { id: 3, recipe_id: 3, meal_type: 'dinner' }
         ]);
         app.saveScheduledMeals = vi.fn();
         app.refreshMealPlanViews = vi.fn();

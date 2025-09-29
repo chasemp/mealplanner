@@ -5391,14 +5391,15 @@ class RecipeManager {
             // Get current scheduled meals
             let scheduledMeals = window.mealPlannerSettings?.getAuthoritativeData(storageKey) || [];
             
-            // Create new scheduled meal
+            // Create new scheduled meal with clean inheritance pattern
             const newMeal = {
                 id: Date.now(), // Simple ID generation
-                recipe_id: recipe.id,
-                recipe_name: recipe.title,
+                recipe_id: recipe.id, // Single source of truth for recipe reference
                 meal_type: context.mealType, // Use the context mealType directly
                 date: new Date(context.targetDate).toISOString(),
+                servings: recipe.servings || 4, // Inherit default servings from recipe
                 created_at: new Date().toISOString()
+                // All other properties (title, description, etc.) inherited via recipe_id lookup
             };
             
             // Add to scheduled meals
@@ -5899,6 +5900,11 @@ class RecipeManager {
         this.render();
         
         console.log('✅ All recipes data cleared');
+    }
+
+    // Get a specific recipe by ID
+    getRecipe(recipeId) {
+        return this.recipes.find(recipe => recipe.id === recipeId);
     }
 }
 

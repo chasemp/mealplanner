@@ -716,16 +716,13 @@ class DemoDataGenerator {
                 
                 scheduledMeals.push({
                     id: i + 1,
-                    meal_id: meal.id,
-                    meal_name: meal.name,
+                    recipe_id: meal.id, // Use recipe_id for consistency
                     date: dateString,
-                    scheduled_date: dateString, // Keep both for compatibility
                     servings: meal.totalServings,
                     notes: `Scheduled ${meal.name}`,
-                    recipes: validRecipes, // Only include valid recipes
                     meal_type: mealType,
-                    total_time: meal.estimatedTime,
                     created_at: new Date().toISOString()
+                    // All other properties (title, description, etc.) inherited via recipe_id lookup
                 });
             } else if (recipes.length > 0) {
                 // Select recipe based on target meal type if specified
@@ -741,21 +738,18 @@ class DemoDataGenerator {
                 
                 scheduledMeals.push({
                     id: i + 1,
-                    recipe_id: recipe.id,
-                    recipe: recipe, // Store full recipe object for consistency
-                    meal_name: recipe.title,
+                    recipe_id: recipe.id, // Single source of truth for recipe reference
                     date: dateString,
-                    scheduled_date: dateString, // Keep both for compatibility
                     servings: recipe.servings,
                     notes: `Scheduled ${recipe.title}`,
                     meal_type: mealType || 'dinner',
-                    total_time: (recipe.prep_time || 0) + (recipe.cook_time || 0),
                     created_at: new Date().toISOString()
+                    // All other properties (title, description, items, etc.) inherited via recipe_id lookup
                 });
             }
         }
         
-        return scheduledMeals.sort((a, b) => new Date(a.scheduled_date) - new Date(b.scheduled_date));
+        return scheduledMeals.sort((a, b) => new Date(a.date) - new Date(b.date));
     }
     
     generateMealTags() {
@@ -1353,28 +1347,24 @@ class DemoDataGenerator {
         
         // Validate scheduled meals
         scheduledMeals.forEach((scheduled, index) => {
-            if (!scheduled.id || !scheduled.scheduled_date) {
-                errors.push(`Scheduled meal ${index}: Missing required fields (id, scheduled_date)`);
+            if (!scheduled.id || !scheduled.date) {
+                errors.push(`Scheduled meal ${index}: Missing required fields (id, date)`);
             }
             
             // Validate date format
-            if (scheduled.scheduled_date && isNaN(new Date(scheduled.scheduled_date))) {
-                errors.push(`Scheduled meal ${index}: Invalid scheduled_date format`);
+            if (scheduled.date && isNaN(new Date(scheduled.date))) {
+                errors.push(`Scheduled meal ${index}: Invalid date format`);
             }
             
             // Validate references
-            if (scheduled.meal_id) {
-                const meal = meals.find(m => m.id === scheduled.meal_id);
-                if (!meal) {
-                    errors.push(`Scheduled meal ${index}: References non-existent meal ${scheduled.meal_id}`);
-                }
-            }
-            
+            // Validate references - clean inheritance uses recipe_id
             if (scheduled.recipe_id) {
                 const recipe = recipes.find(r => r.id === scheduled.recipe_id);
                 if (!recipe) {
-                    errors.push(`Scheduled meal ${index}: References non-existent recipe ${scheduled.recipe_id}`);
+                    errors.push(`Scheduled meal ${index}: References non-existent recipe ID ${scheduled.recipe_id}`);
                 }
+            } else {
+                errors.push(`Scheduled meal ${index}: Missing required recipe_id field`);
             }
         });
         

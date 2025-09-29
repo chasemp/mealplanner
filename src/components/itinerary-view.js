@@ -243,7 +243,7 @@ export class ItineraryView {
                         ${meal.image ? `<img src="${meal.image}" class="w-full h-full object-cover rounded-lg">` : '🍽️'}
                     </div>
                     <div>
-                        <h5 class="font-medium">${window.scheduleManager ? window.scheduleManager.getRecipeName(meal) : meal.meal_name || 'Unknown Recipe'}</h5>
+                        <h5 class="font-medium">${window.app ? window.app.getMealDisplayName(meal) : 'Unknown Recipe'}</h5>
                         <div class="flex items-center space-x-2 text-sm">
                             <span class="px-2 py-1 rounded-full ${typeColors[meal.type] || 'bg-gray-100 text-gray-800'} capitalize">
                                 ${meal.type}

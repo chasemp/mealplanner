@@ -79,8 +79,8 @@ class GroceryListManager {
             const planMeals = window.mealPlannerSettings.getAuthoritativeData('planScheduledMeals') || [];
             console.log('🛒 DEBUG: Loaded menuScheduledMeals:', menuMeals.length, 'meals');
             console.log('🛒 DEBUG: Loaded planScheduledMeals:', planMeals.length, 'meals');
-            console.log('🛒 DEBUG: Menu meals:', menuMeals.map(m => ({ id: m.id, recipe_name: m.recipe_name, date: m.date })));
-            console.log('🛒 DEBUG: Plan meals:', planMeals.map(m => ({ id: m.id, recipe_name: m.recipe_name, date: m.date })));
+            console.log('🛒 DEBUG: Menu meals:', menuMeals.map(m => ({ id: m.id, recipe_id: m.recipe_id, name: window.app ? window.app.getMealDisplayName(m) : 'Unknown Recipe', date: m.date })));
+            console.log('🛒 DEBUG: Plan meals:', planMeals.map(m => ({ id: m.id, recipe_id: m.recipe_id, name: window.app ? window.app.getMealDisplayName(m) : 'Unknown Recipe', date: m.date })));
             
             // Combine both sources for comprehensive grocery list and deduplicate by ID
             const combinedMeals = [...menuMeals, ...planMeals];

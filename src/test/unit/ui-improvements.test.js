@@ -5,8 +5,8 @@ import { JSDOM } from 'jsdom';
 class MockItineraryView {
     constructor() {
         this.scheduledMeals = [
-            { id: 1, recipe_name: 'Test Recipe 1', meal_type: 'dinner' },
-            { id: 2, recipe_name: 'Test Recipe 2', meal_type: 'dinner' }
+            { id: 1, recipe_id: 1, meal_type: 'dinner' },
+            { id: 2, recipe_id: 2, meal_type: 'dinner' }
         ];
     }
 
@@ -15,7 +15,7 @@ class MockItineraryView {
     }
 
     getUniqueRecipes() {
-        const uniqueRecipes = new Set(this.scheduledMeals.map(meal => meal.recipe_name));
+        const uniqueRecipes = new Set(this.scheduledMeals.map(meal => window.app ? window.app.getMealDisplayName(meal) : 'Unknown Recipe'));
         return uniqueRecipes.size;
     }
 
