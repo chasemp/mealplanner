@@ -62,6 +62,60 @@ class ItemsManager {
         console.log('✅ Filtered items:', this.filteredItems.length);
     }
 
+    updateItemsDisplay() {
+        console.log('🔄 updateItemsDisplay called');
+        
+        // Update only the items grid without re-rendering entire component
+        const itemsGrid = this.container.querySelector('#items-grid');
+        
+        if (itemsGrid) {
+            const newHTML = this.filteredItems.length > 0 ? 
+                this.filteredItems.map(item => this.createItemCard(item)).join('') :
+                '<div class="col-span-full text-center py-12"><p class="text-gray-500 dark:text-gray-400">No items found matching your criteria.</p></div>';
+            
+            itemsGrid.innerHTML = newHTML;
+            
+            // Re-attach event listeners to the new item cards
+            this.attachItemCardListeners();
+            
+            console.log('🔄 Items display updated');
+        } else {
+            console.log('❌ Items grid not found, falling back to full render');
+            this.render();
+        }
+    }
+
+    attachItemCardListeners() {
+        // Edit item buttons
+        this.container.querySelectorAll('.edit-item').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const itemId = parseInt(btn.dataset.itemId);
+                this.editItem(itemId);
+            });
+        });
+
+        // Delete item buttons
+        this.container.querySelectorAll('.delete-item').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const itemId = parseInt(btn.dataset.itemId);
+                this.deleteItem(itemId);
+            });
+        });
+
+        // Clickable labels
+        this.container.querySelectorAll('.item-label').forEach(labelSpan => {
+            labelSpan.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const label = labelSpan.dataset.label;
+                this.currentFilter.label = label;
+                this.applyFilters();
+                this.updateItemsDisplay(); // Only update display, don't re-render entire form
+            });
+        });
+    }
+
     getAllLabels() {
         const allLabels = new Set();
         this.items.forEach(item => {
@@ -152,7 +206,7 @@ class ItemsManager {
                 </div>
 
                 <!-- Items Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div id="items-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     ${this.filteredItems.length > 0 ? 
                         this.filteredItems.map(item => this.createItemCard(item)).join('') :
                         '<div class="col-span-full text-center py-12"><p class="text-gray-500 dark:text-gray-400">No items found matching your criteria.</p></div>'
@@ -403,7 +457,7 @@ class ItemsManager {
                 searchTimeout = setTimeout(() => {
                     this.currentFilter.search = e.target.value;
                     this.applyFilters();
-                    this.render();
+                    this.updateItemsDisplay(); // Only update display, don't re-render entire form
                 }, 300); // 300ms delay
             });
         }
@@ -414,7 +468,7 @@ class ItemsManager {
             categoryFilter.addEventListener('change', (e) => {
                 this.currentFilter.category = e.target.value;
                 this.applyFilters();
-                this.render();
+                this.updateItemsDisplay(); // Only update display, don't re-render entire form
             });
         }
 
@@ -424,20 +478,9 @@ class ItemsManager {
             labelFilter.addEventListener('change', (e) => {
                 this.currentFilter.label = e.target.value;
                 this.applyFilters();
-                this.render();
+                this.updateItemsDisplay(); // Only update display, don't re-render entire form
             });
         }
-
-        // Clickable labels
-        this.container.querySelectorAll('.item-label').forEach(labelSpan => {
-            labelSpan.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const label = labelSpan.dataset.label;
-                this.currentFilter.label = label;
-                this.applyFilters();
-                this.render();
-            });
-        });
 
         // Clear filters with centralized logic
         const clearFiltersBtn = this.container.querySelector('#clear-filters-btn');
@@ -445,8 +488,18 @@ class ItemsManager {
             const clearCallback = () => {
                 // Clear all filters logic (without confirmation/double press - that's handled by the centralized handler)
                 this.currentFilter = { search: '', category: '', label: '' };
+                
+                // Reset form inputs
+                const searchInput = this.container.querySelector('#item-search');
+                const categoryFilter = this.container.querySelector('#category-filter');
+                const labelFilter = this.container.querySelector('#item-label-filter');
+                
+                if (searchInput) searchInput.value = '';
+                if (categoryFilter) categoryFilter.value = '';
+                if (labelFilter) labelFilter.value = '';
+                
                 this.applyFilters();
-                this.render();
+                this.updateItemsDisplay(); // Only update display, don't re-render entire form
             };
             
             // Use settings manager for clear filters with fallback
@@ -466,23 +519,8 @@ class ItemsManager {
             });
         }
 
-        // Edit item buttons
-        this.container.querySelectorAll('.edit-item').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const itemId = parseInt(btn.dataset.itemId);
-                this.editItem(itemId);
-            });
-        });
-
-        // Delete item buttons
-        this.container.querySelectorAll('.delete-item').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const itemId = parseInt(btn.dataset.itemId);
-                this.deleteItem(itemId);
-            });
-        });
+        // Item card event listeners (edit, delete, clickable labels) are handled by attachItemCardListeners
+        this.attachItemCardListeners();
     }
 
     showItemForm(item = null, onSaveCallback = null, onCancelCallback = null) {
@@ -1052,7 +1090,7 @@ class ItemsManager {
             }
             
             this.applyFilters();
-            this.render();
+            this.updateItemsDisplay(); // Only update display, don't re-render entire form
             this.showNotification(`"${item.name}" has been deleted`, 'success');
         }
     }
@@ -1072,7 +1110,7 @@ class ItemsManager {
                 this.showNotification(`Added "${item.name}" to items`, 'success');
                 // Refresh the items view
                 this.applyFilters();
-                this.render();
+                this.updateItemsDisplay(); // Only update display, don't re-render entire form
             },
             (error) => {
                 console.error('Barcode scanner error:', error);
