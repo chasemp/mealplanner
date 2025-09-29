@@ -1124,7 +1124,9 @@ class RecipeManager {
                 this.sortAscending = !this.sortAscending;
                 // Need to re-render for sort direction button to update its icon
                 this.render();
+                this.attachEventListeners(); // Reattach event listeners after render
                 this.updateFavoritesButton(); // Ensure favorites button maintains correct state after render
+                this.updateRecipeDisplay(); // Apply the new sort direction to the recipes
             });
         }
 
