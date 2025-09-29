@@ -54,15 +54,13 @@ class ScheduleManager {
     scheduleMeal(meal, date, options = {}) {
         const scheduledMeal = {
             id: Date.now() + Math.floor(Math.random() * 1000),
-            meal_id: meal.id,
-            meal_name: meal.name,
+            recipe_id: meal.id, // Use recipe_id for consistency with other meal creation
             meal_type: meal.meal_type, // This comes from the meal, not individual recipes
             date: date,
             servings: options.servings || meal.servings || 4,
             notes: options.notes || '',
-            recipes: meal.recipes, // Store the recipe composition
-            total_time: meal.total_time,
             created_at: new Date().toISOString()
+            // All other properties (title, description, recipes, total_time, etc.) inherited via recipe_id lookup
         };
 
         this.scheduledMeals.push(scheduledMeal);
@@ -255,14 +253,15 @@ class ScheduleManager {
      * @returns {string} Recipe name
      */
     getRecipeName(scheduledMeal) {
-        // For meals with multiple recipes, use the meal name
-        if (scheduledMeal.meal_name) {
-            return scheduledMeal.meal_name;
+        // Clean inheritance: Get recipe name from recipe database via recipe_id
+        if (window.app && window.app.getMealDisplayName) {
+            return window.app.getMealDisplayName(scheduledMeal);
         }
         
-        // For single recipe meals, get name from recipe object
-        if (scheduledMeal.recipe) {
-            return scheduledMeal.recipe.title || scheduledMeal.recipe.name;
+        // Fallback for backward compatibility
+        if (scheduledMeal.recipe_id && window.recipeManager) {
+            const recipe = window.recipeManager.getRecipe(scheduledMeal.recipe_id);
+            return recipe ? recipe.title : 'Unknown Recipe';
         }
         
         // Fallback to first recipe in recipes array

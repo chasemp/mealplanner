@@ -15,7 +15,7 @@ class MockItineraryView {
     }
 
     getUniqueRecipes() {
-        const uniqueRecipes = new Set(this.scheduledMeals.map(meal => meal.recipe_name));
+        const uniqueRecipes = new Set(this.scheduledMeals.map(meal => window.app ? window.app.getMealDisplayName(meal) : 'Unknown Recipe'));
         return uniqueRecipes.size;
     }
 

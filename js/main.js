@@ -2268,31 +2268,8 @@ class MealPlannerApp {
                 const mealType = meal.meal_type;
                 const mealId = meal.id;
                 
-                // FIX: Look up recipe name from recipe database instead of relying on meal.recipe_name
-                // This ensures consistency with shopping list behavior and handles cases where recipe_name might be missing
-                let recipeName = 'Unknown Recipe';
-                if (recipeId && window.recipeManager && window.recipeManager.recipes) {
-                    const recipe = window.recipeManager.recipes.find(r => r.id === recipeId);
-                    if (recipe) {
-                        recipeName = recipe.title;
-                    } else {
-                        console.warn(`🚨 Recipe not found for ID ${recipeId} in Menu tab. Available recipe IDs:`, window.recipeManager.recipes.map(r => r.id));
-                    }
-                } else if (recipeId && window.mealPlannerSettings) {
-                    // Fallback: Try to get recipe from authoritative data source
-                    const recipes = window.mealPlannerSettings.getAuthoritativeData('recipes') || [];
-                    const recipe = recipes.find(r => r.id === recipeId);
-                    if (recipe) {
-                        recipeName = recipe.title;
-                        console.log(`📝 Found recipe via authoritative data source: ${recipeName}`);
-                    }
-                }
-                
-                if (recipeName === 'Unknown Recipe' && meal.recipe_name) {
-                    // Final fallback to stored recipe_name if recipe lookup fails
-                    recipeName = meal.recipe_name;
-                    console.log(`📝 Using stored recipe_name for meal ${mealId}: ${recipeName}`);
-                }
+                // Clean inheritance: Get recipe name from recipe database via recipe_id
+                const recipeName = this.getMealDisplayName(meal);
                 
                 if (recipeName === 'Unknown Recipe') {
                     console.warn(`🚨 No recipe name found for meal ${mealId} (recipe_id: ${recipeId})`);
@@ -2340,28 +2317,8 @@ class MealPlannerApp {
         console.log(`📊 Total meals found in Menu tab: ${scheduledMeals.length}`);
         scheduledMeals.forEach((meal, index) => {
             // Use same recipe name lookup logic as the display code for consistency
-            let recipeName = 'Unknown Recipe';
-            if (meal.recipe_id && window.recipeManager && window.recipeManager.recipes) {
-                const recipe = window.recipeManager.recipes.find(r => r.id === meal.recipe_id);
-                if (recipe) {
-                    recipeName = recipe.title;
-                }
-            } else if (meal.recipe_id && window.mealPlannerSettings) {
-                // Fallback: Try to get recipe from authoritative data source
-                const recipes = window.mealPlannerSettings.getAuthoritativeData('recipes') || [];
-                const recipe = recipes.find(r => r.id === meal.recipe_id);
-                if (recipe) {
-                    recipeName = recipe.title;
-                }
-            }
-            
-            if (recipeName === 'Unknown Recipe' && meal.recipe_name) {
-                recipeName = meal.recipe_name;
-            } else if (recipeName === 'Unknown Recipe' && window.scheduleManager) {
-                recipeName = window.scheduleManager.getRecipeName(meal);
-            } else if (recipeName === 'Unknown Recipe' && meal.meal_name) {
-                recipeName = meal.meal_name;
-            }
+            // Clean inheritance: All recipe data comes from recipe_id lookup
+            const recipeName = this.getMealDisplayName(meal);
             console.log(`  ${index + 1}. ${recipeName} on ${new Date(meal.date).toLocaleDateString()} (ID: ${meal.id})`);
         });
         
@@ -3017,7 +2974,7 @@ class MealPlannerApp {
                                 <div class="space-y-2">
                                     ${meals.map(meal => `
                                         <div class="flex items-center justify-between py-2 px-3 bg-gray-50 dark:bg-gray-700 rounded-md">
-                                            <span class="font-medium text-gray-900 dark:text-white">${window.scheduleManager ? window.scheduleManager.getRecipeName(meal) : meal.meal_name || 'Unknown Recipe'}</span>
+                                            <span class="font-medium text-gray-900 dark:text-white">${this.getMealDisplayName(meal)}</span>
                                             <span class="text-xs text-gray-500 dark:text-gray-400 capitalize">${meal.meal_type || 'meal'}</span>
                                         </div>
                                     `).join('')}
@@ -3125,7 +3082,7 @@ class MealPlannerApp {
                                 day: 'numeric' 
                             });
                             // Get recipe name using consistent object reference structure
-                            const recipeName = window.scheduleManager ? window.scheduleManager.getRecipeName(meal) : meal.meal_name || 'Unknown Recipe';
+                            const recipeName = this.getMealDisplayName(meal);
                             return `<div class="flex justify-between items-center">
                                 <span class="font-medium">${recipeName}</span>
                                 <span class="text-xs opacity-75">${date}</span>
@@ -3147,7 +3104,7 @@ class MealPlannerApp {
                                 day: 'numeric' 
                             });
                             // Get recipe name using consistent object reference structure
-                            const recipeName = window.scheduleManager ? window.scheduleManager.getRecipeName(meal) : meal.meal_name || 'Unknown Recipe';
+                            const recipeName = this.getMealDisplayName(meal);
                             return `<div class="flex justify-between items-center">
                                 <span class="font-medium">${recipeName}</span>
                                 <span class="text-xs opacity-75">${date}</span>
@@ -3271,18 +3228,16 @@ class MealPlannerApp {
                 // Handle meal rotation engine format where recipe is nested in meal.recipe
                 const recipe = meal.recipe || meal;
                 const recipeId = meal.recipe_id || recipe.id || meal.id;
-                const recipeName = window.scheduleManager ? window.scheduleManager.getRecipeName(meal) : meal.meal_name || recipe.title || 'Unknown Recipe';
+                const recipeName = this.getMealDisplayName(meal);
                 
                 const scheduledMeal = {
                     id: `${mealType}-${Date.now()}-${index}`,
-                    recipe_id: recipeId,
-                    recipe: recipe, // Store full recipe object for consistency
-                    meal_name: recipeName,
+                    recipe_id: recipeId, // Single source of truth for recipe reference
                     meal_type: mealType,
                     date: meal.date instanceof Date ? meal.date.toISOString().split('T')[0] : meal.date,
                     servings: meal.servings || recipe.servings || 4,
-                    items: meal.items || recipe.items || [],
                     created_at: new Date().toISOString()
+                    // All other properties (title, description, items, etc.) inherited via recipe_id lookup
                 };
                 
                 console.log(`📅 Creating scheduled meal ${index + 1}:`, {
@@ -4625,6 +4580,49 @@ class MealPlannerApp {
         } else {
             this.showNotification('Showing all recipes', 'info');
         }
+    }
+
+    // Clean meal data access utilities
+    getMealDisplayName(meal) {
+        if (!meal || !meal.recipe_id) return 'Unknown Recipe';
+        const recipe = window.recipeManager?.getRecipe(meal.recipe_id);
+        return recipe ? recipe.title : 'Unknown Recipe';
+    }
+
+    getMealDescription(meal) {
+        if (!meal || !meal.recipe_id) return '';
+        const recipe = window.recipeManager?.getRecipe(meal.recipe_id);
+        return recipe ? recipe.description : '';
+    }
+
+    getMealItems(meal) {
+        if (!meal || !meal.recipe_id) return [];
+        const recipe = window.recipeManager?.getRecipe(meal.recipe_id);
+        return recipe ? recipe.items || [] : [];
+    }
+
+    getMealLabels(meal) {
+        if (!meal || !meal.recipe_id) return [];
+        const recipe = window.recipeManager?.getRecipe(meal.recipe_id);
+        return recipe ? recipe.labels || [] : [];
+    }
+
+    getMealImageUrl(meal) {
+        if (!meal || !meal.recipe_id) return null;
+        const recipe = window.recipeManager?.getRecipe(meal.recipe_id);
+        return recipe ? recipe.image_url : null;
+    }
+
+    getMealPrepTime(meal) {
+        if (!meal || !meal.recipe_id) return 0;
+        const recipe = window.recipeManager?.getRecipe(meal.recipe_id);
+        return recipe ? recipe.prep_time || 0 : 0;
+    }
+
+    getMealCookTime(meal) {
+        if (!meal || !meal.recipe_id) return 0;
+        const recipe = window.recipeManager?.getRecipe(meal.recipe_id);
+        return recipe ? recipe.cook_time || 0 : 0;
     }
 }
 

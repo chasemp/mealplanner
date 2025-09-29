@@ -280,7 +280,7 @@ class ItineraryView {
     getUniqueRecipes() {
         // Count unique recipe names in scheduled meals within the selected timeframe
         const mealsInRange = this.getScheduledMealsInTimeframe();
-        const uniqueRecipes = new Set(mealsInRange.map(meal => meal.meal_name || meal.recipe_name || meal.name));
+        const uniqueRecipes = new Set(mealsInRange.map(meal => window.app ? window.app.getMealDisplayName(meal) : 'Unknown Recipe'));
         console.log(`🔢 getUniqueRecipes() for ${this.mealType}:`, {
             mealsInRange: mealsInRange.length,
             uniqueRecipes: uniqueRecipes.size,
@@ -335,7 +335,8 @@ class ItineraryView {
         console.log(`📅 Date range: ${this.startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}`);
         
         filteredMeals.forEach((meal, index) => {
-            console.log(`  ${index + 1}. ${meal.name || meal.recipe_name || meal.meal_name || 'Unknown'} on ${new Date(meal.date).toLocaleDateString()} (ID: ${meal.id})`);
+            const mealName = window.app ? window.app.getMealDisplayName(meal) : 'Unknown Recipe';
+            console.log(`  ${index + 1}. ${mealName} on ${new Date(meal.date).toLocaleDateString()} (ID: ${meal.id})`);
         });
         
         return filteredMeals;
