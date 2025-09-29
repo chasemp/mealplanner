@@ -602,7 +602,7 @@ class RecipeManager {
                             ${(recipe.labels || []).length > (recipe.favorite ? 1 : 2) ? `<span class="text-xs text-gray-500">+${(recipe.labels || []).length - (recipe.favorite ? 1 : 2)} more</span>` : ''}
                         </div>
                         <div class="text-xs text-gray-400">
-                            ${recipe.recipe_type === 'combo' ? 
+                            ${(recipe.recipe_type === 'combo' && ((recipe.recipes && recipe.recipes.length > 0) || (recipe.combo_recipes && recipe.combo_recipes.length > 0))) ? 
                                 `${this.getCombinedItemsForCombo(recipe).length} items (from ${recipe.recipes ? recipe.recipes.length : (recipe.combo_recipes ? recipe.combo_recipes.length : 0)} recipes)` : 
                                 `${(recipe.items || []).length} items`
                             }
