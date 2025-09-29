@@ -2267,7 +2267,37 @@ class MealPlannerApp {
                 const recipeId = meal.recipe_id;
                 const mealType = meal.meal_type;
                 const mealId = meal.id;
-                const recipeName = meal.recipe_name || 'Unknown Recipe';
+                
+                // FIX: Look up recipe name from recipe database instead of relying on meal.recipe_name
+                // This ensures consistency with shopping list behavior and handles cases where recipe_name might be missing
+                let recipeName = 'Unknown Recipe';
+                if (recipeId && window.recipeManager && window.recipeManager.recipes) {
+                    const recipe = window.recipeManager.recipes.find(r => r.id === recipeId);
+                    if (recipe) {
+                        recipeName = recipe.title;
+                    } else {
+                        console.warn(`🚨 Recipe not found for ID ${recipeId} in Menu tab. Available recipe IDs:`, window.recipeManager.recipes.map(r => r.id));
+                    }
+                } else if (recipeId && window.mealPlannerSettings) {
+                    // Fallback: Try to get recipe from authoritative data source
+                    const recipes = window.mealPlannerSettings.getAuthoritativeData('recipes') || [];
+                    const recipe = recipes.find(r => r.id === recipeId);
+                    if (recipe) {
+                        recipeName = recipe.title;
+                        console.log(`📝 Found recipe via authoritative data source: ${recipeName}`);
+                    }
+                }
+                
+                if (recipeName === 'Unknown Recipe' && meal.recipe_name) {
+                    // Final fallback to stored recipe_name if recipe lookup fails
+                    recipeName = meal.recipe_name;
+                    console.log(`📝 Using stored recipe_name for meal ${mealId}: ${recipeName}`);
+                }
+                
+                if (recipeName === 'Unknown Recipe') {
+                    console.warn(`🚨 No recipe name found for meal ${mealId} (recipe_id: ${recipeId})`);
+                }
+                
                 const servings = meal.servings || 4;
                 
                 mealsHTML += '<div class="flex items-center justify-between bg-white dark:bg-gray-600 rounded p-3 border border-gray-200 dark:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500 cursor-pointer transition-colors" ' +
@@ -2309,7 +2339,30 @@ class MealPlannerApp {
         console.log(`🔍 DETAILED MENU TAB ANALYSIS:`);
         console.log(`📊 Total meals found in Menu tab: ${scheduledMeals.length}`);
         scheduledMeals.forEach((meal, index) => {
-            console.log(`  ${index + 1}. ${window.scheduleManager ? window.scheduleManager.getRecipeName(meal) : meal.meal_name || 'Unknown'} on ${new Date(meal.date).toLocaleDateString()} (ID: ${meal.id})`);
+            // Use same recipe name lookup logic as the display code for consistency
+            let recipeName = 'Unknown Recipe';
+            if (meal.recipe_id && window.recipeManager && window.recipeManager.recipes) {
+                const recipe = window.recipeManager.recipes.find(r => r.id === meal.recipe_id);
+                if (recipe) {
+                    recipeName = recipe.title;
+                }
+            } else if (meal.recipe_id && window.mealPlannerSettings) {
+                // Fallback: Try to get recipe from authoritative data source
+                const recipes = window.mealPlannerSettings.getAuthoritativeData('recipes') || [];
+                const recipe = recipes.find(r => r.id === meal.recipe_id);
+                if (recipe) {
+                    recipeName = recipe.title;
+                }
+            }
+            
+            if (recipeName === 'Unknown Recipe' && meal.recipe_name) {
+                recipeName = meal.recipe_name;
+            } else if (recipeName === 'Unknown Recipe' && window.scheduleManager) {
+                recipeName = window.scheduleManager.getRecipeName(meal);
+            } else if (recipeName === 'Unknown Recipe' && meal.meal_name) {
+                recipeName = meal.meal_name;
+            }
+            console.log(`  ${index + 1}. ${recipeName} on ${new Date(meal.date).toLocaleDateString()} (ID: ${meal.id})`);
         });
         
         // Debug: Compare with Plan tab data for verification
@@ -2318,8 +2371,16 @@ class MealPlannerApp {
             console.log(`🔍 Data sync check - Plan tab has ${planMeals.length} meals, Menu tab has ${scheduledMeals.length} meals`);
             if (planMeals.length !== scheduledMeals.length) {
                 console.warn('⚠️ Data mismatch between Plan and Menu tabs!');
-                console.log('Plan tab meals:', planMeals.map(m => ({ name: m.name || m.recipe_name, date: m.date, id: m.id })));
-                console.log('Menu tab meals:', scheduledMeals.map(m => ({ name: m.name || m.recipe_name, date: m.date, id: m.id })));
+                console.log('Plan tab meals:', planMeals.map(m => ({ 
+                    name: m.name || m.recipe_name || (m.recipe_id ? 'Recipe ID ' + m.recipe_id : 'Unknown'), 
+                    date: m.date, 
+                    id: m.id 
+                })));
+                console.log('Menu tab meals:', scheduledMeals.map(m => ({ 
+                    name: m.name || m.recipe_name || (m.recipe_id ? 'Recipe ID ' + m.recipe_id : 'Unknown'), 
+                    date: m.date, 
+                    id: m.id 
+                })));
             } else {
                 console.log('✅ Plan and Menu tabs show identical meal counts');
             }
@@ -2736,6 +2797,12 @@ class MealPlannerApp {
             const planScheduledMeals = window.mealPlannerSettings.getAuthoritativeData('planScheduledMeals') || [];
             console.log(`📅 Found ${planScheduledMeals.length} meals in Plan storage (prospective schedule)`);
             
+            // Debug: Log the structure of plan meals to identify any data issues
+            if (planScheduledMeals.length > 0) {
+                console.log('🔍 Plan meals structure sample:', planScheduledMeals[0]);
+                console.log('🔍 Plan meals recipe_name fields:', planScheduledMeals.map(m => ({ id: m.id, recipe_name: m.recipe_name, recipe_id: m.recipe_id })));
+            }
+            
             if (planScheduledMeals.length === 0) {
                 this.showNotification('No scheduled meals found in Plan. Please use Auto Plan or manually schedule meals first.', 'warning');
                 return;
@@ -2744,6 +2811,10 @@ class MealPlannerApp {
             // Copy Plan schedule to Menu storage (commit the prospective schedule)
             window.mealPlannerSettings.saveAuthoritativeData('menuScheduledMeals', planScheduledMeals);
             console.log(`📅 Copied ${planScheduledMeals.length} meals from Plan to Menu storage (committed schedule)`);
+            
+            // Debug: Verify the copy was successful
+            const copiedMeals = window.mealPlannerSettings.getAuthoritativeData('menuScheduledMeals') || [];
+            console.log('🔍 Menu meals after copy:', copiedMeals.map(m => ({ id: m.id, recipe_name: m.recipe_name, recipe_id: m.recipe_id })));
             
             // Show delta information
             const menuScheduledMeals = window.mealPlannerSettings.getAuthoritativeData('menuScheduledMeals') || [];
