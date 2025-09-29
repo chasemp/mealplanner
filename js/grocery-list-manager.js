@@ -10,6 +10,7 @@ class GroceryListManager {
         this.items = [];
         this.currentWeek = this.getCurrentWeek();
         this.displayMode = 'week'; // 'week' or 'meal'
+        this.editMode = false; // false = display mode, true = edit mode
         this.groceryItems = []; // For storing generated grocery items
         this.pantryAdjustments = {}; // Store pantry quantities per ingredient (ingredient-centric)
         this.init();
@@ -241,6 +242,20 @@ class GroceryListManager {
                                                 Week
                                             </button>
                                         </div>
+                                        <!-- Edit Mode Toggle -->
+                                        <div class="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+                                            <button id="shopping-list-display-mode" class="px-3 py-1 text-xs font-medium rounded-md transition-colors ${!this.editMode ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}">
+                                                📋 View
+                                            </button>
+                                            <button id="shopping-list-edit-mode" class="px-3 py-1 text-xs font-medium rounded-md transition-colors ${this.editMode ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}">
+                                                ✏️ Edit
+                                            </button>
+                                        </div>
+                                        ${this.editMode ? `
+                                            <div class="text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded">
+                                                Tap +/- to adjust quantities
+                                            </div>
+                                        ` : ''}
                                     </div>
                                     <div class="flex items-center space-x-2">
                                         <button id="export-list-btn" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
@@ -399,20 +414,25 @@ class GroceryListManager {
         `;
     }
 
-    renderGroceryItem(item, showQuantityControls = false) {
+    renderGroceryItem(item, showQuantityControls = null) {
+        // Use editMode if showQuantityControls not explicitly set
+        if (showQuantityControls === null) {
+            showQuantityControls = this.editMode;
+        }
         const itemId = item.item_id || item.id || Math.random().toString(36).substr(2, 9);
         const adjustedQuantity = item.adjusted_quantity || item.quantity;
         
         return `
-            <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <div class="flex items-center space-x-3 flex-1">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 ${showQuantityControls ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800' : 'bg-gray-50 dark:bg-gray-700'} rounded-lg gap-3">
+                <div class="flex items-center space-x-3 flex-1 min-w-0">
                     <input type="checkbox" 
-                           class="grocery-item-checkbox w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" 
+                           class="grocery-item-checkbox w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 flex-shrink-0" 
                            data-item-id="${itemId}"
                            ${item.checked ? 'checked' : ''}>
                     <div class="flex-1 min-w-0">
-                        <div class="font-medium text-gray-900 dark:text-white ${item.checked ? 'line-through text-gray-500 dark:text-gray-400' : ''}">
+                        <div class="font-medium text-gray-900 dark:text-white ${item.checked ? 'line-through text-gray-500 dark:text-gray-400' : ''} flex items-center gap-2">
                             ${item.name}
+                            ${showQuantityControls ? '<span class="text-xs text-blue-600 dark:text-blue-400">✏️</span>' : ''}
                         </div>
                         <div class="text-sm text-gray-500 dark:text-gray-400">
                             ${showQuantityControls ? '' : 
@@ -430,23 +450,23 @@ class GroceryListManager {
                     </div>
                 </div>
                 ${showQuantityControls ? `
-                    <div class="flex items-center space-x-2">
-                        <button class="quantity-decrease w-10 h-10 sm:w-8 sm:h-8 flex items-center justify-center bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-full text-gray-600 dark:text-gray-300 transition-colors touch-manipulation" data-item-id="${itemId}">
-                            <svg class="w-5 h-5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="flex items-center space-x-3">
+                        <button class="quantity-decrease w-12 h-12 flex items-center justify-center bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 active:bg-gray-400 dark:active:bg-gray-400 rounded-full text-gray-600 dark:text-gray-300 transition-all duration-150 touch-manipulation select-none" data-item-id="${itemId}" title="Decrease quantity">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
                             </svg>
                         </button>
-                        <div class="text-center min-w-[80px] px-2">
+                        <div class="text-center min-w-[100px] px-3 py-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600">
                             ${item.pantry_quantity > 0 ? `
                                 <div class="text-xs text-gray-400 dark:text-gray-500 line-through">${item.quantity}</div>
-                                <div class="text-sm font-medium text-green-600 dark:text-green-400">${adjustedQuantity}</div>
+                                <div class="text-lg font-semibold text-green-600 dark:text-green-400">${adjustedQuantity}</div>
                             ` : `
-                                <div class="text-sm font-medium text-gray-900 dark:text-white">${adjustedQuantity}</div>
+                                <div class="text-lg font-semibold text-gray-900 dark:text-white">${adjustedQuantity}</div>
                             `}
                             <div class="text-xs text-gray-500 dark:text-gray-400">${item.unit}</div>
                         </div>
-                        <button class="quantity-increase w-10 h-10 sm:w-8 sm:h-8 flex items-center justify-center bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-full text-gray-600 dark:text-gray-300 transition-colors touch-manipulation" data-item-id="${itemId}">
-                            <svg class="w-5 h-5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button class="quantity-increase w-12 h-12 flex items-center justify-center bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 active:bg-gray-400 dark:active:bg-gray-400 rounded-full text-gray-600 dark:text-gray-300 transition-all duration-150 touch-manipulation select-none" data-item-id="${itemId}" title="Increase quantity">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                             </svg>
                         </button>
@@ -992,6 +1012,34 @@ class GroceryListManager {
             console.warn('🛒 WARNING: Week mode button not found!');
         }
 
+        // Edit mode toggle buttons
+        const displayModeBtn = this.container.querySelector('#shopping-list-display-mode');
+        const editModeBtn = this.container.querySelector('#shopping-list-edit-mode');
+        
+        console.log('🛒 DEBUG: Looking for edit mode toggle buttons...');
+        console.log('🛒 DEBUG: displayModeBtn found:', !!displayModeBtn, displayModeBtn);
+        console.log('🛒 DEBUG: editModeBtn found:', !!editModeBtn, editModeBtn);
+        
+        if (displayModeBtn) {
+            displayModeBtn.addEventListener('click', () => {
+                console.log('🛒 DEBUG: Display mode button clicked!');
+                this.setEditMode(false);
+            });
+            console.log('🛒 DEBUG: Display mode event listener attached');
+        } else {
+            console.warn('🛒 WARNING: Display mode button not found!');
+        }
+        
+        if (editModeBtn) {
+            editModeBtn.addEventListener('click', () => {
+                console.log('🛒 DEBUG: Edit mode button clicked!');
+                this.setEditMode(true);
+            });
+            console.log('🛒 DEBUG: Edit mode event listener attached');
+        } else {
+            console.warn('🛒 WARNING: Edit mode button not found!');
+        }
+
         // Grocery item checkboxes
         this.container.querySelectorAll('.grocery-item-checkbox').forEach(checkbox => {
             checkbox.addEventListener('change', (e) => {
@@ -1002,13 +1050,23 @@ class GroceryListManager {
         // Quantity control buttons
         this.container.querySelectorAll('.quantity-decrease').forEach(button => {
             button.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 this.adjustQuantity(e.target.closest('button').dataset.itemId, -0.25);
+                // Add visual feedback
+                button.classList.add('scale-95');
+                setTimeout(() => button.classList.remove('scale-95'), 150);
             });
         });
 
         this.container.querySelectorAll('.quantity-increase').forEach(button => {
             button.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 this.adjustQuantity(e.target.closest('button').dataset.itemId, 0.25);
+                // Add visual feedback
+                button.classList.add('scale-95');
+                setTimeout(() => button.classList.remove('scale-95'), 150);
             });
         });
     }
@@ -1018,6 +1076,13 @@ class GroceryListManager {
         this.displayMode = mode;
         this.render();
         console.log(`✅ Display mode switched to ${mode}`);
+    }
+
+    setEditMode(editMode) {
+        console.log(`🛒 Setting edit mode to ${editMode}`);
+        this.editMode = editMode;
+        this.render();
+        console.log(`✅ Edit mode switched to ${editMode ? 'edit' : 'display'}`);
     }
 
     adjustQuantity(itemId, adjustment) {
