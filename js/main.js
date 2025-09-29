@@ -2955,7 +2955,18 @@ class MealPlannerApp {
                                 <div class="space-y-2">
                                     ${meals.map(meal => `
                                         <div class="flex items-center justify-between py-2 px-3 bg-gray-50 dark:bg-gray-700 rounded-md">
-                                            <span class="font-medium text-gray-900 dark:text-white">${meal.recipe_name}</span>
+                                            <span class="font-medium text-gray-900 dark:text-white">${(() => {
+                                                let recipeName = meal.recipe_name || meal.name || meal.meal_name || meal.title;
+                                                if (!recipeName && meal.recipe_id && window.recipeManager) {
+                                                    try {
+                                                        const recipe = window.recipeManager.getRecipeById(meal.recipe_id);
+                                                        recipeName = recipe ? (recipe.title || recipe.name) : null;
+                                                    } catch (e) {
+                                                        console.warn('Could not fetch recipe name for meal:', meal);
+                                                    }
+                                                }
+                                                return recipeName || 'Unknown Recipe';
+                                            })()}</span>
                                             <span class="text-xs text-gray-500 dark:text-gray-400 capitalize">${meal.meal_type || 'meal'}</span>
                                         </div>
                                     `).join('')}
@@ -3062,8 +3073,22 @@ class MealPlannerApp {
                                 month: 'short', 
                                 day: 'numeric' 
                             });
+                            // Get recipe name with fallback logic
+                            let recipeName = meal.recipe_name || meal.name || meal.meal_name || meal.title;
+                            
+                            // If still no name and we have a recipe_id, try to get it from the recipe manager
+                            if (!recipeName && meal.recipe_id && window.recipeManager) {
+                                try {
+                                    const recipe = window.recipeManager.getRecipeById(meal.recipe_id);
+                                    recipeName = recipe ? (recipe.title || recipe.name) : null;
+                                } catch (e) {
+                                    console.warn('Could not fetch recipe name for meal:', meal);
+                                }
+                            }
+                            
+                            recipeName = recipeName || 'Unknown Recipe';
                             return `<div class="flex justify-between items-center">
-                                <span class="font-medium">${meal.recipe_name}</span>
+                                <span class="font-medium">${recipeName}</span>
                                 <span class="text-xs opacity-75">${date}</span>
                             </div>`;
                         }).join('');
@@ -3082,8 +3107,22 @@ class MealPlannerApp {
                                 month: 'short', 
                                 day: 'numeric' 
                             });
+                            // Get recipe name with fallback logic
+                            let recipeName = meal.recipe_name || meal.name || meal.meal_name || meal.title;
+                            
+                            // If still no name and we have a recipe_id, try to get it from the recipe manager
+                            if (!recipeName && meal.recipe_id && window.recipeManager) {
+                                try {
+                                    const recipe = window.recipeManager.getRecipeById(meal.recipe_id);
+                                    recipeName = recipe ? (recipe.title || recipe.name) : null;
+                                } catch (e) {
+                                    console.warn('Could not fetch recipe name for meal:', meal);
+                                }
+                            }
+                            
+                            recipeName = recipeName || 'Unknown Recipe';
                             return `<div class="flex justify-between items-center">
-                                <span class="font-medium">${meal.recipe_name}</span>
+                                <span class="font-medium">${recipeName}</span>
                                 <span class="text-xs opacity-75">${date}</span>
                             </div>`;
                         }).join('');
