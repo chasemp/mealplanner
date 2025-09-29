@@ -193,15 +193,16 @@ describe('ScheduleManager', () => {
 
             expect(scheduledMeal.meal_type).toBe(mealType);
             expect(scheduledMeal.meal_name).toBe(mockRecipe.title);
-            expect(scheduledMeal.recipes).toHaveLength(1);
-            expect(scheduledMeal.recipes[0].recipe_id).toBe(mockRecipe.id);
+            expect(scheduledMeal.recipe_id).toBe(mockRecipe.id);
+            expect(scheduledMeal.recipe).toEqual(mockRecipe);
             expect(scheduledMeal.total_time).toBe(40); // prep_time + cook_time
         });
 
-        it('should create temporary meal ID for recipe scheduling', () => {
+        it('should create scheduled meal with recipe object reference', () => {
             const scheduledMeal = scheduleManager.scheduleRecipe(mockRecipe, 'dinner', '2025-09-08');
             
-            expect(scheduledMeal.meal_id).toContain(`recipe-${mockRecipe.id}`);
+            expect(scheduledMeal.recipe_id).toBe(mockRecipe.id);
+            expect(scheduledMeal.recipe).toEqual(mockRecipe);
         });
     });
 
@@ -312,47 +313,33 @@ describe('ScheduleManager', () => {
         });
     });
 
-    describe('Legacy Format Support', () => {
-        it('should convert scheduled meal to legacy format', () => {
+    describe('Recipe Name and Object Access', () => {
+        it('should get recipe name from scheduled meal', () => {
             const scheduledMeal = scheduleManager.scheduleMeal(mockMeal, '2025-09-08');
-            const legacyFormat = scheduleManager.toLegacyFormat(scheduledMeal);
+            const recipeName = scheduleManager.getRecipeName(scheduledMeal);
 
-            expect(legacyFormat).toEqual({
-                id: scheduledMeal.id,
-                recipe_id: mockMeal.recipes[0].recipe_id,
-                recipe_name: mockMeal.recipes[0].title,
-                meal_type: mockMeal.meal_type,
-                date: '2025-09-08',
-                notes: mockMeal.name
-            });
+            expect(recipeName).toBe(mockMeal.name);
         });
 
-        it('should get all scheduled meals in legacy format', () => {
-            scheduleManager.scheduleMeal(mockMeal, '2025-09-08');
-            const legacyMeals = scheduleManager.getScheduledMealsLegacyFormat();
+        it('should get recipe name from single recipe scheduled meal', () => {
+            const scheduledMeal = scheduleManager.scheduleRecipe(mockRecipe, 'dinner', '2025-09-08');
+            const recipeName = scheduleManager.getRecipeName(scheduledMeal);
 
-            expect(legacyMeals).toHaveLength(1);
-            expect(legacyMeals[0]).toHaveProperty('recipe_id');
-            expect(legacyMeals[0]).toHaveProperty('meal_type');
-            expect(legacyMeals[0]).toHaveProperty('date');
-            expect(legacyMeals[0]).toHaveProperty('notes');
+            expect(recipeName).toBe(mockRecipe.title);
         });
 
-        it('should filter legacy format by meal type', () => {
-            scheduleManager.scheduleMeal(mockMeal, '2025-09-08');
-            scheduleManager.scheduleMeal({
-                ...mockMeal,
-                id: 'meal-2',
-                meal_type: 'breakfast'
-            }, '2025-09-08');
+        it('should get recipe object from scheduled meal', () => {
+            const scheduledMeal = scheduleManager.scheduleMeal(mockMeal, '2025-09-08');
+            const recipeObject = scheduleManager.getRecipeObject(scheduledMeal);
 
-            const dinnerMeals = scheduleManager.getScheduledMealsLegacyFormat('dinner');
-            const breakfastMeals = scheduleManager.getScheduledMealsLegacyFormat('breakfast');
+            expect(recipeObject).toEqual(mockMeal.recipes[0]);
+        });
 
-            expect(dinnerMeals).toHaveLength(1);
-            expect(breakfastMeals).toHaveLength(1);
-            expect(dinnerMeals[0].meal_type).toBe('dinner');
-            expect(breakfastMeals[0].meal_type).toBe('breakfast');
+        it('should get recipe object from single recipe scheduled meal', () => {
+            const scheduledMeal = scheduleManager.scheduleRecipe(mockRecipe, 'dinner', '2025-09-08');
+            const recipeObject = scheduleManager.getRecipeObject(scheduledMeal);
+
+            expect(recipeObject).toEqual(mockRecipe);
         });
     });
 
