@@ -2734,7 +2734,7 @@ class RecipeManager {
             const recipeData = {
                 title: formData.get('title').trim(),
                 description: formData.get('description').trim(),
-                serving_count: parseInt(formData.get('serving_count')),
+                serving_count: parseInt(formData.get('servings')) || 4,
                 prep_time: parseInt(formData.get('prep_time')) || 0,
                 cook_time: parseInt(formData.get('cook_time')) || 0,
                 instructions: formData.get('instructions').trim(),
@@ -2780,9 +2780,8 @@ class RecipeManager {
             // Add items to recipe data (consistent naming)
             recipeData.items = items;
             
-            // Add labels (convert from tags for now)
-            recipeData.labels = recipeData.tags || [];
-            delete recipeData.tags;
+            // Labels are already set from this.formSelectedLabels above
+            // No need to overwrite them
             
             // Add created_at timestamp if new recipe
             if (!existingRecipe) {
@@ -2981,124 +2980,6 @@ class RecipeManager {
         }, 3000);
     }
 
-    handleRecipeFormSubmit(form, existingRecipe) {
-        console.log('🔥 handleRecipeFormSubmit called', { form, existingRecipe });
-        // Get form data manually to avoid FormData issues in tests
-        const titleInput = form.querySelector('input[name="title"]');
-        const descriptionInput = form.querySelector('textarea[name="description"]');
-        const servingsInput = form.querySelector('input[name="servings"]');
-        const prepTimeInput = form.querySelector('input[name="prep_time"]');
-        const cookTimeInput = form.querySelector('input[name="cook_time"]');
-        const instructionsInput = form.querySelector('textarea[name="instructions"]');
-        const tagsInput = form.querySelector('input[name="tags"]');
-        const difficultyInput = form.querySelector('select[name="difficulty"]');
-        const cuisineInput = form.querySelector('input[name="cuisine"]');
-        
-        // Get basic recipe data
-        const recipeData = {
-            title: titleInput ? titleInput.value.trim() : '',
-            description: descriptionInput ? descriptionInput.value.trim() : '',
-            serving_count: servingsInput ? parseInt(servingsInput.value) || 1 : 1,
-            prep_time: prepTimeInput ? parseInt(prepTimeInput.value) || 0 : 0,
-            cook_time: cookTimeInput ? parseInt(cookTimeInput.value) || 0 : 0,
-            instructions: instructionsInput ? instructionsInput.value.trim() : '',
-            labels: this.processUserLabels(tagsInput ? tagsInput.value.trim().split(',').map(tag => tag.trim()).filter(tag => tag) : []),
-            difficulty: difficultyInput ? difficultyInput.value || 'easy' : 'easy',
-            cuisine: cuisineInput ? cuisineInput.value.trim() : '',
-        };
-
-        // Validate required fields
-        if (!recipeData.title) {
-            this.showNotification('Recipe title is required', 'error');
-            return;
-        }
-
-        if (!recipeData.instructions) {
-            this.showNotification('Instructions are required', 'error');
-            return;
-        }
-
-        // Collect items
-        const itemRows = form.querySelectorAll('.item-row');
-        const items = [];
-        
-        itemRows.forEach(row => {
-            const itemId = row.querySelector('.item-select')?.value;
-            const quantity = row.querySelector('input[name*="[quantity]"]')?.value;
-            const unit = row.querySelector('select[name*="[unit]"]')?.value;
-            const notes = row.querySelector('input[name*="[notes]"]')?.value;
-            
-            if (itemId && quantity) {
-                const item = this.getItemById(parseInt(itemId));
-                if (item) {
-                    items.push({
-                        item_id: parseInt(itemId),
-                        ingredient_id: parseInt(itemId), // Backward compatibility
-                        name: item.name,
-                        quantity: this.roundQuantity(parseFloat(quantity)),
-                        unit: unit || item.default_unit,
-                        notes: notes || ''
-                    });
-                }
-            }
-        });
-
-        if (items.length === 0) {
-            this.showNotification('At least one item is required', 'error');
-            return;
-        }
-
-        recipeData.items = items;
-
-        try {
-            // Save recipe
-            if (existingRecipe) {
-                // Update existing recipe
-                recipeData.id = existingRecipe.id;
-                const index = this.recipes.findIndex(r => r.id === existingRecipe.id);
-                if (index !== -1) {
-                    this.recipes[index] = { ...this.recipes[index], ...recipeData };
-                }
-                this.showNotification(`"${recipeData.title}" has been updated!`, 'success');
-            } else {
-                // Add new recipe
-                recipeData.id = Math.max(0, ...this.recipes.map(r => r.id)) + 1;
-                recipeData.created_date = new Date().toISOString().split('T')[0];
-                this.recipes.push(recipeData);
-                this.showNotification(`"${recipeData.title}" has been added!`, 'success');
-            }
-
-            // Save to localStorage and refresh view
-            this.saveRecipes();
-            
-            // Close modal and refresh view
-            document.getElementById('recipe-form-modal')?.remove();
-            
-            // If we were editing from mobile recipe view, return to that view
-            if (this.editingFromMobileView && this.editingRecipe) {
-                console.log('📱 Returning to mobile recipe view after save');
-                // Update the recipe reference with the saved data
-                this.editingRecipe = this.recipes.find(r => r.id === this.editingRecipe.id) || this.editingRecipe;
-                
-                // First restore the recipe list view, then show mobile recipe
-                this.render(); // Restore recipe list
-                
-                // Small delay to ensure render is complete, then show mobile recipe
-                setTimeout(() => {
-                    this.isShowingMobileRecipe = false; // Reset flag
-                    this.showMobileRecipePage(this.editingRecipe);
-                    this.editingFromMobileView = false;
-                    this.editingRecipe = null;
-                }, 50);
-            } else {
-            this.render();
-            }
-
-        } catch (error) {
-            console.error('Error saving recipe:', error);
-            this.showNotification('Error saving recipe. Please try again.', 'error');
-        }
-    }
 
     showRecipeDetail(recipeId) {
         const recipe = this.recipes.find(r => r.id === recipeId);
