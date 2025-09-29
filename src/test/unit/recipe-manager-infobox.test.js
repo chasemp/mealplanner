@@ -148,6 +148,10 @@ class MockRecipeManagerWithInfoBox {
             if (recipe.labels) {
                 recipe.labels.forEach(label => allLabels.add(label));
             }
+            // Include "Favorite" as a label when recipe is favorited
+            if (recipe.favorite === true) {
+                allLabels.add('Favorite');
+            }
         });
         
         return Array.from(allLabels);
@@ -280,7 +284,7 @@ describe('Recipe Manager Info Box Updates', () => {
             const favoriteCount = container.querySelector('#favorite-count');
             
             expect(recipeCount.textContent).toBe('3'); // All 3 recipes
-            expect(labelCount.textContent).toBe('7'); // All unique labels (protein-rich, low-carb, Dinner, vegetarian, Lunch, dessert, sweet)
+            expect(labelCount.textContent).toBe('8'); // All unique labels (protein-rich, low-carb, Dinner, vegetarian, Lunch, dessert, sweet) + Favorite
             expect(favoriteCount.textContent).toBe('2'); // 2 favorites
         });
 
@@ -307,7 +311,7 @@ describe('Recipe Manager Info Box Updates', () => {
             const favoriteCount = container.querySelector('#favorite-count');
             
             expect(recipeCount.textContent).toBe('1'); // Only chicken recipe
-            expect(labelCount.textContent).toBe('3'); // Labels from chicken recipe
+            expect(labelCount.textContent).toBe('4'); // Labels from chicken recipe + Favorite
             expect(favoriteCount.textContent).toBe('1'); // Chicken is favorite
         });
 

@@ -754,6 +754,10 @@ class RecipeManager {
             if (recipe.tags && Array.isArray(recipe.tags)) {
                 recipe.tags.forEach(tag => labels.add(tag));
             }
+            // Include "Favorite" as a label when recipe is favorited
+            if (recipe.favorite === true) {
+                labels.add('Favorite');
+            }
         });
         return Array.from(labels);
     }
