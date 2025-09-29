@@ -2227,7 +2227,7 @@ class RecipeManager {
                     <div>
                         <div class="flex items-center justify-between mb-2">
                             <label for="recipe-instructions" class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Instructions *
+                                Instructions
                             </label>
                             <label class="flex items-center space-x-2">
                                 <input type="checkbox" id="use-step-instructions" name="use_step_instructions" 
@@ -2237,11 +2237,11 @@ class RecipeManager {
                             </label>
                         </div>
                         <div id="instructions-container">
-                            <textarea id="recipe-instructions" name="instructions" required rows="6" 
+                            <textarea id="recipe-instructions" name="instructions" rows="6" 
                                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm sm:text-base"
                                       placeholder="Enter step-by-step cooking instructions...">${isEdit ? recipe.instructions : ''}</textarea>
                         </div>
-                        <p class="text-xs text-gray-500 mt-1">Tip: Number your steps (1., 2., 3.) for better readability</p>
+                        <p class="text-xs text-gray-500 mt-1">Optional: Check the box above to use step-by-step format, or leave instructions in the description</p>
                     </div>
                     
                     <!-- Labels Section -->
@@ -2758,8 +2758,9 @@ class RecipeManager {
                 return;
             }
 
-            if (!recipeData.instructions) {
-                this.showNotification('Instructions are required', 'error');
+            // Only require instructions if step format is enabled
+            if (recipeData.use_step_instructions && !recipeData.instructions) {
+                this.showNotification('Instructions are required when using step-by-step format', 'error');
                 return;
             }
 
@@ -3025,8 +3026,9 @@ class RecipeManager {
             return;
         }
 
-        if (!recipeData.instructions) {
-            this.showNotification('Instructions are required', 'error');
+        // Only require instructions if step format is enabled
+        if (recipeData.use_step_instructions && !recipeData.instructions) {
+            this.showNotification('Instructions are required when using step-by-step format', 'error');
             return;
         }
 
@@ -5326,9 +5328,9 @@ class RecipeManager {
                 return;
             }
 
-            // Only validate instructions for regular recipes, not combos
-            if (!isCombo && (!recipeData.instructions || recipeData.instructions.length === 0)) {
-                this.showNotification('At least one instruction step is required', 'error');
+            // Only validate instructions for regular recipes when step format is enabled
+            if (!isCombo && recipeData.use_step_instructions && (!recipeData.instructions || recipeData.instructions.length === 0)) {
+                this.showNotification('At least one instruction step is required when using step-by-step format', 'error');
                 return;
             }
 
@@ -5657,9 +5659,9 @@ class RecipeManager {
                     .join('\n\n');
             }
             
-            // Replace with textarea
+            // Replace with textarea (not required when unchecked)
             instructionsContainer.innerHTML = `
-                <textarea id="recipe-instructions" name="instructions" required rows="6" 
+                <textarea id="recipe-instructions" name="instructions" rows="6" 
                           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm sm:text-base"
                           placeholder="Enter step-by-step cooking instructions...">${combinedInstructions}</textarea>
             `;
