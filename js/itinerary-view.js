@@ -280,7 +280,7 @@ class ItineraryView {
     getUniqueRecipes() {
         // Count unique recipe names in scheduled meals within the selected timeframe
         const mealsInRange = this.getScheduledMealsInTimeframe();
-        const uniqueRecipes = new Set(mealsInRange.map(meal => meal.meal_name || meal.recipe_name || meal.name));
+        const uniqueRecipes = new Set(mealsInRange.map(meal => window.app ? window.app.getMealDisplayName(meal) : 'Unknown Recipe'));
         console.log(`🔢 getUniqueRecipes() for ${this.mealType}:`, {
             mealsInRange: mealsInRange.length,
             uniqueRecipes: uniqueRecipes.size,
@@ -335,7 +335,8 @@ class ItineraryView {
         console.log(`📅 Date range: ${this.startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}`);
         
         filteredMeals.forEach((meal, index) => {
-            console.log(`  ${index + 1}. ${meal.name || meal.recipe_name || meal.meal_name || 'Unknown'} on ${new Date(meal.date).toLocaleDateString()} (ID: ${meal.id})`);
+            const mealName = window.app ? window.app.getMealDisplayName(meal) : 'Unknown Recipe';
+            console.log(`  ${index + 1}. ${mealName} on ${new Date(meal.date).toLocaleDateString()} (ID: ${meal.id})`);
         });
         
         return filteredMeals;
@@ -386,7 +387,7 @@ class ItineraryView {
             return matches;
         }) || null;
         
-        console.log(`🔍 Found meal for ${dateStr}:`, foundMeal ? `${foundMeal.name || foundMeal.recipe_name || foundMeal.meal_name} (ID: ${foundMeal.id})` : 'None');
+        console.log(`🔍 Found meal for ${dateStr}:`, foundMeal ? `${window.app ? window.app.getMealDisplayName(foundMeal) : 'Unknown Recipe'} (ID: ${foundMeal.id})` : 'None');
         return foundMeal;
     }
 
@@ -482,7 +483,7 @@ class ItineraryView {
             let mealTiming = "Ready in 30 min"; // Default fallback
             if (hasMeal) {
                 // Use meal_name from modern schema, with fallbacks for legacy data
-                mealName = scheduledMeal.meal_name || scheduledMeal.recipe_name || scheduledMeal.name;
+                mealName = window.app ? window.app.getMealDisplayName(scheduledMeal) : 'Unknown Recipe';
                 
                 // Use total_time from modern schema, with fallback to recipe lookup
                 if (scheduledMeal.total_time && scheduledMeal.total_time > 0) {
@@ -618,7 +619,7 @@ class ItineraryView {
             
             console.log(`🔍 Using storage: ${storageKey} for meal type: ${this.mealType}`);
             console.log(`🔍 Looking for meal ID: ${mealId} (type: ${typeof mealId})`);
-            console.log(`🔍 Available meal IDs:`, scheduledMeals.map(m => ({ id: m.id, type: typeof m.id, name: m.name || m.recipe_name })));
+            console.log(`🔍 Available meal IDs:`, scheduledMeals.map(m => ({ id: m.id, type: typeof m.id, name: window.app ? window.app.getMealDisplayName(m) : 'Unknown Recipe' })));
             
             // DATE RANGE SCOPING: Only remove meals within the current planning timeframe
             // This ensures consistency with delta comparison and prevents removing meals outside the selected date range
@@ -653,7 +654,7 @@ class ItineraryView {
                 console.log(`🔍 Removed meal object:`, removedMeal);
                 
                 // Get meal name from available properties (could be name, recipe_name, or meal_name)
-                const mealName = removedMeal.name || removedMeal.recipe_name || removedMeal.meal_name || `meal ${removedMeal.id}`;
+                const mealName = window.app ? window.app.getMealDisplayName(removedMeal) : `meal ${removedMeal.id}`;
                 
                 console.log(`🔍 Before removal - scheduledMeals count: ${scheduledMeals.length}`);
                 scheduledMeals.splice(mealIndex, 1);
