@@ -2757,7 +2757,7 @@ class MealPlannerApp {
             // Debug: Log the structure of plan meals to identify any data issues
             if (planScheduledMeals.length > 0) {
                 console.log('🔍 Plan meals structure sample:', planScheduledMeals[0]);
-                console.log('🔍 Plan meals recipe_name fields:', planScheduledMeals.map(m => ({ id: m.id, recipe_name: m.recipe_name, recipe_id: m.recipe_id })));
+                console.log('🔍 Plan meals:', planScheduledMeals.map(m => ({ id: m.id, recipe_id: m.recipe_id, name: this.getMealDisplayName(m) })));
             }
             
             if (planScheduledMeals.length === 0) {
@@ -2771,7 +2771,7 @@ class MealPlannerApp {
             
             // Debug: Verify the copy was successful
             const copiedMeals = window.mealPlannerSettings.getAuthoritativeData('menuScheduledMeals') || [];
-            console.log('🔍 Menu meals after copy:', copiedMeals.map(m => ({ id: m.id, recipe_name: m.recipe_name, recipe_id: m.recipe_id })));
+            console.log('🔍 Menu meals after copy:', copiedMeals.map(m => ({ id: m.id, recipe_id: m.recipe_id, name: this.getMealDisplayName(m) })));
             
             // Show delta information
             const menuScheduledMeals = window.mealPlannerSettings.getAuthoritativeData('menuScheduledMeals') || [];

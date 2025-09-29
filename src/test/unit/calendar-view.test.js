@@ -107,7 +107,7 @@ class MockCalendarView {
     renderDayMeals(meals) {
         return meals.map(meal => `
             <div class="meal-item" data-meal-id="${meal.id}">
-                ${meal.name}
+                ${window.app ? window.app.getMealDisplayName(meal) : 'Unknown Recipe'}
             </div>
         `).join('')
     }
@@ -120,7 +120,7 @@ class MockCalendarView {
         
         return allMeals.map(meal => `
             <div class="legend-item">
-                <span class="meal-name">${meal.name}</span>
+                <span class="meal-name">${window.app ? window.app.getMealDisplayName(meal) : 'Unknown Recipe'}</span>
                 <span class="meal-date">(${this.formatDate(meal.date)})</span>
             </div>
         `).join('')

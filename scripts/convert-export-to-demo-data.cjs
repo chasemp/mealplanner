@@ -138,13 +138,13 @@ class ExportToDemoDataConverter {
         
         return scheduledMeals.map(meal => ({
             id: meal.id,
-            recipe_id: meal.recipe_id,
-            recipe_name: meal.recipe_name,
+            recipe_id: meal.recipe_id, // Single source of truth for recipe reference
             meal_type: meal.meal_type,
             servings: meal.servings || 4,
             date: meal.date,
             created_at: meal.created_at || new Date().toISOString(),
             updated_at: meal.updated_at || new Date().toISOString()
+            // All other properties (title, description, etc.) inherited via recipe_id lookup
         }));
     }
 
@@ -280,7 +280,7 @@ class DemoDataManager {
         this.scheduledMeals.forEach(meal => {
             const recipe = this.recipes.find(rec => rec.id === meal.recipe_id);
             if (!recipe) {
-                issues.push(\`Scheduled meal "\${meal.recipe_name}" references non-existent recipe ID: \${meal.recipe_id}\`);
+                issues.push(\`Scheduled meal references non-existent recipe ID: \${meal.recipe_id}\`);
             }
         });
         
@@ -353,8 +353,8 @@ if (typeof module !== 'undefined' && module.exports) {
             issues.push('Scheduled meals must be an array');
         } else {
             demoData.scheduledMeals.forEach((meal, index) => {
-                if (!meal.id || !meal.recipe_id || !meal.recipe_name) {
-                    issues.push(`Scheduled meal at index ${index} missing required fields`);
+                if (!meal.id || !meal.recipe_id) {
+                    issues.push(`Scheduled meal at index ${index} missing required fields (id, recipe_id)`);
                 }
             });
         }

@@ -182,14 +182,14 @@ class CalendarView {
     renderDayMeals(meals) {
         return meals.map(meal => `
             <div class="meal-item text-xs bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded truncate cursor-move transition-colors" 
-                 title="${meal.name}"
+                 title="${window.app ? window.app.getMealDisplayName(meal) : 'Unknown Recipe'}"
                  draggable="true"
                  data-meal-id="${meal.id}"
-                 data-meal-name="${meal.name}"
+                 data-meal-name="${window.app ? window.app.getMealDisplayName(meal) : 'Unknown Recipe'}"
                  data-meal-type="${meal.mealType}"
                  data-original-date="${this.formatDateKey(meal.date)}">
                 <span class="drag-handle">⋮⋮</span>
-                <span class="meal-name">${meal.name}</span>
+                <span class="meal-name">${window.app ? window.app.getMealDisplayName(meal) : 'Unknown Recipe'}</span>
             </div>
         `).join('');
     }
@@ -203,7 +203,7 @@ class CalendarView {
         return allMeals.map(meal => `
             <div class="flex items-center space-x-2">
                 <div class="w-3 h-3 bg-blue-500 rounded"></div>
-                <span class="text-gray-700">${meal.name}</span>
+                <span class="text-gray-700">${window.app ? window.app.getMealDisplayName(meal) : 'Unknown Recipe'}</span>
                 <span class="text-gray-500">(${this.formatDate(meal.date)})</span>
             </div>
         `).join('');
