@@ -201,15 +201,11 @@ class RecipeManager {
                         <div class="relative">
                             <div id="recipe-labels-container" class="w-full min-h-[42px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus-within:ring-2 focus-within:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white cursor-text flex flex-wrap gap-1 items-center">
                                 ${this.selectedLabels.map(label => {
-                                    const labelType = this.inferLabelType(label);
-                                    const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
-                                    const colors = window.labelTypes ? window.labelTypes.getColorClasses(labelType) : 
-                                        'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
-                                    const buttonColors = this.getLabelButtonColors(labelType);
+                                    const displayProps = this.getLabelDisplayProperties(label);
                                     return `
-                                    <span class="inline-flex items-center px-2 py-1 text-xs font-bold ${colors} rounded-full">
-                                        ${icon}${label}
-                                        <button type="button" class="ml-1 ${buttonColors}" onclick="window.recipeManager.removeLabel('${label}')">
+                                    <span class="inline-flex items-center px-2 py-1 text-xs font-bold ${displayProps.colors} rounded-full" ${displayProps.inlineStyle ? `style="${displayProps.inlineStyle}"` : ''}>
+                                        ${displayProps.icon}${label}
+                                        <button type="button" class="ml-1 ${displayProps.buttonColors}" onclick="window.recipeManager.removeLabel('${label}')">
                                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                             </svg>
@@ -1480,9 +1476,55 @@ class RecipeManager {
         return null;
     }
 
-    // Convert hex color to inline style for background
+    // Convert hex color to inline style for background with proper contrast
     getLabelInlineStyle(hexColor) {
-        return `background-color: ${hexColor}; color: white;`;
+        // Calculate if the background is light or dark to determine text color
+        const rgb = this.hexToRgb(hexColor);
+        if (!rgb) return `background-color: ${hexColor}; color: white;`;
+        
+        // Calculate relative luminance
+        const luminance = (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255;
+        const textColor = luminance > 0.5 ? '#000000' : '#ffffff';
+        
+        return `background-color: ${hexColor}; color: ${textColor};`;
+    }
+
+    // Helper function to convert hex to RGB
+    hexToRgb(hex) {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : null;
+    }
+
+    // Unified function to get label display properties (colors, icon, etc.)
+    getLabelDisplayProperties(labelName) {
+        const labelObject = this.getLabelObject(labelName);
+        const labelType = labelObject ? labelObject.type : this.inferLabelType(labelName);
+        const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
+        
+        let colors, inlineStyle = '';
+        if (labelObject && labelObject.color) {
+            // Use custom color with proper contrast
+            inlineStyle = this.getLabelInlineStyle(labelObject.color);
+            colors = 'rounded-full'; // Just the rounded class, color comes from inline style
+        } else {
+            // Use type-based Tailwind classes
+            colors = window.labelTypes ? window.labelTypes.getColorClasses(labelType) : 
+                'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+        }
+        
+        const buttonColors = this.getLabelButtonColors(labelType);
+        
+        return {
+            labelType,
+            icon,
+            colors,
+            inlineStyle,
+            buttonColors
+        };
     }
 
     // Save user labels
@@ -2249,26 +2291,12 @@ class RecipeManager {
                                 ${isEdit && recipe.labels ? recipe.labels.map(label => {
                                     // Extract label name properly
                                     const labelName = typeof label === 'string' ? label : (label.name || String(label));
-                                    const labelObject = this.getLabelObject(labelName);
-                                    const labelType = labelObject ? labelObject.type : this.inferLabelType(labelName);
-                                    const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
+                                    const displayProps = this.getLabelDisplayProperties(labelName);
                                     
-                                    // Use the actual label color if available, otherwise fall back to type-based color
-                                    let colors, inlineStyle = '';
-                                    if (labelObject && labelObject.color) {
-                                        // Use inline style for custom colors
-                                        inlineStyle = this.getLabelInlineStyle(labelObject.color);
-                                        colors = 'rounded-full'; // Just the rounded class, color comes from inline style
-                                    } else {
-                                        colors = window.labelTypes ? window.labelTypes.getColorClasses(labelType) : 
-                                            'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
-                                    }
-                                    
-                                    const buttonColors = this.getLabelButtonColors(labelType);
                                     return `
-                                    <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-bold ${colors}" ${inlineStyle ? `style="${inlineStyle}"` : ''}>
-                                        ${icon}${labelName}
-                                        <button type="button" class="ml-1 ${buttonColors}" onclick="window.recipeManager.removeFormLabel('${labelName}')">
+                                    <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-bold ${displayProps.colors}" ${displayProps.inlineStyle ? `style="${displayProps.inlineStyle}"` : ''}>
+                                        ${displayProps.icon}${labelName}
+                                        <button type="button" class="ml-1 ${displayProps.buttonColors}" onclick="window.recipeManager.removeFormLabel('${labelName}')">
                                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                             </svg>
@@ -2713,19 +2741,17 @@ class RecipeManager {
 
         dropdown.classList.remove('hidden');
         dropdown.innerHTML = availableLabels.slice(0, 10).map((label, index) => {
-            const labelType = this.inferLabelType(label);
-            const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
-            const colorClasses = this.getLabelColorClasses(labelType);
+            const displayProps = this.getLabelDisplayProperties(label);
             
             return `
             <div class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm text-gray-900 dark:text-gray-100 ${index === 0 ? 'bg-gray-50 dark:bg-gray-700' : ''}" 
                  data-label="${label}" 
                  onclick="window.recipeManager.addFormLabel('${label}')">
                 <div class="flex items-center space-x-2">
-                    ${icon && labelType !== 'default' ? `<span class="flex-shrink-0">${icon}</span>` : ''}
+                    ${displayProps.icon && displayProps.labelType !== 'default' ? `<span class="flex-shrink-0">${displayProps.icon}</span>` : ''}
                     <span class="font-bold flex-1">${label}</span>
-                    <span class="inline-flex items-center px-2 py-1 ${colorClasses} rounded-full text-xs flex-shrink-0">
-                        ${labelType !== 'default' ? this.getShortLabelTypeName(labelType) : 'label'}
+                    <span class="inline-flex items-center px-2 py-1 ${displayProps.colors} rounded-full text-xs flex-shrink-0" ${displayProps.inlineStyle ? `style="${displayProps.inlineStyle}"` : ''}>
+                        ${displayProps.labelType !== 'default' ? this.getShortLabelTypeName(displayProps.labelType) : 'label'}
                     </span>
                 </div>
             </div>
@@ -4130,26 +4156,12 @@ class RecipeManager {
                                     ${isEdit && recipe.labels ? recipe.labels.map(label => {
                                         // Extract label name properly
                                         const labelName = typeof label === 'string' ? label : (label.name || String(label));
-                                        const labelObject = this.getLabelObject(labelName);
-                                        const labelType = labelObject ? labelObject.type : this.inferLabelType(labelName);
-                                        const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
+                                        const displayProps = this.getLabelDisplayProperties(labelName);
                                         
-                                        // Use the actual label color if available, otherwise fall back to type-based color
-                                        let colors, inlineStyle = '';
-                                        if (labelObject && labelObject.color) {
-                                            // Use inline style for custom colors
-                                            inlineStyle = this.getLabelInlineStyle(labelObject.color);
-                                            colors = 'rounded-full'; // Just the rounded class, color comes from inline style
-                                        } else {
-                                            colors = window.labelTypes ? window.labelTypes.getColorClasses(labelType) : 
-                                                'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
-                                        }
-                                        
-                                        const buttonColors = this.getLabelButtonColors(labelType);
                                         return `
-                                        <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-bold ${colors}" ${inlineStyle ? `style="${inlineStyle}"` : ''}>
-                                            ${icon}${labelName}
-                                            <button type="button" class="ml-1 ${buttonColors}" onclick="window.recipeManager.removeFormLabel('${labelName}'); window.recipeManager.updateFullPageLabelsDisplay();">
+                                        <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-bold ${displayProps.colors}" ${displayProps.inlineStyle ? `style="${displayProps.inlineStyle}"` : ''}>
+                                            ${displayProps.icon}${labelName}
+                                            <button type="button" class="ml-1 ${displayProps.buttonColors}" onclick="window.recipeManager.removeFormLabel('${labelName}'); window.recipeManager.updateFullPageLabelsDisplay();">
                                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                                 </svg>
@@ -4980,19 +4992,17 @@ class RecipeManager {
 
         dropdown.classList.remove('hidden');
         dropdown.innerHTML = availableLabels.slice(0, 10).map((label, index) => {
-            const labelType = this.inferLabelType(label);
-            const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
-            const colorClasses = this.getLabelColorClasses(labelType);
+            const displayProps = this.getLabelDisplayProperties(label);
             
             return `
             <div class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm text-gray-900 dark:text-gray-100 ${index === 0 ? 'bg-gray-50 dark:bg-gray-700' : ''}" 
                  data-label="${label}" 
                  onclick="window.recipeManager.addFormLabel('${label}'); window.recipeManager.updateFullPageLabelsDisplay();">
                 <div class="flex items-center space-x-2">
-                    ${icon && labelType !== 'default' ? `<span class="flex-shrink-0">${icon}</span>` : ''}
+                    ${displayProps.icon && displayProps.labelType !== 'default' ? `<span class="flex-shrink-0">${displayProps.icon}</span>` : ''}
                     <span class="font-bold flex-1">${label}</span>
-                    <span class="inline-flex items-center px-2 py-1 ${colorClasses} rounded-full text-xs flex-shrink-0">
-                        ${labelType !== 'default' ? this.getShortLabelTypeName(labelType) : 'label'}
+                    <span class="inline-flex items-center px-2 py-1 ${displayProps.colors} rounded-full text-xs flex-shrink-0" ${displayProps.inlineStyle ? `style="${displayProps.inlineStyle}"` : ''}>
+                        ${displayProps.labelType !== 'default' ? this.getShortLabelTypeName(displayProps.labelType) : 'label'}
                     </span>
                 </div>
             </div>
@@ -5012,32 +5022,16 @@ class RecipeManager {
 
         // Add chips for selected labels
         this.formSelectedLabels.forEach(label => {
-            // Get the full label object to access the actual color
-            const labelObject = this.getLabelObject(label);
-            const labelType = labelObject ? labelObject.type : this.inferLabelType(label);
-            const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
-            
-            // Use the actual label color if available, otherwise fall back to type-based color
-            let colors, inlineStyle = '';
-            if (labelObject && labelObject.color) {
-                // Use inline style for custom colors
-                inlineStyle = this.getLabelInlineStyle(labelObject.color);
-                colors = 'rounded-full'; // Just the rounded class, color comes from inline style
-            } else {
-                colors = window.labelTypes ? window.labelTypes.getColorClasses(labelType) : 
-                    'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
-            }
-            
-            const buttonColors = this.getLabelButtonColors(labelType);
+            const displayProps = this.getLabelDisplayProperties(label);
             
             const chip = document.createElement('span');
-            chip.className = `inline-flex items-center px-1.5 py-0.5 text-xs font-bold ${colors}`;
-            if (inlineStyle) {
-                chip.style.cssText = inlineStyle;
+            chip.className = `inline-flex items-center px-1.5 py-0.5 text-xs font-bold ${displayProps.colors}`;
+            if (displayProps.inlineStyle) {
+                chip.style.cssText = displayProps.inlineStyle;
             }
             chip.innerHTML = `
-                ${icon}${label}
-                <button type="button" class="ml-1 ${buttonColors}" onclick="window.recipeManager.removeFormLabel('${label}'); window.recipeManager.updateFullPageLabelsDisplay();">
+                ${displayProps.icon}${label}
+                <button type="button" class="ml-1 ${displayProps.buttonColors}" onclick="window.recipeManager.removeFormLabel('${label}'); window.recipeManager.updateFullPageLabelsDisplay();">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
@@ -5692,32 +5686,16 @@ class RecipeManager {
 
         // Add chips for selected labels
         this.formSelectedLabels.forEach(label => {
-            // Get the full label object to access the actual color
-            const labelObject = this.getLabelObject(label);
-            const labelType = labelObject ? labelObject.type : this.inferLabelType(label);
-            const icon = window.labelTypes ? window.labelTypes.getIcon(labelType) : '';
-            
-            // Use the actual label color if available, otherwise fall back to type-based color
-            let colors, inlineStyle = '';
-            if (labelObject && labelObject.color) {
-                // Use inline style for custom colors
-                inlineStyle = this.getLabelInlineStyle(labelObject.color);
-                colors = 'rounded-full'; // Just the rounded class, color comes from inline style
-            } else {
-                colors = window.labelTypes ? window.labelTypes.getColorClasses(labelType) : 
-                    'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
-            }
-            
-            const buttonColors = this.getLabelButtonColors(labelType);
+            const displayProps = this.getLabelDisplayProperties(label);
             
             const chip = document.createElement('span');
-            chip.className = `inline-flex items-center px-1.5 py-0.5 text-xs font-bold ${colors}`;
-            if (inlineStyle) {
-                chip.style.cssText = inlineStyle;
+            chip.className = `inline-flex items-center px-1.5 py-0.5 text-xs font-bold ${displayProps.colors}`;
+            if (displayProps.inlineStyle) {
+                chip.style.cssText = displayProps.inlineStyle;
             }
             chip.innerHTML = `
-                ${icon}${label}
-                <button type="button" class="ml-1 ${buttonColors}" onclick="window.recipeManager.removeFormLabel('${label}')">
+                ${displayProps.icon}${label}
+                <button type="button" class="ml-1 ${displayProps.buttonColors}" onclick="window.recipeManager.removeFormLabel('${label}')">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
