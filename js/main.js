@@ -2217,17 +2217,21 @@ class MealPlannerApp {
             });
         }
         
-        // Update grocery list with the same date range
-        if (window.groceryListManager && window.groceryListManager.updateDateRange) {
-            window.groceryListManager.updateDateRange(startDate, endDate);
-        }
-        
         if (scheduledMeals.length === 0) {
             mealsContainer.innerHTML = `
                 <div class="text-gray-500 dark:text-gray-400 text-center py-4">
                     No meals scheduled for this timeframe. Use the Plan tab to schedule meals.
                 </div>
             `;
+            
+            // Update grocery list even when no meals to ensure it reflects the empty state
+            // Use a small delay to ensure DOM is fully updated before updating grocery list
+            setTimeout(() => {
+                if (window.groceryListManager && window.groceryListManager.updateDateRange) {
+                    window.groceryListManager.updateDateRange(startDate, endDate);
+                    console.log('🛒 Grocery list updated for empty menu state');
+                }
+            }, 50);
             return;
         }
         
@@ -2290,6 +2294,16 @@ class MealPlannerApp {
         mealsContainer.innerHTML = mealsHTML;
         console.log(`📅 Updated Menu tab with ${scheduledMeals.length} meals for ${weeks} week(s)`);
         console.log(`📅 Menu date range: ${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}`);
+        
+        // Update grocery list AFTER menu page is updated to ensure proper synchronization
+        // This ensures the grocery list reflects the actual scheduled meals shown on the menu page
+        // Use a small delay to ensure DOM is fully updated before updating grocery list
+        setTimeout(() => {
+            if (window.groceryListManager && window.groceryListManager.updateDateRange) {
+                window.groceryListManager.updateDateRange(startDate, endDate);
+                console.log('🛒 Grocery list updated after menu page display');
+            }
+        }, 50);
         
         // Debug: Detailed Menu tab meal analysis
         console.log(`🔍 DETAILED MENU TAB ANALYSIS:`);
