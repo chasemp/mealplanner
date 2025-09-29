@@ -320,6 +320,7 @@ describe('ScheduleManager', () => {
             expect(legacyFormat).toEqual({
                 id: scheduledMeal.id,
                 recipe_id: mockMeal.recipes[0].recipe_id,
+                recipe_name: mockMeal.recipes[0].title,
                 meal_type: mockMeal.meal_type,
                 date: '2025-09-08',
                 notes: mockMeal.name
