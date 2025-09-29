@@ -305,8 +305,7 @@ export class ItemsManager {
             this.saveIngredient(ingredient?.id, modal)
         })
         
-        // Focus on name field
-        document.getElementById('ingredient-name').focus()
+        // Note: Removed automatic focus to prevent mobile keyboard from opening
     }
 
     async saveIngredient(ingredientId, modal) {
