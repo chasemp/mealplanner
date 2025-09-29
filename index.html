@@ -444,13 +444,13 @@
 
                 <!-- Menu Tab -->
                 <div id="menu-tab" class="tab-content">
-                    <div class="max-w-4xl mx-auto">
+                    <div class="max-w-4xl mx-auto px-4 sm:px-0">
                         <!-- Header with unified date range selector -->
-                        <div class="flex justify-between items-center mb-6">
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 space-y-4 sm:space-y-0">
                             <div class="flex-1">
                                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Menu</h2>
                                 <div class="flex items-center gap-4 mt-2">
-                                    <select id="menu-week-selector" class="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                    <select id="menu-week-selector" class="text-sm border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white min-h-[44px]">
                                         <option value="1">This Week</option>
                                         <option value="2">2 Weeks</option>
                                         <option value="4">4 Weeks</option>
@@ -458,26 +458,26 @@
                                     </select>
                                 </div>
                             </div>
-                            <button id="google-calendar-sync" class="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <button id="google-calendar-sync" class="flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors min-h-[44px] w-full sm:w-auto">
+                                <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
                                 </svg>
-                                <span id="google-calendar-status">Sync to Calendar</span>
+                                <span id="google-calendar-status" class="text-sm sm:text-base">Sync to Calendar</span>
                             </button>
                         </div>
                     
                         <!-- Meals Section -->
-                        <div class="mb-8">
+                        <div class="mb-6 sm:mb-8">
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Scheduled Meals</h3>
-                            <div id="menu-meals-container" class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
-                                <div class="text-gray-500 dark:text-gray-400 text-center py-4">
+                            <div id="menu-meals-container" class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 sm:p-6 border border-gray-200 dark:border-gray-600">
+                                <div class="text-gray-500 dark:text-gray-400 text-center py-4 text-sm sm:text-base">
                                     No meals scheduled for this timeframe. Use the Plan tab to schedule meals.
                                 </div>
                             </div>
                         </div>
                         
                         <!-- Grocery List Section -->
-                        <div id="grocery-list-container">
+                        <div id="grocery-list-container" class="mb-4 sm:mb-0">
                             <!-- Grocery list manager will be rendered here -->
                         </div>
                     </div>
