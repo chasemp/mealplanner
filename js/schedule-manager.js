@@ -84,20 +84,29 @@ class ScheduleManager {
      * @param {Object} options - Additional options
      */
     scheduleRecipe(recipe, mealType, date, options = {}) {
-        // Create a temporary meal from the recipe
-        const tempMeal = {
-            id: `recipe-${recipe.id}-${Date.now()}`,
-            name: recipe.title,
+        // Create a scheduled meal directly with recipe object reference
+        const scheduledMeal = {
+            id: Date.now() + Math.floor(Math.random() * 1000),
+            recipe_id: recipe.id, // Direct reference to recipe
+            recipe: recipe, // Store full recipe object for consistency
+            meal_name: recipe.title,
             meal_type: mealType,
-            recipes: [{
-                recipe_id: recipe.id,
-                servings: options.servings || recipe.servings || 4
-            }],
+            date: date,
             servings: options.servings || recipe.servings || 4,
-            total_time: (recipe.prep_time || 0) + (recipe.cook_time || 0)
+            notes: options.notes || '',
+            total_time: (recipe.prep_time || 0) + (recipe.cook_time || 0),
+            created_at: new Date().toISOString()
         };
 
-        return this.scheduleMeal(tempMeal, date, options);
+        this.scheduledMeals.push(scheduledMeal);
+        this.saveScheduledMeals();
+
+        // Dispatch event for other components
+        document.dispatchEvent(new CustomEvent('recipeScheduled', {
+            detail: { scheduledMeal, recipe }
+        }));
+
+        return scheduledMeal;
     }
 
     /**
@@ -241,34 +250,47 @@ class ScheduleManager {
     }
 
     /**
-     * Convert scheduled meal to legacy format for existing calendar/itinerary views
-     * @param {Object} scheduledMeal - New format scheduled meal
+     * Get recipe name from scheduled meal (handles both meal and recipe formats)
+     * @param {Object} scheduledMeal - Scheduled meal object
+     * @returns {string} Recipe name
      */
-    toLegacyFormat(scheduledMeal) {
-        // Get recipe name from the first recipe in the meal
-        const firstRecipe = scheduledMeal.recipes?.[0];
-        const recipeName = firstRecipe?.title || firstRecipe?.name || scheduledMeal.meal_name || scheduledMeal.notes;
+    getRecipeName(scheduledMeal) {
+        // For meals with multiple recipes, use the meal name
+        if (scheduledMeal.meal_name) {
+            return scheduledMeal.meal_name;
+        }
         
-        return {
-            id: scheduledMeal.id,
-            recipe_id: firstRecipe?.recipe_id || scheduledMeal.meal_id,
-            recipe_name: recipeName,
-            meal_type: scheduledMeal.meal_type,
-            date: scheduledMeal.date,
-            notes: scheduledMeal.meal_name || scheduledMeal.notes
-        };
+        // For single recipe meals, get name from recipe object
+        if (scheduledMeal.recipe) {
+            return scheduledMeal.recipe.title || scheduledMeal.recipe.name;
+        }
+        
+        // Fallback to first recipe in recipes array
+        if (scheduledMeal.recipes && scheduledMeal.recipes.length > 0) {
+            const firstRecipe = scheduledMeal.recipes[0];
+            return firstRecipe.title || firstRecipe.name;
+        }
+        
+        return 'Unknown Recipe';
     }
 
     /**
-     * Get scheduled meals in legacy format for backward compatibility
-     * @param {string} mealType - Optional meal type filter
+     * Get recipe object from scheduled meal (handles both meal and recipe formats)
+     * @param {Object} scheduledMeal - Scheduled meal object
+     * @returns {Object|null} Recipe object or null
      */
-    getScheduledMealsLegacyFormat(mealType = null) {
-        let meals = this.scheduledMeals;
-        if (mealType) {
-            meals = meals.filter(meal => meal.meal_type === mealType);
+    getRecipeObject(scheduledMeal) {
+        // For single recipe meals, return the recipe object
+        if (scheduledMeal.recipe) {
+            return scheduledMeal.recipe;
         }
-        return meals.map(meal => this.toLegacyFormat(meal));
+        
+        // For meals with multiple recipes, return the first recipe
+        if (scheduledMeal.recipes && scheduledMeal.recipes.length > 0) {
+            return scheduledMeal.recipes[0];
+        }
+        
+        return null;
     }
 }
 

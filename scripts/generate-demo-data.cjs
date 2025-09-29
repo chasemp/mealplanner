@@ -717,13 +717,12 @@ class DemoDataGenerator {
                 scheduledMeals.push({
                     id: i + 1,
                     meal_id: meal.id,
+                    meal_name: meal.name,
                     date: dateString,
                     scheduled_date: dateString, // Keep both for compatibility
                     servings: meal.totalServings,
                     notes: `Scheduled ${meal.name}`,
                     recipes: validRecipes, // Only include valid recipes
-                    recipe_id: validRecipes[0]?.recipeId, // For backward compatibility
-                    recipe_name: meal.name, // Add recipe name for Menu tab
                     meal_type: mealType,
                     total_time: meal.estimatedTime,
                     created_at: new Date().toISOString()
@@ -743,12 +742,12 @@ class DemoDataGenerator {
                 scheduledMeals.push({
                     id: i + 1,
                     recipe_id: recipe.id,
+                    recipe: recipe, // Store full recipe object for consistency
+                    meal_name: recipe.title,
                     date: dateString,
                     scheduled_date: dateString, // Keep both for compatibility
                     servings: recipe.servings,
                     notes: `Scheduled ${recipe.title}`,
-                    recipes: [{ recipeId: recipe.id, servings: recipe.servings }],
-                    recipe_name: recipe.title, // Add recipe name for Menu tab
                     meal_type: mealType || 'dinner',
                     total_time: (recipe.prep_time || 0) + (recipe.cook_time || 0),
                     created_at: new Date().toISOString()
