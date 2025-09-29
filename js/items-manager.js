@@ -524,11 +524,7 @@ class ItemsManager {
         console.log('🥕 Attaching form listeners...');
         this.attachFullPageItemFormListeners(item);
         
-        // Focus on name input
-        setTimeout(() => {
-            const nameInput = document.querySelector('#item-name');
-            if (nameInput) nameInput.focus();
-        }, 100);
+        // Note: Removed automatic focus to prevent mobile keyboard from opening
     }
 
     generateFullPageItemFormHTML(item = null) {

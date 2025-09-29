@@ -576,10 +576,7 @@ class MealManager {
         document.body.appendChild(modal);
         this.attachMealFormListeners();
 
-        // Focus on name input
-        setTimeout(() => {
-            document.getElementById('meal-name')?.focus();
-        }, 100);
+        // Note: Removed automatic focus to prevent mobile keyboard from opening
     }
 
     renderRecipeSelection(selectedRecipes = []) {
