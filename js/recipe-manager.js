@@ -3424,6 +3424,75 @@ class RecipeManager {
         }
     }
 
+    /**
+     * Generate breadcrumb navigation for mobile recipe view
+     * @param {Object} recipe - Recipe object
+     * @returns {string} HTML for breadcrumb navigation
+     */
+    generateBreadcrumb(recipe) {
+        // Check if we came from a specific tab (stored in navigation stack)
+        const navigationStack = this.navigationStack || [];
+        const lastView = navigationStack[navigationStack.length - 1];
+        const returnTab = lastView?.returnTab || 'recipes';
+        
+        // Determine the breadcrumb path based on where we came from
+        let breadcrumbItems = [];
+        
+        if (returnTab === 'menu') {
+            breadcrumbItems = [
+                { name: 'Menu', tab: 'menu', icon: '📄' },
+                { name: 'Scheduled Meals', tab: 'menu', icon: '🍽️' },
+                { name: recipe.title, current: true, icon: '📖' }
+            ];
+        } else if (returnTab === 'plan') {
+            breadcrumbItems = [
+                { name: 'Plan', tab: 'plan', icon: '📋' },
+                { name: 'Meals', tab: 'plan', icon: '🍽️' },
+                { name: recipe.title, current: true, icon: '📖' }
+            ];
+        } else {
+            // Default from recipes tab
+            breadcrumbItems = [
+                { name: 'Recipes', tab: 'recipes', icon: '📖' },
+                { name: recipe.title, current: true, icon: '📖' }
+            ];
+        }
+        
+        // Generate breadcrumb HTML
+        const breadcrumbHTML = breadcrumbItems.map((item, index) => {
+            if (item.current) {
+                // Current item - not clickable
+                return `
+                    <span class="flex items-center text-gray-500 dark:text-gray-400 text-sm">
+                        <span class="mr-1">${item.icon}</span>
+                        <span class="truncate max-w-[150px]">${item.name}</span>
+                    </span>
+                `;
+            } else {
+                // Clickable item
+                return `
+                    <button onclick="window.app.switchTab('${item.tab}')" 
+                            class="flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm transition-colors">
+                        <span class="mr-1">${item.icon}</span>
+                        <span class="truncate max-w-[150px]">${item.name}</span>
+                    </button>
+                `;
+            }
+        }).join(`
+            <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 mx-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+        `);
+        
+        return `
+            <div class="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-2">
+                <div class="flex items-center text-sm overflow-x-auto">
+                    ${breadcrumbHTML}
+                </div>
+            </div>
+        `;
+    }
+
     generateMobileComboHTML(recipe) {
         console.log('🎯 Generating COMBO mobile HTML for:', recipe.title);
         
@@ -3436,6 +3505,9 @@ class RecipeManager {
         console.log('🎯 Additional items:', additionalItems.length);
         console.log('🎯 Combined items:', combinedItems.length);
         console.log('🎯 Combined items sample:', combinedItems.slice(0, 2));
+        
+        // Generate breadcrumb navigation
+        const breadcrumb = this.generateBreadcrumb(recipe);
         
         return `
             <div class="min-h-screen bg-white dark:bg-gray-900">
@@ -3463,6 +3535,9 @@ class RecipeManager {
                         </div>
                     </div>
                 </div>
+
+                <!-- Breadcrumb Navigation -->
+                ${breadcrumb}
 
                 <!-- Recipe Content -->
                 <div class="p-4 space-y-6">
@@ -3579,6 +3654,9 @@ class RecipeManager {
         const itemCount = items.length;
         console.log('📖 Regular recipe items:', itemCount);
         
+        // Generate breadcrumb navigation
+        const breadcrumb = this.generateBreadcrumb(recipe);
+        
         const html = `
             <div class="min-h-screen bg-white dark:bg-gray-900">
                 <!-- Mobile Header -->
@@ -3605,6 +3683,9 @@ class RecipeManager {
                         </div>
                     </div>
                 </div>
+
+                <!-- Breadcrumb Navigation -->
+                ${breadcrumb}
 
                 <!-- Recipe Content -->
                 <div class="p-4 space-y-6">
