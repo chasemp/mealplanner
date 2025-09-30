@@ -1269,3 +1269,67 @@ input[type="range"]:focus::-moz-range-thumb {
 /* =================================================================
    END WARM DARK THEME OVERRIDES
    ================================================================= */
+
+/* =================================================================
+   BUTTON FOCUS AND SHADOW FIXES
+   ================================================================= */
+
+/* Remove any red shadow from reset button and ensure proper focus styles */
+#reset-demo-data-btn {
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+#reset-demo-data-btn:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3) !important; /* Blue focus ring */
+    border: none !important;
+}
+
+#reset-demo-data-btn:focus-visible {
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3) !important; /* Blue focus ring */
+}
+
+/* Ensure PWA install button is green and has proper focus styles */
+#install-btn {
+    background-color: #10b981 !important; /* green-500 */
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+#install-btn:hover {
+    background-color: #059669 !important; /* green-600 */
+}
+
+#install-btn:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3) !important; /* Green focus ring */
+    border: none !important;
+}
+
+#install-btn:focus-visible {
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3) !important; /* Green focus ring */
+}
+
+/* Dark mode overrides for PWA install button */
+.dark #install-btn {
+    background-color: #10b981 !important; /* green-500 */
+}
+
+.dark #install-btn:hover {
+    background-color: #059669 !important; /* green-600 */
+}
+
+.dark #install-btn:focus {
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3) !important; /* Green focus ring */
+}
+
+.dark #install-btn:focus-visible {
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3) !important; /* Green focus ring */
+}
+
+/* =================================================================
+   END BUTTON FOCUS AND SHADOW FIXES
+   ================================================================= */
