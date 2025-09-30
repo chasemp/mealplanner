@@ -3057,12 +3057,27 @@ class MealPlannerApp {
             const removalsList = document.getElementById('removals-list');
             const deltaSummary = document.getElementById('delta-summary');
             
+            // Always show delta container
+            if (deltaContainer) deltaContainer.classList.remove('hidden');
+            
             if (mealsToAdd.length === 0 && mealsToRemove.length === 0) {
-                // No changes - hide delta
-                if (deltaContainer) deltaContainer.classList.add('hidden');
+                // No changes - show "no changes" message
+                if (deltaMealCounts) {
+                    const currentMenuCount = menuMeals.length;
+                    const plannedCount = planMeals.length;
+                    deltaMealCounts.innerHTML = `<span class="font-medium">${currentMenuCount}</span> → <span class="font-medium">${plannedCount}</span> meals`;
+                }
+                
+                // Hide additions and removals sections
+                if (deltaAdditions) deltaAdditions.classList.add('hidden');
+                if (deltaRemovals) deltaRemovals.classList.add('hidden');
+                
+                // Show "no changes" message
+                if (deltaSummary) {
+                    deltaSummary.innerHTML = `<span class="text-gray-500 dark:text-gray-400">No changes between plan and menu</span>`;
+                }
             } else {
                 // Show changes
-                if (deltaContainer) deltaContainer.classList.remove('hidden');
                 
                 // Update meal count context (before/after)
                 if (deltaMealCounts) {
@@ -3290,6 +3305,12 @@ class MealPlannerApp {
                 this.itineraryViews['plan'].forceRefresh();
             }
             
+            // Update delta view if this is the plan tab
+            if (mealType === 'plan') {
+                console.log('📊 Updating delta view after applying generated plan');
+                this.updatePlanMenuDelta();
+            }
+            
             // Show success notification
             this.showNotification(`${mealType.charAt(0).toUpperCase() + mealType.slice(1)} meal plan generated successfully!`, 'success');
             
@@ -3337,6 +3358,12 @@ class MealPlannerApp {
             // Clear meal rotation engine data for this meal type
             if (this.mealRotationEngine && this.mealRotationEngine.clearMealType) {
                 this.mealRotationEngine.clearMealType(mealType);
+            }
+            
+            // Update delta view if this is the plan tab
+            if (mealType === 'plan') {
+                console.log('📊 Updating delta view after clearing plan data');
+                this.updatePlanMenuDelta();
             }
             
         } catch (error) {
