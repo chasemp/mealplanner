@@ -229,42 +229,48 @@ class GroceryListManager {
                     <!-- Generated List -->
                     <div>
                         <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
-                            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-                                    <div class="flex items-center space-x-4">
-                                        <h4 class="font-semibold text-gray-900 dark:text-white">Shopping List</h4>
-                                        <!-- Display Mode Toggle -->
-                                        <div class="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-                                            <button id="shopping-list-meal-mode" class="px-3 py-1 text-xs font-medium rounded-md transition-colors ${this.displayMode === 'meal' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}">
-                                                Meal
-                                            </button>
-                                            <button id="shopping-list-week-mode" class="px-3 py-1 text-xs font-medium rounded-md transition-colors ${this.displayMode === 'week' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}">
-                                                Week
-                                            </button>
-                                        </div>
-                                        <!-- Edit Mode Toggle -->
-                                        <div class="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-                                            <button id="shopping-list-display-mode" class="px-3 py-1 text-xs font-medium rounded-md transition-colors ${!this.editMode ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}" title="View mode - read-only shopping list">
-                                                📋 View
-                                            </button>
-                                            <button id="shopping-list-edit-mode" class="px-3 py-1 text-xs font-medium rounded-md transition-colors ${this.editMode ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}" title="Edit mode - adjust quantities based on pantry">
-                                                ✏️ Edit
-                                            </button>
-                                        </div>
-                                        ${this.editMode ? `
-                                            <div class="text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded">
-                                                Tap +/- to adjust quantities
-                                            </div>
-                                        ` : ''}
-                                    </div>
-                                    <div class="flex items-center space-x-2">
-                                        <button id="export-list-btn" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                            <div class="p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
+                                <!-- Title and Action Buttons Row -->
+                                <div class="flex items-center justify-between mb-4">
+                                    <h4 class="font-semibold text-gray-900 dark:text-white">Shopping List</h4>
+                                    <div class="flex items-center space-x-3">
+                                        <button id="export-list-btn" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 px-2 py-1">
                                             Export
                                         </button>
-                                        <button id="print-list-btn" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                                        <button id="print-list-btn" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 px-2 py-1">
                                             Print
                                         </button>
                                     </div>
+                                </div>
+                                
+                                <!-- Control Toggles Row -->
+                                <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                                    <!-- Display Mode Toggle -->
+                                    <div class="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-1 flex-shrink-0">
+                                        <button id="shopping-list-meal-mode" class="px-3 py-2 text-xs font-medium rounded-md transition-colors ${this.displayMode === 'meal' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}">
+                                            Meal
+                                        </button>
+                                        <button id="shopping-list-week-mode" class="px-3 py-2 text-xs font-medium rounded-md transition-colors ${this.displayMode === 'week' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}">
+                                            Week
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Edit Mode Toggle -->
+                                    <div class="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-1 flex-shrink-0">
+                                        <button id="shopping-list-display-mode" class="px-3 py-2 text-xs font-medium rounded-md transition-colors ${!this.editMode ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}" title="View mode - read-only shopping list">
+                                            📋 View
+                                        </button>
+                                        <button id="shopping-list-edit-mode" class="px-3 py-2 text-xs font-medium rounded-md transition-colors ${this.editMode ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}" title="Edit mode - adjust quantities based on pantry">
+                                            ✏️ Edit
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Edit Mode Helper Text -->
+                                    ${this.editMode ? `
+                                        <div class="text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-3 py-2 rounded flex-shrink-0">
+                                            Tap +/- to adjust quantities
+                                        </div>
+                                    ` : ''}
                                 </div>
                             </div>
                             <div class="p-6">
