@@ -376,7 +376,7 @@ class ItemsManager {
                             <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Labels:</p>
                             <div class="flex flex-wrap gap-1">
                                 ${item.labels.map(label => `
-                                    <span class="item-label inline-block bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded-full text-xs cursor-pointer hover:bg-green-200 dark:hover:bg-green-800 transition-colors" data-label="${label}">
+                                    <span class="item-label inline-block bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 px-2 py-1 rounded-full text-xs cursor-pointer hover:bg-yellow-200 dark:hover:bg-yellow-800 transition-colors" data-label="${label}">
                                         ${label}
                                     </span>
                                 `).join('')}
