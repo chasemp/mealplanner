@@ -2329,12 +2329,12 @@ class MealPlannerApp {
             if (planMeals.length !== scheduledMeals.length) {
                 console.warn('⚠️ Data mismatch between Plan and Menu tabs!');
                 console.log('Plan tab meals:', planMeals.map(m => ({ 
-                    name: m.name || m.recipe_name || (m.recipe_id ? 'Recipe ID ' + m.recipe_id : 'Unknown'), 
+                    name: this.getMealDisplayName(m), 
                     date: m.date, 
                     id: m.id 
                 })));
                 console.log('Menu tab meals:', scheduledMeals.map(m => ({ 
-                    name: m.name || m.recipe_name || (m.recipe_id ? 'Recipe ID ' + m.recipe_id : 'Unknown'), 
+                    name: this.getMealDisplayName(m), 
                     date: m.date, 
                     id: m.id 
                 })));

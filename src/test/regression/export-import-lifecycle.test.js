@@ -266,7 +266,6 @@ class ExportImportLifecycleTests {
             {
                 id: 'plan-1',
                 recipe_id: 1,
-                recipe_name: 'Chicken and Rice',
                 meal_type: 'dinner',
                 servings: 4,
                 date: '2025-09-08'
@@ -274,7 +273,6 @@ class ExportImportLifecycleTests {
             {
                 id: 'plan-2',
                 recipe_id: 2,
-                recipe_name: 'Complete Dinner Combo',
                 meal_type: 'dinner',
                 servings: 4,
                 date: '2025-09-09'
