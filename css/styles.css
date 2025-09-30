@@ -642,6 +642,7 @@ button:active,
 .line-clamp-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -777,215 +778,215 @@ input[type="range"]:focus::-moz-range-thumb {
 }
 
 /* =================================================================
-   WARM DARK THEME OVERRIDES
+   NATURAL GREEN DARK THEME OVERRIDES
    ================================================================= */
 
-/* Warm dark theme - replace cold grays with warm browns and beiges */
+/* Natural green dark theme - leafy greens and earth tones */
 .dark {
-    /* Main background - warm dark brown instead of gray-900 */
+    /* Main background - deep forest green */
     --tw-bg-opacity: 1;
-    background-color: rgb(67 48 43 / var(--tw-bg-opacity)); /* warm-900 */
+    background-color: rgb(26 46 26 / var(--tw-bg-opacity)); /* forest-900 */
 }
 
-/* Header and navigation - warm dark brown */
+/* Header and navigation - sage green */
 .dark .bg-gray-800 {
-    background-color: rgb(77 70 65) !important; /* warm-800 */
+    background-color: rgb(45 62 45) !important; /* sage-800 */
 }
 
 .dark .bg-gray-700 {
-    background-color: rgb(97 69 58) !important; /* warm-700 */
+    background-color: rgb(62 74 62) !important; /* olive-700 */
 }
 
 .dark .bg-gray-600 {
-    background-color: rgb(120 113 108) !important; /* warm-600 */
+    background-color: rgb(74 90 74) !important; /* moss-600 */
 }
 
-/* Text colors - warmer tones */
+/* Text colors - natural cream and soft greens */
 .dark .text-white {
-    color: rgb(253 248 246) !important; /* warm-50 */
+    color: rgb(247 248 247) !important; /* cream-50 */
 }
 
 .dark .text-gray-100 {
-    color: rgb(242 232 229) !important; /* warm-100 */
+    color: rgb(240 244 240) !important; /* sage-100 */
 }
 
 .dark .text-gray-200 {
-    color: rgb(234 221 215) !important; /* warm-200 */
+    color: rgb(232 240 232) !important; /* sage-200 */
 }
 
 .dark .text-gray-300 {
-    color: rgb(224 206 199) !important; /* warm-300 */
+    color: rgb(200 212 200) !important; /* moss-300 */
 }
 
 .dark .text-gray-400 {
-    color: rgb(191 160 148) !important; /* warm-500 */
+    color: rgb(160 180 160) !important; /* moss-400 */
 }
 
 .dark .text-gray-500 {
-    color: rgb(161 128 114) !important; /* warm-600 */
+    color: rgb(120 140 120) !important; /* moss-500 */
 }
 
 .dark .text-gray-600 {
-    color: rgb(151 118 105) !important; /* warm-700 */
+    color: rgb(100 120 100) !important; /* moss-600 */
 }
 
-/* Border colors - warm tones */
+/* Border colors - natural green tones */
 .dark .border-gray-700 {
-    border-color: rgb(97 69 58) !important; /* warm-700 */
+    border-color: rgb(62 74 62) !important; /* olive-700 */
 }
 
 .dark .border-gray-600 {
-    border-color: rgb(120 113 108) !important; /* warm-600 */
+    border-color: rgb(74 90 74) !important; /* moss-600 */
 }
 
-/* Hover states with warm colors */
+/* Hover states with natural green colors */
 .dark .hover\\:bg-gray-700:hover {
-    background-color: rgb(97 69 58) !important; /* warm-700 */
+    background-color: rgb(62 74 62) !important; /* olive-700 */
 }
 
 .dark .hover\\:bg-gray-600:hover {
-    background-color: rgb(120 113 108) !important; /* warm-600 */
+    background-color: rgb(74 90 74) !important; /* moss-600 */
 }
 
 .dark .hover\\:text-gray-300:hover {
-    color: rgb(224 206 199) !important; /* warm-300 */
+    color: rgb(200 212 200) !important; /* moss-300 */
 }
 
 .dark .hover\\:border-gray-600:hover {
-    border-color: rgb(120 113 108) !important; /* warm-600 */
+    border-color: rgb(74 90 74) !important; /* moss-600 */
 }
 
 /* Cards and containers */
 .dark .bg-white {
-    background-color: rgb(77 70 65) !important; /* warm-800 */
+    background-color: rgb(45 62 45) !important; /* sage-800 */
 }
 
 /* Form inputs */
 .dark input,
 .dark textarea,
 .dark select {
-    background-color: rgb(97 69 58) !important; /* warm-700 */
-    border-color: rgb(120 113 108) !important; /* warm-600 */
-    color: rgb(253 248 246) !important; /* warm-50 */
+    background-color: rgb(62 74 62) !important; /* olive-700 */
+    border-color: rgb(74 90 74) !important; /* moss-600 */
+    color: rgb(247 248 247) !important; /* cream-50 */
 }
 
 .dark input:focus,
 .dark textarea:focus,
 .dark select:focus {
-    border-color: rgb(245 158 11) !important; /* amber-500 */
-    box-shadow: 0 0 0 3px rgb(245 158 11 / 0.3) !important;
+    border-color: rgb(34 197 94) !important; /* green-500 */
+    box-shadow: 0 0 0 3px rgb(34 197 94 / 0.3) !important;
 }
 
-/* Buttons with warm accents */
+/* Buttons with natural green accents */
 .dark .btn-primary {
-    background-color: rgb(245 158 11) !important; /* amber-500 */
-    color: rgb(67 48 43) !important; /* warm-900 */
+    background-color: rgb(34 197 94) !important; /* green-500 */
+    color: rgb(26 46 26) !important; /* forest-900 */
 }
 
 .dark .btn-primary:hover {
-    background-color: rgb(217 119 6) !important; /* amber-600 */
+    background-color: rgb(22 163 74) !important; /* green-600 */
 }
 
 .dark .btn-secondary {
-    background-color: rgb(120 113 108) !important; /* warm-600 */
-    color: rgb(253 248 246) !important; /* warm-50 */
+    background-color: rgb(74 90 74) !important; /* moss-600 */
+    color: rgb(247 248 247) !important; /* cream-50 */
 }
 
 .dark .btn-secondary:hover {
-    background-color: rgb(97 69 58) !important; /* warm-700 */
+    background-color: rgb(62 74 62) !important; /* olive-700 */
 }
 
-/* Primary accent color - warm amber instead of blue */
+/* Primary accent color - vibrant green instead of blue */
 .dark .text-blue-600,
 .dark .text-blue-400 {
-    color: rgb(245 158 11) !important; /* amber-500 */
+    color: rgb(34 197 94) !important; /* green-500 */
 }
 
 .dark .border-blue-500 {
-    border-color: rgb(245 158 11) !important; /* amber-500 */
+    border-color: rgb(34 197 94) !important; /* green-500 */
 }
 
 .dark .bg-blue-500 {
-    background-color: rgb(245 158 11) !important; /* amber-500 */
+    background-color: rgb(34 197 94) !important; /* green-500 */
 }
 
 .dark .bg-blue-600 {
-    background-color: rgb(217 119 6) !important; /* amber-600 */
+    background-color: rgb(22 163 74) !important; /* green-600 */
 }
 
 .dark .hover\\:bg-blue-600:hover {
-    background-color: rgb(217 119 6) !important; /* amber-600 */
+    background-color: rgb(22 163 74) !important; /* green-600 */
 }
 
 .dark .hover\\:bg-blue-700:hover {
-    background-color: rgb(180 83 9) !important; /* amber-700 */
+    background-color: rgb(21 128 61) !important; /* green-700 */
 }
 
-/* Focus rings with warm amber */
+/* Focus rings with vibrant green */
 .dark .focus\\:ring-blue-500:focus {
-    --tw-ring-color: rgb(245 158 11 / 0.5) !important; /* amber-500 */
+    --tw-ring-color: rgb(34 197 94 / 0.5) !important; /* green-500 */
 }
 
 .dark .focus\\:border-blue-500:focus {
-    border-color: rgb(245 158 11) !important; /* amber-500 */
+    border-color: rgb(34 197 94) !important; /* green-500 */
 }
 
-/* Range sliders with warm colors */
+/* Range sliders with natural green colors */
 .dark input[type="range"]::-webkit-slider-track {
-    background: rgb(120 113 108) !important; /* warm-600 */
+    background: rgb(74 90 74) !important; /* moss-600 */
 }
 
 .dark input[type="range"]::-moz-range-track {
-    background: rgb(120 113 108) !important; /* warm-600 */
+    background: rgb(74 90 74) !important; /* moss-600 */
 }
 
 .dark input[type="range"]::-webkit-slider-thumb {
-    background: rgb(245 158 11) !important; /* amber-500 */
-    border: 2px solid rgb(67 48 43) !important; /* warm-900 */
+    background: rgb(34 197 94) !important; /* green-500 */
+    border: 2px solid rgb(26 46 26) !important; /* forest-900 */
 }
 
 .dark input[type="range"]::-moz-range-thumb {
-    background: rgb(245 158 11) !important; /* amber-500 */
-    border: 2px solid rgb(67 48 43) !important; /* warm-900 */
+    background: rgb(34 197 94) !important; /* green-500 */
+    border: 2px solid rgb(26 46 26) !important; /* forest-900 */
 }
 
 .dark input[type="range"]:hover::-webkit-slider-thumb {
-    background: rgb(217 119 6) !important; /* amber-600 */
+    background: rgb(22 163 74) !important; /* green-600 */
 }
 
 .dark input[type="range"]:hover::-moz-range-thumb {
-    background: rgb(217 119 6) !important; /* amber-600 */
+    background: rgb(22 163 74) !important; /* green-600 */
 }
 
 .dark input[type="range"]:focus::-webkit-slider-thumb {
-    box-shadow: 0 0 0 3px rgb(245 158 11 / 0.3) !important;
+    box-shadow: 0 0 0 3px rgb(34 197 94 / 0.3) !important;
 }
 
 .dark input[type="range"]:focus::-moz-range-thumb {
-    box-shadow: 0 0 0 3px rgb(245 158 11 / 0.3) !important;
+    box-shadow: 0 0 0 3px rgb(34 197 94 / 0.3) !important;
 }
 
 /* Special food-inspired elements */
 .dark .bg-yellow-50 {
-    background-color: rgb(67 48 43) !important; /* warm-900 */
-    border-color: rgb(245 158 11) !important; /* amber-500 */
+    background-color: rgb(26 46 26) !important; /* forest-900 */
+    border-color: rgb(34 197 94) !important; /* green-500 */
 }
 
 .dark .text-yellow-800 {
-    color: rgb(245 158 11) !important; /* amber-500 */
+    color: rgb(34 197 94) !important; /* green-500 */
 }
 
 .dark .text-yellow-600 {
-    color: rgb(217 119 6) !important; /* amber-600 */
+    color: rgb(22 163 74) !important; /* green-600 */
 }
 
 .dark .text-yellow-500 {
-    color: rgb(180 83 9) !important; /* amber-700 */
+    color: rgb(21 128 61) !important; /* green-700 */
 }
 
 /* Mobile bottom navigation */
 .dark #mobile-bottom-nav {
-    background-color: rgb(77 70 65 / 0.95) !important; /* warm-800 */
+    background-color: rgb(45 62 45 / 0.95) !important; /* sage-800 */
     box-shadow: 0 -2px 10px rgb(0 0 0 / 0.3);
 }
 
@@ -995,39 +996,39 @@ input[type="range"]:focus::-moz-range-thumb {
 }
 
 .dark .modal-content {
-    background-color: rgb(77 70 65) !important; /* warm-800 */
-    border-color: rgb(120 113 108) !important; /* warm-600 */
+    background-color: rgb(45 62 45) !important; /* sage-800 */
+    border-color: rgb(74 90 74) !important; /* moss-600 */
 }
 
 /* Dropdown menus */
 .dark .typeahead-dropdown {
-    background-color: rgb(77 70 65) !important; /* warm-800 */
-    border-color: rgb(120 113 108) !important; /* warm-600 */
+    background-color: rgb(45 62 45) !important; /* sage-800 */
+    border-color: rgb(74 90 74) !important; /* moss-600 */
 }
 
 .dark .typeahead-item:hover {
-    background-color: rgb(97 69 58) !important; /* warm-700 */
+    background-color: rgb(62 74 62) !important; /* olive-700 */
 }
 
 .dark .typeahead-item.selected {
-    background-color: rgb(245 158 11 / 0.2) !important; /* amber-500 with opacity */
-    color: rgb(245 158 11) !important; /* amber-500 */
+    background-color: rgb(34 197 94 / 0.2) !important; /* green-500 with opacity */
+    color: rgb(34 197 94) !important; /* green-500 */
 }
 
 /* Recipe cards and meal items */
 .dark .recipe-card {
-    background-color: rgb(77 70 65) !important; /* warm-800 */
-    border-color: rgb(120 113 108) !important; /* warm-600 */
+    background-color: rgb(45 62 45) !important; /* sage-800 */
+    border-color: rgb(74 90 74) !important; /* moss-600 */
 }
 
 .dark .ingredient-item {
-    background-color: rgb(97 69 58) !important; /* warm-700 */
+    background-color: rgb(62 74 62) !important; /* olive-700 */
 }
 
 /* Calendar and planning elements */
 .dark .calendar-day.drag-over {
-    background-color: rgb(245 158 11 / 0.2) !important; /* amber-500 with opacity */
-    border-color: rgb(245 158 11) !important; /* amber-500 */
+    background-color: rgb(34 197 94 / 0.2) !important; /* green-500 with opacity */
+    border-color: rgb(34 197 94) !important; /* green-500 */
 }
 
 /* Success and action colors with warm tones */
@@ -1066,193 +1067,193 @@ input[type="range"]:focus::-moz-range-thumb {
 
 /* Subtle food-inspired gradients and textures */
 .dark .bg-white {
-    background: linear-gradient(135deg, rgb(77 70 65) 0%, rgb(97 69 58) 100%) !important; /* warm-800 to warm-700 */
+    background: linear-gradient(135deg, rgb(45 62 45) 0%, rgb(62 74 62) 100%) !important; /* sage-800 to olive-700 */
 }
 
 .dark .bg-gray-800 {
-    background: linear-gradient(135deg, rgb(77 70 65) 0%, rgb(97 69 58) 100%) !important; /* warm-800 to warm-700 */
+    background: linear-gradient(135deg, rgb(45 62 45) 0%, rgb(62 74 62) 100%) !important; /* sage-800 to olive-700 */
 }
 
 .dark .bg-gray-700 {
-    background: linear-gradient(135deg, rgb(97 69 58) 0%, rgb(120 113 108) 100%) !important; /* warm-700 to warm-600 */
+    background: linear-gradient(135deg, rgb(62 74 62) 0%, rgb(74 90 74) 100%) !important; /* olive-700 to moss-600 */
 }
 
 /* Add subtle texture to main background */
 .dark {
     background-image: 
-        radial-gradient(circle at 20% 80%, rgb(245 158 11 / 0.03) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgb(217 119 6 / 0.03) 0%, transparent 50%),
-        radial-gradient(circle at 40% 40%, rgb(180 83 9 / 0.02) 0%, transparent 50%);
+        radial-gradient(circle at 20% 80%, rgb(34 197 94 / 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgb(22 163 74 / 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgb(21 128 61 / 0.02) 0%, transparent 50%);
     background-attachment: fixed;
 }
 
-/* Warm glow effects for interactive elements */
+/* Natural green glow effects for interactive elements */
 .dark .btn-primary {
-    box-shadow: 0 4px 14px 0 rgb(245 158 11 / 0.3) !important;
-    background: linear-gradient(135deg, rgb(245 158 11) 0%, rgb(217 119 6) 100%) !important;
+    box-shadow: 0 4px 14px 0 rgb(34 197 94 / 0.3) !important;
+    background: linear-gradient(135deg, rgb(34 197 94) 0%, rgb(22 163 74) 100%) !important;
 }
 
 .dark .btn-primary:hover {
-    box-shadow: 0 6px 20px 0 rgb(245 158 11 / 0.4) !important;
+    box-shadow: 0 6px 20px 0 rgb(34 197 94 / 0.4) !important;
     transform: translateY(-1px) !important;
 }
 
-/* Warm glow for focus states */
+/* Natural green glow for focus states */
 .dark input:focus,
 .dark textarea:focus,
 .dark select:focus {
     box-shadow: 
-        0 0 0 3px rgb(245 158 11 / 0.3),
-        0 0 20px rgb(245 158 11 / 0.1) !important;
+        0 0 0 3px rgb(34 197 94 / 0.3),
+        0 0 20px rgb(34 197 94 / 0.1) !important;
 }
 
-/* Subtle warm border glow for cards */
+/* Subtle natural green border glow for cards */
 .dark .recipe-card {
     box-shadow: 
         0 1px 3px 0 rgb(0 0 0 / 0.1),
         0 1px 2px 0 rgb(0 0 0 / 0.06),
-        inset 0 1px 0 rgb(245 158 11 / 0.1) !important;
+        inset 0 1px 0 rgb(34 197 94 / 0.1) !important;
 }
 
 .dark .recipe-card:hover {
     box-shadow: 
         0 4px 6px -1px rgb(0 0 0 / 0.1),
         0 2px 4px -1px rgb(0 0 0 / 0.06),
-        inset 0 1px 0 rgb(245 158 11 / 0.2),
-        0 0 20px rgb(245 158 11 / 0.1) !important;
+        inset 0 1px 0 rgb(34 197 94 / 0.2),
+        0 0 20px rgb(34 197 94 / 0.1) !important;
 }
 
-/* Warm accent for active navigation */
+/* Natural green accent for active navigation */
 .dark .nav-tab.active {
-    background: linear-gradient(135deg, rgb(245 158 11 / 0.1) 0%, rgb(217 119 6 / 0.05) 100%) !important;
-    border-bottom-color: rgb(245 158 11) !important;
-    color: rgb(245 158 11) !important;
+    background: linear-gradient(135deg, rgb(34 197 94 / 0.1) 0%, rgb(22 163 74 / 0.05) 100%) !important;
+    border-bottom-color: rgb(34 197 94) !important;
+    color: rgb(34 197 94) !important;
 }
 
-/* Warm mobile navigation */
+/* Natural green mobile navigation */
 .dark #mobile-bottom-nav {
-    background: linear-gradient(135deg, rgb(77 70 65 / 0.95) 0%, rgb(97 69 58 / 0.95) 100%) !important;
+    background: linear-gradient(135deg, rgb(45 62 45 / 0.95) 0%, rgb(62 74 62 / 0.95) 100%) !important;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     box-shadow: 
         0 -2px 10px rgb(0 0 0 / 0.3),
-        inset 0 1px 0 rgb(245 158 11 / 0.1) !important;
+        inset 0 1px 0 rgb(34 197 94 / 0.1) !important;
 }
 
-/* Warm modal styling */
+/* Natural green modal styling */
 .dark .modal-content {
-    background: linear-gradient(135deg, rgb(77 70 65) 0%, rgb(97 69 58) 100%) !important;
+    background: linear-gradient(135deg, rgb(45 62 45) 0%, rgb(62 74 62) 100%) !important;
     box-shadow: 
         0 25px 50px -12px rgb(0 0 0 / 0.5),
-        inset 0 1px 0 rgb(245 158 11 / 0.1) !important;
+        inset 0 1px 0 rgb(34 197 94 / 0.1) !important;
 }
 
-/* Warm dropdown styling */
+/* Natural green dropdown styling */
 .dark .typeahead-dropdown {
-    background: linear-gradient(135deg, rgb(77 70 65) 0%, rgb(97 69 58) 100%) !important;
+    background: linear-gradient(135deg, rgb(45 62 45) 0%, rgb(62 74 62) 100%) !important;
     box-shadow: 
         0 10px 15px -3px rgb(0 0 0 / 0.3),
         0 4px 6px -2px rgb(0 0 0 / 0.1),
-        inset 0 1px 0 rgb(245 158 11 / 0.1) !important;
+        inset 0 1px 0 rgb(34 197 94 / 0.1) !important;
 }
 
-/* Warm range slider styling */
+/* Natural green range slider styling */
 .dark input[type="range"]::-webkit-slider-track {
-    background: linear-gradient(90deg, rgb(120 113 108) 0%, rgb(97 69 58) 100%) !important;
+    background: linear-gradient(90deg, rgb(74 90 74) 0%, rgb(62 74 62) 100%) !important;
     box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.2) !important;
 }
 
 .dark input[type="range"]::-moz-range-track {
-    background: linear-gradient(90deg, rgb(120 113 108) 0%, rgb(97 69 58) 100%) !important;
+    background: linear-gradient(90deg, rgb(74 90 74) 0%, rgb(62 74 62) 100%) !important;
     box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.2) !important;
 }
 
 .dark input[type="range"]::-webkit-slider-thumb {
-    background: linear-gradient(135deg, rgb(245 158 11) 0%, rgb(217 119 6) 100%) !important;
+    background: linear-gradient(135deg, rgb(34 197 94) 0%, rgb(22 163 74) 100%) !important;
     box-shadow: 
         0 2px 4px rgb(0 0 0 / 0.2),
-        0 0 8px rgb(245 158 11 / 0.3) !important;
+        0 0 8px rgb(34 197 94 / 0.3) !important;
 }
 
 .dark input[type="range"]::-moz-range-thumb {
-    background: linear-gradient(135deg, rgb(245 158 11) 0%, rgb(217 119 6) 100%) !important;
+    background: linear-gradient(135deg, rgb(34 197 94) 0%, rgb(22 163 74) 100%) !important;
     box-shadow: 
         0 2px 4px rgb(0 0 0 / 0.2),
-        0 0 8px rgb(245 158 11 / 0.3) !important;
+        0 0 8px rgb(34 197 94 / 0.3) !important;
 }
 
-/* Warm calendar day styling */
+/* Natural green calendar day styling */
 .dark .calendar-day {
-    background: linear-gradient(135deg, rgb(97 69 58 / 0.3) 0%, rgb(120 113 108 / 0.2) 100%) !important;
-    border: 1px solid rgb(120 113 108 / 0.3) !important;
+    background: linear-gradient(135deg, rgb(62 74 62 / 0.3) 0%, rgb(74 90 74 / 0.2) 100%) !important;
+    border: 1px solid rgb(74 90 74 / 0.3) !important;
 }
 
 .dark .calendar-day:hover {
-    background: linear-gradient(135deg, rgb(97 69 58 / 0.5) 0%, rgb(120 113 108 / 0.4) 100%) !important;
-    border-color: rgb(245 158 11 / 0.5) !important;
+    background: linear-gradient(135deg, rgb(62 74 62 / 0.5) 0%, rgb(74 90 74 / 0.4) 100%) !important;
+    border-color: rgb(34 197 94 / 0.5) !important;
 }
 
-/* Warm scheduled meal styling */
+/* Natural green scheduled meal styling */
 .dark .scheduled-meal {
-    background: linear-gradient(135deg, rgb(245 158 11 / 0.1) 0%, rgb(217 119 6 / 0.05) 100%) !important;
-    border: 1px solid rgb(245 158 11 / 0.3) !important;
+    background: linear-gradient(135deg, rgb(34 197 94 / 0.1) 0%, rgb(22 163 74 / 0.05) 100%) !important;
+    border: 1px solid rgb(34 197 94 / 0.3) !important;
     box-shadow: 0 1px 3px rgb(0 0 0 / 0.2) !important;
 }
 
 .dark .scheduled-meal:hover {
-    background: linear-gradient(135deg, rgb(245 158 11 / 0.2) 0%, rgb(217 119 6 / 0.1) 100%) !important;
+    background: linear-gradient(135deg, rgb(34 197 94 / 0.2) 0%, rgb(22 163 74 / 0.1) 100%) !important;
     box-shadow: 
         0 4px 6px rgb(0 0 0 / 0.2),
-        0 0 10px rgb(245 158 11 / 0.2) !important;
+        0 0 10px rgb(34 197 94 / 0.2) !important;
 }
 
-/* Warm ingredient item styling */
+/* Natural green ingredient item styling */
 .dark .ingredient-item {
-    background: linear-gradient(135deg, rgb(97 69 58 / 0.8) 0%, rgb(120 113 108 / 0.6) 100%) !important;
-    border: 1px solid rgb(120 113 108 / 0.3) !important;
+    background: linear-gradient(135deg, rgb(62 74 62 / 0.8) 0%, rgb(74 90 74 / 0.6) 100%) !important;
+    border: 1px solid rgb(74 90 74 / 0.3) !important;
 }
 
 .dark .ingredient-item:hover {
-    background: linear-gradient(135deg, rgb(97 69 58 / 0.9) 0%, rgb(120 113 108 / 0.7) 100%) !important;
-    border-color: rgb(245 158 11 / 0.5) !important;
+    background: linear-gradient(135deg, rgb(62 74 62 / 0.9) 0%, rgb(74 90 74 / 0.7) 100%) !important;
+    border-color: rgb(34 197 94 / 0.5) !important;
 }
 
-/* Warm planning queue styling */
+/* Natural green planning queue styling */
 .dark .planning-queue-item {
-    background: linear-gradient(135deg, rgb(77 70 65 / 0.8) 0%, rgb(97 69 58 / 0.6) 100%) !important;
-    border: 1px solid rgb(120 113 108 / 0.3) !important;
+    background: linear-gradient(135deg, rgb(45 62 45 / 0.8) 0%, rgb(62 74 62 / 0.6) 100%) !important;
+    border: 1px solid rgb(74 90 74 / 0.3) !important;
 }
 
 .dark .planning-queue-item:hover {
-    background: linear-gradient(135deg, rgb(77 70 65 / 0.9) 0%, rgb(97 69 58 / 0.7) 100%) !important;
-    border-color: rgb(245 158 11 / 0.5) !important;
+    background: linear-gradient(135deg, rgb(45 62 45 / 0.9) 0%, rgb(62 74 62 / 0.7) 100%) !important;
+    border-color: rgb(34 197 94 / 0.5) !important;
 }
 
-/* Warm drag over states */
+/* Natural green drag over states */
 .dark .planning-queue-item.drag-over {
-    background: linear-gradient(135deg, rgb(245 158 11 / 0.2) 0%, rgb(217 119 6 / 0.1) 100%) !important;
-    border-color: rgb(245 158 11) !important;
-    box-shadow: 0 0 20px rgb(245 158 11 / 0.3) !important;
+    background: linear-gradient(135deg, rgb(34 197 94 / 0.2) 0%, rgb(22 163 74 / 0.1) 100%) !important;
+    border-color: rgb(34 197 94) !important;
+    box-shadow: 0 0 20px rgb(34 197 94 / 0.3) !important;
 }
 
-/* Warm settings sections */
+/* Natural green settings sections */
 .dark .bg-white.rounded-lg.shadow {
-    background: linear-gradient(135deg, rgb(77 70 65) 0%, rgb(97 69 58) 100%) !important;
+    background: linear-gradient(135deg, rgb(45 62 45) 0%, rgb(62 74 62) 100%) !important;
     box-shadow: 
         0 4px 6px -1px rgb(0 0 0 / 0.1),
         0 2px 4px -1px rgb(0 0 0 / 0.06),
-        inset 0 1px 0 rgb(245 158 11 / 0.1) !important;
+        inset 0 1px 0 rgb(34 197 94 / 0.1) !important;
 }
 
-/* Warm info boxes */
+/* Natural green info boxes */
 .dark .bg-blue-50 {
-    background: linear-gradient(135deg, rgb(67 48 43 / 0.8) 0%, rgb(77 70 65 / 0.6) 100%) !important;
-    border-color: rgb(245 158 11 / 0.5) !important;
+    background: linear-gradient(135deg, rgb(26 46 26 / 0.8) 0%, rgb(45 62 45 / 0.6) 100%) !important;
+    border-color: rgb(34 197 94 / 0.5) !important;
 }
 
 .dark .bg-yellow-50 {
-    background: linear-gradient(135deg, rgb(67 48 43 / 0.8) 0%, rgb(77 70 65 / 0.6) 100%) !important;
-    border-color: rgb(245 158 11 / 0.5) !important;
+    background: linear-gradient(135deg, rgb(26 46 26 / 0.8) 0%, rgb(45 62 45 / 0.6) 100%) !important;
+    border-color: rgb(34 197 94 / 0.5) !important;
 }
 
 /* Warm success/error states with subtle gradients */
@@ -1267,5 +1268,539 @@ input[type="range"]:focus::-moz-range-thumb {
 }
 
 /* =================================================================
-   END WARM DARK THEME OVERRIDES
+   END NATURAL GREEN DARK THEME OVERRIDES
+   ================================================================= */
+
+/* =================================================================
+   NATURAL GREEN LIGHT THEME OVERRIDES
+   ================================================================= */
+
+/* Natural green light theme - soft sage and earth tones */
+:root {
+    /* Light theme color variables */
+    --forest-900: rgb(26 46 26);
+    --forest-800: rgb(45 62 45);
+    --forest-700: rgb(62 74 62);
+    --forest-600: rgb(74 90 74);
+    --forest-500: rgb(100 120 100);
+    --forest-400: rgb(120 140 120);
+    --forest-300: rgb(160 180 160);
+    --forest-200: rgb(200 212 200);
+    --forest-100: rgb(232 240 232);
+    --forest-50: rgb(240 244 240);
+    
+    --sage-800: rgb(45 62 45);
+    --sage-700: rgb(62 74 62);
+    --sage-600: rgb(74 90 74);
+    --sage-500: rgb(100 120 100);
+    --sage-400: rgb(120 140 120);
+    --sage-300: rgb(160 180 160);
+    --sage-200: rgb(200 212 200);
+    --sage-100: rgb(232 240 232);
+    --sage-50: rgb(240 244 240);
+    
+    --moss-600: rgb(74 90 74);
+    --moss-500: rgb(100 120 100);
+    --moss-400: rgb(120 140 120);
+    --moss-300: rgb(160 180 160);
+    --moss-200: rgb(200 212 200);
+    --moss-100: rgb(232 240 232);
+    --moss-50: rgb(240 244 240);
+    
+    --cream-50: rgb(247 248 247);
+    --cream-100: rgb(240 244 240);
+    --cream-200: rgb(232 240 232);
+    
+    --green-500: rgb(34 197 94);
+    --green-600: rgb(22 163 74);
+    --green-700: rgb(21 128 61);
+}
+
+/* Light theme base colors */
+body:not(.dark) {
+    background-color: var(--cream-50);
+    color: var(--forest-900);
+}
+
+/* Light theme headers and navigation */
+body:not(.dark) .bg-gray-800 {
+    background-color: var(--sage-800) !important;
+}
+
+body:not(.dark) .bg-gray-700 {
+    background-color: var(--sage-700) !important;
+}
+
+body:not(.dark) .bg-gray-600 {
+    background-color: var(--sage-600) !important;
+}
+
+/* Light theme text colors */
+body:not(.dark) .text-white {
+    color: var(--cream-50) !important;
+}
+
+body:not(.dark) .text-gray-100 {
+    color: var(--cream-100) !important;
+}
+
+body:not(.dark) .text-gray-200 {
+    color: var(--cream-200) !important;
+}
+
+body:not(.dark) .text-gray-300 {
+    color: var(--moss-300) !important;
+}
+
+body:not(.dark) .text-gray-400 {
+    color: var(--moss-400) !important;
+}
+
+body:not(.dark) .text-gray-500 {
+    color: var(--moss-500) !important;
+}
+
+body:not(.dark) .text-gray-600 {
+    color: var(--moss-600) !important;
+}
+
+/* Light theme border colors */
+body:not(.dark) .border-gray-700 {
+    border-color: var(--sage-700) !important;
+}
+
+body:not(.dark) .border-gray-600 {
+    border-color: var(--sage-600) !important;
+}
+
+/* Light theme hover states */
+body:not(.dark) .hover\\:bg-gray-700:hover {
+    background-color: var(--sage-700) !important;
+}
+
+body:not(.dark) .hover\\:bg-gray-600:hover {
+    background-color: var(--sage-600) !important;
+}
+
+body:not(.dark) .hover\\:text-gray-300:hover {
+    color: var(--moss-300) !important;
+}
+
+body:not(.dark) .hover\\:border-gray-600:hover {
+    border-color: var(--sage-600) !important;
+}
+
+/* Light theme cards and containers */
+body:not(.dark) .bg-white {
+    background-color: var(--cream-50) !important;
+}
+
+/* Light theme form inputs */
+body:not(.dark) input,
+body:not(.dark) textarea,
+body:not(.dark) select {
+    background-color: var(--cream-50) !important;
+    border-color: var(--moss-300) !important;
+    color: var(--forest-900) !important;
+}
+
+body:not(.dark) input:focus,
+body:not(.dark) textarea:focus,
+body:not(.dark) select:focus {
+    border-color: var(--green-500) !important;
+    box-shadow: 0 0 0 3px var(--green-500 / 0.3) !important;
+}
+
+/* Light theme buttons */
+body:not(.dark) .btn-primary {
+    background-color: var(--green-500) !important;
+    color: var(--cream-50) !important;
+}
+
+body:not(.dark) .btn-primary:hover {
+    background-color: var(--green-600) !important;
+}
+
+body:not(.dark) .btn-secondary {
+    background-color: var(--moss-300) !important;
+    color: var(--forest-900) !important;
+}
+
+body:not(.dark) .btn-secondary:hover {
+    background-color: var(--moss-400) !important;
+}
+
+/* Light theme accent colors */
+body:not(.dark) .text-blue-600,
+body:not(.dark) .text-blue-400 {
+    color: var(--green-500) !important;
+}
+
+body:not(.dark) .border-blue-500 {
+    border-color: var(--green-500) !important;
+}
+
+body:not(.dark) .bg-blue-500 {
+    background-color: var(--green-500) !important;
+}
+
+body:not(.dark) .bg-blue-600 {
+    background-color: var(--green-600) !important;
+}
+
+body:not(.dark) .hover\\:bg-blue-600:hover {
+    background-color: var(--green-600) !important;
+}
+
+body:not(.dark) .hover\\:bg-blue-700:hover {
+    background-color: var(--green-700) !important;
+}
+
+/* Light theme focus rings */
+body:not(.dark) .focus\\:ring-blue-500:focus {
+    --tw-ring-color: var(--green-500 / 0.5) !important;
+}
+
+body:not(.dark) .focus\\:border-blue-500:focus {
+    border-color: var(--green-500) !important;
+}
+
+/* Light theme range sliders */
+body:not(.dark) input[type="range"]::-webkit-slider-track {
+    background: var(--moss-300) !important;
+}
+
+body:not(.dark) input[type="range"]::-moz-range-track {
+    background: var(--moss-300) !important;
+}
+
+body:not(.dark) input[type="range"]::-webkit-slider-thumb {
+    background: var(--green-500) !important;
+    border: 2px solid var(--cream-50) !important;
+}
+
+body:not(.dark) input[type="range"]::-moz-range-thumb {
+    background: var(--green-500) !important;
+    border: 2px solid var(--cream-50) !important;
+}
+
+body:not(.dark) input[type="range"]:hover::-webkit-slider-thumb {
+    background: var(--green-600) !important;
+}
+
+body:not(.dark) input[type="range"]:hover::-moz-range-thumb {
+    background: var(--green-600) !important;
+}
+
+body:not(.dark) input[type="range"]:focus::-webkit-slider-thumb {
+    box-shadow: 0 0 0 3px var(--green-500 / 0.3) !important;
+}
+
+body:not(.dark) input[type="range"]:focus::-moz-range-thumb {
+    box-shadow: 0 0 0 3px var(--green-500 / 0.3) !important;
+}
+
+/* Light theme special elements */
+body:not(.dark) .bg-yellow-50 {
+    background-color: var(--cream-50) !important;
+    border-color: var(--green-500) !important;
+}
+
+body:not(.dark) .text-yellow-800 {
+    color: var(--green-500) !important;
+}
+
+body:not(.dark) .text-yellow-600 {
+    color: var(--green-600) !important;
+}
+
+body:not(.dark) .text-yellow-500 {
+    color: var(--green-700) !important;
+}
+
+/* Light theme mobile bottom navigation */
+body:not(.dark) #mobile-bottom-nav {
+    background-color: var(--sage-800 / 0.95) !important;
+    box-shadow: 0 -2px 10px rgb(0 0 0 / 0.1);
+}
+
+/* Light theme modal overlays */
+body:not(.dark) .modal-overlay {
+    background-color: rgb(0 0 0 / 0.5) !important;
+}
+
+body:not(.dark) .modal-content {
+    background-color: var(--cream-50) !important;
+    border-color: var(--moss-300) !important;
+}
+
+/* Light theme dropdown menus */
+body:not(.dark) .typeahead-dropdown {
+    background-color: var(--cream-50) !important;
+    border-color: var(--moss-300) !important;
+}
+
+body:not(.dark) .typeahead-item:hover {
+    background-color: var(--moss-100) !important;
+}
+
+body:not(.dark) .typeahead-item.selected {
+    background-color: var(--green-500 / 0.1) !important;
+    color: var(--green-500) !important;
+}
+
+/* Light theme recipe cards and meal items */
+body:not(.dark) .recipe-card {
+    background-color: var(--cream-50) !important;
+    border-color: var(--moss-300) !important;
+}
+
+body:not(.dark) .ingredient-item {
+    background-color: var(--moss-100) !important;
+}
+
+/* Light theme calendar and planning elements */
+body:not(.dark) .calendar-day.drag-over {
+    background-color: var(--green-500 / 0.1) !important;
+    border-color: var(--green-500) !important;
+}
+
+/* Light theme success/error states */
+body:not(.dark) .bg-green-500 {
+    background-color: var(--green-500) !important;
+}
+
+body:not(.dark) .bg-green-600 {
+    background-color: var(--green-600) !important;
+}
+
+body:not(.dark) .bg-red-500 {
+    background-color: rgb(239 68 68) !important;
+}
+
+body:not(.dark) .bg-red-600 {
+    background-color: rgb(220 38 38) !important;
+}
+
+/* Light theme text colors for success/error states */
+body:not(.dark) .text-green-700 {
+    color: var(--green-600) !important;
+}
+
+body:not(.dark) .text-green-300 {
+    color: var(--green-500) !important;
+}
+
+body:not(.dark) .text-red-700 {
+    color: rgb(185 28 28) !important;
+}
+
+body:not(.dark) .text-red-300 {
+    color: rgb(248 113 113) !important;
+}
+
+/* Light theme subtle gradients and textures */
+body:not(.dark) .bg-white {
+    background: linear-gradient(135deg, var(--cream-50) 0%, var(--cream-100) 100%) !important;
+}
+
+body:not(.dark) .bg-gray-800 {
+    background: linear-gradient(135deg, var(--sage-800) 0%, var(--sage-700) 100%) !important;
+}
+
+body:not(.dark) .bg-gray-700 {
+    background: linear-gradient(135deg, var(--sage-700) 0%, var(--sage-600) 100%) !important;
+}
+
+/* Light theme subtle texture to main background */
+body:not(.dark) {
+    background-image: 
+        radial-gradient(circle at 20% 80%, var(--green-500 / 0.02) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, var(--green-600 / 0.02) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, var(--green-700 / 0.01) 0%, transparent 50%);
+    background-attachment: fixed;
+}
+
+/* Light theme natural green glow effects for interactive elements */
+body:not(.dark) .btn-primary {
+    box-shadow: 0 4px 14px 0 var(--green-500 / 0.2) !important;
+    background: linear-gradient(135deg, var(--green-500) 0%, var(--green-600) 100%) !important;
+}
+
+body:not(.dark) .btn-primary:hover {
+    box-shadow: 0 6px 20px 0 var(--green-500 / 0.3) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Light theme natural green glow for focus states */
+body:not(.dark) input:focus,
+body:not(.dark) textarea:focus,
+body:not(.dark) select:focus {
+    box-shadow: 
+        0 0 0 3px var(--green-500 / 0.2),
+        0 0 20px var(--green-500 / 0.05) !important;
+}
+
+/* Light theme subtle natural green border glow for cards */
+body:not(.dark) .recipe-card {
+    box-shadow: 
+        0 1px 3px 0 rgb(0 0 0 / 0.05),
+        0 1px 2px 0 rgb(0 0 0 / 0.03),
+        inset 0 1px 0 var(--green-500 / 0.05) !important;
+}
+
+body:not(.dark) .recipe-card:hover {
+    box-shadow: 
+        0 4px 6px -1px rgb(0 0 0 / 0.05),
+        0 2px 4px -1px rgb(0 0 0 / 0.03),
+        inset 0 1px 0 var(--green-500 / 0.1),
+        0 0 20px var(--green-500 / 0.05) !important;
+}
+
+/* Light theme natural green accent for active navigation */
+body:not(.dark) .nav-tab.active {
+    background: linear-gradient(135deg, var(--green-500 / 0.05) 0%, var(--green-600 / 0.02) 100%) !important;
+    border-bottom-color: var(--green-500) !important;
+    color: var(--green-500) !important;
+}
+
+/* Light theme natural green mobile navigation */
+body:not(.dark) #mobile-bottom-nav {
+    background: linear-gradient(135deg, var(--sage-800 / 0.95) 0%, var(--sage-700 / 0.95) 100%) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 
+        0 -2px 10px rgb(0 0 0 / 0.1),
+        inset 0 1px 0 var(--green-500 / 0.05) !important;
+}
+
+/* Light theme natural green modal styling */
+body:not(.dark) .modal-content {
+    background: linear-gradient(135deg, var(--cream-50) 0%, var(--cream-100) 100%) !important;
+    box-shadow: 
+        0 25px 50px -12px rgb(0 0 0 / 0.2),
+        inset 0 1px 0 var(--green-500 / 0.05) !important;
+}
+
+/* Light theme natural green dropdown styling */
+body:not(.dark) .typeahead-dropdown {
+    background: linear-gradient(135deg, var(--cream-50) 0%, var(--cream-100) 100%) !important;
+    box-shadow: 
+        0 10px 15px -3px rgb(0 0 0 / 0.1),
+        0 4px 6px -2px rgb(0 0 0 / 0.05),
+        inset 0 1px 0 var(--green-500 / 0.05) !important;
+}
+
+/* Light theme natural green range slider styling */
+body:not(.dark) input[type="range"]::-webkit-slider-track {
+    background: linear-gradient(90deg, var(--moss-300) 0%, var(--moss-400) 100%) !important;
+    box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.1) !important;
+}
+
+body:not(.dark) input[type="range"]::-moz-range-track {
+    background: linear-gradient(90deg, var(--moss-300) 0%, var(--moss-400) 100%) !important;
+    box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.1) !important;
+}
+
+body:not(.dark) input[type="range"]::-webkit-slider-thumb {
+    background: linear-gradient(135deg, var(--green-500) 0%, var(--green-600) 100%) !important;
+    box-shadow: 
+        0 2px 4px rgb(0 0 0 / 0.1),
+        0 0 8px var(--green-500 / 0.2) !important;
+}
+
+body:not(.dark) input[type="range"]::-moz-range-thumb {
+    background: linear-gradient(135deg, var(--green-500) 0%, var(--green-600) 100%) !important;
+    box-shadow: 
+        0 2px 4px rgb(0 0 0 / 0.1),
+        0 0 8px var(--green-500 / 0.2) !important;
+}
+
+/* Light theme natural green calendar day styling */
+body:not(.dark) .calendar-day {
+    background: linear-gradient(135deg, var(--moss-100 / 0.5) 0%, var(--moss-200 / 0.3) 100%) !important;
+    border: 1px solid var(--moss-300 / 0.5) !important;
+}
+
+body:not(.dark) .calendar-day:hover {
+    background: linear-gradient(135deg, var(--moss-100 / 0.7) 0%, var(--moss-200 / 0.5) 100%) !important;
+    border-color: var(--green-500 / 0.5) !important;
+}
+
+/* Light theme natural green scheduled meal styling */
+body:not(.dark) .scheduled-meal {
+    background: linear-gradient(135deg, var(--green-500 / 0.05) 0%, var(--green-600 / 0.02) 100%) !important;
+    border: 1px solid var(--green-500 / 0.2) !important;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.05) !important;
+}
+
+body:not(.dark) .scheduled-meal:hover {
+    background: linear-gradient(135deg, var(--green-500 / 0.1) 0%, var(--green-600 / 0.05) 100%) !important;
+    box-shadow: 
+        0 4px 6px rgb(0 0 0 / 0.05),
+        0 0 10px var(--green-500 / 0.1) !important;
+}
+
+/* Light theme natural green ingredient item styling */
+body:not(.dark) .ingredient-item {
+    background: linear-gradient(135deg, var(--moss-100 / 0.8) 0%, var(--moss-200 / 0.6) 100%) !important;
+    border: 1px solid var(--moss-300 / 0.5) !important;
+}
+
+body:not(.dark) .ingredient-item:hover {
+    background: linear-gradient(135deg, var(--moss-100 / 0.9) 0%, var(--moss-200 / 0.7) 100%) !important;
+    border-color: var(--green-500 / 0.5) !important;
+}
+
+/* Light theme natural green planning queue styling */
+body:not(.dark) .planning-queue-item {
+    background: linear-gradient(135deg, var(--cream-50 / 0.8) 0%, var(--moss-100 / 0.6) 100%) !important;
+    border: 1px solid var(--moss-300 / 0.5) !important;
+}
+
+body:not(.dark) .planning-queue-item:hover {
+    background: linear-gradient(135deg, var(--cream-50 / 0.9) 0%, var(--moss-100 / 0.7) 100%) !important;
+    border-color: var(--green-500 / 0.5) !important;
+}
+
+/* Light theme natural green drag over states */
+body:not(.dark) .planning-queue-item.drag-over {
+    background: linear-gradient(135deg, var(--green-500 / 0.1) 0%, var(--green-600 / 0.05) 100%) !important;
+    border-color: var(--green-500) !important;
+    box-shadow: 0 0 20px var(--green-500 / 0.2) !important;
+}
+
+/* Light theme natural green settings sections */
+body:not(.dark) .bg-white.rounded-lg.shadow {
+    background: linear-gradient(135deg, var(--cream-50) 0%, var(--cream-100) 100%) !important;
+    box-shadow: 
+        0 4px 6px -1px rgb(0 0 0 / 0.05),
+        0 2px 4px -1px rgb(0 0 0 / 0.03),
+        inset 0 1px 0 var(--green-500 / 0.05) !important;
+}
+
+/* Light theme natural green info boxes */
+body:not(.dark) .bg-blue-50 {
+    background: linear-gradient(135deg, var(--cream-50 / 0.8) 0%, var(--cream-100 / 0.6) 100%) !important;
+    border-color: var(--green-500 / 0.3) !important;
+}
+
+body:not(.dark) .bg-yellow-50 {
+    background: linear-gradient(135deg, var(--cream-50 / 0.8) 0%, var(--cream-100 / 0.6) 100%) !important;
+    border-color: var(--green-500 / 0.3) !important;
+}
+
+/* Light theme success/error states with subtle gradients */
+body:not(.dark) .bg-green-500 {
+    background: linear-gradient(135deg, var(--green-500) 0%, var(--green-600) 100%) !important;
+    box-shadow: 0 2px 4px var(--green-500 / 0.2) !important;
+}
+
+body:not(.dark) .bg-red-500 {
+    background: linear-gradient(135deg, rgb(239 68 68) 0%, rgb(220 38 38) 100%) !important;
+    box-shadow: 0 2px 4px rgb(239 68 68 / 0.2) !important;
+}
+
+/* =================================================================
+   END NATURAL GREEN LIGHT THEME OVERRIDES
    ================================================================= */
