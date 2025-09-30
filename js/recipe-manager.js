@@ -1656,10 +1656,18 @@ class RecipeManager {
             
             // Check if we're returning to a recipe form and refresh labels dropdown
             const fullpageLabelsDropdown = document.querySelector('#fullpage-recipe-labels-dropdown');
+            const modalLabelsDropdown = document.querySelector('#recipe-form-labels-dropdown');
+            
             if (fullpageLabelsDropdown) {
-                console.log('🔄 Refreshing labels dropdown after returning from label management...');
+                console.log('🔄 Refreshing full-page labels dropdown after returning from label management...');
                 // Refresh the labels dropdown to show any new labels
                 this.updateFullPageLabelDropdown();
+            }
+            
+            if (modalLabelsDropdown) {
+                console.log('🔄 Refreshing modal labels dropdown after returning from label management...');
+                // Refresh the modal labels dropdown to show any new labels
+                this.updateFormLabelDropdown();
             }
             
             // Clear the stored content
@@ -2722,8 +2730,13 @@ class RecipeManager {
             (!this.formLabelSearchTerm || (label.name || label).toLowerCase().includes(this.formLabelSearchTerm.toLowerCase()))
         );
 
-        if (availableLabels.length === 0 || !this.formLabelSearchTerm) {
-            dropdown.classList.add('hidden');
+        if (availableLabels.length === 0) {
+            dropdown.innerHTML = `
+                <div class="px-3 py-2 text-gray-500 dark:text-gray-400 text-sm">
+                    ${this.formLabelSearchTerm ? `No labels found matching "${this.formLabelSearchTerm}"` : 'No more labels available'}
+                </div>
+            `;
+            dropdown.classList.remove('hidden');
             return;
         }
 
@@ -5037,8 +5050,13 @@ class RecipeManager {
             (!this.formLabelSearchTerm || (label.name || label).toLowerCase().includes(this.formLabelSearchTerm.toLowerCase()))
         );
 
-        if (availableLabels.length === 0 || !this.formLabelSearchTerm) {
-            dropdown.classList.add('hidden');
+        if (availableLabels.length === 0) {
+            dropdown.innerHTML = `
+                <div class="px-3 py-2 text-gray-500 dark:text-gray-400 text-sm">
+                    ${this.formLabelSearchTerm ? `No labels found matching "${this.formLabelSearchTerm}"` : 'No more labels available'}
+                </div>
+            `;
+            dropdown.classList.remove('hidden');
             return;
         }
 
