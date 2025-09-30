@@ -986,7 +986,6 @@ class ItineraryView {
         const newMeal = {
             id: Date.now() + Math.floor(Math.random() * 1000), // Generate unique ID
             recipe_id: recipeId,
-            recipe_name: recipe.title,
             meal_type: this.mealType,
             date: dateStr,
             notes: recipe.title
