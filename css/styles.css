@@ -430,6 +430,67 @@ button:active,
         font-size: 12px;
     }
     
+    /* Shopping list controls mobile layout fixes */
+    .grocery-list-manager .flex.flex-col.sm\\:flex-row.gap-3 {
+        gap: 12px;
+    }
+    
+    .grocery-list-manager .flex-shrink-0 {
+        flex-shrink: 0;
+    }
+    
+    /* Ensure controls don't overflow on mobile */
+    .grocery-list-manager .flex.items-center.justify-between {
+        flex-wrap: nowrap;
+        overflow: hidden;
+    }
+    
+    .grocery-list-manager .flex.items-center.space-x-3 {
+        gap: 8px;
+        flex-shrink: 0;
+    }
+    
+    /* Mobile-specific button sizing for shopping list controls */
+    .grocery-list-manager .bg-gray-100.dark\\:bg-gray-700 button {
+        min-height: 40px;
+        padding: 8px 12px;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+    
+    /* Ensure proper spacing for mobile controls */
+    .grocery-list-manager .p-4.sm\\:p-6 {
+        padding: 16px;
+    }
+    
+    /* Mobile shopping list header layout */
+    .grocery-list-manager .flex.items-center.justify-between.mb-4 {
+        margin-bottom: 16px;
+    }
+    
+    /* Extra small mobile screens - stack everything vertically */
+    @media (max-width: 360px) {
+        .grocery-list-manager .flex.items-center.justify-between {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        
+        .grocery-list-manager .flex.items-center.space-x-3 {
+            align-self: flex-end;
+        }
+        
+        .grocery-list-manager .flex.flex-col.sm\\:flex-row.gap-3 {
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .grocery-list-manager .bg-gray-100.dark\\:bg-gray-700 {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+    
     /* Shopping list items mobile optimization */
     .grocery-list-manager .grid.grid-cols-1.gap-6 {
         gap: 16px;
