@@ -1126,7 +1126,6 @@ class RecipeManager {
                 this.render();
                 this.attachEventListeners(); // Reattach event listeners after render
                 this.updateFavoritesButton(); // Ensure favorites button maintains correct state after render
-                this.updateRecipeDisplay(); // Apply the new sort direction to the recipes
             });
         }
 
