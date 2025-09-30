@@ -689,6 +689,12 @@ class ItineraryView {
                 // Force a complete refresh to ensure UI updates
                 this.forceRefresh();
                 
+                // Update delta view if this is the plan tab
+                if (this.mealType === 'plan' && window.app && window.app.updatePlanMenuDelta) {
+                    console.log('📊 Updating delta view after removing meal from plan');
+                    window.app.updatePlanMenuDelta();
+                }
+                
                 // Dispatch event for other components to update
                 console.log('🛒 Dispatching mealUnscheduled event for grocery list update', { 
                     scheduledMeal: removedMeal,
@@ -1017,6 +1023,12 @@ class ItineraryView {
         // UI REFRESH FIX: Use forceRefresh() instead of render() for immediate UI updates
         // This ensures the new meal appears immediately without requiring a page refresh
         this.forceRefresh();
+        
+        // Update delta view if this is the plan tab
+        if (this.mealType === 'plan' && window.app && window.app.updatePlanMenuDelta) {
+            console.log('📊 Updating delta view after adding meal to plan');
+            window.app.updatePlanMenuDelta();
+        }
         
         // Show success notification
         this.showNotification(`Added ${recipe.title} to ${this.mealType} on ${new Date(dateStr).toLocaleDateString()}`, 'success');
