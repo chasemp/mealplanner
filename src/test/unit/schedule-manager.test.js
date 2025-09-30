@@ -88,7 +88,7 @@ describe('ScheduleManager', () => {
 
         it('should load stored scheduled meals from localStorage', () => {
             const storedMeals = [
-                { id: 1, meal_name: 'Test Meal', meal_type: 'dinner', date: '2025-09-08' }
+                { id: 1, recipe_id: 1, meal_type: 'dinner', date: '2025-09-08' }
             ];
             
             // Mock settings manager to return stored meals
@@ -120,7 +120,7 @@ describe('ScheduleManager', () => {
 
             expect(scheduledMeal).toBeDefined();
             expect(scheduledMeal.meal_id).toBe(mockMeal.id);
-            expect(scheduledMeal.meal_name).toBe(mockMeal.name);
+            expect(scheduledMeal.recipe_id).toBe(mockMeal.id);
             expect(scheduledMeal.meal_type).toBe(mockMeal.meal_type);
             expect(scheduledMeal.date).toBe(date);
             expect(scheduledMeal.recipes).toEqual(mockMeal.recipes);
@@ -192,7 +192,7 @@ describe('ScheduleManager', () => {
             const scheduledMeal = scheduleManager.scheduleRecipe(mockRecipe, mealType, date);
 
             expect(scheduledMeal.meal_type).toBe(mealType);
-            expect(scheduledMeal.meal_name).toBe(mockRecipe.title);
+            expect(scheduledMeal.recipe_id).toBe(mockRecipe.id);
             expect(scheduledMeal.recipe_id).toBe(mockRecipe.id);
             expect(scheduledMeal.recipe).toEqual(mockRecipe);
             expect(scheduledMeal.total_time).toBe(40); // prep_time + cook_time
@@ -393,8 +393,8 @@ describe('ScheduleManager', () => {
             try {
                 // Mock settings manager to return demo data
                 const demoMeals = [
-                    { id: 1, meal_name: 'Demo Meal 1', meal_type: 'dinner', date: '2025-09-08' },
-                    { id: 2, meal_name: 'Demo Meal 2', meal_type: 'dinner', date: '2025-09-09' }
+                    { id: 1, recipe_id: 1, meal_type: 'dinner', date: '2025-09-08' },
+                    { id: 2, recipe_id: 2, meal_type: 'dinner', date: '2025-09-09' }
                 ];
                 const mockSettings = {
                     getAuthoritativeData: vi.fn().mockReturnValue(demoMeals),

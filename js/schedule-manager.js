@@ -87,7 +87,6 @@ class ScheduleManager {
             id: Date.now() + Math.floor(Math.random() * 1000),
             recipe_id: recipe.id, // Direct reference to recipe
             recipe: recipe, // Store full recipe object for consistency
-            meal_name: recipe.title,
             meal_type: mealType,
             date: date,
             servings: options.servings || recipe.servings || 4,
