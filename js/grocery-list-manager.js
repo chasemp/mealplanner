@@ -186,27 +186,13 @@ class GroceryListManager {
                     </div>
                     
                     <div class="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
-                        <!-- Export Actions -->
+                        <!-- Copy Action -->
                         <div class="flex items-center space-x-2">
                             <button id="copy-list-btn" class="btn-secondary flex items-center justify-center space-x-2 flex-1 sm:flex-none" title="Copy to clipboard">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
                                 </svg>
                                 <span class="hidden sm:inline">Copy</span>
-                            </button>
-                            
-                            <button id="export-list-btn" class="btn-secondary flex items-center justify-center space-x-2 flex-1 sm:flex-none" title="Export as file">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                </svg>
-                                <span class="hidden sm:inline">Export</span>
-                            </button>
-                            
-                            <button id="share-list-btn" class="btn-primary flex items-center justify-center space-x-2 flex-1 sm:flex-none" title="Share list">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path>
-                                </svg>
-                                <span class="hidden sm:inline">Share</span>
                             </button>
                         </div>
                         
@@ -232,13 +218,12 @@ class GroceryListManager {
                             <div class="p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
                                 <!-- Title and Action Buttons Row -->
                                 <div class="flex items-center justify-between mb-4">
-                                    <h4 class="font-semibold text-gray-900 dark:text-white">Shopping List</h4>
                                     <div class="flex items-center space-x-3">
-                                        <button id="export-list-btn" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 px-2 py-1">
-                                            Export
-                                        </button>
-                                        <button id="print-list-btn" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 px-2 py-1">
-                                            Print
+                                        <h4 class="font-semibold text-gray-900 dark:text-white">Shopping List</h4>
+                                        <button id="share-list-btn" class="flex items-center justify-center p-2 text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors" title="Share shopping list">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path>
+                                            </svg>
                                         </button>
                                     </div>
                                 </div>
@@ -940,14 +925,6 @@ class GroceryListManager {
             });
         }
 
-        // Export list button
-        const exportBtn = this.container.querySelector('#export-list-btn');
-        if (exportBtn) {
-            exportBtn.addEventListener('click', () => {
-                this.exportGroceryList();
-            });
-        }
-
         // Share list button
         const shareBtn = this.container.querySelector('#share-list-btn');
         if (shareBtn) {
@@ -967,21 +944,6 @@ class GroceryListManager {
         }
 
         // Note: Week selector removed - now controlled by unified Menu tab selector
-
-        // Export and print buttons
-        const exportBtn2 = this.container.querySelector('#export-list-btn');
-        if (exportBtn2) {
-            exportBtn2.addEventListener('click', () => {
-                this.exportGroceryList();
-            });
-        }
-
-        const printBtn = this.container.querySelector('#print-list-btn');
-        if (printBtn) {
-            printBtn.addEventListener('click', () => {
-                this.printGroceryList();
-            });
-        }
 
         // Manage pantry button
         const managePantryBtn = this.container.querySelector('#manage-pantry-btn');
@@ -1170,6 +1132,45 @@ class GroceryListManager {
     exportGroceryList() {
         // Show export options modal
         this.showExportModal();
+    }
+
+    async shareGroceryList() {
+        const groceryItems = this.generateGroceryItems();
+        const text = this.formatGroceryListForExport(groceryItems);
+        const title = `Shopping List - ${this.formatDate(this.currentWeek)}`;
+        
+        // Check if Web Share API is supported (mobile browsers)
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: title,
+                    text: text,
+                    url: window.location.href
+                });
+                this.showNotification('Shopping list shared!', 'success');
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    console.error('Error sharing:', error);
+                    this.fallbackShare(text, title);
+                }
+            }
+        } else {
+            // Fallback for desktop browsers
+            this.fallbackShare(text, title);
+        }
+    }
+
+    fallbackShare(text, title) {
+        // Copy to clipboard as fallback
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => {
+                this.showNotification('Shopping list copied to clipboard!', 'success');
+            }).catch(() => {
+                this.showExportModal();
+            });
+        } else {
+            this.showExportModal();
+        }
     }
 
     showExportModal() {
