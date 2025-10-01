@@ -245,25 +245,25 @@ class GroceryListManager {
                                 
                                 <!-- Control Toggles Row -->
                                 <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                                    <!-- Display Mode Toggle -->
-                                    <div class="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-1 flex-shrink-0">
-                                        <button id="shopping-list-meal-mode" class="px-3 py-2 text-xs font-medium rounded-md transition-colors ${this.displayMode === 'meal' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}">
-                                            Meal
-                                        </button>
-                                        <button id="shopping-list-week-mode" class="px-3 py-2 text-xs font-medium rounded-md transition-colors ${this.displayMode === 'week' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}">
-                                            Week
-                                        </button>
-                                    </div>
+                                    <!-- Display Mode Toggle (Single Button) -->
+                                    <button id="shopping-list-display-mode-toggle" class="flex items-center justify-center space-x-2 px-4 py-2 text-sm font-medium bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors min-h-[44px] touch-manipulation" title="Toggle between Meal and Week grouping">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                                        </svg>
+                                        <span id="display-mode-text">${this.displayMode === 'meal' ? 'Meal' : 'Week'}</span>
+                                        <svg class="w-3 h-3 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                        </svg>
+                                    </button>
                                     
-                                    <!-- Edit Mode Toggle -->
-                                    <div class="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-1 flex-shrink-0">
-                                        <button id="shopping-list-display-mode" class="px-3 py-2 text-xs font-medium rounded-md transition-colors ${!this.editMode ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}" title="View mode - read-only shopping list">
-                                            📋 View
-                                        </button>
-                                        <button id="shopping-list-edit-mode" class="px-3 py-2 text-xs font-medium rounded-md transition-colors ${this.editMode ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}" title="Edit mode - adjust quantities based on pantry">
-                                            ✏️ Edit
-                                        </button>
-                                    </div>
+                                    <!-- Edit Mode Toggle (Single Button) -->
+                                    <button id="shopping-list-edit-mode-toggle" class="flex items-center justify-center space-x-2 px-4 py-2 text-sm font-medium bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors min-h-[44px] touch-manipulation" title="Toggle between View and Edit modes">
+                                        <span id="edit-mode-icon">${this.editMode ? '✏️' : '📋'}</span>
+                                        <span id="edit-mode-text">${this.editMode ? 'Edit' : 'View'}</span>
+                                        <svg class="w-3 h-3 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                        </svg>
+                                    </button>
                                     
                                     <!-- Edit Mode Helper Text -->
                                     ${this.editMode ? `
@@ -991,68 +991,43 @@ class GroceryListManager {
             });
         }
 
-        // Display mode toggle buttons
-        const mealModeBtn = this.container.querySelector('#shopping-list-meal-mode');
-        const weekModeBtn = this.container.querySelector('#shopping-list-week-mode');
+        // Display mode toggle button (single button that cycles)
+        const displayModeToggleBtn = this.container.querySelector('#shopping-list-display-mode-toggle');
         
-        console.log('🛒 DEBUG: Looking for mode toggle buttons...');
-        console.log('🛒 DEBUG: mealModeBtn found:', !!mealModeBtn, mealModeBtn);
-        console.log('🛒 DEBUG: weekModeBtn found:', !!weekModeBtn, weekModeBtn);
+        console.log('🛒 DEBUG: Looking for display mode toggle button...');
+        console.log('🛒 DEBUG: displayModeToggleBtn found:', !!displayModeToggleBtn, displayModeToggleBtn);
         
-        if (mealModeBtn) {
-            mealModeBtn.addEventListener('click', (e) => {
+        if (displayModeToggleBtn) {
+            displayModeToggleBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('🛒 DEBUG: Meal mode button clicked!');
-                this.setDisplayMode('meal');
+                console.log('🛒 DEBUG: Display mode toggle button clicked!');
+                // Toggle between 'meal' and 'week'
+                const newMode = this.displayMode === 'meal' ? 'week' : 'meal';
+                this.setDisplayMode(newMode);
             });
-            console.log('🛒 DEBUG: Meal mode event listener attached');
+            console.log('🛒 DEBUG: Display mode toggle event listener attached');
         } else {
-            console.warn('🛒 WARNING: Meal mode button not found!');
-        }
-        
-        if (weekModeBtn) {
-            weekModeBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log('🛒 DEBUG: Week mode button clicked!');
-                this.setDisplayMode('week');
-            });
-            console.log('🛒 DEBUG: Week mode event listener attached');
-        } else {
-            console.warn('🛒 WARNING: Week mode button not found!');
+            console.warn('🛒 WARNING: Display mode toggle button not found!');
         }
 
-        // Edit mode toggle buttons
-        const displayModeBtn = this.container.querySelector('#shopping-list-display-mode');
-        const editModeBtn = this.container.querySelector('#shopping-list-edit-mode');
+        // Edit mode toggle button (single button that cycles)
+        const editModeToggleBtn = this.container.querySelector('#shopping-list-edit-mode-toggle');
         
-        console.log('🛒 DEBUG: Looking for edit mode toggle buttons...');
-        console.log('🛒 DEBUG: displayModeBtn found:', !!displayModeBtn, displayModeBtn);
-        console.log('🛒 DEBUG: editModeBtn found:', !!editModeBtn, editModeBtn);
+        console.log('🛒 DEBUG: Looking for edit mode toggle button...');
+        console.log('🛒 DEBUG: editModeToggleBtn found:', !!editModeToggleBtn, editModeToggleBtn);
         
-        if (displayModeBtn) {
-            displayModeBtn.addEventListener('click', (e) => {
+        if (editModeToggleBtn) {
+            editModeToggleBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('🛒 DEBUG: Display mode button clicked!');
-                this.setEditMode(false);
+                console.log('🛒 DEBUG: Edit mode toggle button clicked!');
+                // Toggle between view and edit modes
+                this.setEditMode(!this.editMode);
             });
-            console.log('🛒 DEBUG: Display mode event listener attached');
+            console.log('🛒 DEBUG: Edit mode toggle event listener attached');
         } else {
-            console.warn('🛒 WARNING: Display mode button not found!');
-        }
-        
-        if (editModeBtn) {
-            editModeBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log('🛒 DEBUG: Edit mode button clicked!');
-                this.setEditMode(true);
-            });
-            console.log('🛒 DEBUG: Edit mode event listener attached');
-        } else {
-            console.warn('🛒 WARNING: Edit mode button not found!');
+            console.warn('🛒 WARNING: Edit mode toggle button not found!');
         }
 
         // Grocery item checkboxes
@@ -1093,6 +1068,7 @@ class GroceryListManager {
     setDisplayMode(mode) {
         console.log(`🛒 Switching display mode from ${this.displayMode} to ${mode}`);
         this.displayMode = mode;
+        this.updateToggleButtons();
         this.render();
         console.log(`✅ Display mode switched to ${mode}`);
     }
@@ -1100,8 +1076,27 @@ class GroceryListManager {
     setEditMode(editMode) {
         console.log(`🛒 Setting edit mode to ${editMode}`);
         this.editMode = editMode;
+        this.updateToggleButtons();
         this.render();
         console.log(`✅ Edit mode switched to ${editMode ? 'edit' : 'display'}`);
+    }
+
+    updateToggleButtons() {
+        // Update display mode toggle button text
+        const displayModeText = this.container.querySelector('#display-mode-text');
+        if (displayModeText) {
+            displayModeText.textContent = this.displayMode === 'meal' ? 'Meal' : 'Week';
+        }
+
+        // Update edit mode toggle button text and icon
+        const editModeIcon = this.container.querySelector('#edit-mode-icon');
+        const editModeText = this.container.querySelector('#edit-mode-text');
+        if (editModeIcon) {
+            editModeIcon.textContent = this.editMode ? '✏️' : '📋';
+        }
+        if (editModeText) {
+            editModeText.textContent = this.editMode ? 'Edit' : 'View';
+        }
     }
 
     adjustQuantity(itemId, adjustment) {
