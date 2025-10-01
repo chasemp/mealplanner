@@ -408,6 +408,46 @@ button:active,
         gap: 12px;
     }
     
+    /* Mobile-optimized header section */
+    .grocery-list-manager .flex.flex-col.lg\\:flex-row.lg\\:items-center.lg\\:justify-between {
+        gap: 16px;
+    }
+    
+    /* Mobile-optimized header title */
+    .grocery-list-manager h3 {
+        font-size: 20px;
+        line-height: 1.2;
+        margin-bottom: 4px;
+    }
+    
+    /* Mobile-optimized header description */
+    .grocery-list-manager p.text-gray-600.dark\\:text-gray-400 {
+        font-size: 14px;
+        line-height: 1.4;
+    }
+    
+    /* Mobile-optimized action buttons container */
+    .grocery-list-manager .flex.flex-col.sm\\:flex-row.items-stretch.sm\\:items-center {
+        gap: 12px;
+    }
+    
+    /* Mobile-optimized copy button */
+    .grocery-list-manager #copy-list-btn {
+        min-height: 48px;
+        font-size: 14px;
+        font-weight: 500;
+        border-radius: 10px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Mobile-optimized clear pantry button */
+    .grocery-list-manager #clear-pantry-btn {
+        min-height: 44px;
+        font-size: 13px;
+        padding: 10px 16px;
+        border-radius: 8px;
+    }
+    
     .grocery-list-manager .btn-secondary,
     .grocery-list-manager .btn-primary {
         min-height: 44px;
@@ -489,6 +529,34 @@ button:active,
     /* Mobile shopping list header layout */
     .grocery-list-manager .flex.items-center.justify-between.mb-4 {
         margin-bottom: 16px;
+    }
+    
+    /* Mobile shopping list title and share button */
+    .grocery-list-manager .flex.items-center.space-x-3 {
+        gap: 8px;
+    }
+    
+    .grocery-list-manager .flex.items-center.space-x-3 h4 {
+        font-size: 18px;
+        line-height: 1.3;
+    }
+    
+    .grocery-list-manager .flex.items-center.space-x-3 button {
+        min-width: 44px;
+        min-height: 44px;
+        padding: 8px;
+        border-radius: 8px;
+        background-color: rgba(59, 130, 246, 0.1);
+        transition: all 0.2s ease;
+    }
+    
+    .grocery-list-manager .flex.items-center.space-x-3 button:hover {
+        background-color: rgba(59, 130, 246, 0.2);
+        transform: scale(1.05);
+    }
+    
+    .grocery-list-manager .flex.items-center.space-x-3 button:active {
+        transform: scale(0.95);
     }
     
     /* Extra small mobile screens - stack everything vertically */
@@ -582,6 +650,34 @@ button:active,
     
     .grocery-list-manager .text-xs {
         font-size: 11px;
+    }
+    
+    /* Mobile-optimized grocery list container */
+    .grocery-list-manager .bg-white.dark\\:bg-gray-800.rounded-lg.shadow {
+        margin: 0 -4px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Mobile-optimized control toggles */
+    .grocery-list-manager .flex.flex-col.sm\\:flex-row.gap-3.sm\\:gap-4 {
+        gap: 8px;
+    }
+    
+    /* Mobile-optimized buttons in control row */
+    .grocery-list-manager .flex.flex-col.sm\\:flex-row.gap-3.sm\\:gap-4 button {
+        min-height: 48px;
+        font-size: 14px;
+        font-weight: 500;
+        border-radius: 10px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Mobile-optimized helper text */
+    .grocery-list-manager .text-xs.text-blue-600.dark\\:text-blue-400 {
+        font-size: 11px;
+        padding: 8px 12px;
+        border-radius: 6px;
     }
     
     /* Compact shopping list items */
