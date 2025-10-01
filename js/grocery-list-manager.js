@@ -430,50 +430,42 @@ class GroceryListManager {
         const adjustedQuantity = item.adjusted_quantity || item.quantity;
         
         return `
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 ${showQuantityControls ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800' : 'bg-gray-50 dark:bg-gray-700'} rounded-lg gap-3">
+            <div class="flex items-center justify-between py-2 px-3 ${showQuantityControls ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800' : 'bg-gray-50 dark:bg-gray-700'} rounded-lg">
                 <div class="flex items-center space-x-3 flex-1 min-w-0">
                     <input type="checkbox" 
-                           class="grocery-item-checkbox w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 flex-shrink-0" 
+                           class="grocery-item-checkbox w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 flex-shrink-0" 
                            data-item-id="${itemId}"
                            ${item.checked ? 'checked' : ''}>
                     <div class="flex-1 min-w-0">
-                        <div class="font-medium text-gray-900 dark:text-white ${item.checked ? 'line-through text-gray-500 dark:text-gray-400' : ''} flex items-center gap-2">
+                        <div class="font-medium text-gray-900 dark:text-white ${item.checked ? 'line-through text-gray-500 dark:text-gray-400' : ''} flex items-center gap-2 text-sm">
                             ${item.name}
                             ${showQuantityControls ? '<span class="text-xs text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-1 py-0.5 rounded" title="Editable in edit mode">✏️</span>' : ''}
                         </div>
-                        <div class="text-sm text-gray-500 dark:text-gray-400">
-                            ${showQuantityControls ? '' : 
-                                item.pantry_quantity > 0 ? `
-                                    <span class="line-through text-gray-400 dark:text-gray-500">${item.quantity} ${item.unit}</span>
-                                    <span class="text-green-600 dark:text-green-400 font-medium"> → ${item.adjusted_quantity} ${item.unit} needed</span>
-                                ` : `${item.quantity} ${item.unit}`
-                            }
-                            ${item.pantry_quantity > 0 ? `
-                                <div class="text-xs text-green-600 dark:text-green-400 mt-1">
-                                    ✓ Have ${item.pantry_quantity} ${item.pantry_unit} in pantry
-                                </div>
-                            ` : ''}
-                        </div>
+                        ${!showQuantityControls && item.pantry_quantity > 0 ? `
+                            <div class="text-xs text-green-600 dark:text-green-400">
+                                ✓ Have ${item.pantry_quantity} ${item.pantry_unit} in pantry
+                            </div>
+                        ` : ''}
                     </div>
                 </div>
                 ${showQuantityControls ? `
-                    <div class="flex items-center space-x-3">
-                        <button class="quantity-decrease w-12 h-12 flex items-center justify-center bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 active:bg-gray-400 dark:active:bg-gray-400 rounded-full text-gray-600 dark:text-gray-300 transition-all duration-150 touch-manipulation select-none" data-item-id="${itemId}" title="Decrease quantity">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="flex items-center space-x-2">
+                        <button class="quantity-decrease w-8 h-8 flex items-center justify-center bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 active:bg-gray-400 dark:active:bg-gray-400 rounded-full text-gray-600 dark:text-gray-300 transition-all duration-150 touch-manipulation select-none" data-item-id="${itemId}" title="Decrease quantity">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
                             </svg>
                         </button>
-                        <div class="text-center min-w-[100px] px-3 py-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600">
+                        <div class="text-center min-w-[80px] px-2 py-1 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-600">
                             ${item.pantry_quantity > 0 ? `
                                 <div class="text-xs text-gray-400 dark:text-gray-500 line-through">${item.quantity}</div>
-                                <div class="text-lg font-semibold text-green-600 dark:text-green-400">${adjustedQuantity}</div>
+                                <div class="text-sm font-semibold text-green-600 dark:text-green-400">${adjustedQuantity}</div>
                             ` : `
-                                <div class="text-lg font-semibold text-gray-900 dark:text-white">${adjustedQuantity}</div>
+                                <div class="text-sm font-semibold text-gray-900 dark:text-white">${adjustedQuantity}</div>
                             `}
                             <div class="text-xs text-gray-500 dark:text-gray-400">${item.unit}</div>
                         </div>
-                        <button class="quantity-increase w-12 h-12 flex items-center justify-center bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 active:bg-gray-400 dark:active:bg-gray-400 rounded-full text-gray-600 dark:text-gray-300 transition-all duration-150 touch-manipulation select-none" data-item-id="${itemId}" title="Increase quantity">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button class="quantity-increase w-8 h-8 flex items-center justify-center bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 active:bg-gray-400 dark:active:bg-gray-400 rounded-full text-gray-600 dark:text-gray-300 transition-all duration-150 touch-manipulation select-none" data-item-id="${itemId}" title="Increase quantity">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                             </svg>
                         </button>
@@ -486,7 +478,7 @@ class GroceryListManager {
                                 <span class="font-medium text-green-600 dark:text-green-400">${adjustedQuantity}</span>
                             </div>
                         ` : `
-                            <div class="text-sm font-medium text-gray-900 dark:text-white">${item.quantity}</div>
+                            <div class="text-sm font-medium text-gray-900 dark:text-white">${adjustedQuantity}</div>
                         `}
                         <div class="text-xs text-gray-400 dark:text-gray-500">${item.unit}</div>
                     </div>

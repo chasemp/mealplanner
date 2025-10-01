@@ -569,10 +569,11 @@ button:active,
         line-height: 1.4;
     }
     
-    /* Mobile grocery item layout */
+    /* Mobile grocery item layout - more compact */
     .grocery-list-manager .flex.items-center.justify-between {
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
         gap: 8px;
+        min-height: 44px; /* Ensure touch-friendly height */
     }
     
     .grocery-list-manager .text-sm {
@@ -581,6 +582,30 @@ button:active,
     
     .grocery-list-manager .text-xs {
         font-size: 11px;
+    }
+    
+    /* Compact shopping list items */
+    .grocery-list-manager .py-2.px-3 {
+        padding: 8px 12px; /* Reduced padding for more compact look */
+    }
+    
+    /* Smaller quantity display in edit mode */
+    .grocery-list-manager .min-w-\[80px\] {
+        min-width: 70px;
+        padding: 4px 6px;
+    }
+    
+    /* Compact edit mode buttons */
+    .grocery-list-manager .w-8.h-8 {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        min-height: 32px;
+    }
+    
+    /* Ensure proper spacing between items */
+    .grocery-list-manager .space-y-2 > * + * {
+        margin-top: 4px;
     }
     
     /* Mobile modal optimization for grocery list */
