@@ -1043,6 +1043,19 @@ class ItemsManager {
     returnFromItemForm() {
         console.log('🥕 Returning from item form');
         console.log('🥕 Navigation stack size:', this.navigationStack ? this.navigationStack.length : 0);
+        console.log('🥕 Has save callback:', !!this.onSaveCallback);
+        console.log('🥕 Has cancel callback:', !!this.onCancelCallback);
+        
+        // If we have a save callback, it means we came from another page (like recipe page)
+        // and should return there instead of staying on items tab
+        if (this.onSaveCallback) {
+            console.log('🥕 Using save callback to return to calling page');
+            // Don't call the callback here as it was already called in handleFullPageItemFormSubmit
+            // Just clear it and let the calling page handle the navigation
+            this.onSaveCallback = null;
+            this.onCancelCallback = null;
+            return;
+        }
         
         if (this.navigationStack && this.navigationStack.length > 0) {
             const previousView = this.navigationStack.pop();
@@ -1064,7 +1077,33 @@ class ItemsManager {
     editItem(itemId) {
         const item = this.items.find(ing => ing.id === itemId);
         if (item) {
-            this.showItemForm(item);
+            // Check if we're currently on the recipe page
+            const isOnRecipePage = window.app && window.app.currentTab === 'recipes';
+            
+            if (isOnRecipePage) {
+                console.log('🥕 Editing item from recipe page, setting up callbacks');
+                // Set up callbacks to return to recipe page after editing
+                const onSaveCallback = (savedItem) => {
+                    console.log('🥕 Item saved, returning to recipe page');
+                    // Switch back to recipes tab
+                    if (window.app && window.app.switchTab) {
+                        window.app.switchTab('recipes');
+                    }
+                };
+                
+                const onCancelCallback = () => {
+                    console.log('🥕 Item edit cancelled, returning to recipe page');
+                    // Switch back to recipes tab
+                    if (window.app && window.app.switchTab) {
+                        window.app.switchTab('recipes');
+                    }
+                };
+                
+                this.showItemForm(item, onSaveCallback, onCancelCallback);
+            } else {
+                // Normal edit from items page
+                this.showItemForm(item);
+            }
         }
     }
 
