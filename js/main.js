@@ -2205,7 +2205,12 @@ class MealPlannerApp {
         // Get scheduled meals for the selected timeframe
         let scheduledMeals = [];
         if (window.mealPlannerSettings) {
-            const allMeals = window.mealPlannerSettings.getAuthoritativeData('menuScheduledMeals') || [];
+            // First try menuScheduledMeals (committed meals), then fall back to scheduledMeals (demo data)
+            let allMeals = window.mealPlannerSettings.getAuthoritativeData('menuScheduledMeals') || [];
+            if (allMeals.length === 0) {
+                allMeals = window.mealPlannerSettings.getAuthoritativeData('scheduledMeals') || [];
+            }
+            
             scheduledMeals = allMeals.filter(meal => {
                 const mealDate = new Date(meal.date);
                 // Normalize dates to avoid timezone issues
@@ -2277,17 +2282,24 @@ class MealPlannerApp {
                 
                 const servings = meal.servings || 4;
                 
-                mealsHTML += '<div class="flex items-center justify-between bg-white dark:bg-gray-600 rounded p-3 border border-gray-200 dark:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500 cursor-pointer transition-colors" ' +
-                    'onclick="window.app.viewScheduledMeal(' + recipeId + ', \'' + mealType + '\', \'' + mealId + '\')" ' +
-                    'title="Click to view recipe details">' +
-                    '<div>' +
+                mealsHTML += '<div class="flex items-center justify-between bg-white dark:bg-gray-600 rounded p-3 border border-gray-200 dark:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500 transition-colors">' +
+                    '<div class="flex-1 cursor-pointer" onclick="window.app.viewScheduledMeal(' + recipeId + ', \'' + mealType + '\', \'' + mealId + '\')" title="Click to view recipe details">' +
                         '<div class="font-medium text-gray-900 dark:text-white">' + recipeName + '</div>' +
                         '<div class="text-sm text-gray-500 dark:text-gray-400">' + meal.meal_type + ' • ' + servings + ' servings</div>' +
                     '</div>' +
-                    '<div class="text-gray-400 dark:text-gray-300">' +
-                        '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
-                            '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>' +
-                        '</svg>' +
+                    '<div class="flex items-center space-x-2">' +
+                        '<div class="text-gray-400 dark:text-gray-300">' +
+                            '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+                                '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>' +
+                            '</svg>' +
+                        '</div>' +
+                        '<button class="text-red-400 hover:text-red-600 dark:text-red-300 dark:hover:text-red-400 p-1 rounded transition-colors" ' +
+                            'onclick="event.stopPropagation(); window.app.deleteScheduledMeal(\'' + mealId + '\', \'' + recipeName + '\')" ' +
+                            'title="Delete scheduled meal">' +
+                            '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+                                '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>' +
+                            '</svg>' +
+                        '</button>' +
                     '</div>' +
                 '</div>';
             });
@@ -3184,6 +3196,106 @@ class MealPlannerApp {
         
         // Navigate to recipe detail view
         window.recipeManager.showRecipeDetail(recipeId);
+    }
+
+    // Delete scheduled meal from Menu tab
+    deleteScheduledMeal(mealId, recipeName) {
+        console.log(`🗑️ Deleting scheduled meal: ${mealId} (${recipeName})`);
+        
+        // Show confirmation dialog
+        const confirmed = confirm(`Are you sure you want to delete "${recipeName}" from your meal schedule?\n\nThis action cannot be undone.`);
+        
+        if (!confirmed) {
+            console.log('❌ Meal deletion cancelled by user');
+            return;
+        }
+        
+        try {
+            // Try to remove from both menuScheduledMeals and scheduledMeals
+            let removed = false;
+            
+            if (window.mealPlannerSettings) {
+                // Try menuScheduledMeals first (committed meals)
+                let menuMeals = window.mealPlannerSettings.getAuthoritativeData('menuScheduledMeals') || [];
+                const menuIndex = menuMeals.findIndex(meal => meal.id == mealId);
+                if (menuIndex !== -1) {
+                    const removedMeal = menuMeals.splice(menuIndex, 1)[0];
+                    window.mealPlannerSettings.saveAuthoritativeData('menuScheduledMeals', menuMeals);
+                    console.log('✅ Meal removed from menuScheduledMeals:', removedMeal);
+                    removed = true;
+                }
+                
+                // If not found in menuScheduledMeals, try scheduledMeals (demo data)
+                if (!removed) {
+                    let scheduledMeals = window.mealPlannerSettings.getAuthoritativeData('scheduledMeals') || [];
+                    const scheduledIndex = scheduledMeals.findIndex(meal => meal.id == mealId);
+                    if (scheduledIndex !== -1) {
+                        const removedMeal = scheduledMeals.splice(scheduledIndex, 1)[0];
+                        window.mealPlannerSettings.saveAuthoritativeData('scheduledMeals', scheduledMeals);
+                        console.log('✅ Meal removed from scheduledMeals:', removedMeal);
+                        removed = true;
+                    }
+                }
+            }
+            
+            // Also try schedule manager as fallback
+            if (!removed && window.scheduleManager) {
+                const removedMeal = window.scheduleManager.removeScheduledMeal(mealId);
+                if (removedMeal) {
+                    console.log('✅ Meal removed from schedule manager:', removedMeal);
+                    removed = true;
+                }
+            }
+            
+            if (removed) {
+                // Update the menu display
+                this.updateMenuMealsDisplay();
+                
+                // Update grocery list to reflect the change
+                this.updateGroceryListAfterMenuChange();
+                
+                // Show success notification
+                this.showNotification(`"${recipeName}" removed from meal schedule`, 'success');
+            } else {
+                console.error('❌ Failed to find meal to remove');
+                this.showNotification('Meal not found. It may have already been deleted.', 'error');
+            }
+        } catch (error) {
+            console.error('❌ Error deleting scheduled meal:', error);
+            this.showNotification('Failed to delete meal. Please try again.', 'error');
+        }
+    }
+
+    // Update grocery list after menu changes
+    updateGroceryListAfterMenuChange() {
+        // Use a small delay to ensure menu display is updated first
+        setTimeout(() => {
+            if (window.groceryListManager && window.groceryListManager.updateGroceryList) {
+                console.log('🛒 Updating grocery list after menu change...');
+                window.groceryListManager.updateGroceryList();
+            }
+        }, 100);
+    }
+
+    // Show notification helper
+    showNotification(message, type = 'info') {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm ${
+            type === 'success' ? 'bg-green-500 text-white' :
+            type === 'error' ? 'bg-red-500 text-white' :
+            'bg-blue-500 text-white'
+        }`;
+        notification.textContent = message;
+
+        document.body.appendChild(notification);
+
+        // Remove after 3 seconds
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 3000);
     }
 
     handleClearPlan(mealType) {
