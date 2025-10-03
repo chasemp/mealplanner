@@ -9,7 +9,7 @@ describe('Demo Data Validation', () => {
 
     beforeEach(async () => {
         // Import DemoDataManager
-        await import('../../../js/demo-data.js');
+        await import('../../js/demo-data.js');
         demoManager = new global.DemoDataManager();
         demoData = demoManager.getAllData();
     });

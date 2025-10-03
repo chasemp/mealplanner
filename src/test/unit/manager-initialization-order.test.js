@@ -226,7 +226,7 @@ describe('Manager Initialization Order', () => {
             const fs = await import('fs/promises');
             const path = await import('path');
             
-            const mainJsPath = path.resolve(process.cwd(), 'js/main.js');
+            const mainJsPath = path.resolve(process.cwd(), 'src/js/main.js');
             const mainJsContent = await fs.readFile(mainJsPath, 'utf-8');
             
             // Find the initialization section

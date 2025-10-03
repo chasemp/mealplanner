@@ -70,7 +70,7 @@ global.window.DemoDataManager = class MockDemoDataManager {
 };
 
 // Import MealManager after DOM setup
-await import('../../../js/meal-manager.js');
+await import('../../js/meal-manager.js');
 const MealManager = global.window.MealManager;
 
 describe('MealManager', () => {

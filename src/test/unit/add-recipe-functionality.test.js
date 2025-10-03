@@ -52,7 +52,7 @@ global.window.DemoDataManager = class MockDemoDataManager {
 };
 
 // Import RecipeManager after DOM setup
-await import('../../../js/recipe-manager.js');
+await import('../../js/recipe-manager.js');
 const RecipeManager = global.RecipeManager;
 
 describe('Add Recipe Functionality', () => {

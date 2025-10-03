@@ -125,7 +125,7 @@ describe('Combo Recipe Functionality', () => {
         };
 
         // Import RecipeManager after DOM setup
-        await import('../../../js/recipe-manager.js');
+        await import('../../js/recipe-manager.js');
         const RecipeManager = global.RecipeManager;
         recipeManager = new RecipeManager(container);
         await recipeManager.init();
