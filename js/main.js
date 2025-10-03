@@ -4,7 +4,7 @@ class MealPlannerApp {
         this.currentTab = 'menu';
         this.previousTab = null;
         this.navigationHistory = [];
-        this.version = '2025.09.24.2140';
+        this.version = '2025.09.24.2150';
         this.itineraryViews = {};
         this.calendarViews = {};
         this.recipeManager = null;
@@ -2589,18 +2589,24 @@ class MealPlannerApp {
         
         console.log(`📊 Planning ${totalMealsNeeded} meals over ${weeks} weeks (${mealsPerWeek} per week)`);
         
+        // Track meals scheduled per week to respect mealsPerWeek constraint
+        const mealsPerWeekTracker = new Map(); // weekNumber -> count
+        
         // Iterate through each day and schedule meals according to constraints
         for (let day = 0; day < totalDays && mealsScheduled < totalMealsNeeded; day++) {
             const dateStr = currentDate.toISOString().split('T')[0];
-            
-            // Check if we should schedule a meal on this day based on meals per week
             const weekNumber = Math.floor(day / 7);
-            const dayOfWeek = day % 7;
-            const mealsThisWeek = Math.floor(mealsPerWeek);
-            const extraMeal = (mealsPerWeek % 1) > 0 && dayOfWeek < (mealsPerWeek % 1) * 7;
             
-            // Distribute meals evenly throughout the week
-            const shouldScheduleMeal = dayOfWeek < mealsThisWeek || extraMeal;
+            // Check if we've already scheduled enough meals for this week
+            const mealsThisWeek = mealsPerWeekTracker.get(weekNumber) || 0;
+            if (mealsThisWeek >= mealsPerWeek) {
+                // Move to next day
+                currentDate.setDate(currentDate.getDate() + 1);
+                continue;
+            }
+            
+            // Check if we should schedule a meal on this day based on spacing constraints
+            const shouldScheduleMeal = this.shouldScheduleMealOnDay(meals, currentDate, mealSpacing, weekNumber, mealsPerWeek, mealsPerWeekTracker);
             
             if (shouldScheduleMeal) {
                 // Get the next recipe in order
@@ -2628,46 +2634,18 @@ class MealPlannerApp {
                     lastScheduledDates.set(recipe.id, new Date(currentDate));
                     mealsScheduled++;
                     
-                    console.log(`📅 Scheduled "${recipe.title}" for ${dateStr} (meal ${mealsScheduled}/${totalMealsNeeded})`);
+                    // Update week tracker
+                    mealsPerWeekTracker.set(weekNumber, (mealsPerWeekTracker.get(weekNumber) || 0) + 1);
+                    
+                    console.log(`📅 Scheduled "${recipe.title}" for ${dateStr} (meal ${mealsScheduled}/${totalMealsNeeded}, week ${weekNumber + 1})`);
                     
                     // Move to next recipe in order
                     recipeIndex++;
                 } else {
                     console.log(`⏳ Skipping "${recipe.title}" on ${dateStr} - only ${daysSinceLastScheduled} days since last scheduled (need ${mealSpacing})`);
                     
-                    // Try next recipe in order if spacing constraint not met
-                    let foundAlternative = false;
-                    for (let i = 1; i < recipes.length; i++) {
-                        const altRecipe = recipes[(recipeIndex + i) % recipes.length];
-                        const altLastScheduled = lastScheduledDates.get(altRecipe.id);
-                        const altDaysSince = altLastScheduled ? 
-                            Math.floor((currentDate - altLastScheduled) / (1000 * 60 * 60 * 24)) : 
-                            mealSpacing + 1;
-                        
-                        if (altDaysSince >= mealSpacing) {
-                            const meal = {
-                                recipe_id: altRecipe.id, // Use the actual recipe ID from the pending recipes
-                                date: dateStr,
-                                meal_type: mealType,
-                                notes: altRecipe.title,
-                                recipe_title: altRecipe.title,
-                                servings: altRecipe.servings || 4,
-                                items: altRecipe.items || []
-                            };
-                            
-                            meals.push(meal);
-                            lastScheduledDates.set(altRecipe.id, new Date(currentDate));
-                            mealsScheduled++;
-                            foundAlternative = true;
-                            
-                            console.log(`📅 Scheduled alternative "${altRecipe.title}" for ${dateStr} (meal ${mealsScheduled}/${totalMealsNeeded})`);
-                            break;
-                        }
-                    }
-                    
-                    if (!foundAlternative) {
-                        console.log(`⚠️ No suitable recipe found for ${dateStr} due to spacing constraints`);
-                    }
+                    // In ordered mode, we skip this day and try the same recipe again tomorrow
+                    // This maintains the strict ordering while respecting spacing constraints
                 }
             }
             
@@ -2677,6 +2655,49 @@ class MealPlannerApp {
         
         console.log(`✅ Generated ${meals.length} ordered meals`);
         return meals;
+    }
+
+    /**
+     * Determines if a meal should be scheduled on a given day based on spacing constraints
+     * and meals per week requirements
+     */
+    shouldScheduleMealOnDay(meals, currentDate, mealSpacing, weekNumber, mealsPerWeek, mealsPerWeekTracker) {
+        // If this is the first meal of the week, always schedule it
+        const mealsThisWeek = mealsPerWeekTracker.get(weekNumber) || 0;
+        if (mealsThisWeek === 0) {
+            return true;
+        }
+        
+        // If we've already scheduled all meals for this week, don't schedule more
+        if (mealsThisWeek >= mealsPerWeek) {
+            return false;
+        }
+        
+        // For subsequent meals in the week, check spacing constraints
+        const currentDateStr = currentDate.toISOString().split('T')[0];
+        
+        // Find the last meal scheduled in this week
+        const weekStart = new Date(currentDate);
+        weekStart.setDate(weekStart.getDate() - (weekStart.getDay() || 7) + 1); // Monday of current week
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekEnd.getDate() + 6); // Sunday of current week
+        
+        const lastMealInWeek = meals
+            .filter(meal => {
+                const mealDate = new Date(meal.date);
+                return mealDate >= weekStart && mealDate <= weekEnd;
+            })
+            .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+        
+        if (!lastMealInWeek) {
+            return true; // No meals scheduled in this week yet
+        }
+        
+        // Check if enough days have passed since the last meal in this week
+        const lastMealDate = new Date(lastMealInWeek.date);
+        const daysSinceLastMeal = Math.floor((currentDate - lastMealDate) / (1000 * 60 * 60 * 24));
+        
+        return daysSinceLastMeal >= mealSpacing;
     }
 
     enableMealSpacingSlider() {
