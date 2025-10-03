@@ -53,6 +53,10 @@ playwright/.cache/
 
 # Test environment
 env.test
+.env.test
+
+# Vite cache
+.vite/
 
 # Backup files
 backups/*.sql
