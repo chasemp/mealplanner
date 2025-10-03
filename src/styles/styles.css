@@ -25,8 +25,8 @@
 }
 
 .planning-queue-item.drag-over {
-    border: 2px dashed #3b82f6 !important;
-    background-color: rgba(59, 130, 246, 0.1);
+    border: 2px dashed #67AE6E !important; /* sage green */
+    background-color: rgba(103, 174, 110, 0.1);
 }
 
 /* Drag Handle Styles */
@@ -72,7 +72,7 @@
 /* Drop Zone Indicators */
 .drop-zone-indicator {
     height: 2px;
-    background-color: #3b82f6;
+    background-color: #67AE6E; /* sage green */
     margin: 4px 0;
     border-radius: 1px;
     opacity: 0;
@@ -359,7 +359,7 @@ button:active,
 }
 
 .dark #mobile-bottom-nav {
-    background-color: rgba(31, 41, 55, 0.95);
+    background-color: rgba(47, 87, 85, 0.95); /* dark-surface with opacity */
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
 }
 
@@ -373,7 +373,7 @@ button:active,
 
 .mobile-nav-tab:active {
     transform: scale(0.95);
-    background-color: rgba(59, 130, 246, 0.1);
+    background-color: rgba(103, 174, 110, 0.1); /* sage green */
 }
 
 .mobile-nav-tab svg {
@@ -438,8 +438,8 @@ button:active,
 }
 
 .calendar-day.drag-over {
-    background-color: rgba(59, 130, 246, 0.1) !important;
-    border-color: #3b82f6 !important;
+    background-color: rgba(103, 174, 110, 0.1) !important; /* sage green */
+    border-color: #67AE6E !important;
     transform: scale(1.02);
 }
 
@@ -453,7 +453,7 @@ button:active,
 
 /* Dark mode drag styles */
 .dark .calendar-day.drag-over {
-    background-color: rgba(59, 130, 246, 0.2) !important;
+    background-color: rgba(90, 150, 144, 0.2) !important; /* dark-accent with opacity */
 }
 
 /* Touch device improvements */
@@ -519,13 +519,13 @@ button:active,
 
 /* Tab styles */
 .nav-tab.active {
-    border-bottom-color: #3b82f6;
-    color: #3b82f6;
+    border-bottom-color: #67AE6E; /* sage green */
+    color: #67AE6E;
 }
 
 /* Button styles */
 .btn-primary {
-    background-color: #3b82f6;
+    background-color: #67AE6E; /* sage green */
     color: white;
     padding: 0.5rem 1rem;
     border-radius: 0.375rem;
@@ -574,11 +574,11 @@ input[type="range"]::-moz-range-track {
 
 /* Dark mode track */
 .dark input[type="range"]::-webkit-slider-track {
-    background: #4b5563; /* gray-600 */
+    background: #2F5755; /* dark-surface */
 }
 
 .dark input[type="range"]::-moz-range-track {
-    background: #4b5563; /* gray-600 */
+    background: #2F5755; /* dark-surface */
 }
 
 /* Thumb styling */
@@ -588,7 +588,7 @@ input[type="range"]::-webkit-slider-thumb {
     height: 20px;
     width: 20px;
     border-radius: 50%;
-    background: #3b82f6; /* blue-500 */
+    background: #67AE6E; /* sage green */
     border: 2px solid #ffffff;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     cursor: pointer;
@@ -598,7 +598,7 @@ input[type="range"]::-moz-range-thumb {
     height: 20px;
     width: 20px;
     border-radius: 50%;
-    background: #3b82f6; /* blue-500 */
+    background: #67AE6E; /* sage green */
     border: 2px solid #ffffff;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     cursor: pointer;
@@ -607,28 +607,28 @@ input[type="range"]::-moz-range-thumb {
 
 /* Hover and focus states */
 input[type="range"]:hover::-webkit-slider-thumb {
-    background: #2563eb; /* blue-600 */
+    background: #5a9d63; /* darker sage */
 }
 
 input[type="range"]:hover::-moz-range-thumb {
-    background: #2563eb; /* blue-600 */
+    background: #5a9d63; /* darker sage */
 }
 
 input[type="range"]:focus::-webkit-slider-thumb {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 0 0 3px rgba(103, 174, 110, 0.3); /* sage green */
 }
 
 input[type="range"]:focus::-moz-range-thumb {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 0 0 3px rgba(103, 174, 110, 0.3); /* sage green */
 }
 
 /* Dark mode thumb */
 .dark input[type="range"]::-webkit-slider-thumb {
-    border: 2px solid #1f2937; /* gray-800 */
+    border: 2px solid #432323; /* dark-bg */
 }
 
 .dark input[type="range"]::-moz-range-thumb {
-    border: 2px solid #1f2937; /* gray-800 */
+    border: 2px solid #432323; /* dark-bg */
 }
