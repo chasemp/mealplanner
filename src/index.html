@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="cache-bust" content="2025.09.24.2150">
+    <meta name="build-timestamp" content="1726674000000">
+    <title>MealPlanner v2025.09.24.2150</title>
+    <meta name="description" content="A PWA for meal planning with local SQLite storage">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="MealPlanner">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="./styles/tailwind-compiled.css">
+    <link rel="stylesheet" href="./styles/styles.css">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="./manifest.json">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="MealPlanner">
+    <meta name="msapplication-TileColor" content="#3b82f6">
+    
+    <!-- PWA Icons for iOS -->
+    <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="./icon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./icon-16.png">
+</head>
+  <body class="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors">
+    <div id="app">
+        <!-- Loading state -->
+        <div id="loading" class="flex items-center justify-center min-h-screen">
+            <div class="text-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p class="text-gray-600">Loading MealPlanner...</p>
+                <p id="loading-timeout" class="text-sm text-gray-400 mt-2 hidden">Taking longer than expected... Check console for errors.</p>
+            </div>
+        </div>
+
+        <!-- Main App (hidden initially) -->
+        <div id="main-app" class="hidden">
+            <!-- Header -->
+            <header class="bg-white dark:bg-gray-800 shadow">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex justify-between items-center h-16">
+                        <div class="flex items-center">
+                            <h1 class="text-xl font-semibold text-gray-900 dark:text-white">MealPlanner</h1>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            
+                            <!-- Database Source Indicator -->
+                            <div class="flex items-center space-x-2">
+                                <div id="database-source-indicator-container" class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 p-2 rounded cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors relative group" title="Current Database Source">
+                                    <svg id="database-source-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <!-- Default demo data icon -->
+                                        <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>
+                                    </svg>
+                                    <!-- Tooltip on hover/touch -->
+                                    <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                                        <span id="database-source-indicator">Demo Data</span>
+                                        <div class="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-100"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Theme Toggle -->
+                            <button id="theme-toggle" class="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 transition-colors" title="Toggle dark mode">
+                                <svg id="theme-toggle-light-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                                </svg>
+                                <svg id="theme-toggle-dark-icon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                                </svg>
+                            </button>
+                            
+                            <!-- Settings Dropdown -->
+                            <div class="relative">
+                                <button id="settings-dropdown-toggle" class="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 transition-colors" title="Settings">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </button>
+                                
+                                <!-- Settings Dropdown Menu -->
+                                <div id="settings-dropdown-menu" class="hidden fixed inset-x-4 top-20 md:absolute md:top-full md:right-0 md:w-80 md:max-w-sm bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50 max-h-[80vh] overflow-y-auto">
+                                    <div class="p-4 md:p-6">
+                                        <h3 class="text-lg md:text-xl font-semibold text-gray-900 dark:text-white mb-4 md:mb-6">Settings</h3>
+                                        
+                                        
+                                        
+                                        <!-- Cache Status -->
+                                        <div class="mb-4 md:mb-6">
+                                            <h4 class="text-sm md:text-base font-medium text-gray-700 dark:text-gray-300 mb-2 md:mb-3">Cache Status</h4>
+                                            <div class="bg-gray-50 dark:bg-gray-700 rounded-md p-3 text-sm">
+                                                <div class="flex justify-between items-center mb-2">
+                                                    <span class="text-gray-600 dark:text-gray-400">App Version:</span>
+                                                    <span id="cache-app-version" class="font-mono text-xs">v2025.09.08.1911</span>
+                                                </div>
+                                                <div class="flex justify-between items-center mb-2">
+                                                    <span class="text-gray-600 dark:text-gray-400">Cache Status:</span>
+                                                    <span id="cache-status" class="text-xs">🔍 Checking...</span>
+                                                </div>
+                                                <div class="flex justify-between items-center">
+                                                    <span class="text-gray-600 dark:text-gray-400">Last Updated:</span>
+                                                    <span id="cache-last-updated" class="text-xs">Unknown</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Quick Actions -->
+                                        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                                            <button id="export-db-btn-dropdown" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                                                Export Database
+                                            </button>
+                                            <button id="advanced-settings-btn" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                                                Advanced
+                                            </button>
+                                            <button id="refresh-assets-btn" class="flex-1 bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-md text-sm font-medium transition-colors" title="Force refresh all cached assets">
+                                                🔄 Refresh
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Navigation Tabs -->
+            <nav class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex space-x-8">
+                        <button class="nav-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="items">
+                            🥕 Items
+                        </button>
+                        <button class="nav-tab active py-4 px-1 border-b-2 border-blue-500 text-blue-600 dark:text-blue-400 font-medium text-sm" data-tab="recipes">
+                            📖 Recipes
+                        </button>
+                        <button class="nav-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="plan">
+                            📋 Plan
+                        </button>
+                        <button class="nav-tab py-4 px-1 border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm" data-tab="menu">
+                            📄 Menu
+                        </button>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                <!-- Recipes Tab -->
+                <div id="recipes-tab" class="tab-content hidden">
+                    <div id="recipe-manager-container">
+                        <!-- Recipe manager will be rendered here -->
+                    </div>
+                </div>
+
+                <!-- Items Tab -->
+                <div id="items-tab" class="tab-content hidden">
+                    <div id="items-manager-container">
+                        <!-- Items manager will be rendered here -->
+                    </div>
+                </div>
+
+
+                <!-- Plan Tab -->
+                <div id="plan-tab" class="tab-content hidden">
+                    
+                    <!-- Pending Recipes Queue -->
+                    <div id="pending-recipes-section" class="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Planning Queue <span id="planning-queue-count" class="text-blue-600 dark:text-blue-400">(0)</span></h3>
+                            <button id="clear-pending-recipes" class="text-sm text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300">
+                                Clear All
+                            </button>
+                        </div>
+                        <div id="pending-recipes-list" class="space-y-2">
+                            <!-- Pending recipes will be rendered here -->
+                        </div>
+                        <div id="pending-recipes-empty" class="text-center py-8 text-gray-500 dark:text-gray-400 hidden">
+                            <svg class="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <p class="text-sm">No recipes in planning queue</p>
+                            <p class="text-xs mt-1">Use the 📅 button on recipe cards to add them here</p>
+                        </div>
+                    </div>
+
+
+                    <!-- Scheduling Options Panel (hidden by default) -->
+                    <div id="scheduling-options-panel" class="mb-8 bg-blue-50 dark:bg-blue-900 rounded-lg shadow p-6 hidden">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">📅 Scheduling Options</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Time Period</label>
+                                <select id="scheduling-period" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                                    <option value="1">1 Week</option>
+                                    <option value="2">2 Weeks</option>
+                                    <option value="4" selected>4 Weeks</option>
+                                    <option value="8">8 Weeks</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Start Date</label>
+                                <input type="date" id="scheduling-start-date" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Scheduling Mode</label>
+                                <select id="scheduling-mode" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                                    <option value="intelligent">🧠 Intelligent Rotation</option>
+                                    <option value="random">🎲 Random Distribution</option>
+                                    <option value="sequential">📋 Sequential Order</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center justify-between">
+                            <div class="flex items-center space-x-4">
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="skip-weekends" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Skip weekends</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="avoid-repeats" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" checked>
+                                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Avoid recent repeats</span>
+                                </label>
+                            </div>
+                            <div class="flex gap-2">
+                                <button id="cancel-scheduling" class="btn-secondary">Cancel</button>
+                                <button id="generate-schedule" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium">
+                                    🚀 Generate Schedule
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Schedule Section -->
+                    <div class="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                        <div class="mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Schedule</h3>
+                        </div>
+                        
+                        <!-- Auto Plan Controls -->
+                        <div class="mb-6 space-y-4">
+                            <!-- Meals per Week Control -->
+                            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                                <label for="meals-per-week" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Meals per Week
+                                </label>
+                                <div class="flex items-center space-x-4">
+                                    <input type="range" 
+                                           id="meals-per-week" 
+                                           min="1" 
+                                           max="7" 
+                                           value="7" 
+                                           class="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-600">
+                                    <span id="meals-per-week-value" class="text-sm font-medium text-gray-900 dark:text-white min-w-[2rem] text-center">7</span>
+                                </div>
+                                <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    <span>1</span>
+                                    <span>7</span>
+                                </div>
+                            </div>
+
+                            <!-- Meal Spacing Control -->
+                            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                                <label for="meal-spacing" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Minimum Days Between Same Meal
+                                </label>
+                                <div class="flex items-center space-x-4">
+                                    <input type="range" 
+                                           id="meal-spacing" 
+                                           min="1" 
+                                           max="14" 
+                                           value="3" 
+                                           class="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-600">
+                                    <span id="meal-spacing-value" class="text-sm font-medium text-gray-900 dark:text-white min-w-[2rem] text-center">3</span>
+                                </div>
+                                <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    <span>1 day</span>
+                                    <span>14 days</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Planning Action Buttons -->
+                        <div class="mb-6 flex justify-between items-center space-x-4">
+                            <!-- Clear Planned Button (Left) -->
+                            <button id="clear-planned-btn" class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg text-sm font-medium flex items-center space-x-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                                <span>Clear Planned</span>
+                            </button>
+                            
+                            <!-- Plan Dropdown (Right) -->
+                            <div class="relative">
+                                <button id="plan-dropdown-btn" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg text-sm font-medium flex items-center space-x-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                    </svg>
+                                    <span>Plan</span>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </button>
+                                
+                                <!-- Dropdown Menu -->
+                                <div id="plan-dropdown-menu" class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 hidden">
+                                    <div class="py-1">
+                                        <button id="plan-shuffle-option" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-2">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4h5l2 5h6l2-5h5M7 13h10l4 8H3l4-8z"></path>
+                                            </svg>
+                                            <span>Shuffle</span>
+                                        </button>
+                                        <button id="plan-ordered-option" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-2">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                            </svg>
+                                            <span>Ordered</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Meals Section -->
+                    <div class="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Meals</h3>
+                            <!-- Calendar/Itinerary View Toggle -->
+                            <button id="view-toggle-plan" class="btn-secondary text-sm px-4 py-2" data-view="calendar">
+                                📅 Calendar View
+                            </button>
+                        </div>
+                    
+                    <!-- Itinerary View (default) -->
+                    <div id="plan-itinerary" class="meal-view">
+                        <!-- Itinerary content will be rendered here -->
+                        <div class="fallback-content bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <h3 class="text-lg font-semibold text-yellow-800">Meals Section Loading...</h3>
+                            <p class="text-yellow-600">If you see this message, the JavaScript initialization hasn't run yet or has failed.</p>
+                            <p class="text-sm text-yellow-500 mt-2">This content should be replaced by the itinerary view.</p>
+                        </div>
+                    </div>
+                    
+                        <!-- Calendar View (hidden initially) -->
+                        <div id="plan-calendar" class="meal-view hidden">
+                            <!-- Calendar content will be rendered here -->
+                        </div>
+                    </div>
+
+                    <!-- Plan vs Menu Delta Comparison -->
+                    <div id="plan-menu-delta" class="mt-8 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 hidden">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Plan Changes</h4>
+                            <div class="flex items-center space-x-4">
+                                <!-- View Toggle Button -->
+                                <div class="flex bg-gray-200 dark:bg-gray-700 rounded-lg p-1">
+                                    <button id="delta-view-diff" class="px-3 py-1 text-xs font-medium rounded-md transition-colors bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm">
+                                        Diff
+                                    </button>
+                                    <button id="delta-view-set" class="px-3 py-1 text-xs font-medium rounded-md transition-colors text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                                        Set
+                                    </button>
+                                </div>
+                                <div id="delta-meal-counts" class="text-sm text-gray-600 dark:text-gray-400 min-w-[80px] text-right">
+                                    <!-- Before/after meal counts will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Diff View (Changes) -->
+                        <div id="delta-diff-view">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Additions (Green) -->
+                                <div id="delta-additions" class="hidden">
+                                    <div class="flex items-center mb-2">
+                                        <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                                        <span class="font-medium text-green-700 dark:text-green-300">Adding</span>
+                                        <span id="additions-count" class="ml-2 px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 text-xs rounded-full font-medium">0</span>
+                                    </div>
+                                    <div id="additions-list" class="space-y-1 text-sm text-green-600 dark:text-green-400 ml-5">
+                                        <!-- Addition details will be populated here -->
+                                    </div>
+                                </div>
+                                
+                                <!-- Removals (Red) -->
+                                <div id="delta-removals" class="hidden">
+                                    <div class="flex items-center mb-2">
+                                        <div class="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                                        <span class="font-medium text-red-700 dark:text-red-300">Removing</span>
+                                        <span id="removals-count" class="ml-2 px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 text-xs rounded-full font-medium">0</span>
+                                    </div>
+                                    <div id="removals-list" class="space-y-1 text-sm text-red-600 dark:text-red-400 ml-5">
+                                        <!-- Removal details will be populated here -->
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Summary bar at bottom -->
+                            <div id="delta-summary-bar" class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+                                <div id="delta-summary" class="text-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <!-- Summary will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Set View (Final Outcome) -->
+                        <div id="delta-set-view" class="hidden">
+                            <div id="set-meal-schedule" class="space-y-3">
+                                <!-- Final meal schedule will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Plan vs Menu Action Buttons -->
+                    <div class="mt-8 text-center">
+                        <button id="update-menu-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg text-sm font-medium inline-flex items-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                            <span>Update Menu</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Menu Tab -->
+                <div id="menu-tab" class="tab-content">
+                    <div class="max-w-4xl mx-auto">
+                        <!-- Header with unified date range selector -->
+                        <div class="flex justify-between items-center mb-6">
+                            <div class="flex-1">
+                                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Menu</h2>
+                                <div class="flex items-center gap-4 mt-2">
+                                    <select id="menu-week-selector" class="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                        <option value="1">This Week</option>
+                                        <option value="2">2 Weeks</option>
+                                        <option value="4">4 Weeks</option>
+                                        <option value="8">8 Weeks</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button id="google-calendar-sync" class="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
+                                </svg>
+                                <span id="google-calendar-status">Sync to Calendar</span>
+                            </button>
+                        </div>
+                    
+                        <!-- Meals Section -->
+                        <div class="mb-8">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Scheduled Meals</h3>
+                            <div id="menu-meals-container" class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                                <div class="text-gray-500 dark:text-gray-400 text-center py-4">
+                                    No meals scheduled for this timeframe. Use the Plan tab to schedule meals.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Grocery List Section -->
+                        <div id="grocery-list-container">
+                            <!-- Grocery list manager will be rendered here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Tab -->
+                <div id="settings-tab" class="tab-content hidden">
+                    <div class="max-w-4xl mx-auto">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Settings</h2>
+                        </div>
+                        
+                        <div class="space-y-8">
+                            <!-- Database Source Configuration -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Database Source</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Source Type
+                                        </label>
+                                        <select id="source-type-select" class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                            <option value="demo" selected>Demo Data</option>
+                                            <option value="local">Local Database</option>
+                                            <option value="github">GitHub Repository</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <!-- Demo Data Options -->
+                                    <div id="demo-options" class="source-options">
+                                        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md p-4">
+                                            <p class="text-sm text-blue-800 dark:text-blue-200 mb-4">
+                                                <strong>Demo Mode:</strong> Using sample data stored in browser. Perfect for testing and learning.
+                                                Data persists locally but won't sync across devices.
+                                            </p>
+                                            
+                                            <!-- Demo Data Management -->
+                                            <div class="space-y-3">
+                                                <h5 class="text-sm font-medium text-blue-900 dark:text-blue-100">Data Management</h5>
+                                                <div class="flex flex-col sm:flex-row gap-2">
+                                                    <button id="clear-all-data-btn" class="flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-md transition-colors duration-200">
+                                                        🗑️ Clear All Data
+                                                    </button>
+                                                    <button id="reset-demo-data-btn" class="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors duration-200">
+                                                        🔄 Reset Demo Data
+                                                    </button>
+                                                </div>
+                                                <p class="text-xs text-blue-700 dark:text-blue-300">
+                                                    Clear All: Removes all data for clean testing • Reset Demo: Restores original sample data
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    
+                                    <!-- Local Database Options -->
+                                    <div id="local-options" class="source-options hidden">
+                                        <div class="space-y-3">
+                                            <div class="flex items-center space-x-3">
+                                                <input type="radio" id="local-new" name="local-type" value="new" class="text-blue-600">
+                                                <label for="local-new" class="text-sm text-gray-700 dark:text-gray-300">Create New Database</label>
+                                            </div>
+                                            <div class="flex items-center space-x-3">
+                                                <input type="radio" id="local-existing" name="local-type" value="existing" class="text-blue-600">
+                                                <label for="local-existing" class="text-sm text-gray-700 dark:text-gray-300">Load Existing Database</label>
+                                            </div>
+                                            <div class="mt-3">
+                                                <input type="file" id="local-file-input" accept=".db,.sqlite,.sqlite3" class="hidden">
+                                                <button id="local-file-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm">
+                                                    Choose Database File
+                                                </button>
+                                                <span id="local-file-name" class="ml-3 text-sm text-gray-600 dark:text-gray-400"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- GitHub Repository Options -->
+                                    <div id="github-options" class="source-options hidden">
+                                        <div class="space-y-4">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    Repository URL
+                                                </label>
+                                                <input type="url" id="github-repo-url" placeholder="https://github.com/username/repo" 
+                                                       class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                    Example: https://github.com/chasemp/mp
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    Deploy Key (Private Key for Write Access)
+                                                </label>
+                                                <textarea id="github-deploy-key" rows="8" placeholder="-----BEGIN OPENSSH PRIVATE KEY-----&#10;...&#10;-----END OPENSSH PRIVATE KEY-----"
+                                                          class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-xs"></textarea>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                    Required for saving changes. Generate a deploy key in your repository settings.
+                                                </p>
+                                            </div>
+                                            <div class="flex items-center space-x-3">
+                                                <input type="checkbox" id="github-read-only" class="text-blue-600">
+                                                <label for="github-read-only" class="text-sm text-gray-700 dark:text-gray-300">
+                                                    Read-only mode (no deploy key needed)
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex space-x-3 pt-4">
+                                        <button id="apply-source-btn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm">
+                                            Apply Source
+                                        </button>
+                                        <button id="export-db-btn-settings" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm">
+                                            Export Database
+                                        </button>
+                                        <button id="import-db-btn-settings" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-md text-sm">
+                                            Import Database
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Hidden file input for import -->
+                                    <input type="file" id="import-file-input" accept=".json" class="hidden">
+                                </div>
+                            </div>
+                            
+                            <!-- Cache Status -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Cache Status</h3>
+                                <div class="bg-gray-50 dark:bg-gray-700 rounded-md p-4">
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-gray-600 dark:text-gray-400">App Version:</span>
+                                            <span id="cache-app-version" class="font-mono text-xs">v2025.09.08.1911</span>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-gray-600 dark:text-gray-400">Cache Status:</span>
+                                            <span id="cache-status" class="text-xs">🔍 Checking...</span>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-gray-600 dark:text-gray-400">Last Updated:</span>
+                                            <span id="cache-last-updated" class="text-xs">Unknown</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Quick Actions -->
+                                <div class="mt-4 flex flex-col sm:flex-row gap-3">
+                                    <button id="export-db-btn-settings" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                                        Export Database
+                                    </button>
+                                    <button id="advanced-settings-btn" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                                        Advanced
+                                    </button>
+                                    <button id="refresh-assets-btn" class="flex-1 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors" title="Force refresh all cached assets">
+                                        🔄 Refresh
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            
+                            <!-- Mobile Navigation Settings -->
+                            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                                <h4 class="font-medium text-gray-900 dark:text-white mb-3">📱 Mobile Navigation</h4>
+                                <div class="space-y-3">
+                                    <div class="flex items-center space-x-3">
+                                        <input type="checkbox" id="mobile-nav-auto-hide" class="text-blue-600">
+                                        <label for="mobile-nav-auto-hide" class="text-sm text-gray-700 dark:text-gray-300">📱 Auto-hide mobile navigation on scroll</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Calendar Integration -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Calendar Integration</h3>
+                                    <button id="sync-calendar-btn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm flex items-center space-x-2">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v1h1a1 1 0 000 2H5v1a1 1 0 01-2 0V6H2a1 1 0 000-2h1V3a1 1 0 011-1zm0 5a1 1 0 011 1v1h1a1 1 0 110 2H5v1a1 1 0 11-2 0v-1H2a1 1 0 110-2h1V8a1 1 0 011-1zm6-3a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0V8h-1a1 1 0 110-2h1V5a1 1 0 011-1z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        <span>Sync Now</span>
+                                    </button>
+                                </div>
+                                <div class="space-y-4">
+                                    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md p-4">
+                                        <p class="text-sm text-blue-800 dark:text-blue-200">
+                                            <strong>Calendar Sync:</strong> Sync your meal plans with Google Calendar. 
+                                            Configure preferences below and use the sync button for immediate updates.
+                                        </p>
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                Calendar Name
+                                            </label>
+                                            <input type="text" id="calendar-name" placeholder="MealPlanner" 
+                                                   class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                Event Duration (minutes)
+                                            </label>
+                                            <select id="event-duration" class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                                <option value="30">30 minutes</option>
+                                                <option value="60" selected>1 hour</option>
+                                                <option value="90">1.5 hours</option>
+                                                <option value="120">2 hours</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-1 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                Plan Time
+                                            </label>
+                                            <input type="time" id="plan-time" value="18:00" 
+                                                   class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="space-y-3">
+                                        <div class="flex items-center space-x-3">
+                                            <input type="checkbox" id="calendar-managed-mode" class="text-blue-600">
+                                            <label for="calendar-managed-mode" class="text-sm text-gray-700 dark:text-gray-300">
+                                                Managed Mode (MealPlanner has full authority over calendar events)
+                                            </label>
+                                        </div>
+                                        <div class="flex items-center space-x-3">
+                                            <input type="checkbox" id="calendar-notifications" class="text-blue-600">
+                                            <label for="calendar-notifications" class="text-sm text-gray-700 dark:text-gray-300">
+                                                Enable meal reminder notifications
+                                            </label>
+                                        </div>
+                                        <div class="flex items-center space-x-3">
+                                            <input type="checkbox" id="include-ingredients" class="text-blue-600">
+                                            <label for="include-ingredients" class="text-sm text-gray-700 dark:text-gray-300">
+                                                Include ingredient lists in calendar events
+                                            </label>
+                                        </div>
+                                        <div class="flex items-center space-x-3">
+                                            <input type="checkbox" id="include-prep-time" class="text-blue-600">
+                                            <label for="include-prep-time" class="text-sm text-gray-700 dark:text-gray-300">
+                                                Include prep and cook times in event descriptions
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Filter Safety Settings -->
+                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Filter Safety Settings</h3>
+                                <div class="space-y-4">
+                                    <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md p-4">
+                                        <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                                            <strong>Safety Features:</strong> These settings help prevent accidental loss of filter settings across all tabs (Recipes, Meals, Items).
+                                        </p>
+                                    </div>
+                                    
+                                    <div class="flex items-center space-x-3">
+                                        <input type="checkbox" id="confirm-before-clearing-filters" class="text-blue-600">
+                                        <label for="confirm-before-clearing-filters" class="text-sm text-gray-700 dark:text-gray-300">
+                                            Always ask before clearing filters
+                                        </label>
+                                    </div>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 ml-7">
+                                        Shows a confirmation dialog before clearing all filters on any tab or clearing the planning queue
+                                    </p>
+                                    
+                                    <div class="flex items-center space-x-3">
+                                        <input type="checkbox" id="require-double-press-clear-filters" class="text-blue-600">
+                                        <label for="require-double-press-clear-filters" class="text-sm text-gray-700 dark:text-gray-300">
+                                            Always require double press to clear filters
+                                        </label>
+                                    </div>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 ml-7">
+                                        Requires pressing the "Clear Filters" button or "Clear All" planning queue button twice within 3 seconds to actually clear
+                                    </p>
+                                    
+                                    <div class="flex items-center space-x-3">
+                                        <input type="checkbox" id="confirm-before-deleting" class="text-blue-600">
+                                        <label for="confirm-before-deleting" class="text-sm text-gray-700 dark:text-gray-300">
+                                            Always ask before deleting recipes/combos
+                                        </label>
+                                    </div>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 ml-7">
+                                        Shows a confirmation dialog before permanently deleting recipes or combo recipes
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+        
+        <!-- Version Footer -->
+        <footer class="fixed bottom-2 right-2 text-xs text-gray-400 bg-white/80 backdrop-blur-sm px-2 py-1 rounded shadow-sm">
+            <span id="version-display">v2025.09.24.2150</span>
+        </footer>
+    </div>
+
+    <!-- Modals will be inserted here -->
+    <div id="modal-container"></div>
+
+    <!-- JavaScript -->
+    <script src="./js/label-types.js?v=2025.09.24.2150"></script>
+    <script src="./js/multi-label-filter.js?v=2025.09.24.2150"></script>
+    <script src="./js/itinerary-view.js?v=2025.09.24.2150"></script>
+    <script src="./js/calendar-view.js?v=2025.09.24.2150"></script>
+      <script src="./js/demo-data.js?v=2025.09.24.2150"></script>
+    <script src="./js/barcode-scanner.js?v=2025.09.24.2150"></script>
+    <script src="./js/shared-barcode-scanner.js?v=2025.09.24.2150"></script>
+    <!-- Core managers must be loaded first -->
+    <script src="./js/settings-manager.js?v=2025.09.24.2150"></script>
+    <script src="./js/recipe-manager.js?v=2025.09.24.2150"></script>
+    <script src="./js/items-manager.js?v=2025.09.24.2150"></script>
+    
+    <!-- Other managers -->
+    <script src="./js/meal-manager.js?v=2025.09.24.2150"></script>
+    <script src="./js/schedule-manager.js?v=2025.09.24.2150"></script>
+    <script src="./js/grocery-list-manager.js?v=2025.09.24.2150"></script>
+    <script src="./js/google-calendar-integration.js?v=2025.09.24.2150"></script>
+    <script src="./js/meal-rotation-engine.js?v=2025.09.24.2150"></script>
+    <script src="./js/performance-manager.js?v=2025.09.24.2150"></script>
+    <script src="./js/advanced-planning.js?v=2025.09.24.2150"></script>
+    <script src="./js/pantry-manager.js?v=2025.09.24.2150"></script>
+    <script src="./js/mobile-navigation.js?v=2025.09.24.2150"></script>
+    
+    <!-- Main application script loads last -->
+    <script src="./js/main.js?v=2025.09.24.2150"></script>
+    
+    <!-- Settings Navigation Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdownToggle = document.getElementById('settings-dropdown-toggle');
+            
+            if (dropdownToggle) {
+                dropdownToggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    
+                    // Check if we're already on settings tab - if so, return to previous page
+                    if (window.app) {
+                        if (window.app.currentTab === 'settings') {
+                            // Return from settings to previous page
+                            console.log('⚙️ Settings gear clicked - returning from settings');
+                            if (window.app.returnFromSettings) {
+                                window.app.returnFromSettings();
+                            } else {
+                                // Fallback to recipes if returnFromSettings method doesn't exist
+                                window.app.switchTab('recipes');
+                            }
+                        } else {
+                            // Navigate to settings tab
+                            console.log('⚙️ Settings gear clicked - opening settings');
+                            window.app.switchTab('settings');
+                        }
+                    } else {
+                        // Fallback: manually switch to settings tab
+                        // Hide all tab contents
+                        document.querySelectorAll('.tab-content').forEach(tab => {
+                            tab.classList.add('hidden');
+                        });
+                        
+                        // Show settings tab
+                        const settingsTab = document.getElementById('settings-tab');
+                        if (settingsTab) {
+                            settingsTab.classList.remove('hidden');
+                        }
+                        
+                        // Update navigation active state
+                        document.querySelectorAll('.nav-tab').forEach(tab => {
+                            tab.classList.remove('active', 'border-blue-500', 'text-blue-600', 'dark:text-blue-400');
+                            tab.classList.add('border-transparent', 'text-gray-500', 'dark:text-gray-400');
+                        });
+                    }
+                });
+            }
+            
+            // Remove the old dropdown functionality since we're not using it anymore
+            const dropdownMenu = document.getElementById('settings-dropdown-menu');
+            if (dropdownMenu) {
+                // Hide the dropdown permanently since we're navigating to the settings tab instead
+                dropdownMenu.classList.add('hidden');
+            }
+            
+            // Legacy dropdown positioning code removed - now navigating to settings tab instead
+            // The old modal dropdown had positioning issues on mobile, so we converted to full-page settings
+            
+            // Cache Refresh Functionality
+            const refreshAssetsBtn = document.getElementById('refresh-assets-btn');
+            if (refreshAssetsBtn) {
+                refreshAssetsBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    refreshAllAssets();
+                });
+            }
+            
+            // Initialize cache status display
+            updateCacheStatus();
+        });
+        
+        // Force refresh all cached assets
+        function refreshAllAssets() {
+            console.log('🔄 Refreshing all cached assets...');
+            
+            // Show loading state
+            const refreshBtn = document.getElementById('refresh-assets-btn');
+            const originalText = refreshBtn.innerHTML;
+            refreshBtn.innerHTML = '⏳ Refreshing...';
+            refreshBtn.disabled = true;
+            
+            try {
+                // Generate unique cache-bust parameter
+                const cacheBust = new Date().getTime();
+                
+                // 1. Clear Service Worker caches
+                if ('serviceWorker' in navigator && 'caches' in window) {
+                    caches.keys().then(function(cacheNames) {
+                        return Promise.all(
+                            cacheNames.map(function(cacheName) {
+                                console.log('🗑️ Clearing cache:', cacheName);
+                                return caches.delete(cacheName);
+                            })
+                        );
+                    }).then(function() {
+                        console.log('✅ Service Worker caches cleared');
+                    }).catch(function(error) {
+                        console.warn('⚠️ Failed to clear SW caches:', error);
+                    });
+                }
+                
+                // 2. Update all stylesheet links
+                document.querySelectorAll('link[rel="stylesheet"]').forEach(function(link) {
+                    const href = link.href.split('?')[0];
+                    link.href = href + '?v=' + cacheBust;
+                    console.log('🎨 Updated stylesheet:', link.href);
+                });
+                
+                // 3. Update all script sources (except inline scripts)
+                document.querySelectorAll('script[src]').forEach(function(script) {
+                    const src = script.src.split('?')[0];
+                    script.src = src + '?v=' + cacheBust;
+                    console.log('📜 Updated script:', script.src);
+                });
+                
+                // 4. Update meta cache-bust tag
+                const cacheBustMeta = document.querySelector('meta[name="cache-bust"]');
+                if (cacheBustMeta) {
+                    cacheBustMeta.setAttribute('content', cacheBust);
+                    console.log('🏷️ Updated cache-bust meta tag:', cacheBust);
+                }
+                
+                // 5. Force reload after a short delay
+                setTimeout(function() {
+                    console.log('🔄 Performing hard reload...');
+                    // Use location.reload(true) for hard reload (bypasses cache)
+                    window.location.reload(true);
+                }, 1000);
+                
+            } catch (error) {
+                console.error('❌ Error refreshing assets:', error);
+                refreshBtn.innerHTML = '❌ Error';
+                setTimeout(function() {
+                    refreshBtn.innerHTML = originalText;
+                    refreshBtn.disabled = false;
+                }, 2000);
+            }
+        }
+        
+        // Update cache status display
+        function updateCacheStatus() {
+            const cacheStatus = document.getElementById('cache-status');
+            const cacheLastUpdated = document.getElementById('cache-last-updated');
+            const cacheAppVersion = document.getElementById('cache-app-version');
+            
+            if (!cacheStatus || !cacheLastUpdated || !cacheAppVersion) return;
+            
+            try {
+                // Get current app version from meta tag
+                const cacheBustMeta = document.querySelector('meta[name="cache-bust"]');
+                const currentVersion = cacheBustMeta ? cacheBustMeta.getAttribute('content') : 'Unknown';
+                cacheAppVersion.textContent = `v${currentVersion}`;
+                
+                // Check Service Worker cache status
+                if ('serviceWorker' in navigator && 'caches' in window) {
+                    caches.keys().then(function(cacheNames) {
+                        if (cacheNames.length > 0) {
+                            cacheStatus.innerHTML = '✅ Active (' + cacheNames.length + ' caches)';
+                            
+                            // Get cache creation time (approximate)
+                            const now = new Date();
+                            const timeDiff = now.getTime() - parseInt(currentVersion);
+                            const minutesAgo = Math.floor(timeDiff / (1000 * 60));
+                            
+                            if (minutesAgo < 60) {
+                                cacheLastUpdated.textContent = minutesAgo + ' min ago';
+                            } else {
+                                const hoursAgo = Math.floor(minutesAgo / 60);
+                                cacheLastUpdated.textContent = hoursAgo + ' hr ago';
+                            }
+                        } else {
+                            cacheStatus.innerHTML = '⚠️ No caches';
+                            cacheLastUpdated.textContent = 'Never';
+                        }
+                    }).catch(function(error) {
+                        console.warn('Failed to check cache status:', error);
+                        cacheStatus.innerHTML = '❌ Error';
+                        cacheLastUpdated.textContent = 'Error';
+                    });
+                } else {
+                    cacheStatus.innerHTML = '❌ Not supported';
+                    cacheLastUpdated.textContent = 'N/A';
+                }
+                
+            } catch (error) {
+                console.error('Error updating cache status:', error);
+                cacheStatus.innerHTML = '❌ Error';
+                cacheLastUpdated.textContent = 'Error';
+            }
+        }
+        
+        // Listen for Service Worker messages
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.addEventListener('message', function(event) {
+                const { type, success } = event.data;
+                
+                if (type === 'CACHE_CLEARED' && success) {
+                    console.log('✅ Service Worker caches cleared');
+                    updateCacheStatus();
+                } else if (type === 'CACHE_VERSION_UPDATED' && success) {
+                    console.log('✅ Service Worker cache version updated');
+                    updateCacheStatus();
+                }
+            });
+        }
+    </script>
+</body>
+</html>
