@@ -51,7 +51,7 @@ global.window.ServiceWorkerRegistration.prototype = {
 
 // Import the main app after setting up mocks
 // Since main.js creates a global class, we need to load it and access the global
-await import('../../../js/main.js');
+await import('../../js/main.js');
 const MealPlannerApp = global.MealPlannerApp;
 
 describe('Service Worker & PWA Features', () => {

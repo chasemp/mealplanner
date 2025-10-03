@@ -111,8 +111,8 @@ describe('Theme and Visibility Toggles', () => {
 
         // Import classes after DOM setup
         try {
-            await import('../../../js/main.js');
-            await import('../../../js/settings-manager.js');
+            await import('../../js/main.js');
+            await import('../../js/settings-manager.js');
         } catch (error) {
             console.warn('Failed to import classes, using mocks:', error);
         }

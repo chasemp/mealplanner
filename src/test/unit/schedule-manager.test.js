@@ -18,7 +18,7 @@ global.document = {
 };
 
 // Import the class
-import '../../../js/schedule-manager.js';
+import '../../js/schedule-manager.js';
 const ScheduleManager = global.window.ScheduleManager;
 
 describe('ScheduleManager', () => {

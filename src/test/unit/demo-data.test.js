@@ -13,7 +13,7 @@ describe('Demo Data Manager', () => {
         global.document = dom.window.document;
 
         // Load the DemoDataManager
-        const { default: DDM } = await import('../../../js/demo-data.js');
+        const { default: DDM } = await import('../../js/demo-data.js');
         DemoDataManager = DDM;
         demoData = new DemoDataManager();
     });

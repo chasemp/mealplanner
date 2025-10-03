@@ -53,7 +53,7 @@ global.window.confirm = vi.fn();
         };
 
 // Import ItemsManager after DOM setup
-await import('../../../js/items-manager.js');
+await import('../../js/items-manager.js');
 const ItemsManager = global.ItemsManager;
 
 describe('Add Items Functionality', () => {

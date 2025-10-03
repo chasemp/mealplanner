@@ -83,7 +83,7 @@ const mockDemoDataInstance = {
 global.window.DemoDataManager = vi.fn().mockImplementation(() => mockDemoDataInstance);
 
 // Import MealPlannerApp after DOM setup
-await import('../../../js/main.js');
+await import('../../js/main.js');
 const MealPlannerApp = global.MealPlannerApp;
 
 describe('Meal Planning Controls', () => {
