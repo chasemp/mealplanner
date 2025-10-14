@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import { dirname, resolve } from 'path'
 import { fileURLToPath } from 'url'
-import { copyFileSync, existsSync } from 'fs'
+import { copyFileSync, existsSync, mkdirSync, readdirSync, statSync } from 'fs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -22,12 +22,48 @@ function copyServiceWorker() {
   }
 }
 
+// Plugin to copy JavaScript files to output
+function copyJavaScriptFiles() {
+  return {
+    name: 'copy-javascript-files',
+    closeBundle: async () => {
+      const srcDir = resolve(__dirname, 'src/js')
+      const destDir = resolve(__dirname, 'docs/js')
+      
+      // Create destination directory if it doesn't exist
+      if (!existsSync(destDir)) {
+        mkdirSync(destDir, { recursive: true })
+      }
+      
+      // Copy all JS files
+      if (existsSync(srcDir)) {
+        const files = readdirSync(srcDir)
+        let copiedCount = 0
+        
+        files.forEach(file => {
+          const srcFile = resolve(srcDir, file)
+          const destFile = resolve(destDir, file)
+          
+          // Only copy files (not directories)
+          if (statSync(srcFile).isFile()) {
+            copyFileSync(srcFile, destFile)
+            copiedCount++
+          }
+        })
+        
+        console.log(`✅ Copied ${copiedCount} JavaScript files to docs/js/`)
+      }
+    }
+  }
+}
+
 export default defineConfig({
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,wasm}']
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,wasm}'],
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024 // 3 MB
       },
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
@@ -54,7 +90,8 @@ export default defineConfig({
         ]
       }
     }),
-    copyServiceWorker()
+    copyServiceWorker(),
+    copyJavaScriptFiles()
   ],
   
   // Standard /src → /docs pattern
